@@ -1,7 +1,10 @@
 #include "MantisStatus.hpp"
 
 MantisStatus::MantisStatus() :
-    fValue( eIdle ), fMutex(), fReaderCondition( NULL ), fWriterCondition( NULL )
+    fValue( eIdle ),
+    fMutex(),
+    fReaderCondition( NULL ),
+    fWriterCondition( NULL )
 {
 }
 MantisStatus::~MantisStatus()

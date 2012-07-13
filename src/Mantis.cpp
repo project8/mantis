@@ -26,6 +26,7 @@ int main( int argc, char** argv )
     MantisRun* Run = MantisRun::runFromEnv( runEnvironment, Status );
     MantisPX1500* Reader = MantisPX1500::digFromEnv( runEnvironment, Status, Buffer );
     MantisEgg* OutputFile = MantisEgg::egg_from_env( runEnvironment );
+
     if( OutputFile )
     {
         OutputFile->write_header();
