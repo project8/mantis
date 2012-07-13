@@ -7,3 +7,5 @@ src/*.o
 *.hdf5
 *.out
 *.log
+.project
+.cproject
