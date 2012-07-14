@@ -105,6 +105,7 @@ void MantisPX1500::Initialize()
     {
         cout << "    *allocating block <" << Count << ">" << endl;
 
+        cout << "calling: AllocateDmaBufferPX4( " << fHandle << ", " << fRecordLength << ", " << &fIterator->Record()->DataPtr() << " )" << endl;
         tResult = AllocateDmaBufferPX4( fHandle, fRecordLength, &fIterator->Record()->DataPtr() );
         if( tResult != SIG_SUCCESS )
         {
