@@ -101,20 +101,19 @@ void MantisPX1500::Initialize()
 
     cout << "  *allocating dma buffer of <" << fBufferCount << "> blocks with size <" << fRecordLength << ">..." << endl;
 
-    for( size_t Count = 0; Count < fBufferCount; Count++ )
+    for( size_t Index = 0; Index < fBuffer->fBufferCount; Index++ )
     {
-        cout << "    *allocating block <" << Count << ">" << endl;
+        cout << "    *allocating block <" << Index << ">" << endl;
 
         cout << "calling: AllocateDmaBufferPX4( " << fHandle << ", " << fRecordLength << ", " << &fIterator->Record()->DataPtr() << " )" << endl;
-        tResult = AllocateDmaBufferPX4( fHandle, fRecordLength, &fIterator->Record()->DataPtr() );
+        tResult = AllocateDmaBufferPX4( fHandle, fRecordLength, &(fBuffer->fBufferArray[Index].fRecord.DataPtr()) );
         if( tResult != SIG_SUCCESS )
         {
             stringstream Converter;
-            Converter << "    *failed to allocate block <" << Count << ">";
+            Converter << "    *failed to allocate block <" << Index << ">";
             DumpLibErrorPX4( tResult, Converter.str().c_str() );
             exit( -1 );
         }
-        fIterator->Increment();
     }
 
     return;

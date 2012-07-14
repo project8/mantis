@@ -16,6 +16,7 @@ class MantisBuffer
     private:
         MantisBuffer();
 
+    public:
         MantisBufferBlock* fBufferArray;
         size_t fBufferCount;
         size_t fRecordLength;

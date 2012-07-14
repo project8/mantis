@@ -14,9 +14,9 @@ class MantisBufferBlock
         MantisBufferBlock();
         ~MantisBufferBlock();
 
-    private:
+    public:
         MantisMutex fMutex;
-        MantisBufferState fState;;
+        MantisBufferState fState;
         MantisBufferRecord fRecord;
 };
 

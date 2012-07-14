@@ -3,6 +3,7 @@
 MantisActor::MantisActor() :
     fCondition(),
     fStatus( NULL ),
+    fBuffer( NULL ),
     fIterator( NULL )
 {
 }
