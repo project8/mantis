@@ -42,14 +42,18 @@ int main( int argc, char** argv )
 
     MantisFileWriter* Writer = MantisFileWriter::writerFromEnv( runEnvironment );
 
-    cout << "setting up actors..." << endl;
+    cout << "setting up digitizer..." << endl;
 
     Reader->SetStatus( Status );
     Reader->SetBuffer( Buffer );
 
+    cout << "setting up writer..." << endl;
+
     Writer->SetStatus( Status );
     Writer->SetBuffer( Buffer );
     Writer->SetOutputEgg( OutputFile );
+
+    cout << "setting up run..." << endl;
 
     Run->SetStatus( Status );
 
