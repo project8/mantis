@@ -57,10 +57,16 @@ int main( int argc, char** argv )
 
     Run->SetStatus( Status );
 
-    cout << "initializing actors..." << endl;
+    cout << "initializing run..." << endl;
 
     Run->Initialize();
+
+    cout << "initializing digitizer..." << endl;
+
     Reader->Initialize();
+
+    cout << "initializing writer..." << endl;
+
     Writer->Initialize();
 
     cout << "writing header..." << endl;
