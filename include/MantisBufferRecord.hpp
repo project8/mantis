@@ -17,8 +17,7 @@ class MantisBufferRecord
 
         IndexType& Index();
         TimeStampType& TimeStamp();
-        DataType* DataPtr();
-        DataType** DataHandle();
+        DataType*& DataPtr();
 
     private:
         IndexType fIndex;
@@ -34,13 +33,9 @@ inline MantisBufferRecord::TimeStampType& MantisBufferRecord::TimeStamp()
 {
     return fTimeStamp;
 }
-inline MantisBufferRecord::DataType* MantisBufferRecord::DataPtr()
+inline MantisBufferRecord::DataType*& MantisBufferRecord::DataPtr()
 {
     return fDataPtr;
-}
-inline MantisBufferRecord::DataType** MantisBufferRecord::DataHandle()
-{
-    return &fDataPtr;
 }
 
 #endif

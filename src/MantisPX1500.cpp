@@ -105,7 +105,7 @@ void MantisPX1500::Initialize()
     {
         cout << "    *allocating block <" << Count << ">" << endl;
 
-        tResult = AllocateDmaBufferPX4( fHandle, fRecordLength, fIterator->Record()->DataHandle() );
+        tResult = AllocateDmaBufferPX4( fHandle, fRecordLength, &fIterator->Record()->DataPtr() );
         if( tResult != SIG_SUCCESS )
         {
             stringstream Converter;
