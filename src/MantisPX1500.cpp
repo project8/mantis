@@ -105,7 +105,6 @@ void MantisPX1500::Initialize()
     {
         cout << "    *allocating block <" << Index << ">" << endl;
 
-        cout << "calling: AllocateDmaBufferPX4( " << fHandle << ", " << fRecordLength << ", " << &fIterator->Record()->DataPtr() << " )" << endl;
         tResult = AllocateDmaBufferPX4( fHandle, fRecordLength, &(fBuffer->fBufferArray[Index].fRecord.DataPtr()) );
         if( tResult != SIG_SUCCESS )
         {
@@ -128,11 +127,16 @@ void MantisPX1500::Execute()
     timeval tDeadTime;
 
     //wait for the write condition to release me
+
+    cout << "digitizer at initial block" << endl;
+
     fCondition.Wait();
     if( fStatus->IsRunning() == false )
     {
         return;
     }
+
+    cout << "digitizer loose, starting acquisition..." << endl;
 
     //start acquisition
     if( StartAcquisition() == false )
@@ -189,6 +193,8 @@ void MantisPX1500::Execute()
                 return;
             }
 
+            cout << "digitizer blocking..." << endl;
+
             //wait
             fCondition.Wait();
 
@@ -200,6 +206,8 @@ void MantisPX1500::Execute()
             {
                 return;
             }
+
+            cout << "digitizer loose, starting acquisition..." << endl;
 
             //start acquisition
             if( StartAcquisition() == false )
