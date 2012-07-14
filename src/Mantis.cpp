@@ -26,11 +26,20 @@ int main( int argc, char** argv )
     MantisStatus* Status = new MantisStatus();
     MantisBuffer* Buffer = MantisBuffer::bufferFromEnv( runEnvironment );
 
-    cout << "making objects..." << endl;
+    cout << "making outfile..." << endl;
 
     MantisEgg* OutputFile = MantisEgg::egg_from_env( runEnvironment );
+
+    cout << "making run..." << endl;
+
     MantisRun* Run = MantisRun::runFromEnv( runEnvironment );
+
+    cout << "making digitizer..." << endl;
+
     MantisPX1500* Reader = MantisPX1500::digFromEnv( runEnvironment );
+
+    cout << "making writer..." << endl;
+
     MantisFileWriter* Writer = MantisFileWriter::writerFromEnv( runEnvironment );
 
     cout << "setting up actors..." << endl;
