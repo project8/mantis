@@ -10,8 +10,7 @@ INCDIRS=$(addprefix -I,$(shell pwd)/include)
 LDFLAGS=$(addprefix -l,$(PXLIB))
 BUILDDIR=build
 OBJ=$(CSRC:%.cpp=%.o)
-#TGT=Mantis
-TGT=mantis_pci_test
+TGT=Mantis
 
 $(TGT): $(OBJ)
 	@echo LD $@
@@ -20,6 +19,9 @@ $(TGT): $(OBJ)
 %.o: %.cpp $(BUILDIR)
 	@echo CXX $(basename $(notdir $@))
 	@$(CC) $(CFLAGS) $(INCDIRS) -c $< -o $@
+	
+test:
+	@$(CC) $(CFLAGS) $(INCDIRS) -c ./src/mantis_pci_test.cxx -o ./test
 
 install:
 	cp $(TGT) /usr/local/bin/Mantis
