@@ -22,6 +22,7 @@ $(TGT): $(OBJ)
 	
 test:
 	@$(CC) $(CFLAGS) $(INCDIRS) -c ./src/mantis_pci_test.cxx -o ./test
+	@chmod 744 ./test
 
 install:
 	cp $(TGT) /usr/local/bin/Mantis
