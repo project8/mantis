@@ -29,6 +29,7 @@ MantisFileWriter* MantisFileWriter::writerFromEnv( safeEnvPtr& env )
 void MantisFileWriter::Initialize()
 {
     fStatus->SetFileWriterCondition( &fCondition );
+
     return;
 }
 

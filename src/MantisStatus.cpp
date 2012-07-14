@@ -67,6 +67,9 @@ void MantisStatus::SetComplete()
 {
     fMutex.Lock();
     fValue = eComplete;
+    if( fPX1500Condition->IsWaiting() ) fPX1500Condition->Release();
+    if( fFileWriterCondition->IsWaiting() ) fFileWriterCondition->Release();
+    if( fRunCondition->IsWaiting() ) fRunCondition->Release();
     fMutex.Unlock();
     return;
 }
@@ -79,24 +82,4 @@ bool MantisStatus::IsComplete()
     if( fRunCondition->IsWaiting() ) fRunCondition->Release();
     fMutex.Unlock();
     return Value;
-}
-
-void MantisStatus::SetFileWriterCondition( MantisCondition* aCondition )
-{
-    fFileWriterCondition = aCondition;
-    return;
-}
-MantisCondition* MantisStatus::GetFileWriterCondition()
-{
-    return fFileWriterCondition;
-}
-
-void MantisStatus::SetPX1500Condition( MantisCondition* aCondition )
-{
-    fPX1500Condition = aCondition;
-    return;
-}
-MantisCondition* MantisStatus::GetPX1500Condition()
-{
-    return fPX1500Condition;
 }

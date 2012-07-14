@@ -43,4 +43,34 @@ class MantisStatus
         MantisCondition* fRunCondition;
 };
 
+inline void MantisStatus::SetFileWriterCondition( MantisCondition* aCondition )
+{
+    fFileWriterCondition = aCondition;
+    return;
+}
+inline MantisCondition* MantisStatus::GetFileWriterCondition()
+{
+    return fFileWriterCondition;
+}
+
+inline void MantisStatus::SetPX1500Condition( MantisCondition* aCondition )
+{
+    fPX1500Condition = aCondition;
+    return;
+}
+inline MantisCondition* MantisStatus::GetPX1500Condition()
+{
+    return fPX1500Condition;
+}
+
+inline void MantisStatus::SetRunCondition( MantisCondition* aCondition )
+{
+    fRunCondition = aCondition;
+    return;
+}
+inline MantisCondition* MantisStatus::GetRunCondition()
+{
+    return fRunCondition;
+}
+
 #endif

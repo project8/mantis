@@ -18,26 +18,25 @@ MantisRun::~MantisRun()
 MantisRun* MantisRun::runFromEnv( safeEnvPtr& env )
 {
     MantisRun* NewRun = new MantisRun();
+
     NewRun->fRunDuration = (env.get())->getRunDuration();
 
     return NewRun;
 }
 
-void MantisRun::SetStatus( MantisStatus* aStatus )
-{
-    fStatus = aStatus;
-    return;
-}
-
 void MantisRun::Initialize()
 {
+    fStatus->SetRunCondition( &fCondition );
+
     return;
 }
 
 void MantisRun::Execute()
 {
     fStatus->SetRunning();
+
     fCondition.WaitFor( 1000000 * fRunDuration );
+
     if( !fStatus->IsError() )
     {
         fStatus->SetComplete();

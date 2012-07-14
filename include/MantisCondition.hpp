@@ -12,7 +12,7 @@ class MantisCondition
         bool IsWaiting();
 
         void Wait();
-        void WaitFor( const unsigned int& tNanoseconds );
+        void WaitFor( long tNanoseconds );
         void Release();
 
     private:

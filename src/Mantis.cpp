@@ -30,16 +30,6 @@ int main( int argc, char** argv )
     MantisPX1500* Reader = MantisPX1500::digFromEnv( runEnvironment );
     MantisFileWriter* Writer = MantisFileWriter::writerFromEnv( runEnvironment );
 
-    if( OutputFile )
-    {
-        OutputFile->write_header();
-    }
-    else
-    {
-        std::cout << "could not create output file!" << std::endl;
-        exit( 2 );
-    }
-
     Reader->SetStatus( Status );
     Reader->SetBuffer( Buffer );
 
@@ -51,6 +41,16 @@ int main( int argc, char** argv )
     Run->Initialize();
     Reader->Initialize();
     Writer->Initialize();
+
+    if( OutputFile )
+    {
+        OutputFile->write_header();
+    }
+    else
+    {
+        std::cout << "could not create output file!" << std::endl;
+        exit( 2 );
+    }
 
     MantisThread* RunThread = new MantisThread( Run );
     MantisThread* ReadThread = new MantisThread( Reader );

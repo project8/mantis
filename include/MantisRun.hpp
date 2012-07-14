@@ -12,9 +12,6 @@ class MantisRun :
         static MantisRun* runFromEnv( safeEnvPtr& env );
         virtual ~MantisRun();
 
-        void SetStatus( MantisStatus* aStatus );
-        void SetDuration( const unsigned int& aDuration );
-
         void Initialize();
         void Execute();
         void Finalize();

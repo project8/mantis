@@ -35,8 +35,6 @@ MantisPX1500* MantisPX1500::digFromEnv( safeEnvPtr& env )
     NewPX1500->fRecordLength = (env.get())->getRecordLength();
     NewPX1500->fBufferCount = (env.get())->getBufferCount();
 
-    NewPX1500->fStatus->SetPX1500Condition( &(NewPX1500->fCondition) );
-
     return NewPX1500;
 }
 
