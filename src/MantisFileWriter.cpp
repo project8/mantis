@@ -19,9 +19,8 @@ MantisFileWriter::~MantisFileWriter()
 MantisFileWriter* MantisFileWriter::writerFromEnv( safeEnvPtr& env )
 {
     MantisFileWriter* NewFileWriter = new MantisFileWriter();
-    NewFileWriter->fRecordLength = (env.get())->getRecordLength();
 
-    NewFileWriter->fStatus->SetFileWriterCondition( &(NewFileWriter->fCondition) );
+    NewFileWriter->fRecordLength = (env.get())->getRecordLength();
 
     return NewFileWriter;
 }
