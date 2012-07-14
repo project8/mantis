@@ -26,6 +26,7 @@ MantisRun* MantisRun::runFromEnv( safeEnvPtr& env )
 
 void MantisRun::Initialize()
 {
+    cout << "initializing run with status pointer <" << fStatus << ">" << endl;
     fStatus->SetRunCondition( &fCondition );
 
     return;
