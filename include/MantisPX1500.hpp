@@ -30,7 +30,7 @@ class MantisPX1500 :
 
         double fDigitizationRate;
         unsigned int fChannelMode;
-        size_t fRecordLength;
+        unsigned int fRecordLength;
         size_t fBufferCount;
 
         bool StartAcquisition();

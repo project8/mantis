@@ -60,7 +60,7 @@ void MantisEnv::setRecordLength( std::string dWidthStr )
     std::istringstream( dWidthStr ) >> (*this).fRecordLength;
     return;
 }
-std::size_t MantisEnv::getRecordLength()
+unsigned int MantisEnv::getRecordLength()
 {
     return (*this).fRecordLength;
 }
