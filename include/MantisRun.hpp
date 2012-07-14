@@ -18,7 +18,7 @@ class MantisRun :
 
     private:
         MantisRun();
-        MantisStatus* fStatus;
+
         unsigned int fRunDuration;
 };
 
