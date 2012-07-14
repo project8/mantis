@@ -39,9 +39,11 @@ void MantisFileWriter::Execute()
     timeval tStartTime;
     timeval tEndTime;
 
-    //get an iterator and pull it up to right behind the read iterator
+    //pull the iterator up to right behind the read iterator
     while( fIterator->TryIncrement() == true )
         ;
+
+    cout << "writer at initial block" << endl;
 
     //wait for run to release me
     fCondition.Wait();
@@ -67,6 +69,7 @@ void MantisFileWriter::Execute()
 
         fIterator->State()->SetFlushing();
 
+        cout << "writing block <" << fIterator->Index() << ">" << endl;
         tResult = fEgg->write_data( fIterator->Record() );
         if( tResult == false )
         {
