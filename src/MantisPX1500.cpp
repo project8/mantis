@@ -99,7 +99,7 @@ void MantisPX1500::Initialize()
         exit( -1 );
     }
 
-    cout << "  *allocating dma buffer of <" << fBufferCount << "> blocks of size < " << fRecordLength << ">..." << endl;
+    cout << "  *allocating dma buffer of <" << fBufferCount << "> blocks of size <" << fRecordLength << ">..." << endl;
 
     for( size_t Count = 0; Count < fBufferCount; Count++ )
     {
