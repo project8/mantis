@@ -44,12 +44,16 @@ void MantisPX1500::Initialize()
 
     int tResult;
 
+    cout << "  *connecting to digitizer card..." << endl;
+
     tResult = ConnectToDevicePX4( &fHandle, 1 );
     if( tResult != SIG_SUCCESS )
     {
         DumpLibErrorPX4( tResult, "failed to connect to digitizer card: " );
         exit( -1 );
     }
+
+    cout << "  *setting power up defaults..." << endl;
 
     tResult = SetPowerupDefaultsPX4( fHandle );
     if( tResult != SIG_SUCCESS )
@@ -60,6 +64,8 @@ void MantisPX1500::Initialize()
 
     if( fChannelMode == 1 )
     {
+        cout << "  *setting one active channel..." << endl;
+
         tResult = SetActiveChannelsPX4( fHandle, PX4CHANSEL_SINGLE_CH1 );
         if( tResult != SIG_SUCCESS )
         {
@@ -69,6 +75,8 @@ void MantisPX1500::Initialize()
     }
     else if( fChannelMode == 2 )
     {
+        cout << "  *setting two active channels..." << endl;
+
         tResult = SetActiveChannelsPX4( fHandle, PX4CHANSEL_DUAL_1_2 );
         if( tResult != SIG_SUCCESS )
         {
@@ -78,9 +86,11 @@ void MantisPX1500::Initialize()
     }
     else
     {
-        cout << "invalid channel mode setting <" << fChannelMode << ">" << endl;
+        cout << "  *invalid channel mode setting <" << fChannelMode << ">" << endl;
         exit( -1 );
     }
+
+    cout << "  *setting clock rate..." << endl;
 
     tResult = SetInternalAdcClockRatePX4( fHandle, fDigitizationRate );
     if( tResult != SIG_SUCCESS )
@@ -89,13 +99,17 @@ void MantisPX1500::Initialize()
         exit( -1 );
     }
 
+    cout << "  *allocating dma buffer..." << endl;
+
     for( size_t Count = 0; Count < fBufferCount; Count++ )
     {
+        cout << "    *allocating block <" << Count << ">" << endl;
+
         tResult = AllocateDmaBufferPX4( fHandle, fRecordLength, fIterator->Record()->DataHandle() );
         if( tResult != SIG_SUCCESS )
         {
             stringstream Converter;
-            Converter << "failed to allocate DMA buffer " << Count << ": ";
+            Converter << "    *failed to allocate block <" << Count << ">";
             DumpLibErrorPX4( tResult, Converter.str().c_str() );
             exit( -1 );
         }
