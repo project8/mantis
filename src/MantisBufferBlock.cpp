@@ -1,7 +1,9 @@
 #include "MantisBufferBlock.hpp"
 
 MantisBufferBlock::MantisBufferBlock() :
-    fState(), fStateMutex(), fData(), fDataMutex()
+    fMutex(),
+    fState(),
+    fRecord()
 {
 }
 MantisBufferBlock::~MantisBufferBlock()

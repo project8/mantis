@@ -36,6 +36,29 @@ void MantisCondition::Wait()
     pthread_mutex_unlock( &fMutex );
     return;
 }
+void MantisCondition::WaitFor( const unsigned int& tNanoseconds)
+{
+    static const long sOneBillion = 1000000000;
+
+    pthread_mutex_lock( &fMutex );
+    fState = true;
+    while( fState == true )
+    {
+        timespec tTime;
+        clock_gettime( CLOCK_REALTIME, &tTime );
+        tTime.tv_nsec += tNanoseconds;
+        if( tTime.tv_nsec > sOneBillion )
+        {
+            long tRemainder = tTime.tv_nsec % sOneBillion;
+            long tSeconds = (tTime.tv_nsec - tRemainder) / sOneBillion;
+            tTime.tv_sec += tSeconds;
+            tTime.tv_nsec = tRemainder;
+        }
+        pthread_cond_timedwait( &fCondition, &fMutex, &tTime );
+    }
+    pthread_mutex_unlock( &fMutex );
+    return;
+}
 void MantisCondition::Release()
 {
     pthread_mutex_lock( &fMutex );
@@ -43,4 +66,4 @@ void MantisCondition::Release()
     pthread_cond_signal( &fCondition );
     pthread_mutex_unlock( &fMutex );
     return;
-}    
+}

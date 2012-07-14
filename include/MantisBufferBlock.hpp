@@ -1,25 +1,23 @@
 #ifndef MANTISBUFFERBLOCK_HPP_
 #define MANTISBUFFERBLOCK_HPP_
 
-#include "MantisData.hpp"
-#include "MantisState.hpp"
+#include "MantisBufferRecord.hpp"
+#include "MantisBufferState.hpp"
 #include "MantisMutex.hpp"
-#include "MantisCondition.hpp"
 
 class MantisBufferBlock
 {
-    public:        
+    public:
         friend class MantisBufferIterator;
-    
+
     public:
         MantisBufferBlock();
         ~MantisBufferBlock();
-        
+
     private:
-        MantisState fState;
-        MantisMutex fStateMutex;
-        MantisData fData;
-        MantisMutex fDataMutex;
+        MantisMutex fMutex;
+        MantisBufferState fState;;
+        MantisBufferRecord fRecord;
 };
 
 #endif

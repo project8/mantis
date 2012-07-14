@@ -8,12 +8,13 @@ class MantisCondition
     public:
         MantisCondition();
         ~MantisCondition();
-        
+
         bool IsWaiting();
-        
+
         void Wait();
+        void WaitFor( const unsigned int& tNanoseconds );
         void Release();
-        
+
     private:
         bool fState;
         pthread_mutex_t fMutex;

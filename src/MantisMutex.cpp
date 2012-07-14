@@ -2,16 +2,16 @@
 
 MantisMutex::MantisMutex()
 {
-    pthread_mutex_init(&fMutex,NULL);
+    pthread_mutex_init( &fMutex, NULL );
 }
 MantisMutex::~MantisMutex()
 {
-    pthread_mutex_destroy(&fMutex);
+    pthread_mutex_destroy( &fMutex );
 }
 
 bool MantisMutex::Trylock()
 {
-    if( pthread_mutex_trylock(&fMutex) == 0 )
+    if( pthread_mutex_trylock( &fMutex ) == 0 )
     {
         return true;
     }
@@ -20,11 +20,11 @@ bool MantisMutex::Trylock()
 
 void MantisMutex::Lock()
 {
-    pthread_mutex_lock(&fMutex);
+    pthread_mutex_lock( &fMutex );
     return;
 }
 void MantisMutex::Unlock()
 {
-    pthread_mutex_unlock(&fMutex);
+    pthread_mutex_unlock( &fMutex );
     return;
 }

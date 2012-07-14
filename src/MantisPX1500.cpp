@@ -1,7 +1,7 @@
 #include "MantisPX1500.hpp"
 
+#include <sys/time.h>
 #include <cstdlib>
-#include <unistd.h>
 
 #include <sstream>
 using std::stringstream;
@@ -11,231 +11,227 @@ using std::cout;
 using std::endl;
 
 MantisPX1500::MantisPX1500() :
-     fCondition(), fHandle(), fAcquisitionCount( 0 ), fRecordCount( 0 ), fLiveMicroseconds( 0 ), fDeadMicroseconds( 0 ), fStatus( NULL ), fBuffer( NULL ), fDigitizationRate( 0. )
+    fHandle(),
+    fAcquisitionCount( 0 ),
+    fRecordCount( 0 ),
+    fLiveMicroseconds( 0 ),
+    fDeadMicroseconds( 0 ),
+    fDigitizationRate( 0. ),
+    fChannelMode( 1 ),
+    fRecordLength( 0 ),
+    fBufferCount( 0 )
 {
 }
 MantisPX1500::~MantisPX1500()
 {
 }
 
-MantisPX1500* MantisPX1500::digFromEnv(safeEnvPtr& env, 
-				       MantisStatus* sts,
-				       MantisBuffer* buf)
+MantisPX1500* MantisPX1500::digFromEnv( safeEnvPtr& env )
 {
-  MantisPX1500* res = new MantisPX1500();
-  res->SetDigitizationRate((env.get())->getClockRate());
-  res->SetStatus(sts);
-  res->SetBuffer(buf);
+    MantisPX1500* NewPX1500 = new MantisPX1500();
 
-  return res;
-}
+    NewPX1500->fDigitizationRate = (env.get())->getAcquisitionRate();
+    NewPX1500->fChannelMode = (env.get())->getChannelMode();
+    NewPX1500->fRecordLength = (env.get())->getRecordLength();
+    NewPX1500->fBufferCount = (env.get())->getBufferCount();
 
-void MantisPX1500::SetStatus( MantisStatus* aStatus )
-{
-    fStatus = aStatus;
-    return;
-}
-void MantisPX1500::SetBuffer( MantisBuffer* aBuffer )
-{
-    fBuffer = aBuffer;
-    return;
-}
-void MantisPX1500::SetDigitizationRate( const double& aRate )
-{
-    fDigitizationRate = aRate;
-    return;
+    NewPX1500->fStatus->SetPX1500Condition( &(NewPX1500->fCondition) );
+
+    return NewPX1500;
 }
 
 void MantisPX1500::Initialize()
 {
-    fStatus->SetWriterCondition( &fCondition );
-    
-    int Result;
-    
-    Result = ConnectToDevicePX4( &fHandle, 1 );
-    if( Result != SIG_SUCCESS )
+    fStatus->SetPX1500Condition( &fCondition );
+
+    int tResult;
+
+    tResult = ConnectToDevicePX4( &fHandle, 1 );
+    if( tResult != SIG_SUCCESS )
     {
-        DumpLibErrorPX4( Result, "failed to connect to digitizer card: " );
-        exit(-1);
+        DumpLibErrorPX4( tResult, "failed to connect to digitizer card: " );
+        exit( -1 );
     }
 
-    Result = SetPowerupDefaultsPX4( fHandle );
-    if( Result != SIG_SUCCESS )
+    tResult = SetPowerupDefaultsPX4( fHandle );
+    if( tResult != SIG_SUCCESS )
     {
-        DumpLibErrorPX4( Result, "failed to enter default state: " );
-        exit(-1);
+        DumpLibErrorPX4( tResult, "failed to enter default state: " );
+        exit( -1 );
     }
 
-    Result = SetActiveChannelsPX4( fHandle, PX4CHANSEL_SINGLE_CH1 );
-    if( Result != SIG_SUCCESS )
+    if( fChannelMode == 1 )
     {
-        DumpLibErrorPX4( Result, "failed to activate channel 1: " );
-        exit(-1);
+        tResult = SetActiveChannelsPX4( fHandle, PX4CHANSEL_SINGLE_CH1 );
+        if( tResult != SIG_SUCCESS )
+        {
+            DumpLibErrorPX4( tResult, "failed to activate channel 1: " );
+            exit( -1 );
+        }
+    }
+    else if( fChannelMode == 2 )
+    {
+        tResult = SetActiveChannelsPX4( fHandle, PX4CHANSEL_DUAL_1_2 );
+        if( tResult != SIG_SUCCESS )
+        {
+            DumpLibErrorPX4( tResult, "failed to activate channels 1 and 2: " );
+            exit( -1 );
+        }
+    }
+    else
+    {
+        cout << "invalid channel mode setting <" << fChannelMode << ">" << endl;
+        exit( -1 );
     }
 
-    Result = SetInternalAdcClockRatePX4( fHandle, fDigitizationRate );
-    if( Result != SIG_SUCCESS )
+    tResult = SetInternalAdcClockRatePX4( fHandle, fDigitizationRate );
+    if( tResult != SIG_SUCCESS )
     {
-        DumpLibErrorPX4( Result, "failed to set sampling rate: " );
-        exit(-1);
+        DumpLibErrorPX4( tResult, "failed to set sampling rate: " );
+        exit( -1 );
     }
-    
-    MantisBufferIterator* Iterator = fBuffer->CreateIterator();
-    for( size_t Count = 0; Count < fBuffer->GetBufferLength(); Count++ )
+
+    for( size_t Count = 0; Count < fBufferCount; Count++ )
     {
-        Result = AllocateDmaBufferPX4( fHandle, fBuffer->GetDataLength(), &Iterator->Data()->fDataPtr );
-        if( Result != SIG_SUCCESS )
+        tResult = AllocateDmaBufferPX4( fHandle, fRecordLength, fIterator->Record()->DataHandle() );
+        if( tResult != SIG_SUCCESS )
         {
             stringstream Converter;
-            Converter << "failed to allocate DMA buffer " << Count << ": " ;
-            DumpLibErrorPX4( Result, Converter.str().c_str() );
-            exit(-1);
+            Converter << "failed to allocate DMA buffer " << Count << ": ";
+            DumpLibErrorPX4( tResult, Converter.str().c_str() );
+            exit( -1 );
         }
-        Iterator->Increment();
+        fIterator->Increment();
     }
-    delete Iterator;
-    
+
     return;
 }
 
 void MantisPX1500::Execute()
-{   
-    //allocate some local variables
-    int Result;
-    timeval StartTime;
-    timeval EndTime;
-    timeval DeadTime;
-    
-    //grab an iterator
-    MantisBufferIterator* Iterator = fBuffer->CreateIterator();
-    
-    //wait for run to release me
+{
+    int tResult;
+    timeval tStartTime;
+    timeval tStampTime;
+    timeval tEndTime;
+    timeval tDeadTime;
+
+    //wait for the write condition to release me
     fCondition.Wait();
     if( fStatus->IsRunning() == false )
     {
-        delete Iterator;
         return;
     }
-    
+
     //start acquisition
-    Result = BeginBufferedPciAcquisitionPX4( fHandle, PX4_FREE_RUN );
-    if( Result != SIG_SUCCESS )
+    if( StartAcquisition() == false )
     {
-        DumpLibErrorPX4( Result, "failed to begin dma acquisition: " );
-        fStatus->SetError();
         return;
     }
-    fAcquisitionCount++;
-    
+
     //start timing
-    gettimeofday( &StartTime, NULL );
-    
+    gettimeofday( &tStartTime, NULL );
+
     //go go go go
     while( true )
     {
+        //check if we've been told to stop
         if( fStatus->IsRunning() == false )
         {
-            //this exit occurs during active data acquisition
-            
             //get the time and update the number of live microseconds
-            gettimeofday( &EndTime, NULL );
-            fLiveMicroseconds += (1000000 * EndTime.tv_sec + EndTime.tv_usec) - (1000000 * StartTime.tv_sec + StartTime.tv_usec);
-            
+            gettimeofday( &tEndTime, NULL );
+            fLiveMicroseconds += (1000000 * tEndTime.tv_sec + tEndTime.tv_usec) - (1000000 * tStartTime.tv_sec + tStartTime.tv_usec);
+
             //halt the pci acquisition
-            Result = EndBufferedPciAcquisitionPX4( fHandle );
-            
-            delete Iterator;
+            StopAcquisition();
+
+            //GET OUT
             return;
         }
-        
-        Iterator->SetWriting();
-        
-        Iterator->Data()->fId = fAcquisitionCount;
-        Iterator->Data()->fTick = clock();
-        Result = GetPciAcquisitionDataFastPX4( fHandle, fBuffer->GetDataLength(), Iterator->Data()->fDataPtr, 0 );
-        if( Result != SIG_SUCCESS )
+
+        fIterator->State()->SetAcquiring();
+
+        gettimeofday( &tStampTime, NULL );
+
+        fIterator->Record()->Index() = fRecordCount;
+        fIterator->Record()->TimeStamp() = (1000000 * tEndTime.tv_sec + tEndTime.tv_usec);
+        tResult = GetPciAcquisitionDataFastPX4( fHandle, ((unsigned int) (fRecordLength)), fIterator->Record()->DataPtr(), 0 );
+        if( tResult != SIG_SUCCESS )
         {
-            DumpLibErrorPX4( Result, "failed to acquire dma data over pci: " );
-            Result = EndBufferedPciAcquisitionPX4( fHandle );
+            DumpLibErrorPX4( tResult, "failed to acquire dma data over pci: " );
+            tResult = EndBufferedPciAcquisitionPX4( fHandle );
             fStatus->SetError();
-            delete Iterator;
             return;
         }
-        
-        fRecordCount++;
-        
-        Iterator->SetWritten();
-        
-        if( Iterator->TryIncrement() == false )
+
+        fIterator->State()->SetAcquired();
+
+        if( fIterator->TryIncrement() == false )
         {
             //get the time and update the number of live microseconds
-            gettimeofday( &EndTime, NULL );
-            fLiveMicroseconds += (1000000 * EndTime.tv_sec + EndTime.tv_usec) - (1000000 * StartTime.tv_sec + StartTime.tv_usec);
-            
+            gettimeofday( &tEndTime, NULL );
+            fLiveMicroseconds += (1000000 * tEndTime.tv_sec + tEndTime.tv_usec) - (1000000 * tStartTime.tv_sec + tStartTime.tv_usec);
+
             //halt the pci acquisition
-            Result = EndBufferedPciAcquisitionPX4( fHandle );
-            
+            if( StopAcquisition() == false )
+            {
+                return;
+            }
+
             //wait
             fCondition.Wait();
-            
+
             //get the time and update the number of dead microseconds
-            gettimeofday( &DeadTime, NULL );
-            fDeadMicroseconds += (1000000 * DeadTime.tv_sec + DeadTime.tv_usec) - (1000000 * EndTime.tv_sec + EndTime.tv_usec);
-            
+            gettimeofday( &tDeadTime, NULL );
+            fDeadMicroseconds += (1000000 * tDeadTime.tv_sec + tDeadTime.tv_usec) - (1000000 * tEndTime.tv_sec + tEndTime.tv_usec);
+
             if( fStatus->IsRunning() == false )
             {
-                delete Iterator;
                 return;
             }
 
             //start acquisition
-            Result = BeginBufferedPciAcquisitionPX4( fHandle, PX4_FREE_RUN );
-            if( Result != SIG_SUCCESS )
+            if( StartAcquisition() == false )
             {
-                DumpLibErrorPX4( Result, "failed to begin dma acquisition: " );
-                fStatus->SetError();
                 return;
             }
             fAcquisitionCount++;
-            
+
             //start timing
-            gettimeofday( &StartTime, NULL );
-            
-            Iterator->Increment();
-        }              
+            gettimeofday( &tStartTime, NULL );
+
+            fIterator->Increment();
+        }
     }
-    return;
-}  
+
+}
 
 void MantisPX1500::Finalize()
 {
     int Result;
-    
-    MantisBufferIterator* Iterator = fBuffer->CreateIterator();
-    for( size_t Count = 0; Count < fBuffer->GetBufferLength(); Count++ )
+
+    for( size_t Count = 0; Count < fBufferCount; Count++ )
     {
-        Result = FreeDmaBufferPX4( fHandle, Iterator->Data()->fDataPtr );
+        Result = FreeDmaBufferPX4( fHandle, fIterator->Record()->DataPtr() );
         if( Result != SIG_SUCCESS )
         {
             DumpLibErrorPX4( Result, "failed to deallocate DMA buffer: " );
-            exit(-1);
+            exit( -1 );
         }
-        Iterator->Increment();
+        fIterator->Increment();
     }
-    delete Iterator;
-    
+
     Result = DisconnectFromDevicePX4( fHandle );
     if( Result != SIG_SUCCESS )
     {
         DumpLibErrorPX4( Result, "failed to disconnect from digitizer card: " );
-        exit(-1);
+        exit( -1 );
     }
-    
+
     double LiveTime = fLiveMicroseconds / 1000000.;
     double DeadTime = fDeadMicroseconds / 1000000.;
-    double MegabytesRead = fRecordCount * ( ((double)(fBuffer->GetDataLength())) / (1048576.) );;
+    double MegabytesRead = fRecordCount * (((double) (fRecordLength)) / (1048576.));
     double ReadRate = MegabytesRead / LiveTime;
-    
+
     cout << "\nreader statistics:\n";
     cout << "  * records taken: " << fRecordCount << "\n";
     cout << "  * aquisitions taken: " << fAcquisitionCount << "\n";
@@ -246,4 +242,28 @@ void MantisPX1500::Finalize()
     cout.flush();
 
     return;
+}
+
+bool MantisPX1500::StartAcquisition()
+{
+    int tResult = BeginBufferedPciAcquisitionPX4( fHandle, PX4_FREE_RUN );
+    if( tResult != SIG_SUCCESS )
+    {
+        DumpLibErrorPX4( tResult, "failed to begin dma acquisition: " );
+        fStatus->SetError();
+        return false;
+    }
+    fAcquisitionCount++;
+    return true;
+}
+bool MantisPX1500::StopAcquisition()
+{
+    int tResult = EndBufferedPciAcquisitionPX4( fHandle );
+    if( tResult != SIG_SUCCESS )
+    {
+        DumpLibErrorPX4( tResult, "failed to end dma acquisition: " );
+        fStatus->SetError();
+        return false;
+    }
+    return true;
 }

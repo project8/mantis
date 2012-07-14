@@ -9,27 +9,17 @@ class MantisBufferIterator
         MantisBufferIterator( MantisBufferBlock* aBlockArray, const size_t& aBlockArrayLength );
         ~MantisBufferIterator();
 
+        const size_t& Index();
+
         void Increment();
         bool TryIncrement();
-        
+
         void Decrement();
         bool TryDecrement();
-        
-        const MantisState PeekNextState();
-        const MantisState State();
-        const MantisState PeekPreviousState();
 
-        void SetRead();
-        void SetReading();
-        void SetWritten();
-        void SetWriting();
-        
-        MantisData* Data();
-        const size_t& Index()
-        {
-            return fCurrentIndex;
-        }
-        
+        MantisBufferState* State();
+        MantisBufferRecord* Record();
+
     protected:
         MantisBufferBlock* fBlockArray;
         const size_t fBlockArrayLength;
@@ -40,6 +30,20 @@ class MantisBufferIterator
         size_t fCurrentIndex;
         size_t fNextIndex;
 };
+
+inline MantisBufferState* MantisBufferIterator::State()
+{
+    return &fBlockArray[fCurrentIndex].fState;
+}
+inline MantisBufferRecord* MantisBufferIterator::Record()
+{
+    return &fBlockArray[fCurrentIndex].fRecord;
+}
+
+inline const size_t& MantisBufferIterator::Index()
+{
+    return fCurrentIndex;
+}
 
 inline void MantisBufferIterator::IncrementIndex()
 {

@@ -22,11 +22,14 @@ class MantisStatus
         void SetError();
         bool IsError();
 
-        void SetReaderCondition( MantisCondition* aCondition );
-        MantisCondition* GetReaderCondition();
+        void SetFileWriterCondition( MantisCondition* aCondition );
+        MantisCondition* GetFileWriterCondition();
 
-        void SetWriterCondition( MantisCondition* aCondition );
-        MantisCondition* GetWriterCondition();
+        void SetPX1500Condition( MantisCondition* aCondition );
+        MantisCondition* GetPX1500Condition();
+
+        void SetRunCondition( MantisCondition* aCondition );
+        MantisCondition* GetRunCondition();
 
     private:
         enum
@@ -35,8 +38,9 @@ class MantisStatus
         } fValue;
         MantisMutex fMutex;
 
-        MantisCondition* fReaderCondition;
-        MantisCondition* fWriterCondition;
+        MantisCondition* fFileWriterCondition;
+        MantisCondition* fPX1500Condition;
+        MantisCondition* fRunCondition;
 };
 
 #endif

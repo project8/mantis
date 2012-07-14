@@ -1,28 +1,28 @@
 #ifndef MANTISRUN_HPP_
 #define MANTISRUN_HPP_
 
-#include "MantisCallable.hpp"
+#include "MantisActor.hpp"
 #include "MantisEnv.hpp"
 #include "MantisStatus.hpp"
 
 class MantisRun :
-    public MantisCallable
+    public MantisActor
 {
     public:
-  static MantisRun* runFromEnv(safeEnvPtr& env, MantisStatus* sts);
+        static MantisRun* runFromEnv( safeEnvPtr& env );
         virtual ~MantisRun();
-        
+
         void SetStatus( MantisStatus* aStatus );
         void SetDuration( const unsigned int& aDuration );
-        
+
         void Initialize();
         void Execute();
         void Finalize();
-    
+
     private:
         MantisRun();
         MantisStatus* fStatus;
-        unsigned int fDuration;
+        unsigned int fRunDuration;
 };
 
 #endif

@@ -3,8 +3,9 @@
 MantisStatus::MantisStatus() :
     fValue( eIdle ),
     fMutex(),
-    fReaderCondition( NULL ),
-    fWriterCondition( NULL )
+    fFileWriterCondition( NULL ),
+    fPX1500Condition( NULL ),
+    fRunCondition( NULL )
 {
 }
 MantisStatus::~MantisStatus()
@@ -30,6 +31,9 @@ void MantisStatus::SetRunning()
 {
     fMutex.Lock();
     fValue = eRunning;
+    if( fPX1500Condition->IsWaiting() ) fPX1500Condition->Release();
+    if( fFileWriterCondition->IsWaiting() ) fFileWriterCondition->Release();
+    if( fRunCondition->IsWaiting() ) fRunCondition->Release();
     fMutex.Unlock();
     return;
 }
@@ -45,6 +49,9 @@ void MantisStatus::SetError()
 {
     fMutex.Lock();
     fValue = eError;
+    if( fPX1500Condition->IsWaiting() ) fPX1500Condition->Release();
+    if( fFileWriterCondition->IsWaiting() ) fFileWriterCondition->Release();
+    if( fRunCondition->IsWaiting() ) fRunCondition->Release();
     fMutex.Unlock();
     return;
 }
@@ -67,26 +74,29 @@ bool MantisStatus::IsComplete()
 {
     fMutex.Lock();
     bool Value = (fValue == eComplete);
+    if( fPX1500Condition->IsWaiting() ) fPX1500Condition->Release();
+    if( fFileWriterCondition->IsWaiting() ) fFileWriterCondition->Release();
+    if( fRunCondition->IsWaiting() ) fRunCondition->Release();
     fMutex.Unlock();
     return Value;
 }
 
-void MantisStatus::SetReaderCondition( MantisCondition* aCondition )
+void MantisStatus::SetFileWriterCondition( MantisCondition* aCondition )
 {
-    fReaderCondition = aCondition;
+    fFileWriterCondition = aCondition;
     return;
 }
-MantisCondition* MantisStatus::GetReaderCondition()
+MantisCondition* MantisStatus::GetFileWriterCondition()
 {
-    return fReaderCondition;
+    return fFileWriterCondition;
 }
 
-void MantisStatus::SetWriterCondition( MantisCondition* aCondition )
+void MantisStatus::SetPX1500Condition( MantisCondition* aCondition )
 {
-    fWriterCondition = aCondition;
+    fPX1500Condition = aCondition;
     return;
 }
-MantisCondition* MantisStatus::GetWriterCondition()
+MantisCondition* MantisStatus::GetPX1500Condition()
 {
-    return fWriterCondition;
+    return fPX1500Condition;
 }

@@ -68,7 +68,6 @@ void* MantisThread::ThreadActionFunction( void* voidthread )
 void MantisThread::ThreadCleanupFunction(void* voidthread )
 {
     MantisThread* thread = (MantisThread*)(voidthread);
-    MantisThread::State state = thread->fState;
-    state = eCancelled;
+    thread->fState =  eCancelled;
     return;
 }

@@ -31,6 +31,3 @@ clean:
 
 $(BUILDIR): 
 	@[ -d $@ ] || mkdir -p $@
-
-MantisBlock.o: MantisBlock.cc MantisBlock.hh
-	$(CC) $(CFLAGS) $(INCDIRS) -c $< -o $@

@@ -1,125 +1,152 @@
 #include "MantisEnv.hpp"
 
-MantisEnv::MantisEnv()
-  : outName("mantis_out.egg"), // default output name
-    clockRate(500.0),          // default ADC clock rate (MHz)
-    runLength(600000),            // default run length in milliseconds
-    dataWidth(4194304),        // number of bytes in a single record
-    bufferCount(630)           // number of circular buffer nodes
-{ /* no-op */ }
-
-void MantisEnv::setOutName(std::string newOutName)
+MantisEnv::MantisEnv() :
+    fFileName( "mantis_out.egg" ), // default output name
+    fRunDuration( 600000 ), // default run length in milliseconds
+    fAcquisitionRate( 500.0 ), // default ADC clock rate (MHz)
+    fChannelMode( 1 ), // number of active channels
+    fRecordLength( 4194304 ), // number of bytes in a single record
+    fBufferCount( 630 ) // number of circular buffer nodes
 {
-  (*this).outName = newOutName;
-  return;
 }
 
-std::string MantisEnv::getOutName()
+void MantisEnv::setFileName( std::string newOutName )
 {
-  return (*this).outName;
+    (*this).fFileName = newOutName;
+    return;
+}
+std::string MantisEnv::getFileName()
+{
+    return (*this).fFileName;
 }
 
-void MantisEnv::setClockRate(std::string clockRateStr)
+void MantisEnv::setAcquisitionRate( std::string clockRateStr )
 {
-  try {
-    std::istringstream(clockRateStr) >> (*this).clockRate;
-  }
-  catch (std::exception& e) {
-    throw new clock_rate_exception(clockRateStr);
-  }
-  return;
+    try
+    {
+        std::istringstream( clockRateStr ) >> (*this).fAcquisitionRate;
+    }
+    catch( std::exception& e )
+    {
+        throw new clock_rate_exception( clockRateStr );
+    }
+    return;
+}
+double MantisEnv::getAcquisitionRate()
+{
+    return (*this).fAcquisitionRate;
 }
 
-double MantisEnv::getClockRate()
+void MantisEnv::setRunDuration( std::string runLengthStr )
 {
-  return (*this).clockRate;
+    try
+    {
+        std::istringstream( runLengthStr ) >> (*this).fRunDuration;
+    }
+    catch( std::exception& e )
+    {
+        throw new run_length_exception( runLengthStr );
+    }
+
+    return;
+}
+unsigned int MantisEnv::getRunDuration()
+{
+    return (*this).fRunDuration;
 }
 
-void MantisEnv::setRunLength(std::string runLengthStr)
+void MantisEnv::setRecordLength( std::string dWidthStr )
 {
-  try {
-    std::istringstream(runLengthStr) >> (*this).runLength;
-  }
-  catch (std::exception& e) {
-    throw new run_length_exception(runLengthStr);
-  }
-
-  return;
+    std::istringstream( dWidthStr ) >> (*this).fRecordLength;
+    return;
+}
+std::size_t MantisEnv::getRecordLength()
+{
+    return (*this).fRecordLength;
 }
 
-std::size_t MantisEnv::getRunLength()
+void MantisEnv::setBufferCount( std::string bufCountStr )
 {
-  return (*this).runLength;
+    std::istringstream( bufCountStr ) >> (*this).fBufferCount;
+    return;
 }
-
-void MantisEnv::setDataWidth(std::string dWidthStr)
-{
-  std::istringstream(dWidthStr) >> (*this).dataWidth;
-  return;
-}
-
-std::size_t MantisEnv::getDataWidth()
-{
-  return (*this).dataWidth;
-}
-
-void MantisEnv::setBufferCount(std::string bufCountStr)
-{
-  std::istringstream(bufCountStr) >> (*this).bufferCount;
-  return;
-}
-
 std::size_t MantisEnv::getBufferCount()
 {
-  return (*this).bufferCount;
+    return (*this).fBufferCount;
 }
 
-safeEnvPtr MantisEnv::parseArgs(int argc, char** argv)
+void MantisEnv::setChannelMode( std::string channelModeStr )
 {
-  safeEnvPtr result(new MantisEnv());
- 
-  int c;
-  try {
-    while((c = getopt(argc,argv,"o:r:d:w:c:")) != -1) {    
-      switch(c) {
-      case 'o':
-	result->setOutName(optarg);
-	break;
-      case 'r':
-	result->setClockRate(optarg);
-	break;
-      case 'd':
-	result->setRunLength(optarg);
-	break;
-	  case 'w':
-	result->setDataWidth(optarg);
-	break;
-	  case 'c':
-	result->setBufferCount(optarg);
-	break;
-      default:
-	throw new argument_exception();
-      }
+    try
+    {
+        std::istringstream( channelModeStr ) >> (*this).fChannelMode;
     }
-  }
-  catch(argument_exception* e) {
-    throw e;
-  }
-  return result;
+    catch( std::exception& e )
+    {
+        throw new run_length_exception( channelModeStr );
+    }
+
+    if( ((*this).fChannelMode < 1) || ((*this).fChannelMode > 2) )
+    {
+        throw new channel_mode_exception( channelModeStr );
+    }
+
+    return;
+}
+unsigned int MantisEnv::getChannelMode()
+{
+    return (*this).fChannelMode;
 }
 
-void MantisEnv::verifyEnvironment(safeEnvPtr someEnvironment)
+safeEnvPtr MantisEnv::parseArgs( int argc, char** argv )
 {
-  return;
+    safeEnvPtr result( new MantisEnv() );
+
+    int c;
+    try
+    {
+        while( (c = getopt( argc, argv, "o:r:d:w:c:" )) != -1 )
+        {
+            switch( c )
+            {
+                case 'o':
+                    result->setFileName( optarg );
+                    break;
+                case 'd':
+                    result->setRunDuration( optarg );
+                    break;
+                case 'r':
+                    result->setAcquisitionRate( optarg );
+                    break;
+                case 'm':
+                    result->setChannelMode( optarg );
+                    break;
+                case 'w':
+                    result->setRecordLength( optarg );
+                    break;
+                case 'c':
+                    result->setBufferCount( optarg );
+                    break;
+                default:
+                    throw new argument_exception();
+            }
+        }
+    }
+    catch( argument_exception* e )
+    {
+        throw e;
+    }
+    return result;
 }
 
-std::ostream& operator << (std::ostream& outstream, safeEnvPtr& obj)
+void MantisEnv::verifyEnvironment( safeEnvPtr someEnvironment )
 {
-  outstream << "output file name: " << (obj.get())->getOutName() << "\n"
-	    << "digitizer rate: " << (obj.get())->getClockRate() << "(MHz)\n"
-	    << "run length: " << (obj.get())->getRunLength() << "(s)\n"
-	    << "data width: " << (obj.get())->getDataWidth() << "(bytes)\n"
-	    << "buffer count: " << (obj.get())->getBufferCount() << "(entries)\n";
-    
-  return outstream;
+    return;
+}
+
+std::ostream& operator <<( std::ostream& outstream, safeEnvPtr& obj )
+{
+    outstream << "output file name: " << (obj.get())->getFileName() << "\n" << "digitizer rate: " << (obj.get())->getAcquisitionRate() << "(MHz)\n" << "run length: " << (obj.get())->getRunDuration() << "(ms)\n" << "data width: " << (obj.get())->getRecordLength() << "(bytes)\n" << "buffer count: " << (obj.get())->getBufferCount() << "(entries)\n";
+
+    return outstream;
 }
