@@ -105,7 +105,7 @@ safeEnvPtr MantisEnv::parseArgs( int argc, char** argv )
     int c;
     try
     {
-        while( (c = getopt( argc, argv, "o:r:d:w:c:" )) != -1 )
+        while( (c = getopt( argc, argv, "o:d:r:m:l:c:" )) != -1 )
         {
             switch( c )
             {
