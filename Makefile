@@ -1,5 +1,5 @@
 CC=g++
-CFLAGS=-Wall -Werror -O2 -gstabs+
+CFLAGS=-Wall -O2 -gstabs+
 CSRC=$(wildcard ./src/*.cpp)
 PXINCDIR=/usr/local/include
 PXLIBDIR=/usr/local/lib
@@ -10,7 +10,8 @@ INCDIRS=$(addprefix -I,$(shell pwd)/include)
 LDFLAGS=$(addprefix -l,$(PXLIB))
 BUILDDIR=build
 OBJ=$(CSRC:%.cpp=%.o)
-TGT=Mantis
+#TGT=Mantis
+TGT=mantis_pci_test
 
 $(TGT): $(OBJ)
 	@echo LD $@
