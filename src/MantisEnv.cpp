@@ -121,7 +121,7 @@ safeEnvPtr MantisEnv::parseArgs( int argc, char** argv )
                 case 'm':
                     result->setChannelMode( optarg );
                     break;
-                case 'w':
+                case 'l':
                     result->setRecordLength( optarg );
                     break;
                 case 'c':
@@ -146,7 +146,7 @@ void MantisEnv::verifyEnvironment( safeEnvPtr someEnvironment )
 
 std::ostream& operator <<( std::ostream& outstream, safeEnvPtr& obj )
 {
-    outstream << "output file name: " << (obj.get())->getFileName() << "\n" << "digitizer rate: " << (obj.get())->getAcquisitionRate() << "(MHz)\n" << "run length: " << (obj.get())->getRunDuration() << "(ms)\n" << "data width: " << (obj.get())->getRecordLength() << "(bytes)\n" << "buffer count: " << (obj.get())->getBufferCount() << "(entries)\n";
+    outstream << "output file name: " << (obj.get())->getFileName() << "\n" << "digitizer rate: " << (obj.get())->getAcquisitionRate() << "(MHz)\n" << "run length: " << (obj.get())->getRunDuration() << "(ms)\n" << "record length: " << (obj.get())->getRecordLength() << "(bytes)\n" << "buffer count: " << (obj.get())->getBufferCount() << "(entries)\n";
 
     return outstream;
 }
