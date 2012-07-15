@@ -22,7 +22,6 @@ class MantisActor :
         MantisCondition fCondition;
         MantisStatus* fStatus;
         MantisBuffer* fBuffer;
-        MantisBufferIterator* fIterator;
 };
 
 inline void MantisActor::SetStatus( MantisStatus* aStatus )
@@ -33,12 +32,6 @@ inline void MantisActor::SetStatus( MantisStatus* aStatus )
 inline void MantisActor::SetBuffer( MantisBuffer* aBuffer )
 {
     fBuffer = aBuffer;
-    if( fIterator != NULL )
-    {
-        delete fIterator;
-        fIterator = NULL;
-    }
-    fIterator = aBuffer->CreateIterator();
     return;
 }
 

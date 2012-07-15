@@ -34,21 +34,21 @@ void MantisFileWriter::Initialize()
 
 void MantisFileWriter::Execute()
 {
-    //allocate some local variables
+    MantisBufferIterator* fIterator = fBuffer->CreateIterator();
+    while( fIterator->TryIncrement() == true )
+        ;
+
     bool tResult;
     timeval tStartTime;
     timeval tEndTime;
 
-    //pull the iterator up to right behind the read iterator
-    while( fIterator->TryIncrement() == true )
-        ;
-
     cout << "writer at initial wait" << endl;
 
-    //wait for run to release me
+    //wait to be released
     fCondition.Wait();
     if( fStatus->IsRunning() == false )
     {
+        delete fIterator;
         return;
     }
 
@@ -73,6 +73,7 @@ void MantisFileWriter::Execute()
                 fStatus->GetPX1500Condition()->Release();
             }
 
+            delete fIterator;
             return;
         }
 
@@ -84,6 +85,7 @@ void MantisFileWriter::Execute()
         {
             cout << "encountered error writing record <" << fRecordCount << ">" << endl;
             fStatus->SetError();
+            delete fIterator;
             return;
         }
         fRecordCount++;
@@ -99,6 +101,7 @@ void MantisFileWriter::Execute()
             fIterator->Increment();
         }
     }
+
     return;
 }
 
