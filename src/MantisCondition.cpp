@@ -26,7 +26,6 @@ bool MantisCondition::IsWaiting()
     pthread_mutex_unlock( &fMutex );
     return StateCopy;
 }
-;
 
 void MantisCondition::Wait()
 {
@@ -45,24 +44,36 @@ void MantisCondition::WaitFor( long tDelayNanoseconds )
 
     pthread_mutex_lock( &fMutex );
     fState = true;
-    while( fState == true )
-    {
-        timespec tTime;
+
 #ifndef CLOCK_MONOTONIC
 #define CLOCK_MONOTONIC 1
 #endif
-        clock_gettime( CLOCK_MONOTONIC, &tTime );
-        long tNewSeconds = tTime.tv_sec;
-        long tNewNanoseconds = tTime.tv_nsec + tDelayNanoseconds;
-        if( tNewNanoseconds > sOneBillion )
-        {
-            tNewSeconds += (tNewNanoseconds - tNewNanoseconds % sOneBillion) / sOneBillion;
-            tNewNanoseconds = tNewNanoseconds % sOneBillion;
-        }
-        tTime.tv_sec = tNewSeconds;
-        tTime.tv_nsec = tNewNanoseconds;
-        pthread_cond_timedwait( &fCondition, &fMutex, &tTime );
+    timespec tTime;
+    clock_gettime( CLOCK_MONOTONIC, &tTime );
+
+    cout << "old seconds: <" << tTime.tv_sec << ">";
+    cout << "old nanoseconds: <" << tTime.tv_nsec << ">";
+
+    long tNewSeconds = tTime.tv_sec;
+    long tNewNanoseconds = tTime.tv_nsec + tDelayNanoseconds;
+    if( tNewNanoseconds > sOneBillion )
+    {
+        tNewSeconds += (tNewNanoseconds - tNewNanoseconds % sOneBillion) / sOneBillion;
+        tNewNanoseconds = tNewNanoseconds % sOneBillion;
     }
+    tTime.tv_sec = tNewSeconds;
+    tTime.tv_nsec = tNewNanoseconds;
+
+    cout << "new seconds: <" << tTime.tv_sec << ">";
+    cout << "new nanoseconds: <" << tTime.tv_nsec << ">";
+
+    pthread_cond_timedwait( &fCondition, &fMutex, &tTime );
+
+    if( fState == true )
+    {
+        fState = false;
+    }
+
     pthread_mutex_unlock( &fMutex );
     return;
 }
