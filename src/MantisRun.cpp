@@ -42,17 +42,11 @@ void MantisRun::Execute()
 
     fStatus->SetRunning();
 
-    fStatus->GetPX1500Condition()->Release();
-    fStatus->GetFileWriterCondition()->Release();
-
     usleep( tDelayMicroseconds );
 
     if( !fStatus->IsError() )
     {
         fStatus->SetComplete();
-
-        fStatus->GetPX1500Condition()->Release();
-        fStatus->GetFileWriterCondition()->Release();
 
         cout << "run is quitting" << endl;
     }
