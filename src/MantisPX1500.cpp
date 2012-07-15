@@ -125,7 +125,6 @@ void MantisPX1500::Execute()
 {
     MantisBufferIterator* tIterator = fBuffer->CreateIterator();
 
-    int tResult;
     timeval tStartTime;
     timeval tStampTime;
     timeval tEndTime;
