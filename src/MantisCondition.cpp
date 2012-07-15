@@ -51,6 +51,7 @@ void MantisCondition::WaitFor( long tDelayNanoseconds )
     timespec tTime;
     clock_gettime( CLOCK_MONOTONIC, &tTime );
 
+    cout << "told to wait for <" << tDelayNanoseconds << "> nanoseconds" << endl;
     cout << "old seconds: <" << tTime.tv_sec << ">";
     cout << "old nanoseconds: <" << tTime.tv_nsec << ">";
 
