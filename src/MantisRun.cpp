@@ -32,6 +32,10 @@ void MantisRun::Initialize()
 
 void MantisRun::Execute()
 {
+    cout << "run sleeping..." << endl;
+    sleep( 2 );
+    cout << "run is removing blocks..." << endl;
+
     fStatus->SetRunning();
 
     fCondition.WaitFor( 1000000 * fRunDuration );

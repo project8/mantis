@@ -128,7 +128,7 @@ void MantisPX1500::Execute()
 
     //wait for the write condition to release me
 
-    cout << "digitizer at initial block" << endl;
+    cout << "digitizer at initial wait" << endl;
 
     fCondition.Wait();
     if( fStatus->IsRunning() == false )
@@ -136,7 +136,7 @@ void MantisPX1500::Execute()
         return;
     }
 
-    cout << "digitizer loose, starting acquisition..." << endl;
+    cout << "digitizer loose at block <" << fIterator->Index() << ">" << endl;
 
     //start acquisition
     if( StartAcquisition() == false )

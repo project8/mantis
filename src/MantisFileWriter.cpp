@@ -43,7 +43,7 @@ void MantisFileWriter::Execute()
     while( fIterator->TryIncrement() == true )
         ;
 
-    cout << "writer at initial block" << endl;
+    cout << "writer at initial wait" << endl;
 
     //wait for run to release me
     fCondition.Wait();
