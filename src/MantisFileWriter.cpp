@@ -58,6 +58,15 @@ void MantisFileWriter::Execute()
     //go go go
     while( true )
     {
+        if( fIterator->TryIncrement() == false )
+        {
+            if( fStatus->GetPX1500Condition()->IsWaiting() == true )
+            {
+                fStatus->GetPX1500Condition()->Release();
+            }
+            fIterator->Increment();
+        }
+
         //if the block we're on is open, check the run status
         if( fStatus->IsRunning() == false )
         {
@@ -91,15 +100,6 @@ void MantisFileWriter::Execute()
         fRecordCount++;
 
         fIterator->State()->SetFree();
-
-        if( fIterator->TryIncrement() == false )
-        {
-            if( fStatus->GetPX1500Condition()->IsWaiting() == true )
-            {
-                fStatus->GetPX1500Condition()->Release();
-            }
-            fIterator->Increment();
-        }
     }
 
     return;
