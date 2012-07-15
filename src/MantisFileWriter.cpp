@@ -58,8 +58,8 @@ void MantisFileWriter::Execute()
     //go go go
     while( true )
     {
-        //check the run status
-        if( !fStatus->IsRunning() )
+        //if the block we're on is open, check the run status
+        if( (fIterator->State()->IsFree() == true) && (fStatus->IsRunning() == false) )
         {
             //get the time and update the number of live microseconds
             gettimeofday( &tEndTime, NULL );
