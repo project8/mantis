@@ -38,7 +38,7 @@ void MantisRun::Execute()
 
     fStatus->SetRunning();
 
-    cout << "run is waiting..." << endl;
+    cout << "run is waiting for <" << 1000000 * fRunDuration << "> nanoseconds" << endl;
 
     fCondition.WaitFor( 1000000 * fRunDuration );
 
