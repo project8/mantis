@@ -130,14 +130,9 @@ void MantisPX1500::Execute()
     timeval tEndTime;
     timeval tDeadTime;
 
-    cout << "digitizer at initial wait" << endl;
+    cout << "digitizer ready..." << endl;
 
-    //wait to be released
     fCondition.Wait();
-//    if( fStatus->IsRunning() == false )
-//    {
-//        return;
-//    }
 
     cout << "digitizer loose at block <" << tIterator->Index() << ">" << endl;
 

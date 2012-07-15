@@ -91,16 +91,16 @@ int main( int argc, char** argv )
     WriteThread->Start();
     RunThread->Start();
 
-    RunThread->Join();
-    WriteThread->Join();
     ReadThread->Join();
+    WriteThread->Join();
+    RunThread->Join();
 
     delete ReadThread;
     delete WriteThread;
     delete RunThread;
 
-    Writer->Finalize();
     Reader->Finalize();
+    Writer->Finalize();
     Run->Finalize();
 
     delete Status;

@@ -45,15 +45,6 @@ void MantisFileWriter::Execute()
     while( fIterator->TryIncrement() == true )
         ;
 
-
-    //wait to be released
-//    fCondition.Wait();
-//    if( fStatus->IsRunning() == false )
-//    {
-//        delete fIterator;
-//        return;
-//    }
-
     //start timing
     gettimeofday( &tStartTime, NULL );
 
