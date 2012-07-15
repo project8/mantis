@@ -1,5 +1,9 @@
 #include "MantisStatus.hpp"
 
+#include <iostream>
+using std::cout;
+using std::endl;
+
 MantisStatus::MantisStatus() :
     fValue( eIdle ),
     fMutex(),
@@ -16,6 +20,10 @@ void MantisStatus::SetIdle()
 {
     fMutex.Lock();
     fValue = eIdle;
+    if( fPX1500Condition->IsWaiting() ) fPX1500Condition->Release();
+    if( fFileWriterCondition->IsWaiting() ) fFileWriterCondition->Release();
+    if( fRunCondition->IsWaiting() ) fRunCondition->Release();
+    cout << "status is idle" << endl;
     fMutex.Unlock();
     return;
 }
@@ -34,6 +42,7 @@ void MantisStatus::SetRunning()
     if( fPX1500Condition->IsWaiting() ) fPX1500Condition->Release();
     if( fFileWriterCondition->IsWaiting() ) fFileWriterCondition->Release();
     if( fRunCondition->IsWaiting() ) fRunCondition->Release();
+    cout << "status is running" << endl;
     fMutex.Unlock();
     return;
 }
@@ -52,6 +61,7 @@ void MantisStatus::SetError()
     if( fPX1500Condition->IsWaiting() ) fPX1500Condition->Release();
     if( fFileWriterCondition->IsWaiting() ) fFileWriterCondition->Release();
     if( fRunCondition->IsWaiting() ) fRunCondition->Release();
+    cout << "status is error" << endl;
     fMutex.Unlock();
     return;
 }
@@ -70,6 +80,7 @@ void MantisStatus::SetComplete()
     if( fPX1500Condition->IsWaiting() ) fPX1500Condition->Release();
     if( fFileWriterCondition->IsWaiting() ) fFileWriterCondition->Release();
     if( fRunCondition->IsWaiting() ) fRunCondition->Release();
+    cout << "status is complete" << endl;
     fMutex.Unlock();
     return;
 }
@@ -77,9 +88,6 @@ bool MantisStatus::IsComplete()
 {
     fMutex.Lock();
     bool Value = (fValue == eComplete);
-    if( fPX1500Condition->IsWaiting() ) fPX1500Condition->Release();
-    if( fFileWriterCondition->IsWaiting() ) fFileWriterCondition->Release();
-    if( fRunCondition->IsWaiting() ) fRunCondition->Release();
     fMutex.Unlock();
     return Value;
 }
