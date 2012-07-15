@@ -206,6 +206,8 @@ void MantisPX1500::Execute()
 
             if( fStatus->IsRunning() == false )
             {
+                cout << "digitizer is quitting" << endl;
+
                 return;
             }
 
@@ -229,23 +231,26 @@ void MantisPX1500::Execute()
 
 void MantisPX1500::Finalize()
 {
-    int Result;
+    int tResult;
 
-    for( size_t Count = 0; Count < fBufferCount; Count++ )
+    for( size_t Index = 0; Index < fBuffer->fBufferCount; Index++ )
     {
-        Result = FreeDmaBufferPX4( fHandle, fIterator->Record()->DataPtr() );
-        if( Result != SIG_SUCCESS )
+        cout << "    *deallocating block <" << Index << ">" << endl;
+
+        tResult = FreeDmaBufferPX4( fHandle, fBuffer->fBufferArray[Index].fRecord.DataPtr() );
+        if( tResult != SIG_SUCCESS )
         {
-            DumpLibErrorPX4( Result, "failed to deallocate DMA buffer: " );
+            stringstream Converter;
+            Converter << "    *failed to allocate block <" << Index << ">";
+            DumpLibErrorPX4( tResult, Converter.str().c_str() );
             exit( -1 );
         }
-        fIterator->Increment();
     }
 
-    Result = DisconnectFromDevicePX4( fHandle );
-    if( Result != SIG_SUCCESS )
+    tResult = DisconnectFromDevicePX4( fHandle );
+    if( tResult != SIG_SUCCESS )
     {
-        DumpLibErrorPX4( Result, "failed to disconnect from digitizer card: " );
+        DumpLibErrorPX4( tResult, "failed to disconnect from digitizer card: " );
         exit( -1 );
     }
 
