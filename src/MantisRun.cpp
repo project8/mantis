@@ -32,13 +32,10 @@ void MantisRun::Initialize()
 
 void MantisRun::Execute()
 {
-    long tDelayNanoseconds = 1000000 * ((long)(fRunDuration));
+    //long tDelayNanoseconds = 1000000 * ((long)(fRunDuration));
     __useconds_t tDelayMicroseconds = 1000 * ((__useconds_t)(fRunDuration));
 
     cout << "run will wait for <" << tDelayMicroseconds << "> microseconds" << endl;
-    cout << "run sleeping..." << endl;
-    sleep( 2 );
-    cout << "run is removing blocks..." << endl;
 
     fStatus->SetRunning();
 
