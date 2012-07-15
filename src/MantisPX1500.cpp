@@ -153,6 +153,8 @@ void MantisPX1500::Execute()
         //check if we've been told to stop
         if( fStatus->IsRunning() == false )
         {
+            cout << "digitizer is quitting" << endl;
+
             //get the time and update the number of live microseconds
             gettimeofday( &tEndTime, NULL );
             fLiveMicroseconds += (1000000 * tEndTime.tv_sec + tEndTime.tv_usec) - (1000000 * tStartTime.tv_sec + tStartTime.tv_usec);

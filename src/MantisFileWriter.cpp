@@ -59,8 +59,9 @@ void MantisFileWriter::Execute()
     while( true )
     {
         //if the block we're on is open, check the run status
-        if( (fIterator->State()->IsFree() == true) && (fStatus->IsRunning() == false) )
+        if( fStatus->IsRunning() == false )
         {
+            cout << "file writer is quitting" << endl;
             //get the time and update the number of live microseconds
             gettimeofday( &tEndTime, NULL );
             fLiveMicroseconds += (1000000 * tEndTime.tv_sec + tEndTime.tv_usec) - (1000000 * tStartTime.tv_sec + tStartTime.tv_usec);
