@@ -193,7 +193,7 @@ void MantisPX1500::Execute()
                 return;
             }
 
-            cout << "digitizer blocking..." << endl;
+            cout << "digitizer stuck at block <" << fIterator->Index() << ">" << endl;
 
             //wait
             fCondition.Wait();
@@ -207,7 +207,7 @@ void MantisPX1500::Execute()
                 return;
             }
 
-            cout << "digitizer loose, starting acquisition..." << endl;
+            cout << "digitizer loose at block <" << fIterator->Index() << ">" << endl;
 
             //start acquisition
             if( StartAcquisition() == false )
