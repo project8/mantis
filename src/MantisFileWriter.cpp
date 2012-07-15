@@ -35,8 +35,6 @@ void MantisFileWriter::Initialize()
 void MantisFileWriter::Execute()
 {
     MantisBufferIterator* fIterator = fBuffer->CreateIterator();
-    while( fIterator->TryIncrement() == true )
-        ;
 
     bool tResult;
     timeval tStartTime;
@@ -44,13 +42,17 @@ void MantisFileWriter::Execute()
 
     cout << "writer at initial wait" << endl;
 
+    while( fIterator->TryIncrement() == true )
+        ;
+
+
     //wait to be released
-    fCondition.Wait();
-    if( fStatus->IsRunning() == false )
-    {
-        delete fIterator;
-        return;
-    }
+//    fCondition.Wait();
+//    if( fStatus->IsRunning() == false )
+//    {
+//        delete fIterator;
+//        return;
+//    }
 
     //start timing
     gettimeofday( &tStartTime, NULL );

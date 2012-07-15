@@ -134,10 +134,10 @@ void MantisPX1500::Execute()
 
     //wait to be released
     fCondition.Wait();
-    if( fStatus->IsRunning() == false )
-    {
-        return;
-    }
+//    if( fStatus->IsRunning() == false )
+//    {
+//        return;
+//    }
 
     cout << "digitizer loose at block <" << tIterator->Index() << ">" << endl;
 
