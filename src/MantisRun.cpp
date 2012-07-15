@@ -47,6 +47,7 @@ void MantisRun::Execute()
     if( !fStatus->IsError() )
     {
         fStatus->SetComplete();
+        cout << "run is quitting..." << endl;
     }
     return;
 }

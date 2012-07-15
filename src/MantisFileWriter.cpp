@@ -62,9 +62,17 @@ void MantisFileWriter::Execute()
         if( fStatus->IsRunning() == false )
         {
             cout << "file writer is quitting" << endl;
+
             //get the time and update the number of live microseconds
             gettimeofday( &tEndTime, NULL );
             fLiveMicroseconds += (1000000 * tEndTime.tv_sec + tEndTime.tv_usec) - (1000000 * tStartTime.tv_sec + tStartTime.tv_usec);
+
+            //set the reader free
+            if( fStatus->GetPX1500Condition()->IsWaiting() == true )
+            {
+                fStatus->GetPX1500Condition()->Release();
+            }
+
             return;
         }
 
