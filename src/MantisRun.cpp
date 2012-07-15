@@ -32,14 +32,15 @@ void MantisRun::Initialize()
 
 void MantisRun::Execute()
 {
-    cout << "run will wait for <" << 1000000 * fRunDuration << "> nanoseconds" << endl;
+    long tDelayNanoseconds = 1000000 * ((long)(fRunDuration));
+
+    cout << "run will wait for <" << tDelayNanoseconds << "> nanoseconds" << endl;
     cout << "run sleeping..." << endl;
     sleep( 2 );
     cout << "run is removing blocks..." << endl;
 
     fStatus->SetRunning();
-
-    fCondition.WaitFor( 1000000 * fRunDuration );
+    fCondition.WaitFor( tDelayNanoseconds );
 
     if( !fStatus->IsError() )
     {

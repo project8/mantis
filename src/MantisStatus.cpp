@@ -16,6 +16,14 @@ MantisStatus::~MantisStatus()
 {
 }
 
+void MantisStatus::Message( string aMessage )
+{
+    fMutex.Lock();
+    cout << aMessage << endl;
+    fMutex.Unlock();
+    return;
+}
+
 void MantisStatus::SetIdle()
 {
     fMutex.Lock();

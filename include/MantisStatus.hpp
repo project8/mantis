@@ -4,11 +4,25 @@
 #include "MantisMutex.hpp"
 #include "MantisCondition.hpp"
 
+#include <string>
+using std::string;
+
 class MantisStatus
 {
     public:
         MantisStatus();
         ~MantisStatus();
+
+        void SetFileWriterCondition( MantisCondition* aCondition );
+        MantisCondition* GetFileWriterCondition();
+
+        void SetPX1500Condition( MantisCondition* aCondition );
+        MantisCondition* GetPX1500Condition();
+
+        void SetRunCondition( MantisCondition* aCondition );
+        MantisCondition* GetRunCondition();
+
+        void Message( string aMessage );
 
         void SetIdle();
         bool IsIdle();
@@ -21,15 +35,6 @@ class MantisStatus
 
         void SetError();
         bool IsError();
-
-        void SetFileWriterCondition( MantisCondition* aCondition );
-        MantisCondition* GetFileWriterCondition();
-
-        void SetPX1500Condition( MantisCondition* aCondition );
-        MantisCondition* GetPX1500Condition();
-
-        void SetRunCondition( MantisCondition* aCondition );
-        MantisCondition* GetRunCondition();
 
     private:
         enum
