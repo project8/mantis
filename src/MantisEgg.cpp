@@ -136,13 +136,16 @@ bool MantisEgg::write_header()
 
 bool MantisEgg::write_data( MantisBufferRecord* block )
 {
-    /* fmt: |fIndex|fTimeStamp|fData| */
-    static serializer< MantisBufferRecord::IndexType > index_byter;
-    index_byter.value = block->RecordId();
+    /* fmt: |fRecordId|fAcquisitionId|fTimeStamp|fData| */
+    static serializer< MantisBufferRecord::IndexType > record_id_byter;
+    record_id_byter.value = block->RecordId();
+    static serializer< MantisBufferRecord::IndexType > acquisition_id_byter;
+    acquisition_id_byter.value = block->AcquisitionId();
     static serializer< MantisBufferRecord::TimeStampType > timestamp_byter;
     timestamp_byter.value = block->TimeStamp();
 
-    this->write_raw_bytes( index_byter.value_bytes, sizeof(index_byter.value_bytes[0]), sizeof(index_byter) );
+    this->write_raw_bytes( record_id_byter.value_bytes, sizeof(record_id_byter.value_bytes[0]), sizeof(record_id_byter) );
+    this->write_raw_bytes( acquisition_id_byter.value_bytes, sizeof(acquisition_id_byter.value_bytes[0]), sizeof(acquisition_id_byter) );
     this->write_raw_bytes( timestamp_byter.value_bytes, sizeof(timestamp_byter.value_bytes[0]), sizeof(timestamp_byter) );
     this->write_raw_bytes( block->DataPtr(), this->data_size, this->data_width );
     return true;
