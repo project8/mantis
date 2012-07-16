@@ -107,7 +107,7 @@ void MantisFileWriter::Finalize()
     double WriteRate = MegabytesWritten / LiveTime;
 
     cout << "\nwriter statistics:\n";
-    cout << "  * records written: " << fRecordCount + 1 << "\n";
+    cout << "  * records written: " << fRecordCount << "\n";
     cout << "  * live time: " << LiveTime << "(sec)\n";
     cout << "  * total data written: " << MegabytesWritten << "(Mb)\n";
     cout << "  * average write rate: " << WriteRate << "(Mb/sec)\n";

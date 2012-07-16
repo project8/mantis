@@ -177,6 +177,7 @@ void MantisPX1500::Execute()
         gettimeofday( &tStampTime, NULL );
 
         tIterator->Record()->RecordId() = fRecordCount;
+        tIterator->Record()->AcquisitionId() = fAcquisitionCount;
         tIterator->Record()->TimeStamp() = (1000000 * tEndTime.tv_sec + tEndTime.tv_usec);
 
         if( Acquire( tIterator->Record()->DataPtr() ) == false )
@@ -196,7 +197,6 @@ void MantisPX1500::Execute()
             delete tIterator;
             return;
         }
-        fRecordCount++;
 
         tIterator->State()->SetAcquired();
 
@@ -232,7 +232,6 @@ void MantisPX1500::Execute()
                 delete tIterator;
                 return;
             }
-            fAcquisitionCount++;
 
             //start timing
             gettimeofday( &tStartTime, NULL );
@@ -280,8 +279,8 @@ void MantisPX1500::Finalize()
     double ReadRate = MegabytesRead / LiveTime;
 
     cout << "\npx1500 statistics:\n";
-    cout << "  * records taken: " << fRecordCount + 1 << "\n";
-    cout << "  * aquisitions taken: " << fAcquisitionCount + 1 << "\n";
+    cout << "  * records taken: " << fRecordCount << "\n";
+    cout << "  * aquisitions taken: " << fAcquisitionCount << "\n";
     cout << "  * live time: " << LiveTime << "(sec)\n";
     cout << "  * dead time: " << DeadTime << "(sec)\n";
     cout << "  * total data read: " << MegabytesRead << "(Mb)\n";
@@ -310,6 +309,7 @@ bool MantisPX1500::Acquire( MantisBufferRecord::DataType* anAddress )
         tResult = EndBufferedPciAcquisitionPX4( fHandle );
         return false;
     }
+    fRecordCount++;
     return true;
 }
 bool MantisPX1500::StopAcquisition()
@@ -320,5 +320,6 @@ bool MantisPX1500::StopAcquisition()
         DumpLibErrorPX4( tResult, "failed to end dma acquisition: " );
         return false;
     }
+    fAcquisitionCount++;
     return true;
 }
