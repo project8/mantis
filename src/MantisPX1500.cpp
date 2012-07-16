@@ -2,6 +2,7 @@
 
 #include <sys/time.h>
 #include <cstdlib>
+#include <math.h>
 
 #include <sstream>
 using std::stringstream;
@@ -17,9 +18,10 @@ MantisPX1500::MantisPX1500() :
     fLiveMicroseconds( 0 ),
     fDeadMicroseconds( 0 ),
     fDigitizationRate( 0. ),
-    fChannelMode( 1 ),
     fRecordLength( 0 ),
-    fBufferCount( 0 )
+    fBufferCount( 0 ),
+    fChannelMode( 1 ),
+    fLastRecord( 0 )
 {
 }
 MantisPX1500::~MantisPX1500()
@@ -34,6 +36,9 @@ MantisPX1500* MantisPX1500::digFromEnv( safeEnvPtr& env )
     NewPX1500->fChannelMode = (env.get())->getChannelMode();
     NewPX1500->fRecordLength = (env.get())->getRecordLength();
     NewPX1500->fBufferCount = (env.get())->getBufferCount();
+
+    NewPX1500->fLastRecord = ((unsigned long)(ceil( ((double)( NewPX1500->fRecordLength )) / ((double)(NewPX1500->fDigitizationRate * 1000000.0)) )));
+    cout << "fLastRecord: " << NewPX1500->fLastRecord << endl;
 
     return NewPX1500;
 }
@@ -169,7 +174,7 @@ void MantisPX1500::Execute()
 
         gettimeofday( &tStampTime, NULL );
 
-        tIterator->Record()->Index() = fRecordCount;
+        tIterator->Record()->RecordId() = fRecordCount;
         tIterator->Record()->TimeStamp() = (1000000 * tEndTime.tv_sec + tEndTime.tv_usec);
 
         if( Acquire( tIterator->Record()->DataPtr() ) == false )

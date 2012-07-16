@@ -1,7 +1,7 @@
 #include "MantisBufferRecord.hpp"
 
 MantisBufferRecord::MantisBufferRecord() :
-    fIndex( 0 ),
+    fRecordId( 0 ),
     fDataPtr( NULL )
 {
 }

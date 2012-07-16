@@ -29,9 +29,10 @@ class MantisPX1500 :
         unsigned long fDeadMicroseconds;
 
         double fDigitizationRate;
-        unsigned int fChannelMode;
         unsigned int fRecordLength;
         size_t fBufferCount;
+        unsigned int fChannelMode;
+        unsigned long fLastRecord;
 
         bool StartAcquisition();
         bool Acquire( MantisBufferRecord::DataType* anAddress );

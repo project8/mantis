@@ -29,8 +29,8 @@ MantisEgg* MantisEgg::egg_from_env( safeEnvPtr& env )
         egg_ptr->file_ptr = fopen( (env.get())->getFileName().c_str(), "wb" );
         if( egg_ptr->file_ptr )
         {
-            // Now encode the data size and features, and write it as a string.
-            egg_ptr->add_header_attr( "data_format", "id", sizeof(MantisBufferRecord::IndexType) );
+            egg_ptr->add_header_attr( "data_format", "record_id", sizeof(MantisBufferRecord::IndexType) );
+            egg_ptr->add_header_attr( "data_format", "acquisition_id", sizeof(MantisBufferRecord::IndexType) );
             egg_ptr->add_header_attr( "data_format", "timestamp", sizeof(MantisBufferRecord::TimeStampType) );
             egg_ptr->add_header_attr( "data_format", "data", (env.get())->getRecordLength() * sizeof(MantisBufferRecord::DataType) );
 
@@ -138,7 +138,7 @@ bool MantisEgg::write_data( MantisBufferRecord* block )
 {
     /* fmt: |fIndex|fTimeStamp|fData| */
     static serializer< MantisBufferRecord::IndexType > index_byter;
-    index_byter.value = block->Index();
+    index_byter.value = block->RecordId();
     static serializer< MantisBufferRecord::TimeStampType > timestamp_byter;
     timestamp_byter.value = block->TimeStamp();
 

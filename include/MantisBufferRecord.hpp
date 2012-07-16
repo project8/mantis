@@ -15,19 +15,25 @@ class MantisBufferRecord
         MantisBufferRecord();
         ~MantisBufferRecord();
 
-        IndexType& Index();
+        IndexType& RecordId();
+        IndexType& AcquisitionId();
         TimeStampType& TimeStamp();
         DataType*& DataPtr();
 
     private:
-        IndexType fIndex;
+        IndexType fRecordId;
+        IndexType fAcquisitionId;
         TimeStampType fTimeStamp;
         DataType* fDataPtr;
 };
 
-inline MantisBufferRecord::IndexType& MantisBufferRecord::Index()
+inline MantisBufferRecord::IndexType& MantisBufferRecord::RecordId()
 {
-    return fIndex;
+    return fRecordId;
+}
+inline MantisBufferRecord::IndexType& MantisBufferRecord::AcquisitionId()
+{
+    return fAcquisitionId;
 }
 inline MantisBufferRecord::TimeStampType& MantisBufferRecord::TimeStamp()
 {
