@@ -15,13 +15,13 @@ MantisPX1500::MantisPX1500() :
     fHandle(),
     fAcquisitionCount( 0 ),
     fRecordCount( 0 ),
-    fLastRecord( 0 ),
     fLiveMicroseconds( 0 ),
     fDeadMicroseconds( 0 ),
+    fRunDurationLastRecord( 0 ),
     fAcquisitionRate( 0. ),
+    fChannelMode( 1 ),
     fRecordLength( 0 ),
-    fBufferCount( 0 ),
-    fChannelMode( 1 )
+    fBufferCount( 0 )
 {
 }
 MantisPX1500::~MantisPX1500()
@@ -36,10 +36,7 @@ MantisPX1500* MantisPX1500::digFromEnv( safeEnvPtr& env )
     NewPX1500->fChannelMode = (env.get())->getChannelMode();
     NewPX1500->fRecordLength = (env.get())->getRecordLength();
     NewPX1500->fBufferCount = (env.get())->getBufferCount();
-
-    double tTempRecordCount = ((double)( (env.get())->getRecordLength() )) / ((double)((env.get())->getAcquisitionRate() * 1000000.0));
-
-    cout << "temp record count: " << tTempRecordCount << endl;
+    NewPX1500->fRunDurationLastRecord = (unsigned long) (ceil( ((double) ((env.get())->getRunDuration() * (env.get())->getAcquisitionRate() * 1.e3)) / ((double) ((env.get())->getRecordLength())) ));
 
     return NewPX1500;
 }
@@ -154,9 +151,11 @@ void MantisPX1500::Execute()
     //go go go go
     while( true )
     {
-        //check if we've been told to stop
-        if( fStatus->IsRunning() == false )
+        //check if we've written enough
+        if( fRecordCount == fRunDurationLastRecord )
         {
+            fStatus->SetComplete();
+
             cout << "digitizer is quitting" << endl;
 
             //get the time and update the number of live microseconds
@@ -184,11 +183,14 @@ void MantisPX1500::Execute()
             delete tIterator;
             return;
         }
+        fRecordCount++;
 
         tIterator->State()->SetAcquired();
 
         if( tIterator->TryIncrement() == false )
         {
+            cout << "digitizer stuck at block <" << tIterator->Index() << ">" << endl;
+
             //get the time and update the number of live microseconds
             gettimeofday( &tEndTime, NULL );
             fLiveMicroseconds += (1000000 * tEndTime.tv_sec + tEndTime.tv_usec) - (1000000 * tStartTime.tv_sec + tStartTime.tv_usec);
@@ -200,23 +202,12 @@ void MantisPX1500::Execute()
                 return;
             }
 
-            cout << "digitizer stuck at block <" << tIterator->Index() << ">" << endl;
-
             //wait
             fCondition.Wait();
 
             //get the time and update the number of dead microseconds
             gettimeofday( &tDeadTime, NULL );
             fDeadMicroseconds += (1000000 * tDeadTime.tv_sec + tDeadTime.tv_usec) - (1000000 * tEndTime.tv_sec + tEndTime.tv_usec);
-
-            if( fStatus->IsRunning() == false )
-            {
-                cout << "digitizer is quitting" << endl;
-                delete tIterator;
-                return;
-            }
-
-            cout << "digitizer loose at block <" << tIterator->Index() << ">" << endl;
 
             //start acquisition
             if( StartAcquisition() == false )
@@ -230,6 +221,8 @@ void MantisPX1500::Execute()
             gettimeofday( &tStartTime, NULL );
 
             tIterator->Increment();
+
+            cout << "digitizer loose at block <" << tIterator->Index() << ">" << endl;
         }
     }
 
@@ -270,8 +263,8 @@ void MantisPX1500::Finalize()
     double ReadRate = MegabytesRead / LiveTime;
 
     cout << "\nreader statistics:\n";
-    cout << "  * records taken: " << fRecordCount << "\n";
-    cout << "  * aquisitions taken: " << fAcquisitionCount << "\n";
+    cout << "  * records taken: " << fRecordCount + 1 << "\n";
+    cout << "  * aquisitions taken: " << fAcquisitionCount + 1 << "\n";
     cout << "  * live time: " << LiveTime << "(sec)\n";
     cout << "  * dead time: " << DeadTime << "(sec)\n";
     cout << "  * total data read: " << MegabytesRead << "(Mb)\n";
@@ -290,7 +283,6 @@ bool MantisPX1500::StartAcquisition()
         fStatus->SetError();
         return false;
     }
-    fAcquisitionCount++;
     return true;
 }
 bool MantisPX1500::Acquire( MantisBufferRecord::DataType* anAddress )
@@ -303,7 +295,6 @@ bool MantisPX1500::Acquire( MantisBufferRecord::DataType* anAddress )
         fStatus->SetError();
         return false;
     }
-    fRecordCount++;
     return true;
 }
 bool MantisPX1500::StopAcquisition()

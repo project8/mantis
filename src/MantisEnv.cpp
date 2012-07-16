@@ -6,7 +6,7 @@ MantisEnv::MantisEnv() :
     fAcquisitionRate( 500.0 ), // default ADC clock rate (MHz)
     fChannelMode( 1 ), // number of active channels
     fRecordLength( 4194304 ), // number of bytes in a single record
-    fBufferCount( 630 ) // number of circular buffer nodes
+    fBufferCount( 640 ) // number of circular buffer nodes
 {
 }
 

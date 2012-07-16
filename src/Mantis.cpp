@@ -30,10 +30,6 @@ int main( int argc, char** argv )
 
     MantisEgg* OutputFile = MantisEgg::egg_from_env( runEnvironment );
 
-    cout << "making run..." << endl;
-
-    MantisRun* Run = MantisRun::runFromEnv( runEnvironment );
-
     cout << "making digitizer..." << endl;
 
     MantisPX1500* Reader = MantisPX1500::digFromEnv( runEnvironment );
@@ -52,14 +48,6 @@ int main( int argc, char** argv )
     Writer->SetStatus( Status );
     Writer->SetBuffer( Buffer );
     Writer->SetOutputEgg( OutputFile );
-
-    cout << "setting up run..." << endl;
-
-    Run->SetStatus( Status );
-
-    cout << "initializing run..." << endl;
-
-    Run->Initialize();
 
     cout << "initializing digitizer..." << endl;
 
@@ -81,7 +69,6 @@ int main( int argc, char** argv )
         exit( 2 );
     }
 
-    MantisThread* RunThread = new MantisThread( Run );
     MantisThread* ReadThread = new MantisThread( Reader );
     MantisThread* WriteThread = new MantisThread( Writer );
 
@@ -89,23 +76,18 @@ int main( int argc, char** argv )
 
     ReadThread->Start();
     WriteThread->Start();
-    RunThread->Start();
 
     ReadThread->Join();
     WriteThread->Join();
-    RunThread->Join();
 
     delete ReadThread;
     delete WriteThread;
-    delete RunThread;
 
     Reader->Finalize();
     Writer->Finalize();
-    Run->Finalize();
 
     delete Status;
     delete Buffer;
-    delete Run;
     delete Reader;
     delete Writer;
 
