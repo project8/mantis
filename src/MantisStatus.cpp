@@ -8,8 +8,7 @@ MantisStatus::MantisStatus() :
     fValue( eIdle ),
     fMutex(),
     fFileWriterCondition( NULL ),
-    fPX1500Condition( NULL ),
-    fRunCondition( NULL )
+    fPX1500Condition( NULL )
 {
 }
 MantisStatus::~MantisStatus()

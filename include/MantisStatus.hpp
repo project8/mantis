@@ -19,9 +19,6 @@ class MantisStatus
         void SetPX1500Condition( MantisCondition* aCondition );
         MantisCondition* GetPX1500Condition();
 
-        void SetRunCondition( MantisCondition* aCondition );
-        MantisCondition* GetRunCondition();
-
         void Message( string aMessage );
 
         void SetIdle();
@@ -45,7 +42,6 @@ class MantisStatus
 
         MantisCondition* fFileWriterCondition;
         MantisCondition* fPX1500Condition;
-        MantisCondition* fRunCondition;
 };
 
 inline void MantisStatus::SetFileWriterCondition( MantisCondition* aCondition )
@@ -66,16 +62,6 @@ inline void MantisStatus::SetPX1500Condition( MantisCondition* aCondition )
 inline MantisCondition* MantisStatus::GetPX1500Condition()
 {
     return fPX1500Condition;
-}
-
-inline void MantisStatus::SetRunCondition( MantisCondition* aCondition )
-{
-    fRunCondition = aCondition;
-    return;
-}
-inline MantisCondition* MantisStatus::GetRunCondition()
-{
-    return fRunCondition;
 }
 
 #endif

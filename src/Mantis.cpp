@@ -1,5 +1,6 @@
 #include "MantisEnv.hpp"
-#include "MantisRun.hpp"
+#include "MantisStatus.hpp"
+#include "MantisBuffer.hpp"
 #include "MantisPX1500.hpp"
 #include "MantisFileWriter.hpp"
 
