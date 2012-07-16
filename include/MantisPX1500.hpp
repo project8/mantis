@@ -25,14 +25,14 @@ class MantisPX1500 :
         HPX4 fHandle;
         unsigned long fAcquisitionCount;
         unsigned long fRecordCount;
+        unsigned long fLastRecord;
         unsigned long fLiveMicroseconds;
         unsigned long fDeadMicroseconds;
 
-        double fDigitizationRate;
+        double fAcquisitionRate;
         unsigned int fRecordLength;
         size_t fBufferCount;
         unsigned int fChannelMode;
-        unsigned long fLastRecord;
 
         bool StartAcquisition();
         bool Acquire( MantisBufferRecord::DataType* anAddress );

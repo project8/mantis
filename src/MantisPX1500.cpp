@@ -15,13 +15,13 @@ MantisPX1500::MantisPX1500() :
     fHandle(),
     fAcquisitionCount( 0 ),
     fRecordCount( 0 ),
+    fLastRecord( 0 ),
     fLiveMicroseconds( 0 ),
     fDeadMicroseconds( 0 ),
-    fDigitizationRate( 0. ),
+    fAcquisitionRate( 0. ),
     fRecordLength( 0 ),
     fBufferCount( 0 ),
-    fChannelMode( 1 ),
-    fLastRecord( 0 )
+    fChannelMode( 1 )
 {
 }
 MantisPX1500::~MantisPX1500()
@@ -32,13 +32,14 @@ MantisPX1500* MantisPX1500::digFromEnv( safeEnvPtr& env )
 {
     MantisPX1500* NewPX1500 = new MantisPX1500();
 
-    NewPX1500->fDigitizationRate = (env.get())->getAcquisitionRate();
+    NewPX1500->fAcquisitionRate = (env.get())->getAcquisitionRate();
     NewPX1500->fChannelMode = (env.get())->getChannelMode();
     NewPX1500->fRecordLength = (env.get())->getRecordLength();
     NewPX1500->fBufferCount = (env.get())->getBufferCount();
 
-    NewPX1500->fLastRecord = ((unsigned long)(ceil( ((double)( NewPX1500->fRecordLength )) / ((double)(NewPX1500->fDigitizationRate * 1000000.0)) )));
-    cout << "fLastRecord: " << NewPX1500->fLastRecord << endl;
+    double tTempRecordCount = ((double)( (env.get())->getRecordLength() )) / ((double)((env.get())->getAcquisitionRate() * 1000000.0));
+
+    cout << "temp record count: " << tTempRecordCount << endl;
 
     return NewPX1500;
 }
@@ -97,7 +98,7 @@ void MantisPX1500::Initialize()
 
     cout << "  *setting clock rate..." << endl;
 
-    tResult = SetInternalAdcClockRatePX4( fHandle, fDigitizationRate );
+    tResult = SetInternalAdcClockRatePX4( fHandle, fAcquisitionRate );
     if( tResult != SIG_SUCCESS )
     {
         DumpLibErrorPX4( tResult, "failed to set sampling rate: " );
