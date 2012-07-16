@@ -14,6 +14,11 @@ MantisFileWriter::MantisFileWriter() :
 }
 MantisFileWriter::~MantisFileWriter()
 {
+    if( fEgg != NULL )
+    {
+        delete fEgg;
+        fEgg = NULL;
+    }
 }
 
 MantisFileWriter* MantisFileWriter::writerFromEnv( safeEnvPtr& env )
@@ -21,6 +26,7 @@ MantisFileWriter* MantisFileWriter::writerFromEnv( safeEnvPtr& env )
     MantisFileWriter* NewFileWriter = new MantisFileWriter();
 
     NewFileWriter->fRecordLength = (env.get())->getRecordLength();
+    NewFileWriter->fEgg = MantisEgg::egg_from_env( env );
 
     return NewFileWriter;
 }
@@ -28,6 +34,8 @@ MantisFileWriter* MantisFileWriter::writerFromEnv( safeEnvPtr& env )
 void MantisFileWriter::Initialize()
 {
     fStatus->SetFileWriterCondition( &fCondition );
+
+    fEgg->write_header();
 
     return;
 }
@@ -40,10 +48,10 @@ void MantisFileWriter::Execute()
     timeval tStartTime;
     timeval tEndTime;
 
-    cout << "writer at initial wait" << endl;
-
     while( fIterator->TryIncrement() == true )
         ;
+
+    cout << "file writer iterator in place" << endl;
 
     //start timing
     gettimeofday( &tStartTime, NULL );
@@ -63,7 +71,7 @@ void MantisFileWriter::Execute()
         //if the block we're on is open, check the run status
         if( (fIterator->State()->IsFree() == true) && (fStatus->IsRunning() == false) )
         {
-            cout << "file writer is quitting" << endl;
+            cout << "file writer is finished" << endl;
 
             //get the time and update the number of live microseconds
             gettimeofday( &tEndTime, NULL );
@@ -75,11 +83,11 @@ void MantisFileWriter::Execute()
 
         fIterator->State()->SetFlushing();
 
-        cout << "writing block <" << fIterator->Index() << ">" << endl;
+        cout << "writing at <" << fIterator->Index() << ">" << endl;
         tResult = fEgg->write_data( fIterator->Record() );
         if( tResult == false )
         {
-            cout << "encountered error writing record <" << fRecordCount << ">" << endl;
+            //GET OUT
             fStatus->SetError();
             delete fIterator;
             return;
@@ -99,7 +107,7 @@ void MantisFileWriter::Finalize()
     double WriteRate = MegabytesWritten / LiveTime;
 
     cout << "\nwriter statistics:\n";
-    cout << "  * records written: " << fRecordCount << "\n";
+    cout << "  * records written: " << fRecordCount + 1 << "\n";
     cout << "  * live time: " << LiveTime << "(sec)\n";
     cout << "  * total data written: " << MegabytesWritten << "(Mb)\n";
     cout << "  * average write rate: " << WriteRate << "(Mb/sec)\n";

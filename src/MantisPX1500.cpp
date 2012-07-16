@@ -133,11 +133,11 @@ void MantisPX1500::Execute()
     timeval tEndTime;
     timeval tDeadTime;
 
-    cout << "digitizer ready..." << endl;
+    cout << "px1500 is waiting" << endl;
 
     fCondition.Wait();
 
-    cout << "digitizer loose at block <" << tIterator->Index() << ">" << endl;
+    cout << "px1500 is loose at <" << tIterator->Index() << ">" << endl;
 
     //start acquisition
     if( StartAcquisition() == false )
@@ -154,9 +154,10 @@ void MantisPX1500::Execute()
         //check if we've written enough
         if( fRecordCount == fRunDurationLastRecord )
         {
-            fStatus->SetComplete();
+            cout << "px1500 is finished" << endl;
 
-            cout << "digitizer is quitting" << endl;
+            //mark the block as free
+            tIterator->State()->SetFree();
 
             //get the time and update the number of live microseconds
             gettimeofday( &tEndTime, NULL );
@@ -166,6 +167,7 @@ void MantisPX1500::Execute()
             StopAcquisition();
 
             //GET OUT
+            fStatus->SetComplete();
             delete tIterator;
             return;
         }
@@ -179,7 +181,18 @@ void MantisPX1500::Execute()
 
         if( Acquire( tIterator->Record()->DataPtr() ) == false )
         {
+            //mark the block as free
             tIterator->State()->SetFree();
+
+            //get the time and update the number of live microseconds
+            gettimeofday( &tEndTime, NULL );
+            fLiveMicroseconds += (1000000 * tEndTime.tv_sec + tEndTime.tv_usec) - (1000000 * tStartTime.tv_sec + tStartTime.tv_usec);
+
+            //halt the pci acquisition
+            StopAcquisition();
+
+            //GET OUT
+            fStatus->SetError();
             delete tIterator;
             return;
         }
@@ -189,7 +202,7 @@ void MantisPX1500::Execute()
 
         if( tIterator->TryIncrement() == false )
         {
-            cout << "digitizer stuck at block <" << tIterator->Index() << ">" << endl;
+            cout << "px1500 is blocked at <" << tIterator->Index() << ">" << endl;
 
             //get the time and update the number of live microseconds
             gettimeofday( &tEndTime, NULL );
@@ -198,6 +211,8 @@ void MantisPX1500::Execute()
             //halt the pci acquisition
             if( StopAcquisition() == false )
             {
+                //GET OUT
+                fStatus->SetError();
                 delete tIterator;
                 return;
             }
@@ -212,6 +227,8 @@ void MantisPX1500::Execute()
             //start acquisition
             if( StartAcquisition() == false )
             {
+                //GET OUT
+                fStatus->SetError();
                 delete tIterator;
                 return;
             }
@@ -222,7 +239,7 @@ void MantisPX1500::Execute()
 
             tIterator->Increment();
 
-            cout << "digitizer loose at block <" << tIterator->Index() << ">" << endl;
+            cout << "px1500 is loose at <" << tIterator->Index() << ">" << endl;
         }
     }
 
@@ -262,13 +279,13 @@ void MantisPX1500::Finalize()
     double MegabytesRead = fRecordCount * (((double) (fRecordLength)) / (1048576.));
     double ReadRate = MegabytesRead / LiveTime;
 
-    cout << "\nreader statistics:\n";
+    cout << "\npx1500 statistics:\n";
     cout << "  * records taken: " << fRecordCount + 1 << "\n";
     cout << "  * aquisitions taken: " << fAcquisitionCount + 1 << "\n";
     cout << "  * live time: " << LiveTime << "(sec)\n";
     cout << "  * dead time: " << DeadTime << "(sec)\n";
     cout << "  * total data read: " << MegabytesRead << "(Mb)\n";
-    cout << "  * average read rate: " << ReadRate << "(Mb/sec)\n";
+    cout << "  * average acquisition rate: " << ReadRate << "(Mb/sec)\n";
     cout.flush();
 
     return;
@@ -280,7 +297,6 @@ bool MantisPX1500::StartAcquisition()
     if( tResult != SIG_SUCCESS )
     {
         DumpLibErrorPX4( tResult, "failed to begin dma acquisition: " );
-        fStatus->SetError();
         return false;
     }
     return true;
@@ -292,7 +308,6 @@ bool MantisPX1500::Acquire( MantisBufferRecord::DataType* anAddress )
     {
         DumpLibErrorPX4( tResult, "failed to acquire dma data over pci: " );
         tResult = EndBufferedPciAcquisitionPX4( fHandle );
-        fStatus->SetError();
         return false;
     }
     return true;
@@ -303,7 +318,6 @@ bool MantisPX1500::StopAcquisition()
     if( tResult != SIG_SUCCESS )
     {
         DumpLibErrorPX4( tResult, "failed to end dma acquisition: " );
-        fStatus->SetError();
         return false;
     }
     return true;

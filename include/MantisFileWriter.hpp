@@ -17,8 +17,6 @@ class MantisFileWriter :
         static MantisFileWriter* writerFromEnv( safeEnvPtr& env );
         virtual ~MantisFileWriter();
 
-        void SetOutputEgg( MantisEgg* anEgg );
-
         void Initialize();
         void Execute();
         void Finalize();
@@ -32,11 +30,5 @@ class MantisFileWriter :
 
         size_t fRecordLength;
 };
-
-inline void MantisFileWriter::SetOutputEgg( MantisEgg* anEgg )
-{
-    fEgg = anEgg;
-    return;
-}
 
 #endif

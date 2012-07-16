@@ -26,48 +26,31 @@ int main( int argc, char** argv )
     MantisStatus* Status = new MantisStatus();
     MantisBuffer* Buffer = MantisBuffer::bufferFromEnv( runEnvironment );
 
-    cout << "making outfile..." << endl;
-
-    MantisEgg* OutputFile = MantisEgg::egg_from_env( runEnvironment );
-
-    cout << "making digitizer..." << endl;
+    cout << "making px1500..." << endl;
 
     MantisPX1500* Reader = MantisPX1500::digFromEnv( runEnvironment );
 
-    cout << "making writer..." << endl;
+    cout << "making file writer..." << endl;
 
     MantisFileWriter* Writer = MantisFileWriter::writerFromEnv( runEnvironment );
 
-    cout << "setting up digitizer..." << endl;
+    cout << "setting up px1500..." << endl;
 
     Reader->SetStatus( Status );
     Reader->SetBuffer( Buffer );
 
-    cout << "setting up writer..." << endl;
+    cout << "setting up file writer..." << endl;
 
     Writer->SetStatus( Status );
     Writer->SetBuffer( Buffer );
-    Writer->SetOutputEgg( OutputFile );
 
-    cout << "initializing digitizer..." << endl;
+    cout << "initializing px1500..." << endl;
 
     Reader->Initialize();
 
-    cout << "initializing writer..." << endl;
+    cout << "initializing file writer..." << endl;
 
     Writer->Initialize();
-
-    cout << "writing header..." << endl;
-
-    if( OutputFile )
-    {
-        OutputFile->write_header();
-    }
-    else
-    {
-        std::cout << "could not create output file!" << std::endl;
-        exit( 2 );
-    }
 
     MantisThread* ReadThread = new MantisThread( Reader );
     MantisThread* WriteThread = new MantisThread( Writer );
