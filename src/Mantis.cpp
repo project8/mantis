@@ -1,5 +1,4 @@
 #include "MantisEnv.hpp"
-#include "MantisStatus.hpp"
 #include "MantisBuffer.hpp"
 #include "MantisPX1500.hpp"
 #include "MantisFileWriter.hpp"
@@ -24,37 +23,37 @@ int main( int argc, char** argv )
 
     cout << "making status and buffer..." << endl;
 
-    MantisStatus* Status = new MantisStatus();
-    MantisBuffer* Buffer = MantisBuffer::bufferFromEnv( runEnvironment );
+    MantisCondition* tCondition = new MantisCondition();
+    MantisBuffer* tBuffer = MantisBuffer::bufferFromEnv( runEnvironment );
 
     cout << "making px1500..." << endl;
 
-    MantisPX1500* Reader = MantisPX1500::digFromEnv( runEnvironment );
+    MantisPX1500* tPX1500 = MantisPX1500::digFromEnv( runEnvironment );
 
     cout << "making file writer..." << endl;
 
-    MantisFileWriter* Writer = MantisFileWriter::writerFromEnv( runEnvironment );
+    MantisFileWriter* tFileWriter = MantisFileWriter::writerFromEnv( runEnvironment );
 
     cout << "setting up px1500..." << endl;
 
-    Reader->SetStatus( Status );
-    Reader->SetBuffer( Buffer );
+    tPX1500->SetCondition( tCondition );
+    tPX1500->SetBuffer( tBuffer );
 
     cout << "setting up file writer..." << endl;
 
-    Writer->SetStatus( Status );
-    Writer->SetBuffer( Buffer );
+    tFileWriter->SetCondition( tCondition );
+    tFileWriter->SetBuffer( tBuffer );
 
     cout << "initializing px1500..." << endl;
 
-    Reader->Initialize();
+    tPX1500->Initialize();
 
     cout << "initializing file writer..." << endl;
 
-    Writer->Initialize();
+    tFileWriter->Initialize();
 
-    MantisThread* ReadThread = new MantisThread( Reader );
-    MantisThread* WriteThread = new MantisThread( Writer );
+    MantisThread* ReadThread = new MantisThread( tPX1500 );
+    MantisThread* WriteThread = new MantisThread( tFileWriter );
 
     cout << "setting threads loose..." << endl;
 
@@ -67,13 +66,13 @@ int main( int argc, char** argv )
     delete ReadThread;
     delete WriteThread;
 
-    Reader->Finalize();
-    Writer->Finalize();
+    tPX1500->Finalize();
+    tFileWriter->Finalize();
 
-    delete Status;
-    delete Buffer;
-    delete Reader;
-    delete Writer;
+    delete tCondition;
+    delete tBuffer;
+    delete tPX1500;
+    delete tFileWriter;
 
     return 0;
 }

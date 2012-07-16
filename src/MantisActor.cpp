@@ -1,8 +1,7 @@
 #include "MantisActor.hpp"
 
 MantisActor::MantisActor() :
-    fCondition(),
-    fStatus( NULL ),
+    fCondition( NULL ),
     fBuffer( NULL )
 {
 }

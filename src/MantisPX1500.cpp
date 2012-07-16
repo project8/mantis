@@ -1,8 +1,8 @@
 #include "MantisPX1500.hpp"
 
-#include <sys/time.h>
-#include <cstdlib>
-#include <math.h>
+#include <sys/time.h> // for gettimeofday()
+#include <cstdlib> // for exit()
+#include <cmath> // for ceil()
 
 #include <sstream>
 using std::stringstream;
@@ -43,8 +43,6 @@ MantisPX1500* MantisPX1500::digFromEnv( safeEnvPtr& env )
 
 void MantisPX1500::Initialize()
 {
-    fStatus->SetPX1500Condition( &fCondition );
-
     int tResult;
 
     cout << "  *connecting to digitizer card..." << endl;
@@ -135,7 +133,7 @@ void MantisPX1500::Execute()
 
     cout << "px1500 is waiting" << endl;
 
-    fCondition.Wait();
+    fCondition->Wait();
 
     cout << "px1500 is loose at <" << tIterator->Index() << ">" << endl;
 
@@ -167,7 +165,6 @@ void MantisPX1500::Execute()
             StopAcquisition();
 
             //GET OUT
-            fStatus->SetComplete();
             delete tIterator;
             return;
         }
@@ -193,7 +190,6 @@ void MantisPX1500::Execute()
             StopAcquisition();
 
             //GET OUT
-            fStatus->SetError();
             delete tIterator;
             return;
         }
@@ -212,13 +208,12 @@ void MantisPX1500::Execute()
             if( StopAcquisition() == false )
             {
                 //GET OUT
-                fStatus->SetError();
                 delete tIterator;
                 return;
             }
 
             //wait
-            fCondition.Wait();
+            fCondition->Wait();
 
             //get the time and update the number of dead microseconds
             gettimeofday( &tDeadTime, NULL );
@@ -228,7 +223,6 @@ void MantisPX1500::Execute()
             if( StartAcquisition() == false )
             {
                 //GET OUT
-                fStatus->SetError();
                 delete tIterator;
                 return;
             }

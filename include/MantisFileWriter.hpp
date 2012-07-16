@@ -4,11 +4,7 @@
 #include "MantisActor.hpp"
 
 #include "MantisEnv.hpp"
-#include "MantisCondition.hpp"
-
 #include "MantisEgg.hpp"
-#include "MantisStatus.hpp"
-#include "MantisBuffer.hpp"
 
 class MantisFileWriter :
     public MantisActor

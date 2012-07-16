@@ -1,6 +1,6 @@
 #include "MantisFileWriter.hpp"
 
-#include <sys/time.h>
+#include <sys/time.h> // for gettimeofday()
 
 #include <iostream>
 using std::cout;
@@ -33,8 +33,6 @@ MantisFileWriter* MantisFileWriter::writerFromEnv( safeEnvPtr& env )
 
 void MantisFileWriter::Initialize()
 {
-    fStatus->SetFileWriterCondition( &fCondition );
-
     fEgg->write_header();
 
     return;
@@ -61,15 +59,15 @@ void MantisFileWriter::Execute()
     {
         if( fIterator->TryIncrement() == false )
         {
-            if( fStatus->GetPX1500Condition()->IsWaiting() == true )
+            if( fCondition->IsWaiting() == true )
             {
-                fStatus->GetPX1500Condition()->Release();
+                fCondition->Release();
             }
             fIterator->Increment();
         }
 
         //if the block we're on is open, check the run status
-        if( (fIterator->State()->IsFree() == true) && (fStatus->IsRunning() == false) )
+        if( fIterator->State()->IsFree() == true )
         {
             cout << "file writer is finished" << endl;
 
@@ -88,7 +86,6 @@ void MantisFileWriter::Execute()
         if( tResult == false )
         {
             //GET OUT
-            fStatus->SetError();
             delete fIterator;
             return;
         }

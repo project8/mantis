@@ -4,7 +4,6 @@
 #include "MantisActor.hpp"
 
 #include "MantisEnv.hpp"
-
 #include <cstddef> // px1500.h refers to NULL without including cstddef
 #include "px1500.h"
 
