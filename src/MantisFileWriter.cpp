@@ -71,7 +71,7 @@ void MantisFileWriter::Execute()
     while( fIterator->TryIncrement() == true )
         ;
 
-    cout << "file writer iterator in place" << endl;
+    //cout << "file writer iterator in place" << endl;
 
     //start timing
     gettimeofday( &tStartTime, NULL );
