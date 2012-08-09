@@ -7,33 +7,54 @@ using std::cout;
 using std::endl;
 
 MantisFileWriter::MantisFileWriter() :
-    fEgg( NULL ),
+    fFileName(""),
+    fRunDuration( 0 ),
+    fAcquisitionRate( 0. ),
+    fRecordLength( 0 ),
+    fChannelMode( 0 ),
+    fFlushFunction( &MantisFileWriter::FlushOneChannel ),
+    fMonarch( NULL ),
     fRecordCount( 0 ),
     fLiveMicroseconds( 0 )
 {
 }
 MantisFileWriter::~MantisFileWriter()
 {
-    if( fEgg != NULL )
-    {
-        delete fEgg;
-        fEgg = NULL;
-    }
 }
 
 MantisFileWriter* MantisFileWriter::writerFromEnv( safeEnvPtr& env )
 {
     MantisFileWriter* NewFileWriter = new MantisFileWriter();
 
+    NewFileWriter->fFileName = (env.get())->getFileName();
+    NewFileWriter->fRunDuration = (env.get())->getRunDuration();
+    NewFileWriter->fAcquisitionRate = (env.get())->getAcquisitionRate();
     NewFileWriter->fRecordLength = (env.get())->getRecordLength();
-    NewFileWriter->fEgg = MantisEgg::egg_from_env( env );
+    NewFileWriter->fChannelMode = (env.get())->getChannelMode();
+
+    if( NewFileWriter->fChannelMode == 1 )
+    {
+        NewFileWriter->fFlushFunction = &MantisFileWriter::FlushOneChannel;
+    }
+
+    if( NewFileWriter->fChannelMode == 2 )
+    {
+        NewFileWriter->fFlushFunction = &MantisFileWriter::FlushTwoChannel;
+    }
 
     return NewFileWriter;
 }
 
 void MantisFileWriter::Initialize()
 {
-    fEgg->write_header();
+    MonarchHeader tHeader;
+    tHeader.SetFilename( fFileName );
+    tHeader.SetAcqTime( fRunDuration );
+    tHeader.SetAcqRate( fAcquisitionRate );
+    tHeader.SetRecordSize( fRecordLength );
+    tHeader.SetAcqMode( fChannelMode );
+
+    fMonarch = Monarch::Open( tHeader );
 
     return;
 }
@@ -45,6 +66,7 @@ void MantisFileWriter::Execute()
     bool tResult;
     timeval tStartTime;
     timeval tEndTime;
+    MonarchRecord* tRecord = fMonarch->NewRecord( fRecordLength );
 
     while( fIterator->TryIncrement() == true )
         ;
@@ -66,7 +88,7 @@ void MantisFileWriter::Execute()
             fIterator->Increment();
         }
 
-        //if the block we're on is open, check the run status
+        //if the block we're on is open, the run is done
         if( fIterator->State()->IsFree() == true )
         {
             cout << "file writer is finished" << endl;
@@ -82,8 +104,8 @@ void MantisFileWriter::Execute()
         fIterator->State()->SetFlushing();
 
         cout << "writing at <" << fIterator->Index() << ">" << endl;
-        tResult = fEgg->write_data( fIterator->Record() );
-        if( tResult == false )
+
+        if( (this->*fFlushFunction)( fIterator->Record(), tRecord ) == false )
         {
             //GET OUT
             delete fIterator;
@@ -105,10 +127,68 @@ void MantisFileWriter::Finalize()
 
     cout << "\nwriter statistics:\n";
     cout << "  * records written: " << fRecordCount << "\n";
+    cout << "  * data written: " << MegabytesWritten << "(Mb)\n";
     cout << "  * live time: " << LiveTime << "(sec)\n";
-    cout << "  * total data written: " << MegabytesWritten << "(Mb)\n";
     cout << "  * average write rate: " << WriteRate << "(Mb/sec)\n";
     cout.flush();
 
     return;
+}
+
+bool MantisFileWriter::FlushOneChannel( MantisBufferRecord* aBufferRecord, MonarchRecord* aMonarchRecord )
+{
+    aMonarchRecord->fAId = aBufferRecord->AcquisitionId();
+    aMonarchRecord->fRId = aBufferRecord->RecordId();
+    aMonarchRecord->fTick = aBufferRecord->TimeStamp();
+
+    size_t tMantisIndex;
+
+    tMantisIndex = 0;
+    aMonarchRecord->fCId = 1;
+    for( size_t tMonarchIndex = 0; tMonarchIndex < fRecordLength; tMonarchIndex++ )
+    {
+        aMonarchRecord->fDataPtr[tMonarchIndex] = aBufferRecord->DataPtr()[tMantisIndex];
+        tMantisIndex += 1;
+    }
+    if( fMonarch->WriteRecord( aMonarchRecord ) == false )
+    {
+        return false;
+    }
+
+    return true;
+}
+
+bool MantisFileWriter::FlushTwoChannel( MantisBufferRecord* aBufferRecord, MonarchRecord* aMonarchRecord )
+{
+    aMonarchRecord->fAId = aBufferRecord->AcquisitionId();
+    aMonarchRecord->fRId = aBufferRecord->RecordId();
+    aMonarchRecord->fTick = aBufferRecord->TimeStamp();
+
+    size_t tMantisIndex;
+
+    tMantisIndex = 0;
+    aMonarchRecord->fCId = 1;
+    for( size_t tMonarchIndex = 0; tMonarchIndex < fRecordLength; tMonarchIndex++ )
+    {
+        aMonarchRecord->fDataPtr[tMonarchIndex] = aBufferRecord->DataPtr()[tMantisIndex];
+        tMantisIndex += 2;
+    }
+    if( fMonarch->WriteRecord( aMonarchRecord ) == false )
+    {
+        return false;
+    }
+
+    tMantisIndex = 1;
+    aMonarchRecord->fCId = 2;
+    for( size_t tMonarchIndex = 0; tMonarchIndex < fRecordLength; tMonarchIndex++ )
+    {
+        aMonarchRecord->fDataPtr[tMonarchIndex] = aBufferRecord->DataPtr()[tMantisIndex];
+        tMantisIndex += 2;
+    }
+    if( fMonarch->WriteRecord( aMonarchRecord ) == false )
+    {
+        return false;
+    }
+
+    return true;
 }

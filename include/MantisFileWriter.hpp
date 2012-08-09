@@ -2,9 +2,14 @@
 #define MANTISFILEWRITER_HH_
 
 #include "MantisActor.hpp"
-
 #include "MantisEnv.hpp"
-#include "MantisEgg.hpp"
+
+#include "Monarch.hpp"
+#include "MonarchHeader.hpp"
+#include "MonarchRecord.hpp"
+
+#include <string>
+using std::string;
 
 class MantisFileWriter :
     public MantisActor
@@ -20,11 +25,19 @@ class MantisFileWriter :
     private:
         MantisFileWriter();
 
-        MantisEgg* fEgg;
+        string fFileName;
+        unsigned int fRunDuration;
+        double fAcquisitionRate;
+        unsigned int fRecordLength;
+        unsigned int fChannelMode;
+
+        bool FlushOneChannel( MantisBufferRecord* tBufferRecord, MonarchRecord* tMonarchRecord );
+        bool FlushTwoChannel( MantisBufferRecord* tBufferRecord, MonarchRecord* tMonarchRecord );
+        bool (MantisFileWriter::*fFlushFunction)( MantisBufferRecord* tBufferRecord, MonarchRecord* tMonarchRecord );
+
+        Monarch* fMonarch;
         unsigned long fRecordCount;
         unsigned long long fLiveMicroseconds;
-
-        size_t fRecordLength;
 };
 
 #endif

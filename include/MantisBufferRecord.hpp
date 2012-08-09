@@ -7,7 +7,8 @@
 class MantisBufferRecord
 {
     public:
-        typedef unsigned long int IndexType;
+        typedef unsigned int AcquisitionIdType;
+        typedef unsigned long int RecordIdType;
         typedef unsigned long int TimeStampType;
         typedef px4_sample_t DataType;
 
@@ -15,25 +16,25 @@ class MantisBufferRecord
         MantisBufferRecord();
         ~MantisBufferRecord();
 
-        IndexType& RecordId();
-        IndexType& AcquisitionId();
+        AcquisitionIdType& AcquisitionId();
+        RecordIdType& RecordId();
         TimeStampType& TimeStamp();
         DataType*& DataPtr();
 
     private:
-        IndexType fRecordId;
-        IndexType fAcquisitionId;
+        AcquisitionIdType fAcquisitionId;
+        RecordIdType fRecordId;
         TimeStampType fTimeStamp;
         DataType* fDataPtr;
 };
 
-inline MantisBufferRecord::IndexType& MantisBufferRecord::RecordId()
-{
-    return fRecordId;
-}
-inline MantisBufferRecord::IndexType& MantisBufferRecord::AcquisitionId()
+inline MantisBufferRecord::AcquisitionIdType& MantisBufferRecord::AcquisitionId()
 {
     return fAcquisitionId;
+}
+inline MantisBufferRecord::RecordIdType& MantisBufferRecord::RecordId()
+{
+    return fRecordId;
 }
 inline MantisBufferRecord::TimeStampType& MantisBufferRecord::TimeStamp()
 {
