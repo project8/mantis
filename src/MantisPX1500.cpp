@@ -49,7 +49,7 @@ void MantisPX1500::Initialize()
 {
     int tResult;
 
-    cout << "  *connecting to digitizer card..." << endl;
+    //cout << "  *connecting to digitizer card..." << endl;
 
     tResult = ConnectToDevicePX4( &fHandle, 1 );
     if( tResult != SIG_SUCCESS )
@@ -58,7 +58,7 @@ void MantisPX1500::Initialize()
         exit( -1 );
     }
 
-    cout << "  *setting power up defaults..." << endl;
+    //cout << "  *setting power up defaults..." << endl;
 
     tResult = SetPowerupDefaultsPX4( fHandle );
     if( tResult != SIG_SUCCESS )
@@ -69,7 +69,7 @@ void MantisPX1500::Initialize()
 
     if( fChannelMode == 1 )
     {
-        cout << "  *setting one active channel..." << endl;
+        //cout << "  *setting one active channel..." << endl;
 
         tResult = SetActiveChannelsPX4( fHandle, PX4CHANSEL_SINGLE_CH1 );
         if( tResult != SIG_SUCCESS )
@@ -80,7 +80,7 @@ void MantisPX1500::Initialize()
     }
     else if( fChannelMode == 2 )
     {
-        cout << "  *setting two active channels..." << endl;
+        //cout << "  *setting two active channels..." << endl;
 
         tResult = SetActiveChannelsPX4( fHandle, PX4CHANSEL_DUAL_1_2 );
         if( tResult != SIG_SUCCESS )
@@ -95,7 +95,7 @@ void MantisPX1500::Initialize()
         exit( -1 );
     }
 
-    cout << "  *setting clock rate..." << endl;
+    //cout << "  *setting clock rate..." << endl;
 
     tResult = SetInternalAdcClockRatePX4( fHandle, fAcquisitionRate );
     if( tResult != SIG_SUCCESS )
@@ -104,12 +104,12 @@ void MantisPX1500::Initialize()
         exit( -1 );
     }
 
-    cout << "  *allocating dma buffer of <" << fBufferCount << "> blocks with size <" << fPciRecordLength << ">..." << endl;
+    //cout << "  *allocating dma buffer of <" << fBufferCount << "> blocks with size <" << fPciRecordLength << ">..." << endl;
 
     MantisBufferIterator* tIterator = fBuffer->CreateIterator();
     for( size_t Index = 0; Index < fBufferCount; Index++ )
     {
-        cout << "    *allocating block <" << Index << ">" << endl;
+        //cout << "    *allocating block <" << Index << ">" << endl;
 
         tResult = AllocateDmaBufferPX4( fHandle, fPciRecordLength, &tIterator->Record()->DataPtr() );
         if( tResult != SIG_SUCCESS )
@@ -135,11 +135,11 @@ void MantisPX1500::Execute()
     timeval tEndTime;
     timeval tDeadTime;
 
-    cout << "px1500 is waiting" << endl;
+    //cout << "px1500 is waiting" << endl;
 
     fCondition->Wait();
 
-    cout << "px1500 is loose at <" << tIterator->Index() << ">" << endl;
+    //cout << "px1500 is loose at <" << tIterator->Index() << ">" << endl;
 
     //start acquisition
     if( StartAcquisition() == false )
@@ -156,7 +156,7 @@ void MantisPX1500::Execute()
         //check if we've written enough
         if( fRecordCount == fRunDurationLastRecord )
         {
-            cout << "px1500 is finished" << endl;
+            //cout << "px1500 is finished" << endl;
 
             //mark the block as free
             tIterator->State()->SetFree();
@@ -202,7 +202,7 @@ void MantisPX1500::Execute()
 
         if( tIterator->TryIncrement() == false )
         {
-            cout << "px1500 is blocked at <" << tIterator->Index() << ">" << endl;
+            //cout << "px1500 is blocked at <" << tIterator->Index() << ">" << endl;
 
             //get the time and update the number of live microseconds
             gettimeofday( &tEndTime, NULL );
@@ -236,7 +236,7 @@ void MantisPX1500::Execute()
 
             tIterator->Increment();
 
-            cout << "px1500 is loose at <" << tIterator->Index() << ">" << endl;
+            //cout << "px1500 is loose at <" << tIterator->Index() << ">" << endl;
         }
     }
 
@@ -250,7 +250,7 @@ void MantisPX1500::Finalize()
     MantisBufferIterator* tIterator = fBuffer->CreateIterator();
     for( size_t Index = 0; Index < fBufferCount; Index++ )
     {
-        cout << "    *deallocating block <" << Index << ">" << endl;
+        //cout << "    *deallocating block <" << Index << ">" << endl;
 
         tResult = FreeDmaBufferPX4( fHandle, tIterator->Record()->DataPtr() );
         if( tResult != SIG_SUCCESS )

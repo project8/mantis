@@ -91,7 +91,7 @@ void MantisFileWriter::Execute()
         //if the block we're on is open, the run is done
         if( fIterator->State()->IsFree() == true )
         {
-            cout << "file writer is finished" << endl;
+            //cout << "file writer is finished" << endl;
 
             //get the time and update the number of live microseconds
             gettimeofday( &tEndTime, NULL );
@@ -103,9 +103,10 @@ void MantisFileWriter::Execute()
 
         fIterator->State()->SetFlushing();
 
-        cout << "writing at <" << fIterator->Index() << ">" << endl;
+        //cout << "writing at <" << fIterator->Index() << ">" << endl;
 
-        if( (this->*fFlushFunction)( fIterator->Record(), tRecord ) == false )
+        tResult = (this->*fFlushFunction)( fIterator->Record(), tRecord );
+        if( tResult == false )
         {
             //GET OUT
             delete fIterator;
@@ -122,7 +123,7 @@ void MantisFileWriter::Execute()
 void MantisFileWriter::Finalize()
 {
     double LiveTime = fLiveMicroseconds / 1000000.;
-    double MegabytesWritten = fRecordCount * (((double) (fRecordLength)) / (1048576.));
+    double MegabytesWritten = fRecordCount * (((double) (fRecordLength * fChannelMode)) / (1048576.));
     double WriteRate = MegabytesWritten / LiveTime;
 
     cout << "\nwriter statistics:\n";
