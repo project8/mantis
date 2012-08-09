@@ -146,7 +146,7 @@ void MantisEnv::verifyEnvironment( safeEnvPtr someEnvironment )
 
 std::ostream& operator <<( std::ostream& outstream, safeEnvPtr& obj )
 {
-    outstream << "output file name: " << (obj.get())->getFileName() << "\n" << "digitizer rate: " << (obj.get())->getAcquisitionRate() << "(MHz)\n" << "run length: " << (obj.get())->getRunDuration() << "(ms)\n" << "record length: " << (obj.get())->getRecordLength() << "(bytes)\n" << "buffer count: " << (obj.get())->getBufferCount() << "(entries)\n";
+    outstream << "mantis configuration:\n" << "  *output file name: " << (obj.get())->getFileName() << "\n" << "  *digitizer rate: " << (obj.get())->getAcquisitionRate() << "(MHz)\n" << "  *run duration: " << (obj.get())->getRunDuration() << "(ms)\n" << "  *channel mode: " << (obj.get())->getChannelMode() << "(number of channels)\n" << "  *record length: " << (obj.get())->getRecordLength() << "(bytes)\n" << "  *buffer count: " << (obj.get())->getBufferCount() << "(entries)\n";
 
     return outstream;
 }
