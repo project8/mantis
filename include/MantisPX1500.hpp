@@ -22,12 +22,13 @@ class MantisPX1500 :
         MantisPX1500();
 
         HPX4 fHandle;
-        unsigned long fAcquisitionCount;
+        unsigned int fPciRecordLength;
+        unsigned long fRunDurationLastRecord;
+        unsigned int fAcquisitionCount;
         unsigned long fRecordCount;
         unsigned long fLiveMicroseconds;
         unsigned long fDeadMicroseconds;
 
-        unsigned long fRunDurationLastRecord;
         double fAcquisitionRate;
         unsigned int fChannelMode;
         unsigned int fRecordLength;

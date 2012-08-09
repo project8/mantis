@@ -13,11 +13,12 @@ using std::endl;
 
 MantisPX1500::MantisPX1500() :
     fHandle(),
+    fPciRecordLength( 0 ),
+    fRunDurationLastRecord( 0 ),
     fAcquisitionCount( 0 ),
     fRecordCount( 0 ),
     fLiveMicroseconds( 0 ),
     fDeadMicroseconds( 0 ),
-    fRunDurationLastRecord( 0 ),
     fAcquisitionRate( 0. ),
     fChannelMode( 1 ),
     fRecordLength( 0 ),
@@ -31,12 +32,15 @@ MantisPX1500::~MantisPX1500()
 MantisPX1500* MantisPX1500::digFromEnv( safeEnvPtr& env )
 {
     MantisPX1500* NewPX1500 = new MantisPX1500();
+    MantisEnv* tEnv = env.get();
 
-    NewPX1500->fAcquisitionRate = (env.get())->getAcquisitionRate();
-    NewPX1500->fChannelMode = (env.get())->getChannelMode();
-    NewPX1500->fRecordLength = (env.get())->getRecordLength();
-    NewPX1500->fBufferCount = (env.get())->getBufferCount();
-    NewPX1500->fRunDurationLastRecord = (unsigned long) (ceil( ((double) ((env.get())->getRunDuration() * (env.get())->getAcquisitionRate() * 1.e3)) / ((double) ((env.get())->getRecordLength())) ));
+    NewPX1500->fAcquisitionRate = tEnv->getAcquisitionRate();
+    NewPX1500->fChannelMode = tEnv->getChannelMode();
+    NewPX1500->fRecordLength = tEnv->getRecordLength();
+    NewPX1500->fBufferCount = tEnv->getBufferCount();
+
+    NewPX1500->fPciRecordLength = tEnv->getChannelMode() * tEnv->getRecordLength();
+    NewPX1500->fRunDurationLastRecord = (unsigned long) (ceil( (double)( tEnv->getAcquisitionRate() * tEnv->getRunDuration() * 1.e3 )/(double)( tEnv->getRecordLength() ) ));
 
     return NewPX1500;
 }
@@ -100,14 +104,14 @@ void MantisPX1500::Initialize()
         exit( -1 );
     }
 
-    cout << "  *allocating dma buffer of <" << fBufferCount << "> blocks with size <" << fRecordLength << ">..." << endl;
+    cout << "  *allocating dma buffer of <" << fBufferCount << "> blocks with size <" << fPciRecordLength << ">..." << endl;
 
     MantisBufferIterator* tIterator = fBuffer->CreateIterator();
     for( size_t Index = 0; Index < fBufferCount; Index++ )
     {
         cout << "    *allocating block <" << Index << ">" << endl;
 
-        tResult = AllocateDmaBufferPX4( fHandle, fRecordLength, &tIterator->Record()->DataPtr() );
+        tResult = AllocateDmaBufferPX4( fHandle, fPciRecordLength, &tIterator->Record()->DataPtr() );
         if( tResult != SIG_SUCCESS )
         {
             stringstream Converter;
@@ -269,7 +273,7 @@ void MantisPX1500::Finalize()
 
     double LiveTime = fLiveMicroseconds / 1000000.;
     double DeadTime = fDeadMicroseconds / 1000000.;
-    double MegabytesRead = fRecordCount * (((double) (fRecordLength)) / (1048576.));
+    double MegabytesRead = fRecordCount * (((double) (fPciRecordLength)) / (1048576.));
     double ReadRate = MegabytesRead / LiveTime;
 
     cout << "\npx1500 statistics:\n";
@@ -296,7 +300,7 @@ bool MantisPX1500::StartAcquisition()
 }
 bool MantisPX1500::Acquire( MantisBufferRecord::DataType* anAddress )
 {
-    int tResult = GetPciAcquisitionDataFastPX4( fHandle, ((unsigned int) (fRecordLength)), anAddress, 0 );
+    int tResult = GetPciAcquisitionDataFastPX4( fHandle, ((unsigned int) (fPciRecordLength)), anAddress, 0 );
     if( tResult != SIG_SUCCESS )
     {
         DumpLibErrorPX4( tResult, "failed to acquire dma data over pci: " );
