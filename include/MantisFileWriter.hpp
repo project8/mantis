@@ -5,6 +5,7 @@
 #include "MantisEnv.hpp"
 
 #include "Monarch.hpp"
+#include "MonarchTypes.hpp"
 #include "MonarchHeader.hpp"
 #include "MonarchRecord.hpp"
 

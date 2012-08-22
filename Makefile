@@ -6,8 +6,8 @@ PXINCDIR=/usr/local/include
 PXLIBDIR=/usr/local/lib
 PXLIB=sig_px1500
 
-MONINCDIR=/usr/local/include
-MONLIBDIR=/usr/local/lib
+MONINCDIR=/home/dlfurse/Research/Project8/monarch/install/include
+MONLIBDIR=/home/dlfurse/Research/Project8/monarch/install/lib
 MONLIB=monarch
 
 PTHLIB=pthread
