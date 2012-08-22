@@ -52,7 +52,7 @@ void MantisFileWriter::Initialize()
     tHeader.SetAcqTime( fRunDuration );
     tHeader.SetAcqRate( fAcquisitionRate );
     tHeader.SetRecordSize( fRecordLength );
-    tHeader.SetAcqMode( fChannelMode );
+    tHeader.SetAcqMode( fChannelMode == 1 ? OneChannel : TwoChannel );
 
     fMonarch = Monarch::Open( tHeader );
 
