@@ -47,21 +47,24 @@ MantisFileWriter* MantisFileWriter::writerFromEnv( safeEnvPtr& env )
 
 void MantisFileWriter::Initialize()
 {
-    MonarchHeader tHeader;
-    tHeader.SetFilename( fFileName );
-    tHeader.SetAcqTime( fRunDuration );
-    tHeader.SetAcqRate( fAcquisitionRate );
-    tHeader.SetRecordSize( fRecordLength );
+    fMonarch = Monarch::OpenForWriting( fFileName );
+
+
+    MonarchHeader* tHeader = fMonarch->GetHeader();
+    tHeader->SetFilename( fFileName );
+    tHeader->SetAcqTime( fRunDuration );
+    tHeader->SetAcqRate( fAcquisitionRate );
+    tHeader->SetRecordSize( fRecordLength );
     if( fChannelMode == 1 )
     {
-        tHeader.SetAcqMode( 3 );
+        tHeader->SetAcqMode( sOneChannel );
     }
     if( fChannelMode == 2 )
     {
-        tHeader.SetAcqMode( 4 );
+        tHeader->SetAcqMode( sTwoChannel );
     }
 
-    fMonarch = Monarch::Open( tHeader );
+    fMonarch->WriteHeader();
 
     return;
 }
@@ -73,7 +76,7 @@ void MantisFileWriter::Execute()
     bool tResult;
     timeval tStartTime;
     timeval tEndTime;
-    MonarchRecord* tRecord = fMonarch->NewRecord( fRecordLength );
+    MonarchRecord* tRecord = fMonarch->GetRecord();
 
     while( fIterator->TryIncrement() == true )
         ;
@@ -158,7 +161,7 @@ bool MantisFileWriter::FlushOneChannel( MantisBufferRecord* aBufferRecord, Monar
         aMonarchRecord->fDataPtr[tMonarchIndex] = aBufferRecord->DataPtr()[tMantisIndex];
         tMantisIndex += 1;
     }
-    if( fMonarch->WriteRecord( aMonarchRecord ) == false )
+    if( fMonarch->WriteRecord() == false )
     {
         return false;
     }
@@ -181,7 +184,7 @@ bool MantisFileWriter::FlushTwoChannel( MantisBufferRecord* aBufferRecord, Monar
         aMonarchRecord->fDataPtr[tMonarchIndex] = aBufferRecord->DataPtr()[tMantisIndex];
         tMantisIndex += 2;
     }
-    if( fMonarch->WriteRecord( aMonarchRecord ) == false )
+    if( fMonarch->WriteRecord() == false )
     {
         return false;
     }
@@ -193,7 +196,7 @@ bool MantisFileWriter::FlushTwoChannel( MantisBufferRecord* aBufferRecord, Monar
         aMonarchRecord->fDataPtr[tMonarchIndex] = aBufferRecord->DataPtr()[tMantisIndex];
         tMantisIndex += 2;
     }
-    if( fMonarch->WriteRecord( aMonarchRecord ) == false )
+    if( fMonarch->WriteRecord() == false )
     {
         return false;
     }
