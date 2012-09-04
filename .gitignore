@@ -1,5 +1,4 @@
 Mantis
-src/*.o
 *~
 #*
 *#
@@ -9,3 +8,7 @@ src/*.o
 *.log
 .project
 .cproject
+Build/
+build/
+Install/
+install/

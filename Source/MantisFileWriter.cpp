@@ -1,6 +1,7 @@
 #include "MantisFileWriter.hpp"
 
 #include <sys/time.h> // for gettimeofday()
+#include <cstring>
 
 #include <iostream>
 using std::cout;
@@ -14,6 +15,8 @@ MantisFileWriter::MantisFileWriter() :
     fChannelMode( 0 ),
     fFlushFunction( &MantisFileWriter::FlushOneChannel ),
     fMonarch( NULL ),
+    fMonarchRecordOne( NULL ),
+    fMonarchRecordTwo( NULL ),
     fRecordCount( 0 ),
     fLiveMicroseconds( 0 )
 {
@@ -76,7 +79,8 @@ void MantisFileWriter::Execute()
     bool tResult;
     timeval tStartTime;
     timeval tEndTime;
-    MonarchRecord* tRecord = fMonarch->GetRecord();
+    fMonarchRecordOne = fMonarch->GetRecordOne();
+    fMonarchRecordTwo = fMonarch->GetRecordTwo();
 
     while( fIterator->TryIncrement() == true )
         ;
@@ -115,7 +119,7 @@ void MantisFileWriter::Execute()
 
         //cout << "writing at <" << fIterator->Index() << ">" << endl;
 
-        tResult = (this->*fFlushFunction)( fIterator->Record(), tRecord );
+        tResult = (this->*fFlushFunction)( fIterator->Record() );
         if( tResult == false )
         {
             //GET OUT
@@ -146,21 +150,15 @@ void MantisFileWriter::Finalize()
     return;
 }
 
-bool MantisFileWriter::FlushOneChannel( MantisBufferRecord* aBufferRecord, MonarchRecord* aMonarchRecord )
+bool MantisFileWriter::FlushOneChannel( MantisBufferRecord* aBufferRecord )
 {
-    aMonarchRecord->fAId = aBufferRecord->AcquisitionId();
-    aMonarchRecord->fRId = aBufferRecord->RecordId();
-    aMonarchRecord->fTick = aBufferRecord->TimeStamp();
+    fMonarchRecordOne->fCId = 1;
+    fMonarchRecordOne->fAId = aBufferRecord->AcquisitionId();
+    fMonarchRecordOne->fRId = aBufferRecord->RecordId();
+    fMonarchRecordOne->fTick = aBufferRecord->TimeStamp();
 
-    size_t tMantisIndex;
+    memcpy( fMonarchRecordOne->fDataPtr, aBufferRecord->DataPtr(), fRecordLength );
 
-    tMantisIndex = 0;
-    aMonarchRecord->fCId = 1;
-    for( size_t tMonarchIndex = 0; tMonarchIndex < fRecordLength; tMonarchIndex++ )
-    {
-        aMonarchRecord->fDataPtr[tMonarchIndex] = aBufferRecord->DataPtr()[tMantisIndex];
-        tMantisIndex += 1;
-    }
     if( fMonarch->WriteRecord() == false )
     {
         return false;
@@ -169,33 +167,33 @@ bool MantisFileWriter::FlushOneChannel( MantisBufferRecord* aBufferRecord, Monar
     return true;
 }
 
-bool MantisFileWriter::FlushTwoChannel( MantisBufferRecord* aBufferRecord, MonarchRecord* aMonarchRecord )
+bool MantisFileWriter::FlushTwoChannel( MantisBufferRecord* aBufferRecord )
 {
-    aMonarchRecord->fAId = aBufferRecord->AcquisitionId();
-    aMonarchRecord->fRId = aBufferRecord->RecordId();
-    aMonarchRecord->fTick = aBufferRecord->TimeStamp();
+    fMonarchRecordOne->fCId = 1;
+    fMonarchRecordOne->fAId = aBufferRecord->AcquisitionId();
+    fMonarchRecordOne->fRId = aBufferRecord->RecordId();
+    fMonarchRecordOne->fTick = aBufferRecord->TimeStamp();
 
-    size_t tMantisIndex;
+    fMonarchRecordTwo->fCId = 2;
+    fMonarchRecordTwo->fAId = aBufferRecord->AcquisitionId();
+    fMonarchRecordTwo->fRId = aBufferRecord->RecordId();
+    fMonarchRecordTwo->fTick = aBufferRecord->TimeStamp();
 
-    tMantisIndex = 0;
-    aMonarchRecord->fCId = 1;
-    for( size_t tMonarchIndex = 0; tMonarchIndex < fRecordLength; tMonarchIndex++ )
+    MantisBufferRecord::DataType* tMantisPtr = aBufferRecord->DataPtr();
+    DataType* tRecordOnePtr = fMonarchRecordOne->fDataPtr;
+    DataType* tRecordTwoPtr = fMonarchRecordTwo->fDataPtr;
+
+    for( size_t tIndex = 0; tIndex < fRecordLength / 2; tIndex++ )
     {
-        aMonarchRecord->fDataPtr[tMonarchIndex] = aBufferRecord->DataPtr()[tMantisIndex];
-        tMantisIndex += 2;
-    }
-    if( fMonarch->WriteRecord() == false )
-    {
-        return false;
+        *tRecordOnePtr = *tMantisPtr;
+        tRecordOnePtr++;
+        tMantisPtr++;
+
+        *tRecordTwoPtr = *tMantisPtr;
+        tRecordTwoPtr++;
+        tMantisPtr++;
     }
 
-    tMantisIndex = 1;
-    aMonarchRecord->fCId = 2;
-    for( size_t tMonarchIndex = 0; tMonarchIndex < fRecordLength; tMonarchIndex++ )
-    {
-        aMonarchRecord->fDataPtr[tMonarchIndex] = aBufferRecord->DataPtr()[tMantisIndex];
-        tMantisIndex += 2;
-    }
     if( fMonarch->WriteRecord() == false )
     {
         return false;

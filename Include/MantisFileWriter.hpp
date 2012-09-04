@@ -32,11 +32,13 @@ class MantisFileWriter :
         unsigned int fRecordLength;
         unsigned int fChannelMode;
 
-        bool FlushOneChannel( MantisBufferRecord* tBufferRecord, MonarchRecord* tMonarchRecord );
-        bool FlushTwoChannel( MantisBufferRecord* tBufferRecord, MonarchRecord* tMonarchRecord );
-        bool (MantisFileWriter::*fFlushFunction)( MantisBufferRecord* tBufferRecord, MonarchRecord* tMonarchRecord );
+        bool FlushOneChannel( MantisBufferRecord* tBufferRecord );
+        bool FlushTwoChannel( MantisBufferRecord* tBufferRecord );
+        bool (MantisFileWriter::*fFlushFunction)( MantisBufferRecord* tBufferRecord );
 
         Monarch* fMonarch;
+        MonarchRecord* fMonarchRecordOne;
+        MonarchRecord* fMonarchRecordTwo;
         unsigned long fRecordCount;
         unsigned long long fLiveMicroseconds;
 };
