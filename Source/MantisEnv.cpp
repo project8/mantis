@@ -136,6 +136,17 @@ safeEnvPtr MantisEnv::parseArgs( int argc, char** argv )
     {
         throw e;
     }
+
+    if( (result->fChannelMode == 1) && (result->fRecordLength > 4194304 ) )
+    {
+        result->fRecordLength = 4194304;
+    }
+
+    if( (result->fChannelMode == 2) && (result->fRecordLength > 2097152 ) )
+    {
+        result->fRecordLength = 2097152;
+    }
+
     return result;
 }
 
