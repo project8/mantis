@@ -5,7 +5,7 @@ MantisEnv::MantisEnv() :
     fRunDuration( 600000 ), // default run length in milliseconds
     fAcquisitionRate( 500.0 ), // default ADC clock rate (MHz)
     fChannelMode( 1 ), // number of active channels
-    fRecordLength( 4194304 ), // number of bytes in a single record
+    fRecordLength( 4194304 ), // number of bytes in a single record per channel
     fBufferCount( 640 ) // number of circular buffer nodes
 {
 }

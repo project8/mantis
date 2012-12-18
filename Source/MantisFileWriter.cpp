@@ -183,7 +183,7 @@ bool MantisFileWriter::FlushTwoChannel( MantisBufferRecord* aBufferRecord )
     DataType* tRecordOnePtr = fMonarchRecordOne->fDataPtr;
     DataType* tRecordTwoPtr = fMonarchRecordTwo->fDataPtr;
 
-    for( size_t tIndex = 0; tIndex < fRecordLength / 2; tIndex++ )
+    for( size_t tIndex = 0; tIndex < fRecordLength; tIndex++ )
     {
         *tRecordOnePtr = *tMantisPtr;
         tRecordOnePtr++;

@@ -39,7 +39,14 @@ MantisPX1500* MantisPX1500::digFromEnv( safeEnvPtr& env )
     NewPX1500->fRecordLength = tEnv->getRecordLength();
     NewPX1500->fBufferCount = tEnv->getBufferCount();
 
-    NewPX1500->fPciRecordLength = tEnv->getChannelMode() * tEnv->getRecordLength();
+    if( NewPX1500->fChannelMode == 1 )
+    {
+        NewPX1500->fPciRecordLength = 1 * tEnv->getRecordLength();
+    }
+    if( NewPX1500->fChannelMode == 2 )
+    {
+        NewPX1500->fPciRecordLength = 2 * tEnv->getRecordLength();
+    }
     NewPX1500->fRunDurationLastRecord = (unsigned long) (ceil( (double)( tEnv->getAcquisitionRate() * tEnv->getRunDuration() * 1.e3 )/(double)( tEnv->getRecordLength() ) ));
 
     return NewPX1500;
@@ -89,18 +96,13 @@ void MantisPX1500::Initialize()
             exit( -1 );
         }
     }
-    else
-    {
-        cout << "  *invalid channel mode setting <" << fChannelMode << ">" << endl;
-        exit( -1 );
-    }
 
     //cout << "  *setting clock rate..." << endl;
 
     tResult = SetInternalAdcClockRatePX4( fHandle, fAcquisitionRate );
     if( tResult != SIG_SUCCESS )
     {
-        DumpLibErrorPX4( tResult, "failed to set sampling rate: " );
+        DumpLibErrorPX4( tResult, "failed to set clock rate: " );
         exit( -1 );
     }
 
