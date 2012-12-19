@@ -26,21 +26,19 @@ class MantisFileWriter :
     private:
         MantisFileWriter();
 
+        Monarch* fMonarch;
+        MonarchRecord* fMonarchRecordInterleaved;
+        unsigned int fPciRecordLength;
+        unsigned long fRecordCount;
+        unsigned long long fLiveMicroseconds;
+
         string fFileName;
         unsigned int fRunDuration;
         double fAcquisitionRate;
         unsigned int fRecordLength;
         unsigned int fChannelMode;
 
-        bool FlushOneChannel( MantisBufferRecord* tBufferRecord );
-        bool FlushTwoChannel( MantisBufferRecord* tBufferRecord );
-        bool (MantisFileWriter::*fFlushFunction)( MantisBufferRecord* tBufferRecord );
-
-        Monarch* fMonarch;
-        MonarchRecord* fMonarchRecordOne;
-        MonarchRecord* fMonarchRecordTwo;
-        unsigned long fRecordCount;
-        unsigned long long fLiveMicroseconds;
+        bool Flush( MantisBufferRecord* aBufferRecord );
 };
 
 #endif

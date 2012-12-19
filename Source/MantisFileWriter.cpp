@@ -8,41 +8,40 @@ using std::cout;
 using std::endl;
 
 MantisFileWriter::MantisFileWriter() :
+    fMonarch( NULL ),
+    fMonarchRecordInterleaved( NULL ),
+    fPciRecordLength( 0 ),
+    fRecordCount( 0 ),
+    fLiveMicroseconds( 0 ),
     fFileName(""),
     fRunDuration( 0 ),
     fAcquisitionRate( 0. ),
     fRecordLength( 0 ),
-    fChannelMode( 0 ),
-    fFlushFunction( &MantisFileWriter::FlushOneChannel ),
-    fMonarch( NULL ),
-    fMonarchRecordOne( NULL ),
-    fMonarchRecordTwo( NULL ),
-    fRecordCount( 0 ),
-    fLiveMicroseconds( 0 )
+    fChannelMode( 0 )
 {
 }
 MantisFileWriter::~MantisFileWriter()
 {
 }
 
-MantisFileWriter* MantisFileWriter::writerFromEnv( safeEnvPtr& env )
+MantisFileWriter* MantisFileWriter::writerFromEnv( safeEnvPtr& tEnv )
 {
     MantisFileWriter* NewFileWriter = new MantisFileWriter();
 
-    NewFileWriter->fFileName = (env.get())->getFileName();
-    NewFileWriter->fRunDuration = (env.get())->getRunDuration();
-    NewFileWriter->fAcquisitionRate = (env.get())->getAcquisitionRate();
-    NewFileWriter->fRecordLength = (env.get())->getRecordLength();
-    NewFileWriter->fChannelMode = (env.get())->getChannelMode();
+    NewFileWriter->fFileName = tEnv->getFileName();
+    NewFileWriter->fRunDuration = tEnv->getRunDuration();
+    NewFileWriter->fAcquisitionRate = tEnv->getAcquisitionRate();
+    NewFileWriter->fRecordLength = tEnv->getRecordLength();
+    NewFileWriter->fChannelMode = tEnv->getChannelMode();
 
     if( NewFileWriter->fChannelMode == 1 )
     {
-        NewFileWriter->fFlushFunction = &MantisFileWriter::FlushOneChannel;
+        NewFileWriter->fPciRecordLength = 1 * tEnv->getRecordLength();
     }
 
     if( NewFileWriter->fChannelMode == 2 )
     {
-        NewFileWriter->fFlushFunction = &MantisFileWriter::FlushTwoChannel;
+        NewFileWriter->fPciRecordLength = 2 * tEnv->getRecordLength();
     }
 
     return NewFileWriter;
@@ -51,7 +50,6 @@ MantisFileWriter* MantisFileWriter::writerFromEnv( safeEnvPtr& env )
 void MantisFileWriter::Initialize()
 {
     fMonarch = Monarch::OpenForWriting( fFileName );
-
 
     MonarchHeader* tHeader = fMonarch->GetHeader();
     tHeader->SetFilename( fFileName );
@@ -79,8 +77,7 @@ void MantisFileWriter::Execute()
     bool tResult;
     timeval tStartTime;
     timeval tEndTime;
-    fMonarchRecordOne = fMonarch->GetRecordOne();
-    fMonarchRecordTwo = fMonarch->GetRecordTwo();
+    fMonarchRecordInterleaved = fMonarch->GetRecord();
 
     while( fIterator->TryIncrement() == true )
         ;
@@ -119,7 +116,7 @@ void MantisFileWriter::Execute()
 
         //cout << "writing at <" << fIterator->Index() << ">" << endl;
 
-        tResult = (this->*fFlushFunction)( fIterator->Record() );
+        tResult = Flush( fIterator->Record() );
         if( tResult == false )
         {
             //GET OUT
@@ -150,49 +147,13 @@ void MantisFileWriter::Finalize()
     return;
 }
 
-bool MantisFileWriter::FlushOneChannel( MantisBufferRecord* aBufferRecord )
+bool MantisFileWriter::Flush( MantisBufferRecord* aBufferRecord )
 {
-    fMonarchRecordOne->fCId = 1;
-    fMonarchRecordOne->fAId = aBufferRecord->AcquisitionId();
-    fMonarchRecordOne->fRId = aBufferRecord->RecordId();
-    fMonarchRecordOne->fTick = aBufferRecord->TimeStamp();
+    fMonarchRecordInterleaved->fAId = aBufferRecord->AcquisitionId();
+    fMonarchRecordInterleaved->fRId = aBufferRecord->RecordId();
+    fMonarchRecordInterleaved->fTick = aBufferRecord->TimeStamp();
 
-    memcpy( fMonarchRecordOne->fDataPtr, aBufferRecord->DataPtr(), fRecordLength );
-
-    if( fMonarch->WriteRecord() == false )
-    {
-        return false;
-    }
-
-    return true;
-}
-
-bool MantisFileWriter::FlushTwoChannel( MantisBufferRecord* aBufferRecord )
-{
-    fMonarchRecordOne->fCId = 1;
-    fMonarchRecordOne->fAId = aBufferRecord->AcquisitionId();
-    fMonarchRecordOne->fRId = aBufferRecord->RecordId();
-    fMonarchRecordOne->fTick = aBufferRecord->TimeStamp();
-
-    fMonarchRecordTwo->fCId = 2;
-    fMonarchRecordTwo->fAId = aBufferRecord->AcquisitionId();
-    fMonarchRecordTwo->fRId = aBufferRecord->RecordId();
-    fMonarchRecordTwo->fTick = aBufferRecord->TimeStamp();
-
-    MantisBufferRecord::DataType* tMantisPtr = aBufferRecord->DataPtr();
-    DataType* tRecordOnePtr = fMonarchRecordOne->fDataPtr;
-    DataType* tRecordTwoPtr = fMonarchRecordTwo->fDataPtr;
-
-    for( size_t tIndex = 0; tIndex < fRecordLength; tIndex++ )
-    {
-        *tRecordOnePtr = *tMantisPtr;
-        tRecordOnePtr++;
-        tMantisPtr++;
-
-        *tRecordTwoPtr = *tMantisPtr;
-        tRecordTwoPtr++;
-        tMantisPtr++;
-    }
+    memcpy( fMonarchRecordInterleaved->fDataPtr, aBufferRecord->DataPtr(), fRecordLength );
 
     if( fMonarch->WriteRecord() == false )
     {
