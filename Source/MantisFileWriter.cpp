@@ -1,7 +1,7 @@
 #include "MantisFileWriter.hpp"
 
 #include <sys/time.h> // for gettimeofday()
-#include <cstring>
+#include <cstring> // for memcpy()
 
 #include <iostream>
 using std::cout;
@@ -77,7 +77,7 @@ void MantisFileWriter::Execute()
     bool tResult;
     timeval tStartTime;
     timeval tEndTime;
-    fMonarchRecordInterleaved = fMonarch->GetRecord();
+    fMonarchRecordInterleaved = fMonarch->GetRecordInterleaved();
 
     while( fIterator->TryIncrement() == true )
         ;
