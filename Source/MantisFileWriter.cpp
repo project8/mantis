@@ -65,7 +65,7 @@ void MantisFileWriter::Initialize()
         tHeader->SetAcqMode( sTwoChannel );
     }
 
-    if( fMonarch->WriteHeader() )
+    if( fMonarch->WriteHeader() == false )
     {
         cout << "could not write the header? what?" << endl;
     }
