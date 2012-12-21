@@ -70,6 +70,12 @@ void MantisFileWriter::Initialize()
         cout << "could not write the header? what?" << endl;
     }
 
+    fMonarchRecordInterleaved = fMonarch->GetRecordInterleaved();
+    if( fMonarchRecordInterleaved == NULL )
+    {
+        cout << "monarch record pointer is null? what?" << endl;
+    }
+
     return;
 }
 
@@ -80,7 +86,6 @@ void MantisFileWriter::Execute()
     bool tResult;
     timeval tStartTime;
     timeval tEndTime;
-    fMonarchRecordInterleaved = fMonarch->GetRecordInterleaved();
 
     while( fIterator->TryIncrement() == true )
         ;
