@@ -66,7 +66,6 @@ void MantisFileWriter::Initialize()
 
     fMonarch->WriteHeader();
     fMonarchRecordInterleaved = fMonarch->GetRecordInterleaved();
-    cout << "monarch record pointer is <" << fMonarchRecordInterleaved << ">" << endl;
 
     return;
 }
@@ -149,10 +148,6 @@ void MantisFileWriter::Finalize()
 
 bool MantisFileWriter::Flush( MantisBufferRecord* aBufferRecord )
 {
-    cout << "record pointer is <" << fMonarchRecordInterleaved << ">" << endl;
-    cout << "flushing record <" << aBufferRecord->RecordId() << "> ... ";
-    cout.flush();
-
     fMonarchRecordInterleaved->fAId = aBufferRecord->AcquisitionId();
     fMonarchRecordInterleaved->fRId = aBufferRecord->RecordId();
     fMonarchRecordInterleaved->fTick = aBufferRecord->TimeStamp();
@@ -163,8 +158,6 @@ bool MantisFileWriter::Flush( MantisBufferRecord* aBufferRecord )
     {
         return false;
     }
-
-    cout << "done" << endl;
 
     return true;
 }

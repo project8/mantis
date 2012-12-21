@@ -111,8 +111,6 @@ void MantisPX1500::Initialize()
     MantisBufferIterator* tIterator = fBuffer->CreateIterator();
     for( size_t Index = 0; Index < fBufferCount; Index++ )
     {
-        cout << "    *allocating block <" << Index << ">" << endl;
-
         tResult = AllocateDmaBufferPX4( fHandle, fPciRecordLength, &tIterator->Record()->DataPtr() );
         if( tResult != SIG_SUCCESS )
         {
@@ -249,11 +247,11 @@ void MantisPX1500::Finalize()
 {
     int tResult;
 
+    cout << "  *deallocating dma buffer of <" << fBufferCount << "> blocks..." << endl;
+
     MantisBufferIterator* tIterator = fBuffer->CreateIterator();
     for( size_t Index = 0; Index < fBufferCount; Index++ )
     {
-        cout << "    *deallocating block <" << Index << ">" << endl;
-
         tResult = FreeDmaBufferPX4( fHandle, tIterator->Record()->DataPtr() );
         if( tResult != SIG_SUCCESS )
         {
