@@ -74,7 +74,6 @@ void MantisFileWriter::Execute()
 {
     MantisBufferIterator* fIterator = fBuffer->CreateIterator();
 
-    bool tResult;
     timeval tStartTime;
     timeval tEndTime;
 
@@ -115,8 +114,7 @@ void MantisFileWriter::Execute()
 
         //cout << "writing at <" << fIterator->Index() << ">" << endl;
 
-        tResult = Flush( fIterator->Record() );
-        if( tResult == false )
+        if( Flush( fIterator->Record() ) == false )
         {
             //GET OUT
             delete fIterator;
