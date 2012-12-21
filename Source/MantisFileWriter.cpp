@@ -71,10 +71,7 @@ void MantisFileWriter::Initialize()
     }
 
     fMonarchRecordInterleaved = fMonarch->GetRecordInterleaved();
-    if( fMonarchRecordInterleaved == NULL )
-    {
-        cout << "monarch record pointer is null? what?" << endl;
-    }
+    cout << "monarch record pointer is <" << fMonarchRecordInterleaved << ">" << endl;
 
     return;
 }
