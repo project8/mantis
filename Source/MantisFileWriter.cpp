@@ -50,6 +50,7 @@ MantisFileWriter* MantisFileWriter::writerFromEnv( safeEnvPtr& tEnv )
 void MantisFileWriter::Initialize()
 {
     fMonarch = Monarch::OpenForWriting( fFileName );
+    cout << "monarch pointer is <" << fMonarch << ">" << endl;
 
     MonarchHeader* tHeader = fMonarch->GetHeader();
     tHeader->SetFilename( fFileName );
@@ -64,10 +65,6 @@ void MantisFileWriter::Initialize()
     {
         tHeader->SetAcqMode( sTwoChannel );
     }
-
-    cout << "CALLING WRITE HEADER" << endl;
-    fMonarch->WriteHeader();
-    cout << "DONE CALLING WRITE HEADER" << endl;
 
     fMonarchRecordInterleaved = fMonarch->GetRecordInterleaved();
     cout << "monarch record pointer is <" << fMonarchRecordInterleaved << ">" << endl;
