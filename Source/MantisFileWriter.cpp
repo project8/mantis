@@ -65,10 +65,9 @@ void MantisFileWriter::Initialize()
         tHeader->SetAcqMode( sTwoChannel );
     }
 
-    if( fMonarch->WriteHeader() == false )
-    {
-        cout << "could not write the header? what?" << endl;
-    }
+    cout << "CALLING WRITE HEADER" << endl;
+    fMonarch->WriteHeader();
+    cout << "DONE CALLING WRITE HEADER" << endl;
 
     fMonarchRecordInterleaved = fMonarch->GetRecordInterleaved();
     cout << "monarch record pointer is <" << fMonarchRecordInterleaved << ">" << endl;
