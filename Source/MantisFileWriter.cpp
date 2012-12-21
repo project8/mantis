@@ -149,6 +149,7 @@ void MantisFileWriter::Finalize()
 
 bool MantisFileWriter::Flush( MantisBufferRecord* aBufferRecord )
 {
+    cout << "record pointer is <" << fMonarchRecordInterleaved << ">" << endl;
     cout << "flushing record <" << aBufferRecord->RecordId() << "> ... ";
     cout.flush();
 
@@ -156,7 +157,7 @@ bool MantisFileWriter::Flush( MantisBufferRecord* aBufferRecord )
     fMonarchRecordInterleaved->fRId = aBufferRecord->RecordId();
     fMonarchRecordInterleaved->fTick = aBufferRecord->TimeStamp();
 
-    memcpy( fMonarchRecordInterleaved->fDataPtr, aBufferRecord->DataPtr(), fRecordLength );
+    memcpy( fMonarchRecordInterleaved->fDataPtr, aBufferRecord->DataPtr(), fPciRecordLength );
 
     if( fMonarch->WriteRecord() == false )
     {
