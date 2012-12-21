@@ -111,13 +111,11 @@ void MantisPX1500::Initialize()
     MantisBufferIterator* tIterator = fBuffer->CreateIterator();
     for( size_t Index = 0; Index < fBufferCount; Index++ )
     {
-        //cout << "    *allocating block <" << Index << ">" << endl;
-
         tResult = AllocateDmaBufferPX4( fHandle, fPciRecordLength, &tIterator->Record()->DataPtr() );
         if( tResult != SIG_SUCCESS )
         {
             stringstream Converter;
-            Converter << "    *failed to allocate block <" << Index << ">";
+            Converter << "failed to allocate dma block <" << Index << ">: ";
             DumpLibErrorPX4( tResult, Converter.str().c_str() );
             exit( -1 );
         }
@@ -252,13 +250,11 @@ void MantisPX1500::Finalize()
     MantisBufferIterator* tIterator = fBuffer->CreateIterator();
     for( size_t Index = 0; Index < fBufferCount; Index++ )
     {
-        //cout << "    *deallocating block <" << Index << ">" << endl;
-
         tResult = FreeDmaBufferPX4( fHandle, tIterator->Record()->DataPtr() );
         if( tResult != SIG_SUCCESS )
         {
             stringstream Converter;
-            Converter << "    *failed to allocate block <" << Index << ">";
+            Converter << "failed to deallocate dma block <" << Index << ">: ";
             DumpLibErrorPX4( tResult, Converter.str().c_str() );
             exit( -1 );
         }
