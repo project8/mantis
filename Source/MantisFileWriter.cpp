@@ -49,23 +49,26 @@ MantisFileWriter* MantisFileWriter::writerFromEnv( safeEnvPtr& tEnv )
 
 void MantisFileWriter::Initialize()
 {
-    fMonarch = Monarch::OpenForWriting( fFileName );
+    fMonarch = Monarch::OpenForWriting( fFileName, sInterleavedMode );
     MonarchHeader* tHeader = fMonarch->GetHeader();
     tHeader->SetFilename( fFileName );
-    tHeader->SetAcqTime( fRunDuration );
-    tHeader->SetAcqRate( fAcquisitionRate );
-    tHeader->SetRecordSize( fRecordLength );
+    tHeader->SetDate( "now" );
+    tHeader->SetDescription( "digitizer data" );
+    tHeader->SetContentMode( sSignalContent );
+    tHeader->SetSourceMode( sMantisSource );
     if( fChannelMode == 1 )
     {
-        tHeader->SetAcqMode( sOneChannel );
+        tHeader->SetFormatMode( sSingleFormat );
     }
     if( fChannelMode == 2 )
     {
-        tHeader->SetAcqMode( sTwoChannel );
+        tHeader->SetFormatMode( sInterleavedDualFormat );
     }
+    tHeader->SetRate( fAcquisitionRate );
+    tHeader->SetLength( fRecordLength );
 
     fMonarch->WriteHeader();
-    fMonarchRecordInterleaved = fMonarch->GetRecordInterleaved();
+    fMonarchRecordInterleaved = fMonarch->GetRecordDualInterleaved();
 
     return;
 }
@@ -146,11 +149,11 @@ void MantisFileWriter::Finalize()
 
 bool MantisFileWriter::Flush( MantisBufferRecord* aBufferRecord )
 {
-    fMonarchRecordInterleaved->fAId = aBufferRecord->AcquisitionId();
-    fMonarchRecordInterleaved->fRId = aBufferRecord->RecordId();
-    fMonarchRecordInterleaved->fTick = aBufferRecord->TimeStamp();
+    fMonarchRecordInterleaved->fAcquisitionId = aBufferRecord->AcquisitionId();
+    fMonarchRecordInterleaved->fRecordId = aBufferRecord->RecordId();
+    fMonarchRecordInterleaved->fTimeStamp = aBufferRecord->TimeStamp();
 
-    memcpy( fMonarchRecordInterleaved->fDataPtr, aBufferRecord->DataPtr(), fPciRecordLength );
+    memcpy( fMonarchRecordInterleaved->fData, aBufferRecord->DataPtr(), fPciRecordLength );
 
     if( fMonarch->WriteRecord() == false )
     {
