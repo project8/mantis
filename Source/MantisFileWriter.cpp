@@ -74,6 +74,7 @@ void MantisFileWriter::Initialize()
         tHeader->SetFormatMode( sInterleavedDualFormat );
     }
     tHeader->SetRate( fAcquisitionRate );
+    tHeader->SetDuration( fRunDuration );
     tHeader->SetLength( fRecordLength );
 
     fMonarch->WriteHeader();
