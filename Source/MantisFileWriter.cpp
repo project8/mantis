@@ -49,10 +49,19 @@ MantisFileWriter* MantisFileWriter::writerFromEnv( safeEnvPtr& tEnv )
 
 void MantisFileWriter::Initialize()
 {
+    time_t tRawTime;
+    struct tm* tTimeInfo;
+    const size_t tDateLength = 512;
+    char tDateString[tDateLength];
+
+    time( &tRawTime );
+    tTimeInfo = localtime( &tRawTime );
+    strftime( tDateString, tDateLength,  "%Y-%m-%d %H:%M:%S %z", tTimeInfo );
+
     fMonarch = Monarch::OpenForWriting( fFileName, sInterleavedMode );
     MonarchHeader* tHeader = fMonarch->GetHeader();
     tHeader->SetFilename( fFileName );
-    tHeader->SetDate( "now" );
+    tHeader->SetDate( tDateString );
     tHeader->SetDescription( "digitizer data" );
     tHeader->SetContentMode( sSignalContent );
     tHeader->SetSourceMode( sMantisSource );
