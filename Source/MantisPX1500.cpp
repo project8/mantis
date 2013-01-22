@@ -111,7 +111,7 @@ void MantisPX1500::Initialize()
     MantisBufferIterator* tIterator = fBuffer->CreateIterator();
     for( size_t Index = 0; Index < fBufferCount; Index++ )
     {
-        tResult = AllocateDmaBufferPX4( fHandle, fPciRecordLength, &tIterator->Record()->DataPtr() );
+        tResult = AllocateDmaBufferPX4( fHandle, fPciRecordLength, &tIterator->Record()->Data() );
         if( tResult != SIG_SUCCESS )
         {
             stringstream Converter;
