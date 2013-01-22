@@ -97,7 +97,7 @@ void MantisPX1500::Initialize()
         }
     }
 
-    //cout << "  *setting clock rate..." << endl;
+    cout << "  *setting clock rate..." << endl;
 
     tResult = SetInternalAdcClockRatePX4( fHandle, fAcquisitionRate );
     if( tResult != SIG_SUCCESS )
