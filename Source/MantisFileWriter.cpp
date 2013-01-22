@@ -58,27 +58,28 @@ void MantisFileWriter::Initialize()
     tTimeInfo = localtime( &tRawTime );
     strftime( tDateString, tDateLength,  "%Y-%m-%d %H:%M:%S %z", tTimeInfo );
 
-    fMonarch = Monarch::OpenForWriting( fFileName, sInterleavedMode );
+    fMonarch = Monarch::OpenForWriting( fFileName );
     MonarchHeader* tHeader = fMonarch->GetHeader();
     tHeader->SetFilename( fFileName );
-    tHeader->SetDate( tDateString );
+    tHeader->SetTimestamp( tDateString );
     tHeader->SetDescription( "digitizer data" );
-    tHeader->SetContentMode( sSignalContent );
-    tHeader->SetSourceMode( sMantisSource );
+    tHeader->SetContentMode( sContentSignal );
+    tHeader->SetSourceMode( sSourceMantis );
     if( fChannelMode == 1 )
     {
-        tHeader->SetFormatMode( sSingleFormat );
+        tHeader->SetFormatMode( sFormatSingle );
     }
     if( fChannelMode == 2 )
     {
-        tHeader->SetFormatMode( sInterleavedDualFormat );
+        tHeader->SetFormatMode( sFormatInterleavedDual );
     }
     tHeader->SetRate( fAcquisitionRate );
     tHeader->SetDuration( fRunDuration );
     tHeader->SetLength( fRecordLength );
 
     fMonarch->WriteHeader();
-    fMonarchRecordInterleaved = fMonarch->GetRecordDualInterleaved();
+    fMonarch->SetInterface( sInterfaceInterleaved );
+    fMonarchRecordInterleaved = fMonarch->GetRecordInterleaved();
 
     return;
 }
@@ -161,9 +162,9 @@ bool MantisFileWriter::Flush( MantisBufferRecord* aBufferRecord )
 {
     fMonarchRecordInterleaved->fAcquisitionId = aBufferRecord->AcquisitionId();
     fMonarchRecordInterleaved->fRecordId = aBufferRecord->RecordId();
-    fMonarchRecordInterleaved->fTimeStamp = aBufferRecord->TimeStamp();
+    fMonarchRecordInterleaved->fTime = aBufferRecord->Time();
 
-    memcpy( fMonarchRecordInterleaved->fData, aBufferRecord->DataPtr(), fPciRecordLength );
+    memcpy( fMonarchRecordInterleaved->fData, aBufferRecord->Data(), fPciRecordLength );
 
     if( fMonarch->WriteRecord() == false )
     {

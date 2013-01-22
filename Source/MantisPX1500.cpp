@@ -179,9 +179,9 @@ void MantisPX1500::Execute()
 
         tIterator->Record()->RecordId() = fRecordCount;
         tIterator->Record()->AcquisitionId() = fAcquisitionCount;
-        tIterator->Record()->TimeStamp() = (1000000 * tEndTime.tv_sec + tEndTime.tv_usec);
+        tIterator->Record()->Time() = (1000000 * tEndTime.tv_sec + tEndTime.tv_usec);
 
-        if( Acquire( tIterator->Record()->DataPtr() ) == false )
+        if( Acquire( tIterator->Record()->Data() ) == false )
         {
             //mark the block as free
             tIterator->State()->SetFree();
@@ -252,7 +252,7 @@ void MantisPX1500::Finalize()
     MantisBufferIterator* tIterator = fBuffer->CreateIterator();
     for( size_t Index = 0; Index < fBufferCount; Index++ )
     {
-        tResult = FreeDmaBufferPX4( fHandle, tIterator->Record()->DataPtr() );
+        tResult = FreeDmaBufferPX4( fHandle, tIterator->Record()->Data() );
         if( tResult != SIG_SUCCESS )
         {
             stringstream Converter;
