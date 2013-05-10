@@ -43,7 +43,7 @@ class MantisPX1500 :
         bool StopAcquisition();
 
         timespec Diff(timespec start, timespec end) const;
-        timespec Sum(timespec start, timespec end) const;
+        timespec Sum(timespec start, timespec diff) const;
 };
 
 #endif
