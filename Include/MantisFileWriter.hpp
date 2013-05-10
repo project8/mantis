@@ -10,6 +10,7 @@
 #include "MonarchRecord.hpp"
 
 #include <string>
+#include <time.h>
 using std::string;
 
 class MantisFileWriter :
@@ -31,6 +32,7 @@ class MantisFileWriter :
         unsigned int fPciRecordLength;
         unsigned long fRecordCount;
         unsigned long long fLiveMicroseconds;
+        timespec fLiveTime;
 
         string fFileName;
         unsigned int fRunDuration;
@@ -39,6 +41,9 @@ class MantisFileWriter :
         unsigned int fChannelMode;
 
         bool Flush( MantisBufferRecord* aBufferRecord );
+
+        timespec Diff(timespec start, timespec end) const;
+        timespec Sum(timespec start, timespec diff) const;
 };
 
 #endif
