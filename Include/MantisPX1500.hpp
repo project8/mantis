@@ -7,6 +7,8 @@
 #include <cstddef> // px1500.h refers to NULL without including cstddef
 #include "px1500.h"
 
+#include <time.h>
+
 class MantisPX1500 :
     public MantisActor
 {
@@ -26,8 +28,10 @@ class MantisPX1500 :
         unsigned long fRunDurationLastRecord;
         unsigned int fAcquisitionCount;
         unsigned long fRecordCount;
-        unsigned long fLiveMicroseconds;
-        unsigned long fDeadMicroseconds;
+        //unsigned long fLiveMicroseconds;
+        //unsigned long fDeadMicroseconds;
+        timespec fLiveTime;
+        timespec fDeadTime;
 
         double fAcquisitionRate;
         unsigned int fChannelMode;
@@ -37,6 +41,9 @@ class MantisPX1500 :
         bool StartAcquisition();
         bool Acquire( MantisBufferRecord::DataType* anAddress );
         bool StopAcquisition();
+
+        timespec Diff(timespec start, timespec end) const;
+        timespec Sum(timespec start, timespec end) const;
 };
 
 #endif
