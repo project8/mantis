@@ -40,6 +40,7 @@ dmake_library_headers( MantisCore
     MantisMutex.hpp
     MantisPX1500.hpp
     MantisThread.hpp
+    MantisTime.hpp
 )
 dmake_library_sources( MantisCore
     MantisActor.cpp
