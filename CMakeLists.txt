@@ -9,13 +9,13 @@ include( $ENV{HOME}/.dmake/dmake.cmake )
 # setup #
 #########
 
-dmake_project_begin( Mantis 0 1 0 )
+dmake_project_begin( Mantis 0 3 0 )
 
 #######################
 # mantis dependencies #
 #######################
 
-dmake_dependency_declare( Monarch 0 1 0 )
+dmake_dependency_declare( Monarch 0 3 0 )
 dmake_dependency_foreign_declare( px1500 0 1 0 )
 
 ##################
