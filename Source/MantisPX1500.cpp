@@ -3,6 +3,7 @@
 #include "MantisTime.hpp"
 
 #include <cstdlib> // for exit()
+#include <cmath> // for ceil()
 
 #include <sstream>
 using std::stringstream;

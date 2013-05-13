@@ -1,5 +1,7 @@
 #include "MantisCondition.hpp"
 
+#include "MantisTime.hpp"
+
 #include <iostream>
 using std::cout;
 using std::endl;
@@ -45,11 +47,8 @@ void MantisCondition::WaitFor( long tDelayNanoseconds )
     pthread_mutex_lock( &fMutex );
     fState = true;
 
-#ifndef CLOCK_MONOTONIC
-#define CLOCK_MONOTONIC 1
-#endif
     timespec tTime;
-    clock_gettime( CLOCK_MONOTONIC, &tTime );
+    MantisTimeGetMonotonic( &tTime );
 
     cout << "told to wait for <" << tDelayNanoseconds << "> nanoseconds" << endl;
     cout << "old seconds: <" << tTime.tv_sec << ">";

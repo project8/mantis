@@ -12,6 +12,7 @@
 
 #ifndef NSEC_PER_SEC
 #define NSEC_PER_SEC 1000000000
+#endif
 
 inline int MantisTimeGetMonotonic(timespec* time)
 {
