@@ -1,8 +1,8 @@
 #include "MantisPX1500.hpp"
 
-#include <time.h> // for clock_gettime()
+#include "MantisTime.hpp"
+
 #include <cstdlib> // for exit()
-#include <cmath> // for ceil()
 
 #include <sstream>
 using std::stringstream;
@@ -17,8 +17,6 @@ MantisPX1500::MantisPX1500() :
     fRunDurationLastRecord( 0 ),
     fAcquisitionCount( 0 ),
     fRecordCount( 0 ),
-    //fLiveMicroseconds( 0 ),
-    //fDeadMicroseconds( 0 ),
     fLiveTime(),
     fDeadTime(),
     fAcquisitionRate( 0. ),
@@ -136,10 +134,6 @@ void MantisPX1500::Execute()
     timespec tStampTime;
     timespec tEndTime;
     timespec tDeadTime;
-    //timeval tStartTime;
-    //timeval tStampTime;
-    //timeval tEndTime;
-    //timeval tDeadTime;
 
     //cout << "px1500 is waiting" << endl;
 
@@ -154,8 +148,7 @@ void MantisPX1500::Execute()
     }
 
     //start timing
-    //gettimeofday( &tStartTime, NULL );
-    clock_gettime( CLOCK_MONOTONIC, &tStartTime );
+    MantisTimeGetMonotonic( &tStartTime );
 
     //go go go go
     while( true )
@@ -169,10 +162,8 @@ void MantisPX1500::Execute()
             tIterator->State()->SetFree();
 
             //get the time and update the number of live microseconds
-            //gettimeofday( &tEndTime, NULL );
-            //fLiveMicroseconds += (1000000 * tEndTime.tv_sec + tEndTime.tv_usec) - (1000000 * tStartTime.tv_sec + tStartTime.tv_usec);
-            clock_gettime( CLOCK_MONOTONIC, &tEndTime );
-            fLiveTime = Sum( fLiveTime, Diff( tStartTime, tEndTime ) );
+            MantisTimeGetMonotonic( &tEndTime );
+            fLiveTime += MantisTimeToNSec( tEndTime ) - MantisTimeToNSec( tStartTime );
 
             //halt the pci acquisition
             StopAcquisition();
@@ -184,13 +175,11 @@ void MantisPX1500::Execute()
 
         tIterator->State()->SetAcquiring();
 
-        //gettimeofday( &tStampTime, NULL );
-        clock_gettime( CLOCK_MONOTONIC, &tStampTime );
+        MantisTimeGetMonotonic( &tStampTime );
 
         tIterator->Record()->RecordId() = fRecordCount;
         tIterator->Record()->AcquisitionId() = fAcquisitionCount;
-        //tIterator->Record()->Time() = (1000000 * tEndTime.tv_sec + tEndTime.tv_usec);
-        tIterator->Record()->TimeStamp() = (1000000000 * tEndTime.tv_sec + tEndTime.tv_nsec);
+        tIterator->Record()->Time() = MantisTimeToNSec( tEndTime );
 
         if( Acquire( tIterator->Record()->Data() ) == false )
         {
@@ -198,10 +187,8 @@ void MantisPX1500::Execute()
             tIterator->State()->SetFree();
 
             //get the time and update the number of live microseconds
-            //gettimeofday( &tEndTime, NULL );
-            //fLiveMicroseconds += (1000000 * tEndTime.tv_sec + tEndTime.tv_usec) - (1000000 * tStartTime.tv_sec + tStartTime.tv_usec);
-            clock_gettime( CLOCK_MONOTONIC, &tEndTime );
-            fLiveTime = Sum( fLiveTime, Diff( tStartTime, tEndTime ) );
+            MantisTimeGetMonotonic( &tEndTime );
+            fLiveTime += MantisTimeToNSec( tEndTime ) - MantisTimeToNSec( tStartTime );
 
             //halt the pci acquisition
             StopAcquisition();
@@ -218,10 +205,8 @@ void MantisPX1500::Execute()
             //cout << "px1500 is blocked at <" << tIterator->Index() << ">" << endl;
 
             //get the time and update the number of live microseconds
-            //gettimeofday( &tEndTime, NULL );
-            //fLiveMicroseconds += (1000000 * tEndTime.tv_sec + tEndTime.tv_usec) - (1000000 * tStartTime.tv_sec + tStartTime.tv_usec);
-            clock_gettime( CLOCK_MONOTONIC, &tEndTime );
-            fLiveTime = Sum( fLiveTime, Diff( tStartTime, tEndTime ) );
+            MantisTimeGetMonotonic( &tEndTime );
+            fLiveTime += MantisTimeToNSec( tEndTime ) - MantisTimeToNSec( tStartTime );
 
             //halt the pci acquisition
             if( StopAcquisition() == false )
@@ -235,10 +220,8 @@ void MantisPX1500::Execute()
             fCondition->Wait();
 
             //get the time and update the number of dead microseconds
-            //gettimeofday( &tDeadTime, NULL );
-            //fDeadMicroseconds += (1000000 * tDeadTime.tv_sec + tDeadTime.tv_usec) - (1000000 * tEndTime.tv_sec + tEndTime.tv_usec);
-            clock_gettime( CLOCK_MONOTONIC, &tDeadTime );
-            fDeadTime = Sum( fDeadTime, Diff( tEndTime, tDeadTime ) );
+            MantisTimeGetMonotonic( &tDeadTime );
+            fDeadTime += MantisTimeToNSec( tDeadTime ) - MantisTimeToNSec( tEndTime );
 
             //start acquisition
             if( StartAcquisition() == false )
@@ -249,8 +232,7 @@ void MantisPX1500::Execute()
             }
 
             //start timing
-            //gettimeofday( &tStartTime, NULL );
-            clock_gettime( CLOCK_MONOTONIC, &tStartTime );
+            MantisTimeGetMonotonic( &tStartTime );
 
             tIterator->Increment();
 
@@ -289,10 +271,8 @@ void MantisPX1500::Finalize()
         exit( -1 );
     }
 
-    //double LiveTime = fLiveMicroseconds / 1000000.;
-    //double DeadTime = fDeadMicroseconds / 1000000.;
-    double LiveTime = (double)fLiveTime.tv_sec + (double)fLiveTime.tv_nsec / 1000000000.;
-    double DeadTime = (double)fDeadTime.tv_sec + (double)fDeadTime.tv_nsec / 1000000000.;
+    double LiveTime = fLiveTime / (double)NSEC_PER_SEC;
+    double DeadTime = fDeadTime / (double)NSEC_PER_SEC;
     double MegabytesRead = fRecordCount * (((double) (fPciRecordLength)) / (1048576.));
     double ReadRate = MegabytesRead / LiveTime;
 
@@ -341,32 +321,3 @@ bool MantisPX1500::StopAcquisition()
     fAcquisitionCount++;
     return true;
 }
-
-timespec MantisPX1500::Diff(timespec start, timespec end) const
-{
-    timespec temp;
-    if ((end.tv_nsec - start.tv_nsec < 0)){
-        temp.tv_sec = end.tv_sec - start.tv_sec - 1;
-        temp.tv_nsec = 1000000000 + end.tv_nsec - start.tv_nsec;
-    }
-    else
-    {
-        temp.tv_sec = end.tv_sec - start.tv_sec;
-        temp.tv_nsec = end.tv_nsec - start.tv_nsec;
-    }
-    return temp;
-}
-
-timespec MantisPX1500::Sum(timespec start, timespec diff) const
-{
-    timespec temp = start;
-    temp.tv_nsec += diff.tv_nsec;
-    while (temp.tv_nsec > 1000000000)
-    {
-        temp.tv_sec++;
-        temp.tv_nsec -= 1000000000;
-    }
-    temp.tv_sec += diff.tv_sec;
-    return temp;
-}
-

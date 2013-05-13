@@ -8,7 +8,6 @@
 #include <iostream>
 #include <ostream>
 #include <getopt.h>
-#include <ctime>
 
 class MantisEnv;
 typedef std::auto_ptr< MantisEnv > safeEnvPtr;

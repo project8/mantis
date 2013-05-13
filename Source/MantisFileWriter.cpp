@@ -1,6 +1,7 @@
 #include "MantisFileWriter.hpp"
 
-#include <time.h> // for clock_gettime(), time(), and other functions and data types
+#include "MantisTime.hpp"
+
 #include <cstring> // for memcpy()
 
 #include <iostream>
@@ -14,7 +15,7 @@ MantisFileWriter::MantisFileWriter() :
     fMonarchRecordInterleaved( NULL ),
     fPciRecordLength( 0 ),
     fRecordCount( 0 ),
-    fLiveMicroseconds( 0 ),
+    fLiveTime( 0 ),
     fFileName(""),
     fRunDuration( 0 ),
     fAcquisitionRate( 0. ),
@@ -58,12 +59,13 @@ void MantisFileWriter::Initialize()
     char tDateString[tDateLength];
     stringstream tDateAndTimeCal;
 
-    clock_gettime( CLOCK_MONOTONIC, &tTimeCal );
+    MantisTimeGetMonotonic( &tTimeCal );
     time( &tRawTime );
     tTimeInfo = localtime( &tRawTime );
-    strftime( tDateString, tDateLength,  "%Y-%m-%d %H:%M:%S %z", tTimeInfo );
+    strftime( tDateString, tDateLength,  sDateTimeFormat.c_str(), tTimeInfo ); // sDateTimeFormat is defined in MonarchTypes.hpp
 
-    tDateAndTimeCal << tDateString << " -- " << tTimeCal.tv_sec * 1000000000 + tTimeCal.tv_nsec;
+    // sRecordTimeCalSep is defined in MonarchTypes.hpp
+    tDateAndTimeCal << tDateString << " " << sRecordTimeCalSep << " " << MantisTimeToNSec( tTimeCal );
 
     fMonarch = Monarch::OpenForWriting( fFileName );
     MonarchHeader* tHeader = fMonarch->GetHeader();
@@ -107,7 +109,7 @@ void MantisFileWriter::Execute()
 
     //start timing
     //gettimeofday( &tStartTime, NULL );
-    clock_gettime( CLOCK_MONOTONIC, &tStartTime );
+    MantisTimeGetMonotonic( &tStartTime );
 
     //go go go
     while( true )
@@ -129,8 +131,8 @@ void MantisFileWriter::Execute()
             //get the time and update the number of live microseconds
             //gettimeofday( &tEndTime, NULL );
             //fLiveMicroseconds += (1000000 * tEndTime.tv_sec + tEndTime.tv_usec) - (1000000 * tStartTime.tv_sec + tStartTime.tv_usec);
-            clock_gettime( CLOCK_MONOTONIC, tEndTime );
-            fLiveTime = Sum( fLiveTime, Diff( tEndTime, tStartTime ) );
+            MantisTimeGetMonotonic( &tEndTime );
+            fLiveTime += MantisTimeToNSec( tEndTime ) - MantisTimeToNSec( tStartTime );
 
             delete fIterator;
             return;
@@ -157,7 +159,7 @@ void MantisFileWriter::Execute()
 void MantisFileWriter::Finalize()
 {
     //double LiveTime = fLiveMicroseconds / 1000000.;
-    double LiveTime = (double)fLiveTime.tv_sec + (double)fLiveTime.tv_nsec / 1000000000.;
+    double LiveTime = fLiveTime / (double)NSEC_PER_SEC;
     double MegabytesWritten = fRecordCount * (((double) (fRecordLength * fChannelMode)) / (1048576.));
     double WriteRate = MegabytesWritten / LiveTime;
 
@@ -186,31 +188,3 @@ bool MantisFileWriter::Flush( MantisBufferRecord* aBufferRecord )
 
     return true;
 }
-
-timespec MantisFileWriter::Diff(timespec start, timespec end) const{
-    timespec temp;
-    if ((end.tv_nsec - start.tv_nsec < 0)){
-        temp.tv_sec = end.tv_sec - start.tv_sec - 1;
-        temp.tv_nsec = 1000000000 + end.tv_nsec - start.tv_nsec;
-    }
-    else
-    {
-        temp.tv_sec = end.tv_sec - start.tv_sec;
-        temp.tv_nsec = end.tv_nsec - start.tv_nsec;
-    }
-    return temp;
-}
-
-timespec MantisFileWriter::Sum(timespec start, timespec diff) const{
-    timespec temp = start;
-    temp.tv_nsec += diff.tv_nsec;
-    while (temp.tv_nsec > 1000000000)
-    {
-        temp.tv_sec++;
-        temp.tv_nsec -= 1000000000;
-    }
-    temp.tv_sec += diff.tv_sec;
-    return temp;
-}
-
-
