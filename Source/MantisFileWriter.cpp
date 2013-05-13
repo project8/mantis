@@ -1,11 +1,13 @@
 #include "MantisFileWriter.hpp"
 
-#include <time.h> // for clock_gettime()
+#include <time.h> // for clock_gettime(), time(), and other functions and data types
 #include <cstring> // for memcpy()
 
 #include <iostream>
+#include <sstream>
 using std::cout;
 using std::endl;
+using std::stringstream;
 
 MantisFileWriter::MantisFileWriter() :
     fMonarch( NULL ),
@@ -49,19 +51,24 @@ MantisFileWriter* MantisFileWriter::writerFromEnv( safeEnvPtr& tEnv )
 
 void MantisFileWriter::Initialize()
 {
+    timespec tTimeCal;
     time_t tRawTime;
     struct tm* tTimeInfo;
     const size_t tDateLength = 512;
     char tDateString[tDateLength];
+    stringstream tDateAndTimeCal;
 
+    clock_gettime( CLOCK_MONOTONIC, &tTimeCal );
     time( &tRawTime );
     tTimeInfo = localtime( &tRawTime );
     strftime( tDateString, tDateLength,  "%Y-%m-%d %H:%M:%S %z", tTimeInfo );
 
+    tDateAndTimeCal << tDateString << " -- " << tTimeCal.tv_sec * 1000000000 + tTimeCal.tv_nsec;
+
     fMonarch = Monarch::OpenForWriting( fFileName );
     MonarchHeader* tHeader = fMonarch->GetHeader();
     tHeader->SetFilename( fFileName );
-    tHeader->SetTimestamp( tDateString );
+    tHeader->SetTimestamp( tDateAndTimeCal.str() );
     tHeader->SetDescription( "digitizer data" );
     tHeader->SetContentMode( sContentSignal );
     tHeader->SetSourceMode( sSourceMantis );
