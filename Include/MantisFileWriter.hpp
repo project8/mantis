@@ -37,6 +37,7 @@ class MantisFileWriter :
         double fAcquisitionRate;
         unsigned int fRecordLength;
         unsigned int fChannelMode;
+        long long int fStartTimeMonotonic;
 
         bool Flush( MantisBufferRecord* aBufferRecord );
 };

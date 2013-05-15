@@ -16,7 +16,7 @@
 
 inline int MantisTimeGetMonotonic(timespec* time)
 {
-    return clock_gettime( CLOCK_MONOTONIC, &time );
+    return clock_gettime( CLOCK_MONOTONIC, time );
 }
 
 inline long long int MantisTimeToNSec(timespec time)

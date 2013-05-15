@@ -180,7 +180,7 @@ void MantisPX1500::Execute()
 
         tIterator->Record()->RecordId() = fRecordCount;
         tIterator->Record()->AcquisitionId() = fAcquisitionCount;
-        tIterator->Record()->Time() = MantisTimeToNSec( tEndTime );
+        tIterator->Record()->Time() = MantisTimeToNSec( tStampTime );
 
         if( Acquire( tIterator->Record()->Data() ) == false )
         {

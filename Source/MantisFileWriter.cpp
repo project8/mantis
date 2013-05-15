@@ -60,12 +60,12 @@ void MantisFileWriter::Initialize()
     stringstream tDateAndTimeCal;
 
     MantisTimeGetMonotonic( &tTimeCal );
+    fStartTimeMonotonic = MantisTimeToNSec( tTimeCal );
+
     time( &tRawTime );
     tTimeInfo = localtime( &tRawTime );
     strftime( tDateString, tDateLength,  sDateTimeFormat.c_str(), tTimeInfo ); // sDateTimeFormat is defined in MonarchTypes.hpp
-
-    // sRecordTimeCalSep is defined in MonarchTypes.hpp
-    tDateAndTimeCal << tDateString << " " << sRecordTimeCalSep << " " << MantisTimeToNSec( tTimeCal );
+    tDateAndTimeCal << tDateString;
 
     fMonarch = Monarch::OpenForWriting( fFileName );
     MonarchHeader* tHeader = fMonarch->GetHeader();
@@ -177,7 +177,7 @@ bool MantisFileWriter::Flush( MantisBufferRecord* aBufferRecord )
 {
     fMonarchRecordInterleaved->fAcquisitionId = aBufferRecord->AcquisitionId();
     fMonarchRecordInterleaved->fRecordId = aBufferRecord->RecordId();
-    fMonarchRecordInterleaved->fTime = aBufferRecord->Time();
+    fMonarchRecordInterleaved->fTime = aBufferRecord->Time() - fStartTimeMonotonic;
 
     memcpy( fMonarchRecordInterleaved->fData, aBufferRecord->Data(), fPciRecordLength );
 
