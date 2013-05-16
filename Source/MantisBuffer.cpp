@@ -3,7 +3,7 @@
 MantisBuffer::MantisBuffer() :
     fBufferArray( NULL ),
     fBufferCount( 0 ),
-    fRecordLength( 0 )
+    fRecordSize( 0 )
 {
 }
 MantisBuffer::~MantisBuffer()
@@ -20,7 +20,7 @@ MantisBuffer* MantisBuffer::bufferFromEnv( safeEnvPtr& env )
     MantisBuffer* NewBuffer = new MantisBuffer();
 
     NewBuffer->fBufferCount = (env.get())->getBufferCount();
-    NewBuffer->fRecordLength = (env.get())->getRecordLength();
+    NewBuffer->fRecordSize = (env.get())->getRecordSize();
 
     NewBuffer->fBufferArray = new MantisBufferBlock[NewBuffer->fBufferCount];
 
