@@ -5,7 +5,7 @@ MantisEnv::MantisEnv() :
     fRunDuration( 600000 ), // default run length in milliseconds
     fAcquisitionRate( 500.0 ), // default ADC clock rate (MHz)
     fChannelMode( 1 ), // number of active channels
-    fRecordLength( 4194304 ), // number of bytes in a single record per channel
+    fRecordSize( 4194304 ), // number of bytes in a single record per channel
     fBufferCount( 640 ) // number of circular buffer nodes
 {
 }
@@ -55,14 +55,14 @@ unsigned int MantisEnv::getRunDuration()
     return (*this).fRunDuration;
 }
 
-void MantisEnv::setRecordLength( std::string dWidthStr )
+void MantisEnv::setRecordSize( std::string dWidthStr )
 {
-    std::istringstream( dWidthStr ) >> (*this).fRecordLength;
+    std::istringstream( dWidthStr ) >> (*this).fRecordSize;
     return;
 }
-unsigned int MantisEnv::getRecordLength()
+unsigned int MantisEnv::getRecordSize()
 {
-    return (*this).fRecordLength;
+    return (*this).fRecordSize;
 }
 
 void MantisEnv::setBufferCount( std::string bufCountStr )
@@ -122,7 +122,7 @@ safeEnvPtr MantisEnv::parseArgs( int argc, char** argv )
                     result->setChannelMode( optarg );
                     break;
                 case 'l':
-                    result->setRecordLength( optarg );
+                    result->setRecordSize( optarg );
                     break;
                 case 'c':
                     result->setBufferCount( optarg );
@@ -137,14 +137,14 @@ safeEnvPtr MantisEnv::parseArgs( int argc, char** argv )
         throw e;
     }
 
-    if( (result->fChannelMode == 1) && (result->fRecordLength > 4194304 ) )
+    if( (result->fChannelMode == 1) && (result->fRecordSize > 4194304 ) )
     {
-        result->fRecordLength = 4194304;
+        result->fRecordSize = 4194304;
     }
 
-    if( (result->fChannelMode == 2) && (result->fRecordLength > 2097152 ) )
+    if( (result->fChannelMode == 2) && (result->fRecordSize > 2097152 ) )
     {
-        result->fRecordLength = 2097152;
+        result->fRecordSize = 2097152;
     }
 
     return result;
@@ -157,7 +157,7 @@ void MantisEnv::verifyEnvironment( safeEnvPtr someEnvironment )
 
 std::ostream& operator <<( std::ostream& outstream, safeEnvPtr& obj )
 {
-    outstream << "mantis configuration:\n" << "  *output file name: " << (obj.get())->getFileName() << "\n" << "  *digitizer rate: " << (obj.get())->getAcquisitionRate() << "(MHz)\n" << "  *run duration: " << (obj.get())->getRunDuration() << "(ms)\n" << "  *channel mode: " << (obj.get())->getChannelMode() << "(number of channels)\n" << "  *record length: " << (obj.get())->getRecordLength() << "(bytes)\n" << "  *buffer count: " << (obj.get())->getBufferCount() << "(entries)\n";
+    outstream << "mantis configuration:\n" << "  *output file name: " << (obj.get())->getFileName() << "\n" << "  *digitizer rate: " << (obj.get())->getAcquisitionRate() << "(MHz)\n" << "  *run duration: " << (obj.get())->getRunDuration() << "(ms)\n" << "  *channel mode: " << (obj.get())->getChannelMode() << "(number of channels)\n" << "  *record size: " << (obj.get())->getRecordSize() << "(bytes)\n" << "  *buffer count: " << (obj.get())->getBufferCount() << "(entries)\n";
 
     return outstream;
 }

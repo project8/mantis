@@ -35,7 +35,7 @@ class MantisFileWriter :
         string fFileName;
         unsigned int fRunDuration;
         double fAcquisitionRate;
-        unsigned int fRecordLength;
+        unsigned int fRecordSize;
         unsigned int fChannelMode;
         long long int fStartTimeMonotonic;
 

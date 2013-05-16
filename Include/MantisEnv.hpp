@@ -20,7 +20,7 @@ class MantisEnv
         unsigned int fRunDuration;
         double fAcquisitionRate;
         unsigned int fChannelMode;
-        unsigned int fRecordLength;
+        unsigned int fRecordSize;
         std::size_t fBufferCount;
 
     public:
@@ -41,8 +41,8 @@ class MantisEnv
         void setChannelMode( std::string );
         unsigned int getChannelMode();
 
-        void setRecordLength( std::string );
-        unsigned int getRecordLength();
+        void setRecordSize( std::string );
+        unsigned int getRecordSize();
 
         void setBufferCount( std::string );
         std::size_t getBufferCount();

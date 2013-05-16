@@ -19,8 +19,9 @@ MantisFileWriter::MantisFileWriter() :
     fFileName(""),
     fRunDuration( 0 ),
     fAcquisitionRate( 0. ),
-    fRecordLength( 0 ),
-    fChannelMode( 0 )
+    fRecordSize( 0 ),
+    fChannelMode( 0 ),
+    fStartTimeMonotonic( 0 )
 {
 }
 MantisFileWriter::~MantisFileWriter()
@@ -34,17 +35,17 @@ MantisFileWriter* MantisFileWriter::writerFromEnv( safeEnvPtr& tEnv )
     NewFileWriter->fFileName = tEnv->getFileName();
     NewFileWriter->fRunDuration = tEnv->getRunDuration();
     NewFileWriter->fAcquisitionRate = tEnv->getAcquisitionRate();
-    NewFileWriter->fRecordLength = tEnv->getRecordLength();
+    NewFileWriter->fRecordSize = tEnv->getRecordSize();
     NewFileWriter->fChannelMode = tEnv->getChannelMode();
 
     if( NewFileWriter->fChannelMode == 1 )
     {
-        NewFileWriter->fPciRecordLength = 1 * tEnv->getRecordLength();
+        NewFileWriter->fPciRecordLength = 1 * tEnv->getRecordSize();
     }
 
     if( NewFileWriter->fChannelMode == 2 )
     {
-        NewFileWriter->fPciRecordLength = 2 * tEnv->getRecordLength();
+        NewFileWriter->fPciRecordLength = 2 * tEnv->getRecordSize();
     }
 
     return NewFileWriter;
@@ -72,19 +73,20 @@ void MantisFileWriter::Initialize()
     tHeader->SetFilename( fFileName );
     tHeader->SetTimestamp( tDateAndTimeCal.str() );
     tHeader->SetDescription( "digitizer data" );
-    tHeader->SetContentMode( sContentSignal );
-    tHeader->SetSourceMode( sSourceMantis );
+    tHeader->SetRunType( sRunTypeSignal );
+    tHeader->SetRunSource( sSourceMantis );
+    tHeader->SetAcquisitionMode( fChannelMode );
     if( fChannelMode == 1 )
     {
         tHeader->SetFormatMode( sFormatSingle );
     }
     if( fChannelMode == 2 )
     {
-        tHeader->SetFormatMode( sFormatInterleavedDual );
+        tHeader->SetFormatMode( sFormatMultiInterleaved );
     }
-    tHeader->SetRate( fAcquisitionRate );
-    tHeader->SetDuration( fRunDuration );
-    tHeader->SetLength( fRecordLength );
+    tHeader->SetAcquisitionRate( fAcquisitionRate );
+    tHeader->SetRunDuration( fRunDuration );
+    tHeader->SetRecordSize( fRecordSize );
 
     fMonarch->WriteHeader();
     fMonarch->SetInterface( sInterfaceInterleaved );
@@ -160,7 +162,7 @@ void MantisFileWriter::Finalize()
 {
     //double LiveTime = fLiveMicroseconds / 1000000.;
     double LiveTime = fLiveTime / (double)NSEC_PER_SEC;
-    double MegabytesWritten = fRecordCount * (((double) (fRecordLength * fChannelMode)) / (1048576.));
+    double MegabytesWritten = fRecordCount * (((double) (fRecordSize * fChannelMode)) / (1048576.));
     double WriteRate = MegabytesWritten / LiveTime;
 
     cout << "\nwriter statistics:\n";
