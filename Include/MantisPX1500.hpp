@@ -22,7 +22,7 @@ class MantisPX1500 :
         MantisPX1500();
 
         HPX4 fHandle;
-        unsigned int fPciRecordLength;
+        unsigned int fPciRecordSize;
         unsigned long fRunDurationLastRecord;
         unsigned int fAcquisitionCount;
         unsigned long fRecordCount;
@@ -31,7 +31,7 @@ class MantisPX1500 :
 
         double fAcquisitionRate;
         unsigned int fChannelMode;
-        unsigned int fRecordLength;
+        unsigned int fRecordSize;
         size_t fBufferCount;
 
         bool StartAcquisition();

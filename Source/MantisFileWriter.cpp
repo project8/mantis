@@ -13,7 +13,7 @@ using std::stringstream;
 MantisFileWriter::MantisFileWriter() :
     fMonarch( NULL ),
     fMonarchRecordInterleaved( NULL ),
-    fPciRecordLength( 0 ),
+    fPciRecordSize( 0 ),
     fRecordCount( 0 ),
     fLiveTime( 0 ),
     fFileName(""),
@@ -40,12 +40,12 @@ MantisFileWriter* MantisFileWriter::writerFromEnv( safeEnvPtr& tEnv )
 
     if( NewFileWriter->fChannelMode == 1 )
     {
-        NewFileWriter->fPciRecordLength = 1 * tEnv->getRecordSize();
+        NewFileWriter->fPciRecordSize = 1 * tEnv->getRecordSize();
     }
 
     if( NewFileWriter->fChannelMode == 2 )
     {
-        NewFileWriter->fPciRecordLength = 2 * tEnv->getRecordSize();
+        NewFileWriter->fPciRecordSize = 2 * tEnv->getRecordSize();
     }
 
     return NewFileWriter;
@@ -56,8 +56,8 @@ void MantisFileWriter::Initialize()
     timespec tTimeCal;
     time_t tRawTime;
     struct tm* tTimeInfo;
-    const size_t tDateLength = 512;
-    char tDateString[tDateLength];
+    const size_t tDateSize = 512;
+    char tDateString[tDateSize];
     stringstream tDateAndTimeCal;
 
     MantisTimeGetMonotonic( &tTimeCal );
@@ -65,7 +65,7 @@ void MantisFileWriter::Initialize()
 
     time( &tRawTime );
     tTimeInfo = localtime( &tRawTime );
-    strftime( tDateString, tDateLength,  sDateTimeFormat.c_str(), tTimeInfo ); // sDateTimeFormat is defined in MonarchTypes.hpp
+    strftime( tDateString, tDateSize,  sDateTimeFormat.c_str(), tTimeInfo ); // sDateTimeFormat is defined in MonarchTypes.hpp
     tDateAndTimeCal << tDateString;
 
     fMonarch = Monarch::OpenForWriting( fFileName );
@@ -181,7 +181,7 @@ bool MantisFileWriter::Flush( MantisBufferRecord* aBufferRecord )
     fMonarchRecordInterleaved->fRecordId = aBufferRecord->RecordId();
     fMonarchRecordInterleaved->fTime = aBufferRecord->Time() - fStartTimeMonotonic;
 
-    memcpy( fMonarchRecordInterleaved->fData, aBufferRecord->Data(), fPciRecordLength );
+    memcpy( fMonarchRecordInterleaved->fData, aBufferRecord->Data(), fPciRecordSize );
 
     if( fMonarch->WriteRecord() == false )
     {

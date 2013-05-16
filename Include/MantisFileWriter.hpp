@@ -28,7 +28,7 @@ class MantisFileWriter :
 
         Monarch* fMonarch;
         MonarchRecord* fMonarchRecordInterleaved;
-        unsigned int fPciRecordLength;
+        unsigned int fPciRecordSize;
         unsigned long fRecordCount;
         long long int fLiveTime;
 

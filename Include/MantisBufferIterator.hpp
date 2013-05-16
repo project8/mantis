@@ -6,7 +6,7 @@
 class MantisBufferIterator
 {
     public:
-        MantisBufferIterator( MantisBufferBlock* aBlockArray, const size_t& aBlockArrayLength );
+        MantisBufferIterator( MantisBufferBlock* aBlockArray, const size_t& aBlockArraySize );
         ~MantisBufferIterator();
 
         const size_t& Index();
@@ -22,7 +22,7 @@ class MantisBufferIterator
 
     protected:
         MantisBufferBlock* fBlockArray;
-        const size_t fBlockArrayLength;
+        const size_t fBlockArraySize;
 
         void IncrementIndex();
         void DecrementIndex();
@@ -48,17 +48,17 @@ inline const size_t& MantisBufferIterator::Index()
 inline void MantisBufferIterator::IncrementIndex()
 {
     fPreviousIndex++;
-    if( fPreviousIndex == fBlockArrayLength )
+    if( fPreviousIndex == fBlockArraySize )
     {
         fPreviousIndex = 0;
     }
     fCurrentIndex++;
-    if( fCurrentIndex == fBlockArrayLength )
+    if( fCurrentIndex == fBlockArraySize )
     {
         fCurrentIndex = 0;
     }
     fNextIndex++;
-    if( fNextIndex == fBlockArrayLength )
+    if( fNextIndex == fBlockArraySize )
     {
         fNextIndex = 0;
     }
@@ -69,17 +69,17 @@ inline void MantisBufferIterator::DecrementIndex()
 {
     if( fPreviousIndex == 0 )
     {
-        fPreviousIndex = fBlockArrayLength;
+        fPreviousIndex = fBlockArraySize;
     }
     fPreviousIndex--;
     if( fCurrentIndex == 0 )
     {
-        fCurrentIndex = fBlockArrayLength;
+        fCurrentIndex = fBlockArraySize;
     }
     fCurrentIndex--;
     if( fNextIndex == 0 )
     {
-        fNextIndex = fBlockArrayLength;
+        fNextIndex = fBlockArraySize;
     }
     fNextIndex--;
     return;

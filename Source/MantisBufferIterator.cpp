@@ -4,8 +4,8 @@
 using std::cout;
 using std::endl;
 
-MantisBufferIterator::MantisBufferIterator( MantisBufferBlock* aBlockArray, const size_t& aBlockArrayLength ) :
-    fBlockArray( aBlockArray ), fBlockArrayLength( aBlockArrayLength ), fPreviousIndex( aBlockArrayLength - 1 ),fCurrentIndex( 0 ), fNextIndex( 1 )
+MantisBufferIterator::MantisBufferIterator( MantisBufferBlock* aBlockArray, const size_t& aBlockArraySize ) :
+    fBlockArray( aBlockArray ), fBlockArraySize( aBlockArraySize ), fPreviousIndex( aBlockArraySize - 1 ),fCurrentIndex( 0 ), fNextIndex( 1 )
 {
     while( fBlockArray[fCurrentIndex].fMutex.Trylock() == false)
     {
