@@ -203,7 +203,7 @@ void MantisPX1500::Execute()
 
         if( tIterator->TryIncrement() == false )
         {
-            cout << "px1500 is blocked at <" << tIterator->Index() << ">" << endl;
+            //cout << "px1500 is blocked at <" << tIterator->Index() << ">" << endl;
 
             //get the time and update the number of live microseconds
             MantisTimeGetMonotonic( &tEndTime );
@@ -301,6 +301,7 @@ bool MantisPX1500::StartAcquisition( MantisBufferRecord::DataType* anAddress )
     // Do one acquisition to fully prime the digitizer
     if( anAddress != NULL )
     {
+        // cout << "performing pre-acquisition" << endl;
         tResult = GetPciAcquisitionDataFastPX4( fHandle, ((unsigned int) (fPciRecordSize)), anAddress, 0 );
         if( tResult != SIG_SUCCESS )
         {
