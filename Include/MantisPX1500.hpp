@@ -34,7 +34,7 @@ class MantisPX1500 :
         unsigned int fRecordSize;
         size_t fBufferCount;
 
-        bool StartAcquisition();
+        bool StartAcquisition( MantisBufferRecord::DataType* anAddress = NULL );
         bool Acquire( MantisBufferRecord::DataType* anAddress );
         bool StopAcquisition();
 };

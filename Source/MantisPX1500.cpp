@@ -143,7 +143,7 @@ void MantisPX1500::Execute()
     //cout << "px1500 is loose at <" << tIterator->Index() << ">" << endl;
 
     //start acquisition
-    if( StartAcquisition() == false )
+    if( StartAcquisition( tIterator->Record()->Data() ) == false )
     {
         return;
     }
@@ -203,7 +203,7 @@ void MantisPX1500::Execute()
 
         if( tIterator->TryIncrement() == false )
         {
-            //cout << "px1500 is blocked at <" << tIterator->Index() << ">" << endl;
+            cout << "px1500 is blocked at <" << tIterator->Index() << ">" << endl;
 
             //get the time and update the number of live microseconds
             MantisTimeGetMonotonic( &tEndTime );
@@ -289,7 +289,7 @@ void MantisPX1500::Finalize()
     return;
 }
 
-bool MantisPX1500::StartAcquisition()
+bool MantisPX1500::StartAcquisition( MantisBufferRecord::DataType* anAddress )
 {
     int tResult = BeginBufferedPciAcquisitionPX4( fHandle, PX4_FREE_RUN );
     if( tResult != SIG_SUCCESS )
@@ -297,6 +297,19 @@ bool MantisPX1500::StartAcquisition()
         DumpLibErrorPX4( tResult, "failed to begin dma acquisition: " );
         return false;
     }
+
+    // Do one acquisition to fully prime the digitizer
+    if( anAddress != NULL )
+    {
+        tResult = GetPciAcquisitionDataFastPX4( fHandle, ((unsigned int) (fPciRecordSize)), anAddress, 0 );
+        if( tResult != SIG_SUCCESS )
+        {
+            DumpLibErrorPX4( tResult, "failed to acquire dma data over pci: " );
+            tResult = EndBufferedPciAcquisitionPX4( fHandle );
+            return false;
+        }
+    }
+
     return true;
 }
 bool MantisPX1500::Acquire( MantisBufferRecord::DataType* anAddress )
