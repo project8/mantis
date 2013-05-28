@@ -171,6 +171,7 @@ void MantisPX1500::Execute()
 
             //GET OUT
             delete tIterator;
+            //cout << "exiting because reached last record" << endl;
             return;
         }
 
@@ -196,6 +197,7 @@ void MantisPX1500::Execute()
 
             //GET OUT
             delete tIterator;
+	    cout << "exiting because acquisition failed" << endl;
             return;
         }
 
@@ -214,6 +216,7 @@ void MantisPX1500::Execute()
             {
                 //GET OUT
                 delete tIterator;
+		cout << "exiting because stop acquisition failed after increment failed" << endl;
                 return;
             }
 
@@ -229,6 +232,7 @@ void MantisPX1500::Execute()
             {
                 //GET OUT
                 delete tIterator;
+		cout << "exiting because start acquisition failed after increment failed" << endl;
                 return;
             }
 
