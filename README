@@ -1,0 +1,25 @@
+Mantis is the data-acquisition software for the Project 8 collaboration.
+
+It is currently designed to record data taken from a Signatec PX1500 digitizer.
+
+Mantis requires the PX1500 driver software, and the Monarch library.
+The latter is available at https://github.com/project8/monarch.
+
+Mantis is installed using CMake (version 2.8 or better).
+We recommend an out-of-source build:
+    mkdir build
+    cd build
+    
+To configure the installation you can use cmake, ccmake, or cmake-gui, and you must
+specify the location of the Monarch configuration file (usually MonarchConfig.cmake) 
+relative to the build directory:
+    cmake -DMONARCH_CONFIG=../../path/to/MonarchConfig.cmake ..
+
+To build and install:
+    make
+    make install
+    
+The install prefix is specified by the CMake variable CMAKE_INSTALL_PREFIX.
+The library, binaries, and header files will be installed in the 
+lib, bin, and include subdirectories. The default install prefix is the
+build directory.
