@@ -22,6 +22,7 @@ class MantisEnv
         unsigned int fChannelMode;
         unsigned int fRecordSize;
         std::size_t fBufferCount;
+        std::string fDescription;
 
     public:
         MantisEnv();
@@ -46,6 +47,9 @@ class MantisEnv
 
         void setBufferCount( std::string );
         std::size_t getBufferCount();
+
+        void setDescription( std::string );
+        std::string getDescription();
 
         friend std::ostream& operator <<( std::ostream& outstream, safeEnvPtr& );
 };

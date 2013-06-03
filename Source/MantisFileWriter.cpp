@@ -37,6 +37,7 @@ MantisFileWriter* MantisFileWriter::writerFromEnv( safeEnvPtr& tEnv )
     NewFileWriter->fAcquisitionRate = tEnv->getAcquisitionRate();
     NewFileWriter->fRecordSize = tEnv->getRecordSize();
     NewFileWriter->fChannelMode = tEnv->getChannelMode();
+    NewFileWriter->fDescription = tEnv->getDescription();
 
     if( NewFileWriter->fChannelMode == 1 )
     {
@@ -87,6 +88,7 @@ void MantisFileWriter::Initialize()
     tHeader->SetAcquisitionRate( fAcquisitionRate );
     tHeader->SetRunDuration( fRunDuration );
     tHeader->SetRecordSize( fRecordSize );
+    tHeader->SetDescription( fDescription );
 
     fMonarch->WriteHeader();
     fMonarch->SetInterface( sInterfaceInterleaved );

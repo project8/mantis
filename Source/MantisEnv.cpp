@@ -98,6 +98,17 @@ unsigned int MantisEnv::getChannelMode()
     return (*this).fChannelMode;
 }
 
+void MantisEnv::setDescription( std::string desc )
+{
+    (*this).fDescription = desc;
+    return;
+}
+
+std::string MantisEnv::getDescription()
+{
+    return (*this).fDescription;
+}
+
 safeEnvPtr MantisEnv::parseArgs( int argc, char** argv )
 {
     safeEnvPtr result( new MantisEnv() );
@@ -136,6 +147,15 @@ safeEnvPtr MantisEnv::parseArgs( int argc, char** argv )
     {
         throw e;
     }
+
+    char** descArray = argv + optind;
+    int nWords = argc - optind;
+    std::stringstream descStream;
+    for (int iWord = 0; iWord < nWords; iWord++)
+    {
+        descStream << descArray[iWord];
+    }
+    result->setDescription(descStream.str());
 
     if( (result->fChannelMode == 1) && (result->fRecordSize > 4194304 ) )
     {
