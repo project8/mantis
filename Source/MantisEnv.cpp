@@ -153,7 +153,7 @@ safeEnvPtr MantisEnv::parseArgs( int argc, char** argv )
     std::stringstream descStream;
     for (int iWord = 0; iWord < nWords; iWord++)
     {
-        descStream << descArray[iWord];
+        descStream << descArray[iWord] << " ";
     }
     result->setDescription(descStream.str());
 
