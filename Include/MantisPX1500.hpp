@@ -4,6 +4,7 @@
 #include "MantisActor.hpp"
 
 #include "MantisEnv.hpp"
+#include "MantisBufferRecord.hpp"
 #include <cstddef> // px1500.h refers to NULL without including cstddef
 #include "px1500.h"
 
@@ -22,20 +23,20 @@ class MantisPX1500 :
         MantisPX1500();
 
         HPX4 fHandle;
-        unsigned int fPciRecordSize;
+        unsigned long fPciRecordSize;
         unsigned long fRunDurationLastRecord;
-        unsigned int fAcquisitionCount;
-        unsigned long fRecordCount;
-        long long int fLiveTime; // in nsec
-        long long int fDeadTime; // in nsec
+        MantisBufferRecord::MantisAcquisitionIdType fAcquisitionCount;
+        MantisBufferRecord::MantisRecordIdType fRecordCount;
+        MantisBufferRecord::MantisTimeType fLiveTime; // in nsec
+        MantisBufferRecord::MantisTimeType fDeadTime; // in nsec
 
         double fAcquisitionRate;
         unsigned int fChannelMode;
         unsigned int fRecordSize;
         size_t fBufferCount;
 
-        bool StartAcquisition( MantisBufferRecord::DataType* anAddress = NULL );
-        bool Acquire( MantisBufferRecord::DataType* anAddress );
+        bool StartAcquisition( MantisBufferRecord::MantisDataType* anAddress = NULL );
+        bool Acquire( MantisBufferRecord::MantisDataType* anAddress );
         bool StopAcquisition();
 };
 

@@ -7,40 +7,40 @@
 class MantisBufferRecord
 {
     public:
-        typedef unsigned int AcquisitionIdType;
-        typedef unsigned long int RecordIdType;
-        typedef unsigned long int TimeType;
-        typedef px4_sample_t DataType;
+        typedef unsigned long int MantisAcquisitionIdType;
+        typedef unsigned long int MantisRecordIdType;
+        typedef long long int MantisTimeType;
+        typedef px4_sample_t MantisDataType;
 
     public:
         MantisBufferRecord();
         ~MantisBufferRecord();
 
-        AcquisitionIdType& AcquisitionId();
-        RecordIdType& RecordId();
-        TimeType& Time();
-        DataType*& Data();
+        MantisAcquisitionIdType& AcquisitionId();
+        MantisRecordIdType& RecordId();
+        MantisTimeType& Time();
+        MantisDataType*& Data();
 
     private:
-        AcquisitionIdType fAcquisitionId;
-        RecordIdType fRecordId;
-        TimeType fTime;
-        DataType* fData;
+        MantisAcquisitionIdType fAcquisitionId;
+        MantisRecordIdType fRecordId;
+        MantisTimeType fTime;
+        MantisDataType* fData;
 };
 
-inline MantisBufferRecord::AcquisitionIdType& MantisBufferRecord::AcquisitionId()
+inline MantisBufferRecord::MantisAcquisitionIdType& MantisBufferRecord::AcquisitionId()
 {
     return fAcquisitionId;
 }
-inline MantisBufferRecord::RecordIdType& MantisBufferRecord::RecordId()
+inline MantisBufferRecord::MantisRecordIdType& MantisBufferRecord::RecordId()
 {
     return fRecordId;
 }
-inline MantisBufferRecord::TimeType& MantisBufferRecord::Time()
+inline MantisBufferRecord::MantisTimeType& MantisBufferRecord::Time()
 {
     return fTime;
 }
-inline MantisBufferRecord::DataType*& MantisBufferRecord::Data()
+inline MantisBufferRecord::MantisDataType*& MantisBufferRecord::Data()
 {
     return fData;
 }

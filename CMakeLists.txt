@@ -7,7 +7,7 @@ cmake_minimum_required( VERSION 2.8 )
 project( Mantis )
 
 include( ${CMAKE_SOURCE_DIR}/PackageBuilder.cmake )
-pbuilder_prepare_project( 2 1 0 )
+pbuilder_prepare_project( 2 1 1 )
 
 include_directories( ${CMAKE_SOURCE_DIR}/Include )
 

@@ -179,9 +179,9 @@ void MantisFileWriter::Finalize()
 
 bool MantisFileWriter::Flush( MantisBufferRecord* aBufferRecord )
 {
-    fMonarchRecordInterleaved->fAcquisitionId = aBufferRecord->AcquisitionId();
-    fMonarchRecordInterleaved->fRecordId = aBufferRecord->RecordId();
-    fMonarchRecordInterleaved->fTime = aBufferRecord->Time() - fStartTimeMonotonic;
+    fMonarchRecordInterleaved->fAcquisitionId = (AcquisitionIdType)(aBufferRecord->AcquisitionId());
+    fMonarchRecordInterleaved->fRecordId = (RecordIdType)(aBufferRecord->RecordId());
+    fMonarchRecordInterleaved->fTime = (TimeType)(aBufferRecord->Time()) - fStartTimeMonotonic;
 
     memcpy( fMonarchRecordInterleaved->fData, aBufferRecord->Data(), fPciRecordSize );
 

@@ -197,7 +197,7 @@ void MantisPX1500::Execute()
 
             //GET OUT
             delete tIterator;
-	    cout << "exiting because acquisition failed" << endl;
+            cout << "exiting because acquisition failed" << endl;
             return;
         }
 
@@ -216,7 +216,7 @@ void MantisPX1500::Execute()
             {
                 //GET OUT
                 delete tIterator;
-		cout << "exiting because stop acquisition failed after increment failed" << endl;
+                cout << "exiting because stop acquisition failed after increment failed" << endl;
                 return;
             }
 
@@ -232,7 +232,7 @@ void MantisPX1500::Execute()
             {
                 //GET OUT
                 delete tIterator;
-		cout << "exiting because start acquisition failed after increment failed" << endl;
+                cout << "exiting because start acquisition failed after increment failed" << endl;
                 return;
             }
 
@@ -293,7 +293,7 @@ void MantisPX1500::Finalize()
     return;
 }
 
-bool MantisPX1500::StartAcquisition( MantisBufferRecord::DataType* anAddress )
+bool MantisPX1500::StartAcquisition( MantisBufferRecord::MantisDataType* anAddress )
 {
     int tResult = BeginBufferedPciAcquisitionPX4( fHandle, PX4_FREE_RUN );
     if( tResult != SIG_SUCCESS )
@@ -317,7 +317,7 @@ bool MantisPX1500::StartAcquisition( MantisBufferRecord::DataType* anAddress )
 
     return true;
 }
-bool MantisPX1500::Acquire( MantisBufferRecord::DataType* anAddress )
+bool MantisPX1500::Acquire( MantisBufferRecord::MantisDataType* anAddress )
 {
     int tResult = GetPciAcquisitionDataFastPX4( fHandle, ((unsigned int) (fPciRecordSize)), anAddress, 0 );
     if( tResult != SIG_SUCCESS )
