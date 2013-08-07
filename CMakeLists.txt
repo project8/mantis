@@ -46,61 +46,59 @@ include_directories( ${CMAKE_SOURCE_DIR}/Include )
 #message( STATUS "Found px1500 library: ${PX1500_LIBRARIES}" )
 #pbuilder_add_ext_libraries( ${PX1500_LIBRARIES} )
 
+find_package( Protobuf )
+include_directories( ${PROTOBUF_INCLUDE_DIR} )
+protobuf_generate_cpp( request_source request_header ${CMAKE_CURRENT_SOURCE_DIR}/proto/request.proto )
+protobuf_generate_cpp( response_source response_header ${CMAKE_CURRENT_SOURCE_DIR}/proto/response.proto )
+include_directories( ${CMAKE_CURRENT_BINARY_DIR} )
+pbuilder_add_ext_libraries( ${PROTOBUF_LIBRARIES} )
 
 ##################
 # mantis library #
 ##################
 
-#set( MANTISCORE_HEADERFILES
-#    ${CMAKE_CURRENT_SOURCE_DIR}/Include/MantisActor.hpp
-#    ${CMAKE_CURRENT_SOURCE_DIR}/Include/MantisBufferBlock.hpp
-#    ${CMAKE_CURRENT_SOURCE_DIR}/Include/MantisBuffer.hpp
-#    ${CMAKE_CURRENT_SOURCE_DIR}/Include/MantisBufferIterator.hpp
-#    ${CMAKE_CURRENT_SOURCE_DIR}/Include/MantisBufferRecord.hpp
-#    ${CMAKE_CURRENT_SOURCE_DIR}/Include/MantisBufferState.hpp
-#    ${CMAKE_CURRENT_SOURCE_DIR}/Include/MantisCallable.hpp
-#    ${CMAKE_CURRENT_SOURCE_DIR}/Include/MantisCondition.hpp
-#    ${CMAKE_CURRENT_SOURCE_DIR}/Include/MantisEnv.hpp
-#    ${CMAKE_CURRENT_SOURCE_DIR}/Include/MantisExceptions.hpp
-#    ${CMAKE_CURRENT_SOURCE_DIR}/Include/MantisFileWriter.hpp
-#    ${CMAKE_CURRENT_SOURCE_DIR}/Include/MantisHandlers.hpp
-#    ${CMAKE_CURRENT_SOURCE_DIR}/Include/MantisLogger.hpp
-#    ${CMAKE_CURRENT_SOURCE_DIR}/Include/MantisMutex.hpp
-#    ${CMAKE_CURRENT_SOURCE_DIR}/Include/MantisPX1500.hpp
-#    ${CMAKE_CURRENT_SOURCE_DIR}/Include/MantisThread.hpp
-#    ${CMAKE_CURRENT_SOURCE_DIR}/Include/MantisTime.hpp
-#)
-
 set( MANTISCORE_HEADERFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/exception.hh
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/server_socket.hh
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/client_socket.hh
+    
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/mutex.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/condition.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/callable.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/thread.hh
+    
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/request.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/response.hh
+    
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/server.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/client.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/connection.hh
-)
+    
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/run.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/queue.hh
 
-#set( MANTISCORE_SOURCEFILES
-#    ${CMAKE_CURRENT_SOURCE_DIR}/Source/MantisActor.cpp
-#    ${CMAKE_CURRENT_SOURCE_DIR}/Source/MantisBufferBlock.cpp
-#    ${CMAKE_CURRENT_SOURCE_DIR}/Source/MantisBuffer.cpp
-#    ${CMAKE_CURRENT_SOURCE_DIR}/Source/MantisBufferIterator.cpp
-#    ${CMAKE_CURRENT_SOURCE_DIR}/Source/MantisBufferRecord.cpp
-#    ${CMAKE_CURRENT_SOURCE_DIR}/Source/MantisBufferState.cpp
-#    ${CMAKE_CURRENT_SOURCE_DIR}/Source/MantisCallable.cpp
-#    ${CMAKE_CURRENT_SOURCE_DIR}/Source/MantisCondition.cpp
-#    ${CMAKE_CURRENT_SOURCE_DIR}/Source/MantisEnv.cpp
-#    ${CMAKE_CURRENT_SOURCE_DIR}/Source/MantisExceptions.cpp
-#    ${CMAKE_CURRENT_SOURCE_DIR}/Source/MantisFileWriter.cpp
-#    ${CMAKE_CURRENT_SOURCE_DIR}/Source/MantisLogger.cpp
-#    ${CMAKE_CURRENT_SOURCE_DIR}/Source/MantisMutex.cpp
-#    ${CMAKE_CURRENT_SOURCE_DIR}/Source/MantisPX1500.cpp
-#    ${CMAKE_CURRENT_SOURCE_DIR}/Source/MantisThread.cpp
-#)
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/receiver.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/driver.hh
+)
 
 set( MANTISCORE_SOURCEFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/source/exception.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/source/server_socket.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/source/client_socket.cc
+
+    ${CMAKE_CURRENT_SOURCE_DIR}/source/mutex.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/source/condition.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/source/callable.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/source/thread.cc
+    
+    ${CMAKE_CURRENT_SOURCE_DIR}/source/request.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/source/response.cc
+    
+    ${CMAKE_CURRENT_SOURCE_DIR}/source/server.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/source/client.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/source/connection.cc
+    
+    ${CMAKE_CURRENT_SOURCE_DIR}/source/run.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/source/queue.cc
+    
+    ${CMAKE_CURRENT_SOURCE_DIR}/source/receiver.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/source/driver.cc
 )
 
 add_library( MantisCore ${MANTISCORE_SOURCEFILES} )
@@ -108,7 +106,6 @@ target_link_libraries( MantisCore ${EXTERNAL_LIBRARIES} )
 
 pbuilder_install_headers( ${MANTISCORE_HEADERFILES} )
 pbuilder_install_libraries( MantisCore )
-
 
 ######################
 # mantis executables #

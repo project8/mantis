@@ -1,5 +1,5 @@
-#include "client_socket.hh"
-using mantis::client_socket;
+#include "client.hh"
+using mantis::client;
 using mantis::connection;
 
 #include <string>
@@ -14,7 +14,7 @@ using std::endl;
 
 int main( int argc, char** argv )
 {
-    client_socket t_socket;
+    client t_socket;
     t_socket.open( "localhost", 51385 );
 
     connection* t_connection = t_socket.get_connection();

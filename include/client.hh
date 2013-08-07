@@ -1,5 +1,5 @@
-#ifndef CLIENT_SOCKET_HH_
-#define CLIENT_SOCKET_HH_
+#ifndef CLIENT_HH_
+#define CLIENT_HH_
 
 #include "connection.hh"
 
@@ -9,11 +9,11 @@
 namespace mantis
 {
 
-    class client_socket
+    class client
     {
         public:
-            client_socket();
-            virtual ~client_socket();
+            client();
+            virtual ~client();
 
             void open( const std::string& a_host, const int& a_port );
             void close();

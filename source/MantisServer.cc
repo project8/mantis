@@ -1,6 +1,10 @@
-#include "server_socket.hh"
-using mantis::server_socket;
-using mantis::connection;
+#include "server.hh"
+#include "thread.hh"
+#include "queue.hh"
+#include "receiver.hh"
+#include "driver.hh"
+
+using namespace mantis;
 
 #include <string>
 using std::string;
@@ -14,22 +18,22 @@ using std::endl;
 
 int main( int argc, char** argv )
 {
-    server_socket t_socket;
-    t_socket.open( 51385 );
+    server t_server;
+    t_server.open( 51385 );
 
-    connection* t_connection = t_socket.get_connection();
+    queue t_queue;
 
-    string t_message;
-    t_connection->read( t_message );
+    receiver t_receiver( &t_server, &t_queue );
+    driver t_driver( &t_queue, NULL, NULL );
 
-    cout << "received message <" << t_message << ">" << endl;
+    thread t_receiver_thread( &t_receiver );
+    thread t_driver_thread( &t_driver );
 
-    t_message.assign( "good work" );
-    t_connection->write( t_message );
+    t_receiver_thread.start();
+    t_driver_thread.start();
 
-    cout << "sent message <" << t_message << ">" << endl;
-
-    t_socket.close();
+    t_receiver_thread.join();
+    t_driver_thread.join();
 
     return 0;
 }

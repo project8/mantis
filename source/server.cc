@@ -1,4 +1,4 @@
-#include "server_socket.hh"
+#include "server.hh"
 
 #include "exception.hh"
 
@@ -17,7 +17,7 @@ using std::endl;
 namespace mantis
 {
 
-    server_socket::server_socket() :
+    server::server() :
             f_socket( 0 ),
             f_address( NULL ),
             f_connections(),
@@ -25,11 +25,11 @@ namespace mantis
     {
     }
 
-    server_socket::~server_socket()
+    server::~server()
     {
     }
 
-    void server_socket::open( const int& a_port )
+    void server::open( const int& a_port )
     {
         cout << "opening server socket on port <" << a_port << ">" << endl;
 
@@ -70,7 +70,7 @@ namespace mantis
         return;
     }
 
-    void server_socket::close()
+    void server::close()
     {
         //delete connections
         for( int t_index = 0; t_index < f_index; t_index++ )
@@ -85,7 +85,7 @@ namespace mantis
         ::close( f_socket );
     }
 
-    connection* server_socket::get_connection()
+    connection* server::get_connection()
     {
         int t_socket = 0;
         sockaddr_in* t_address = NULL;

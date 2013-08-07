@@ -1,4 +1,4 @@
-#include "client_socket.hh"
+#include "client.hh"
 
 #include "exception.hh"
 
@@ -17,16 +17,16 @@ using std::endl;
 namespace mantis
 {
 
-    client_socket::client_socket() :
+    client::client() :
             f_connection( NULL )
     {
     }
 
-    client_socket::~client_socket()
+    client::~client()
     {
     }
 
-    void client_socket::open( const std::string& a_host, const int& a_port )
+    void client::open( const std::string& a_host, const int& a_port )
     {
         cout << "opening client socket with host <" << a_host << "> on port <" << a_port << ">" << endl;
 
@@ -72,13 +72,13 @@ namespace mantis
         return;
     }
 
-    void client_socket::close()
+    void client::close()
     {
         //delete connection
         delete f_connection;
     }
 
-    connection* client_socket::get_connection()
+    connection* client::get_connection()
     {
         //return connection
         return f_connection;

@@ -1,5 +1,5 @@
-#ifndef SERVER_SOCKET_HH_
-#define SERVER_SOCKET_HH_
+#ifndef SERVER_HH_
+#define SERVER_HH_
 
 #include "connection.hh"
 
@@ -9,11 +9,11 @@
 namespace mantis
 {
 
-    class server_socket
+    class server
     {
         public:
-            server_socket();
-            virtual ~server_socket();
+            server();
+            virtual ~server();
 
             void open( const int& a_port );
             void close();

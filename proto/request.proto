@@ -1,0 +1,19 @@
+package mantis;
+
+message request
+{
+	//acquisition rate
+	required double rate = 1;
+	
+	//acquisition duration
+	required double duration = 2;
+	
+	//file to write
+	required string file = 3;
+	
+	//date of request
+	required string date = 4;
+
+	//description of request
+	required string description = 5;
+}

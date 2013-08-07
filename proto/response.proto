@@ -1,0 +1,45 @@
+package mantis;
+
+message response
+{
+	//acquisition rate
+	required double rate = 1;
+	
+	//acquisition duration
+	required double duration = 2;
+	
+	//file to write
+	required string file = 3;
+	
+	//date of request
+	required string date = 4;
+
+	//description of request
+	required string description = 5;
+
+	//status of request
+	enum status_t
+	{
+		acknowledged = 0;
+		waiting = 1;
+		ready = 2;
+		running = 3;
+		done = 4;
+	}
+	required status_t status = 6;
+
+	//reader statistics
+	optional uint32 reader_records = 7;
+	optional uint32 reader_acquisitions = 8;
+	optional double reader_live_time = 9;
+	optional double reader_dead_time = 10;
+	optional double reader_megabytes = 11;
+	optional double reader_rate = 12;
+
+	//writer statistics
+	optional uint32 writer_records = 13;
+	optional uint32 writer_acquisitions = 14;
+	optional double writer_live_time = 15;
+	optional double writer_megabytes = 16;
+	optional double writer_rate = 17;
+}
