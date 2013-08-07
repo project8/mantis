@@ -3,6 +3,10 @@
 
 #include <cstddef>
 
+#include <iostream>
+using std::cout;
+using std::endl;
+
 namespace mantis
 {
 
@@ -42,13 +46,19 @@ namespace mantis
                 }
             }
 
-            t_active = f_queue->from_front();
-            t_active->get_response().set_status( response_status_t_ready );
-            t_active->push_response();
-            f_queue->for_each( &run::push_response );
-
-            usleep( 10000 );
-            t_active->get_response().set_status( response_status_t_done );
+            if( f_queue->is_empty() == true )
+            {
+                cout << "[driver] waiting..." << endl;
+            }
+            else
+            {
+                cout << "[driver] spooling..." << endl;
+                t_active = f_queue->from_front();
+                t_active->get_response().set_status( response_status_t_ready );
+                t_active->push_response();
+                f_queue->for_each( &run::push_response );
+                t_active->get_response().set_status( response_status_t_done );
+            }
         }
     }
 

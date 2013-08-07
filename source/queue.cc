@@ -12,6 +12,15 @@ namespace mantis
     {
     }
 
+    bool queue::is_empty()
+    {
+        bool t_empty = false;
+        f_mutex.lock();
+        t_empty = f_runs.empty();
+        f_mutex.unlock();
+        return t_empty;
+    }
+
     void queue::to_front( run* a_run )
     {
         f_mutex.lock();

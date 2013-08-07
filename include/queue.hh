@@ -15,6 +15,8 @@ namespace mantis
             queue();
             virtual ~queue();
 
+            bool is_empty();
+
             void to_front( run* a_run );
             run* from_front();
 
