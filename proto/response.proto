@@ -29,12 +29,12 @@ message response
 	required status_t status = 6;
 
 	//reader statistics
-	optional uint32 reader_records = 7;
-	optional uint32 reader_acquisitions = 8;
-	optional double reader_live_time = 9;
-	optional double reader_dead_time = 10;
-	optional double reader_megabytes = 11;
-	optional double reader_rate = 12;
+	optional uint32 digitizer_records = 7;
+	optional uint32 digitizer_acquisitions = 8;
+	optional double digitizer_live_time = 9;
+	optional double digitizer_dead_time = 10;
+	optional double digitizer_megabytes = 11;
+	optional double digitizer_rate = 12;
 
 	//writer statistics
 	optional uint32 writer_records = 13;

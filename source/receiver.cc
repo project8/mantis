@@ -28,8 +28,6 @@ namespace mantis
 
         while( true )
         {
-            usleep( 100000 );
-
             t_run = new run( f_server->get_connection() );
 
             cout << "[receiver] got a connection..." << endl;
@@ -38,6 +36,7 @@ namespace mantis
 
             request& t_request = t_run->get_request();
             response& t_response = t_run->get_response();
+
             t_response.set_rate( t_request.rate() );
             t_response.set_duration( t_request.duration() );
             t_response.set_file( t_request.file() );

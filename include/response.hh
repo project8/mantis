@@ -193,47 +193,47 @@ class response : public ::google::protobuf::Message {
   inline ::mantis::response_status_t status() const;
   inline void set_status(::mantis::response_status_t value);
   
-  // optional uint32 reader_records = 7;
-  inline bool has_reader_records() const;
-  inline void clear_reader_records();
-  static const int kReaderRecordsFieldNumber = 7;
-  inline ::google::protobuf::uint32 reader_records() const;
-  inline void set_reader_records(::google::protobuf::uint32 value);
+  // optional uint32 digitizer_records = 7;
+  inline bool has_digitizer_records() const;
+  inline void clear_digitizer_records();
+  static const int kDigitizerRecordsFieldNumber = 7;
+  inline ::google::protobuf::uint32 digitizer_records() const;
+  inline void set_digitizer_records(::google::protobuf::uint32 value);
   
-  // optional uint32 reader_acquisitions = 8;
-  inline bool has_reader_acquisitions() const;
-  inline void clear_reader_acquisitions();
-  static const int kReaderAcquisitionsFieldNumber = 8;
-  inline ::google::protobuf::uint32 reader_acquisitions() const;
-  inline void set_reader_acquisitions(::google::protobuf::uint32 value);
+  // optional uint32 digitizer_acquisitions = 8;
+  inline bool has_digitizer_acquisitions() const;
+  inline void clear_digitizer_acquisitions();
+  static const int kDigitizerAcquisitionsFieldNumber = 8;
+  inline ::google::protobuf::uint32 digitizer_acquisitions() const;
+  inline void set_digitizer_acquisitions(::google::protobuf::uint32 value);
   
-  // optional double reader_live_time = 9;
-  inline bool has_reader_live_time() const;
-  inline void clear_reader_live_time();
-  static const int kReaderLiveTimeFieldNumber = 9;
-  inline double reader_live_time() const;
-  inline void set_reader_live_time(double value);
+  // optional double digitizer_live_time = 9;
+  inline bool has_digitizer_live_time() const;
+  inline void clear_digitizer_live_time();
+  static const int kDigitizerLiveTimeFieldNumber = 9;
+  inline double digitizer_live_time() const;
+  inline void set_digitizer_live_time(double value);
   
-  // optional double reader_dead_time = 10;
-  inline bool has_reader_dead_time() const;
-  inline void clear_reader_dead_time();
-  static const int kReaderDeadTimeFieldNumber = 10;
-  inline double reader_dead_time() const;
-  inline void set_reader_dead_time(double value);
+  // optional double digitizer_dead_time = 10;
+  inline bool has_digitizer_dead_time() const;
+  inline void clear_digitizer_dead_time();
+  static const int kDigitizerDeadTimeFieldNumber = 10;
+  inline double digitizer_dead_time() const;
+  inline void set_digitizer_dead_time(double value);
   
-  // optional double reader_megabytes = 11;
-  inline bool has_reader_megabytes() const;
-  inline void clear_reader_megabytes();
-  static const int kReaderMegabytesFieldNumber = 11;
-  inline double reader_megabytes() const;
-  inline void set_reader_megabytes(double value);
+  // optional double digitizer_megabytes = 11;
+  inline bool has_digitizer_megabytes() const;
+  inline void clear_digitizer_megabytes();
+  static const int kDigitizerMegabytesFieldNumber = 11;
+  inline double digitizer_megabytes() const;
+  inline void set_digitizer_megabytes(double value);
   
-  // optional double reader_rate = 12;
-  inline bool has_reader_rate() const;
-  inline void clear_reader_rate();
-  static const int kReaderRateFieldNumber = 12;
-  inline double reader_rate() const;
-  inline void set_reader_rate(double value);
+  // optional double digitizer_rate = 12;
+  inline bool has_digitizer_rate() const;
+  inline void clear_digitizer_rate();
+  static const int kDigitizerRateFieldNumber = 12;
+  inline double digitizer_rate() const;
+  inline void set_digitizer_rate(double value);
   
   // optional uint32 writer_records = 13;
   inline bool has_writer_records() const;
@@ -284,18 +284,18 @@ class response : public ::google::protobuf::Message {
   inline void clear_has_description();
   inline void set_has_status();
   inline void clear_has_status();
-  inline void set_has_reader_records();
-  inline void clear_has_reader_records();
-  inline void set_has_reader_acquisitions();
-  inline void clear_has_reader_acquisitions();
-  inline void set_has_reader_live_time();
-  inline void clear_has_reader_live_time();
-  inline void set_has_reader_dead_time();
-  inline void clear_has_reader_dead_time();
-  inline void set_has_reader_megabytes();
-  inline void clear_has_reader_megabytes();
-  inline void set_has_reader_rate();
-  inline void clear_has_reader_rate();
+  inline void set_has_digitizer_records();
+  inline void clear_has_digitizer_records();
+  inline void set_has_digitizer_acquisitions();
+  inline void clear_has_digitizer_acquisitions();
+  inline void set_has_digitizer_live_time();
+  inline void clear_has_digitizer_live_time();
+  inline void set_has_digitizer_dead_time();
+  inline void clear_has_digitizer_dead_time();
+  inline void set_has_digitizer_megabytes();
+  inline void clear_has_digitizer_megabytes();
+  inline void set_has_digitizer_rate();
+  inline void clear_has_digitizer_rate();
   inline void set_has_writer_records();
   inline void clear_has_writer_records();
   inline void set_has_writer_acquisitions();
@@ -315,13 +315,13 @@ class response : public ::google::protobuf::Message {
   ::std::string* date_;
   ::std::string* description_;
   int status_;
-  ::google::protobuf::uint32 reader_records_;
-  double reader_live_time_;
-  double reader_dead_time_;
-  ::google::protobuf::uint32 reader_acquisitions_;
+  ::google::protobuf::uint32 digitizer_records_;
+  double digitizer_live_time_;
+  double digitizer_dead_time_;
+  ::google::protobuf::uint32 digitizer_acquisitions_;
   ::google::protobuf::uint32 writer_records_;
-  double reader_megabytes_;
-  double reader_rate_;
+  double digitizer_megabytes_;
+  double digitizer_rate_;
   double writer_live_time_;
   double writer_megabytes_;
   double writer_rate_;
@@ -585,136 +585,136 @@ inline void response::set_status(::mantis::response_status_t value) {
   status_ = value;
 }
 
-// optional uint32 reader_records = 7;
-inline bool response::has_reader_records() const {
+// optional uint32 digitizer_records = 7;
+inline bool response::has_digitizer_records() const {
   return (_has_bits_[0] & 0x00000040u) != 0;
 }
-inline void response::set_has_reader_records() {
+inline void response::set_has_digitizer_records() {
   _has_bits_[0] |= 0x00000040u;
 }
-inline void response::clear_has_reader_records() {
+inline void response::clear_has_digitizer_records() {
   _has_bits_[0] &= ~0x00000040u;
 }
-inline void response::clear_reader_records() {
-  reader_records_ = 0u;
-  clear_has_reader_records();
+inline void response::clear_digitizer_records() {
+  digitizer_records_ = 0u;
+  clear_has_digitizer_records();
 }
-inline ::google::protobuf::uint32 response::reader_records() const {
-  return reader_records_;
+inline ::google::protobuf::uint32 response::digitizer_records() const {
+  return digitizer_records_;
 }
-inline void response::set_reader_records(::google::protobuf::uint32 value) {
-  set_has_reader_records();
-  reader_records_ = value;
+inline void response::set_digitizer_records(::google::protobuf::uint32 value) {
+  set_has_digitizer_records();
+  digitizer_records_ = value;
 }
 
-// optional uint32 reader_acquisitions = 8;
-inline bool response::has_reader_acquisitions() const {
+// optional uint32 digitizer_acquisitions = 8;
+inline bool response::has_digitizer_acquisitions() const {
   return (_has_bits_[0] & 0x00000080u) != 0;
 }
-inline void response::set_has_reader_acquisitions() {
+inline void response::set_has_digitizer_acquisitions() {
   _has_bits_[0] |= 0x00000080u;
 }
-inline void response::clear_has_reader_acquisitions() {
+inline void response::clear_has_digitizer_acquisitions() {
   _has_bits_[0] &= ~0x00000080u;
 }
-inline void response::clear_reader_acquisitions() {
-  reader_acquisitions_ = 0u;
-  clear_has_reader_acquisitions();
+inline void response::clear_digitizer_acquisitions() {
+  digitizer_acquisitions_ = 0u;
+  clear_has_digitizer_acquisitions();
 }
-inline ::google::protobuf::uint32 response::reader_acquisitions() const {
-  return reader_acquisitions_;
+inline ::google::protobuf::uint32 response::digitizer_acquisitions() const {
+  return digitizer_acquisitions_;
 }
-inline void response::set_reader_acquisitions(::google::protobuf::uint32 value) {
-  set_has_reader_acquisitions();
-  reader_acquisitions_ = value;
+inline void response::set_digitizer_acquisitions(::google::protobuf::uint32 value) {
+  set_has_digitizer_acquisitions();
+  digitizer_acquisitions_ = value;
 }
 
-// optional double reader_live_time = 9;
-inline bool response::has_reader_live_time() const {
+// optional double digitizer_live_time = 9;
+inline bool response::has_digitizer_live_time() const {
   return (_has_bits_[0] & 0x00000100u) != 0;
 }
-inline void response::set_has_reader_live_time() {
+inline void response::set_has_digitizer_live_time() {
   _has_bits_[0] |= 0x00000100u;
 }
-inline void response::clear_has_reader_live_time() {
+inline void response::clear_has_digitizer_live_time() {
   _has_bits_[0] &= ~0x00000100u;
 }
-inline void response::clear_reader_live_time() {
-  reader_live_time_ = 0;
-  clear_has_reader_live_time();
+inline void response::clear_digitizer_live_time() {
+  digitizer_live_time_ = 0;
+  clear_has_digitizer_live_time();
 }
-inline double response::reader_live_time() const {
-  return reader_live_time_;
+inline double response::digitizer_live_time() const {
+  return digitizer_live_time_;
 }
-inline void response::set_reader_live_time(double value) {
-  set_has_reader_live_time();
-  reader_live_time_ = value;
+inline void response::set_digitizer_live_time(double value) {
+  set_has_digitizer_live_time();
+  digitizer_live_time_ = value;
 }
 
-// optional double reader_dead_time = 10;
-inline bool response::has_reader_dead_time() const {
+// optional double digitizer_dead_time = 10;
+inline bool response::has_digitizer_dead_time() const {
   return (_has_bits_[0] & 0x00000200u) != 0;
 }
-inline void response::set_has_reader_dead_time() {
+inline void response::set_has_digitizer_dead_time() {
   _has_bits_[0] |= 0x00000200u;
 }
-inline void response::clear_has_reader_dead_time() {
+inline void response::clear_has_digitizer_dead_time() {
   _has_bits_[0] &= ~0x00000200u;
 }
-inline void response::clear_reader_dead_time() {
-  reader_dead_time_ = 0;
-  clear_has_reader_dead_time();
+inline void response::clear_digitizer_dead_time() {
+  digitizer_dead_time_ = 0;
+  clear_has_digitizer_dead_time();
 }
-inline double response::reader_dead_time() const {
-  return reader_dead_time_;
+inline double response::digitizer_dead_time() const {
+  return digitizer_dead_time_;
 }
-inline void response::set_reader_dead_time(double value) {
-  set_has_reader_dead_time();
-  reader_dead_time_ = value;
+inline void response::set_digitizer_dead_time(double value) {
+  set_has_digitizer_dead_time();
+  digitizer_dead_time_ = value;
 }
 
-// optional double reader_megabytes = 11;
-inline bool response::has_reader_megabytes() const {
+// optional double digitizer_megabytes = 11;
+inline bool response::has_digitizer_megabytes() const {
   return (_has_bits_[0] & 0x00000400u) != 0;
 }
-inline void response::set_has_reader_megabytes() {
+inline void response::set_has_digitizer_megabytes() {
   _has_bits_[0] |= 0x00000400u;
 }
-inline void response::clear_has_reader_megabytes() {
+inline void response::clear_has_digitizer_megabytes() {
   _has_bits_[0] &= ~0x00000400u;
 }
-inline void response::clear_reader_megabytes() {
-  reader_megabytes_ = 0;
-  clear_has_reader_megabytes();
+inline void response::clear_digitizer_megabytes() {
+  digitizer_megabytes_ = 0;
+  clear_has_digitizer_megabytes();
 }
-inline double response::reader_megabytes() const {
-  return reader_megabytes_;
+inline double response::digitizer_megabytes() const {
+  return digitizer_megabytes_;
 }
-inline void response::set_reader_megabytes(double value) {
-  set_has_reader_megabytes();
-  reader_megabytes_ = value;
+inline void response::set_digitizer_megabytes(double value) {
+  set_has_digitizer_megabytes();
+  digitizer_megabytes_ = value;
 }
 
-// optional double reader_rate = 12;
-inline bool response::has_reader_rate() const {
+// optional double digitizer_rate = 12;
+inline bool response::has_digitizer_rate() const {
   return (_has_bits_[0] & 0x00000800u) != 0;
 }
-inline void response::set_has_reader_rate() {
+inline void response::set_has_digitizer_rate() {
   _has_bits_[0] |= 0x00000800u;
 }
-inline void response::clear_has_reader_rate() {
+inline void response::clear_has_digitizer_rate() {
   _has_bits_[0] &= ~0x00000800u;
 }
-inline void response::clear_reader_rate() {
-  reader_rate_ = 0;
-  clear_has_reader_rate();
+inline void response::clear_digitizer_rate() {
+  digitizer_rate_ = 0;
+  clear_has_digitizer_rate();
 }
-inline double response::reader_rate() const {
-  return reader_rate_;
+inline double response::digitizer_rate() const {
+  return digitizer_rate_;
 }
-inline void response::set_reader_rate(double value) {
-  set_has_reader_rate();
-  reader_rate_ = value;
+inline void response::set_digitizer_rate(double value) {
+  set_has_digitizer_rate();
+  digitizer_rate_ = value;
 }
 
 // optional uint32 writer_records = 13;

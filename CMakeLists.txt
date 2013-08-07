@@ -75,6 +75,10 @@ set( MANTISCORE_HEADERFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/run.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/queue.hh
 
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/block.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/buffer.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/iterator.hh
+
     ${CMAKE_CURRENT_SOURCE_DIR}/include/receiver.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/driver.hh
 )
@@ -96,6 +100,10 @@ set( MANTISCORE_SOURCEFILES
     
     ${CMAKE_CURRENT_SOURCE_DIR}/source/run.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/source/queue.cc
+
+    ${CMAKE_CURRENT_SOURCE_DIR}/source/block.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/source/buffer.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/source/iterator.cc
     
     ${CMAKE_CURRENT_SOURCE_DIR}/source/receiver.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/source/driver.cc
