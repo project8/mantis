@@ -15,11 +15,11 @@ using std::endl;
 int main( int argc, char** argv )
 {
     parser t_parser( argc, argv );
+    request t_request;
+    response t_response;
 
-    cout << "[mantis_standalone] making run..." << endl;
+    cout << "[mantis_standalone] making request..." << endl;
 
-    context* t_run = new context( NULL );
-    request& t_request = t_run->get_request();
     t_request.set_file( t_parser.get_required< string >( "file" ) );
     t_request.set_description( t_parser.get_optional< string >( "description", "testing standalone mantis" ) );
     t_request.set_date( get_string_time() );
@@ -42,11 +42,11 @@ int main( int argc, char** argv )
 
     cout << "[mantis standalone] initializing digitizer..." << endl;
 
-    t_digitizer->initialize( t_run );
+    t_digitizer->initialize( &t_request );
 
     cout << "[mantis standalone] initializing writer..." << endl;
 
-    t_writer->initialize( t_run );
+    t_writer->initialize( &t_request );
 
     cout << "[mantis standalone] starting threads..." << endl;
 
@@ -66,11 +66,11 @@ int main( int argc, char** argv )
 
     cout << "[mantis standalone] finalizing digitizer..." << endl;
 
-    t_digitizer->finalize( t_run );
+    t_digitizer->finalize( &t_response );
 
     cout << "[mantis standalone] finalizing writer..." << endl;
 
-    t_writer->finalize( t_run );
+    t_writer->finalize( &t_response );
 
     cout << "[mantis standalone] cleaning up..." << endl;
 
