@@ -37,19 +37,19 @@ namespace mantis
 
         cout << "[writer] opening file..." << endl;
 
-        f_monarch = Monarch::OpenForWriting( t_request.file() );
+        f_monarch = Monarch::OpenForWriting( a_request->file() );
         f_header = f_monarch->GetHeader();
 
         //required fields
-        f_header->SetFilename( t_request.file() );
+        f_header->SetFilename( a_request->file() );
         f_header->SetAcquisitionMode( sOneChannel );
-        f_header->SetAcquisitionRate( t_request.rate( ) );
-        f_header->SetRunDuration( t_request.duration() );
+        f_header->SetAcquisitionRate( a_request->rate( ) );
+        f_header->SetRunDuration( a_request->duration() );
         f_header->SetRecordSize( 4194304 );
 
         //optional fields
-        f_header->SetTimestamp( t_request.date() );
-        f_header->SetDescription( t_request.description() );
+        f_header->SetTimestamp( a_request->date() );
+        f_header->SetDescription( a_request->description() );
         f_header->SetRunType( sRunTypeSignal );
         f_header->SetRunSource( sSourceMantis );
         f_header->SetFormatMode( sFormatSingle );
@@ -119,22 +119,20 @@ namespace mantis
         return;
     }
 
-    void writer::finalize( context* a_run )
+    void writer::finalize( response* a_response )
     {
-        response& t_response = a_run->get_response();
-
-        t_response.set_writer_records( f_record_count );
-        t_response.set_writer_acquisitions( f_acquisition_count );
-        t_response.set_writer_live_time( double( f_live_time ) / double( 1000000 ) );
-        t_response.set_writer_megabytes( (double) (4 * f_record_count) );
-        t_response.set_writer_rate( (double) (4 * 1000000 * f_record_count) / (double) (f_live_time) );
+        a_response->set_writer_records( f_record_count );
+        a_response->set_writer_acquisitions( f_acquisition_count );
+        a_response->set_writer_live_time( double( f_live_time ) / double( 1000000 ) );
+        a_response->set_writer_megabytes( (double) (4 * f_record_count) );
+        a_response->set_writer_rate( (double) (4 * 1000000 * f_record_count) / (double) (f_live_time) );
 
         cout << "[writer] summary:\n";
-        cout << "  record count: " << t_response.writer_records() << "\n";
-        cout << "  acquisition count: " << t_response.writer_acquisitions() << "\n";
-        cout << "  live time: " << t_response.writer_live_time() << "\n";
-        cout << "  megabytes: " << t_response.writer_megabytes() << "\n";
-        cout << "  rate: " << t_response.writer_rate() << "\n";
+        cout << "  record count: " << a_response->writer_records() << "\n";
+        cout << "  acquisition count: " << a_response->writer_acquisitions() << "\n";
+        cout << "  live time: " << a_response->writer_live_time() << "\n";
+        cout << "  megabytes: " << a_response->writer_megabytes() << "\n";
+        cout << "  rate: " << a_response->writer_rate() << "\n";
 
         return;
     }
