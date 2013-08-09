@@ -244,6 +244,14 @@ namespace mantis
         t_response.set_digitizer_megabytes( (double) (4 * f_record_count) );
         t_response.set_digitizer_rate( (double) (4000000 * f_record_count) / (double) (f_live_time) );
 
+        cout << "[digitizer] summary:\n";
+        cout << "  record count: " << t_response.digitizer_records() << "\n";
+        cout << "  acquisition count: " << t_response.digitizer_acquisitions() << "\n";
+        cout << "  live time: " << t_response.digitizer_live_time() << "\n";
+        cout << "  dead time: " << t_response.digitizer_dead_time() << "\n";
+        cout << "  megabytes: " << t_response.digitizer_megabytes() << "\n";
+        cout << "  rate: " << t_response.digitizer_rate() << "\n";
+
         return;
     }
 

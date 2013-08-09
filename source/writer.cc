@@ -126,6 +126,13 @@ namespace mantis
         t_response.set_writer_megabytes( (double) (4 * f_record_count) );
         t_response.set_writer_rate( (double) (4000000 * f_record_count) / (double) (f_live_time) );
 
+        cout << "[writer] summary:\n";
+        cout << "  record count: " << t_response.writer_records() << "\n";
+        cout << "  acquisition count: " << t_response.writer_acquisitions() << "\n";
+        cout << "  live time: " << t_response.writer_live_time() << "\n";
+        cout << "  megabytes: " << t_response.writer_megabytes() << "\n";
+        cout << "  rate: " << t_response.writer_rate() << "\n";
+
         return;
     }
 
