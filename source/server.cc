@@ -26,7 +26,7 @@ namespace mantis
         //prepare address structure
         socklen_t t_socket_length = sizeof(sockaddr_in);
         f_address = new sockaddr_in();
-        memset( f_address, 0, t_socket_length );
+        ::memset( f_address, 0, t_socket_length );
         f_address->sin_family = AF_INET;
         f_address->sin_addr.s_addr = INADDR_ANY;
         f_address->sin_port = htons( a_port );
@@ -77,9 +77,12 @@ namespace mantis
         //prepare the new address
         socklen_t t_socket_length = sizeof(sockaddr_in);
         t_address = new sockaddr_in();
-        memset( &t_address, 0, t_socket_length );
+        ::memset( &t_address, 0, t_socket_length );
 
         //prepare the new socket
+
+        cout << "about to accept a socket" << endl;
+
         t_socket = ::accept( f_socket, (sockaddr*) (t_address), &t_socket_length );
         if( t_socket < 0 )
         {
@@ -87,6 +90,9 @@ namespace mantis
         }
 
         //return a new connection
+
+        cout << "about to return a new connection" << endl;
+
         return new connection( t_socket, t_address );
     }
 
