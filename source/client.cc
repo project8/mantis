@@ -21,7 +21,7 @@ namespace mantis
             f_socket( -1 ),
             f_address( NULL )
     {
-        cout << "[client] opening client socket with host <" << a_host << "> on port <" << a_port << ">" << endl;
+        cout << "[client] creating client with host <" << a_host << "> on port <" << a_port << ">" << endl;
 
         //find host
         hostent* t_host = gethostbyname( a_host.c_str() );
@@ -33,10 +33,12 @@ namespace mantis
 
         cout << "[client] host found..." << endl;
 
-        //prepare address structure
-        socklen_t t_socket_length = sizeof(sockaddr_in);
+        //initialize address
+        socklen_t t_address_length = sizeof(sockaddr_in);
         f_address = new sockaddr_in();
-        ::memset( f_address, 0, t_socket_length );
+        ::memset( f_address, 0, t_address_length );
+
+        //prepare address
         f_address->sin_family = AF_INET;
         ::memcpy( t_host->h_addr_list[ 0 ], &(f_address->sin_addr.s_addr), t_host->h_length );
         f_address->sin_port = htons( a_port );
@@ -54,7 +56,7 @@ namespace mantis
         cout << "[client] socket opened..." << endl;
 
         //connect socket
-        if( ::connect( f_socket, (sockaddr*) (f_socket), sizeof(sockaddr_in) ) < 0 )
+        if( ::connect( f_socket, (sockaddr*) (f_address), t_address_length ) < 0 )
         {
             throw exception() << "could not create connection";
         }

@@ -77,12 +77,12 @@ namespace mantis
         sockaddr_in* t_address = NULL;
 
         //initialize the new address
-        socklen_t t_socket_length = sizeof(sockaddr_in);
+        socklen_t t_address_length = sizeof(sockaddr_in);
         t_address = new sockaddr_in();
-        ::memset( t_address, 0, t_socket_length );
+        ::memset( t_address, 0, t_address_length );
 
         //accept a connection
-        t_socket = ::accept( f_socket, (sockaddr*) (t_address), &t_socket_length );
+        t_socket = ::accept( f_socket, (sockaddr*) (t_address), &t_address_length );
         if( t_socket < 0 )
         {
             throw exception() << "could not accept connection";
