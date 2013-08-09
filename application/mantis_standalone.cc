@@ -3,6 +3,7 @@
 #include "digitizer.hh"
 #include "writer.hh"
 #include "thread.hh"
+#include "time.hh"
 using namespace mantis;
 
 #include <iostream>
