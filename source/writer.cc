@@ -116,7 +116,7 @@ namespace mantis
         return;
     }
 
-    void writer::Finalize( run* a_run )
+    void writer::finalize( run* a_run )
     {
         response& t_response = a_run->get_response();
 
