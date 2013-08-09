@@ -56,7 +56,7 @@ add_custom_command(
 )
 
 add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/include/status.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/source/statue.pb.cc
+    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/include/status.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/source/status.pb.cc
     COMMAND protoc ARGS --proto_path=${CMAKE_CURRENT_SOURCE_DIR}/proto --cpp_out=${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/proto/status.proto
     COMMAND mv ARGS ${CMAKE_CURRENT_SOURCE_DIR}/status.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/include/status.pb.h
     COMMAND mv ARGS ${CMAKE_CURRENT_SOURCE_DIR}/status.pb.cc ${CMAKE_CURRENT_SOURCE_DIR}/source/status.pb.cc
