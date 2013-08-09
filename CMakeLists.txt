@@ -124,6 +124,6 @@ pbuilder_install_libraries( mantis_core )
 # mantis executables #
 ######################
 
-add_executable( MantisStandalone ${CMAKE_CURRENT_SOURCE_DIR}/application/mantis_standalone.cc )
+add_executable( mantis_standalone ${CMAKE_CURRENT_SOURCE_DIR}/application/mantis_standalone.cc )
 target_link_libraries( mantis_standalone mantis_core ${EXTERNAL_LIBRARIES} )
 pbuilder_install_executables( mantis_standalone )
