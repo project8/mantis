@@ -21,6 +21,10 @@ namespace mantis
 
     connection::~connection()
     {
+        //clean up connection socket
+        ::close( f_socket );
+
+        //clean up connection address
         delete f_address;
     }
 

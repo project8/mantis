@@ -56,6 +56,14 @@ add_custom_command(
 )
 
 add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/include/status.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/source/statue.pb.cc
+    COMMAND protoc ARGS --proto_path=${CMAKE_CURRENT_SOURCE_DIR}/proto --cpp_out=${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/proto/status.proto
+    COMMAND mv ARGS ${CMAKE_CURRENT_SOURCE_DIR}/status.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/include/status.pb.h
+    COMMAND mv ARGS ${CMAKE_CURRENT_SOURCE_DIR}/status.pb.cc ${CMAKE_CURRENT_SOURCE_DIR}/source/status.pb.cc
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+add_custom_command(
     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/include/response.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/source/response.pb.cc
     COMMAND protoc ARGS --proto_path=${CMAKE_CURRENT_SOURCE_DIR}/proto --cpp_out=${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/proto/response.proto
     COMMAND mv ARGS ${CMAKE_CURRENT_SOURCE_DIR}/response.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/include/response.pb.h
@@ -78,6 +86,7 @@ set( MANTISCORE_HEADERFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/thread.hh
     
     ${CMAKE_CURRENT_SOURCE_DIR}/include/request.pb.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/status.pb.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/response.pb.h
     
     ${CMAKE_CURRENT_SOURCE_DIR}/include/server.hh
@@ -91,9 +100,9 @@ set( MANTISCORE_HEADERFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/buffer.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/iterator.hh
 
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/receiver.hh
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/driver.hh
     #${CMAKE_CURRENT_SOURCE_DIR}/include/sender.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/receiver.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/worker.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/digitizer.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/writer.hh
 )
@@ -107,6 +116,7 @@ set( MANTISCORE_SOURCEFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/source/thread.cc
     
     ${CMAKE_CURRENT_SOURCE_DIR}/source/request.pb.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/source/status.pb.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/source/response.pb.cc
     
     ${CMAKE_CURRENT_SOURCE_DIR}/source/server.cc
@@ -120,9 +130,9 @@ set( MANTISCORE_SOURCEFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/source/buffer.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/source/iterator.cc
     
-    ${CMAKE_CURRENT_SOURCE_DIR}/source/receiver.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/source/driver.cc
     #${CMAKE_CURRENT_SOURCE_DIR}/source/sender.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/source/receiver.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/source/worker.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/source/digitizer.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/source/writer.cc
 )
@@ -136,6 +146,14 @@ pbuilder_install_libraries( mantis_core )
 ######################
 # mantis executables #
 ######################
+
+add_executable( test_mantis_server ${CMAKE_CURRENT_SOURCE_DIR}/application/test_mantis_server.cc )
+target_link_libraries( test_mantis_server mantis_core ${EXTERNAL_LIBRARIES} )
+pbuilder_install_executables( test_mantis_server )
+
+add_executable( test_mantis_client ${CMAKE_CURRENT_SOURCE_DIR}/application/test_mantis_client.cc )
+target_link_libraries( test_mantis_client mantis_core ${EXTERNAL_LIBRARIES} )
+pbuilder_install_executables( test_mantis_client )
 
 add_executable( mantis_standalone ${CMAKE_CURRENT_SOURCE_DIR}/application/mantis_standalone.cc )
 target_link_libraries( mantis_standalone mantis_core ${EXTERNAL_LIBRARIES} )

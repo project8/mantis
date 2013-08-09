@@ -6,7 +6,8 @@
 #include "types.hh"
 #include "buffer.hh"
 #include "condition.hh"
-#include "run.hh"
+#include "request.pb.h"
+#include "response.pb.h"
 #include "px1500.h"
 
 namespace mantis
@@ -19,9 +20,9 @@ namespace mantis
             digitizer( buffer* a_buffer, condition* a_condition );
             virtual ~digitizer();
 
-            void initialize( run* a_run );
+            void initialize( request* a_request );
             void execute();
-            void finalize( run* a_run );
+            void finalize( response* a_response );
 
         private:
             buffer* f_buffer;

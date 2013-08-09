@@ -27,10 +27,8 @@ namespace mantis
     {
     }
 
-    void writer::initialize( run* a_run )
+    void writer::initialize( request* a_request )
     {
-        request& t_request = a_run->get_request();
-
         cout << "[writer] resetting counters..." << endl;
 
         f_record_count = 0;
@@ -121,7 +119,7 @@ namespace mantis
         return;
     }
 
-    void writer::finalize( run* a_run )
+    void writer::finalize( context* a_run )
     {
         response& t_response = a_run->get_response();
 

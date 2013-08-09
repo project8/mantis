@@ -1,30 +1,36 @@
 #ifndef QUEUE_HH_
 #define QUEUE_HH_
 
+#include "callable.hh"
+
 #include "mutex.hh"
-#include "run.hh"
+#include "context.hh"
 
 #include <list>
 
 namespace mantis
 {
 
-    class queue
+    class queue :
+        public callable
     {
         public:
             queue();
             virtual ~queue();
 
-            bool is_empty();
+            bool empty();
 
-            void to_front( run* a_run );
-            run* from_back();
+            void to_front( context* a_run );
+            context* from_front();
 
-            void push_response();
+            void to_back( context* a_run );
+            context* from_back();
+
+            void execute();
 
         private:
             mutex f_mutex;
-            std::list< run* > f_runs;
+            std::list< context* > f_runs;
     };
 
 }

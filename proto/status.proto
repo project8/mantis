@@ -1,0 +1,17 @@
+package mantis;
+
+message status
+{
+
+	//state of request
+	enum state_t
+	{
+		acknowledged = 0;
+		waiting = 1;
+		started = 2;
+		running = 3;
+		stopped = 4;
+	}
+	required state_t state = 1;
+
+}

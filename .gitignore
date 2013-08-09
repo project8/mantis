@@ -1,4 +1,4 @@
-Mantis
+*.pb.*
 *~
 #*
 *#
@@ -8,7 +8,4 @@ Mantis
 *.log
 .project
 .cproject
-Build/
-build/
-Install/
-install/
+.DS_Store

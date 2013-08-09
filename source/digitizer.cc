@@ -93,15 +93,13 @@ namespace mantis
         }
     }
 
-    void digitizer::initialize( run* a_run )
+    void digitizer::initialize( request* a_request )
     {
         int t_result;
 
-        request& t_request = a_run->get_request();
-
         cout << "[digitizer] resetting counters..." << endl;
 
-        f_record_last = (record_id_t) (ceil( (double) (t_request.rate() * t_request.duration() * 1.e3) / (double) (4194304) ));
+        f_record_last = (record_id_t) (ceil( (double) (a_request->rate() * a_request->duration() * 1.e3) / (double) (4194304) ));
         f_record_count = 0;
         f_acquisition_count = 0;
         f_live_time = 0;
@@ -109,7 +107,7 @@ namespace mantis
 
         cout << "[digitizer] setting clock rate..." << endl;
 
-        t_result = SetInternalAdcClockRatePX4( f_handle, t_request.rate() );
+        t_result = SetInternalAdcClockRatePX4( f_handle, a_request->rate() );
         if( t_result != SIG_SUCCESS )
         {
             DumpLibErrorPX4( t_result, "failed to set clock rate: " );
@@ -236,24 +234,22 @@ namespace mantis
         return;
     }
 
-    void digitizer::finalize( run* a_run )
+    void digitizer::finalize( response* a_response )
     {
-        response& t_response = a_run->get_response();
-
-        t_response.set_digitizer_records( f_record_count );
-        t_response.set_digitizer_acquisitions( f_acquisition_count );
-        t_response.set_digitizer_live_time( (double) (f_live_time) / (double) (1000000) );
-        t_response.set_digitizer_dead_time( (double) (f_dead_time) / (double) (1000000) );
-        t_response.set_digitizer_megabytes( (double) (4 * f_record_count) );
-        t_response.set_digitizer_rate( (double) (4 * 1000000 * f_record_count) / (double) (f_live_time) );
+        a_response->set_digitizer_records( f_record_count );
+        a_response->set_digitizer_acquisitions( f_acquisition_count );
+        a_response->set_digitizer_live_time( (double) (f_live_time) / (double) (1000000) );
+        a_response->set_digitizer_dead_time( (double) (f_dead_time) / (double) (1000000) );
+        a_response->set_digitizer_megabytes( (double) (4 * f_record_count) );
+        a_response->set_digitizer_rate( (double) (4 * 1000000 * f_record_count) / (double) (f_live_time) );
 
         cout << "[digitizer] summary:\n";
-        cout << "  record count: " << t_response.digitizer_records() << " [#]\n";
-        cout << "  acquisition count: " << t_response.digitizer_acquisitions() << " [#]\n";
-        cout << "  live time: " << t_response.digitizer_live_time() << " [sec]\n";
-        cout << "  dead time: " << t_response.digitizer_dead_time() << " [sec]\n";
-        cout << "  megabytes: " << t_response.digitizer_megabytes() << " [Mb]\n";
-        cout << "  rate: " << t_response.digitizer_rate() << " [Mb/sec]\n";
+        cout << "  record count: " << a_response->digitizer_records() << " [#]\n";
+        cout << "  acquisition count: " << a_response->digitizer_acquisitions() << " [#]\n";
+        cout << "  live time: " << a_response->digitizer_live_time() << " [sec]\n";
+        cout << "  dead time: " << a_response->digitizer_dead_time() << " [sec]\n";
+        cout << "  megabytes: " << a_response->digitizer_megabytes() << " [Mb]\n";
+        cout << "  rate: " << a_response->digitizer_rate() << " [Mb/sec]\n";
 
         return;
     }

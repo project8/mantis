@@ -6,7 +6,8 @@
 #include "types.hh"
 #include "buffer.hh"
 #include "condition.hh"
-#include "run.hh"
+#include "request.pb.h"
+#include "response.pb.h"
 #include "Monarch.hpp"
 #include "MonarchHeader.hpp"
 #include "MonarchRecord.hpp"
@@ -21,9 +22,9 @@ namespace mantis
             writer( buffer* a_buffer, condition* a_condition );
             virtual ~writer();
 
-            void initialize( run* a_run );
+            void initialize( request* a_response );
             void execute();
-            void finalize( run* a_run );
+            void finalize( response* a_response );
 
         private:
             buffer* f_buffer;

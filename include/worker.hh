@@ -10,15 +10,16 @@ namespace mantis
         public callable
     {
         public:
-            worker( run* a_run, digitizer* a_digitizer, writer* a_writer );
+            worker( digitizer* a_digitizer, writer* a_writer, queue* a_queue, condition* a_condition );
             virtual ~worker();
 
             void execute();
 
         private:
-            run* f_run;
             digitizer* f_digitizer;
             writer* f_writer;
+            queue* f_queue;
+            condition* f_condition;
     };
 
 }

@@ -12,20 +12,14 @@ namespace mantis
     class server
     {
         public:
-            server();
+            server( const int& a_port );
             virtual ~server();
-
-            void open( const int& a_port );
-            void close();
 
             connection* get_connection();
 
         private:
             int f_socket;
             sockaddr_in* f_address;
-
-            connection* f_connections[16];
-            int f_index;
     };
 
 }

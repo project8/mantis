@@ -17,21 +17,11 @@ using std::endl;
 namespace mantis
 {
 
-    server::server() :
+    server::server( const int& a_port ) :
             f_socket( 0 ),
-            f_address( NULL ),
-            f_connections(),
-            f_index( 0 )
+            f_address( NULL )
     {
-    }
-
-    server::~server()
-    {
-    }
-
-    void server::open( const int& a_port )
-    {
-        cout << "opening server socket on port <" << a_port << ">" << endl;
+        cout << "[server] opening server socket on port <" << a_port << ">" << endl;
 
         //prepare address structure
         socklen_t t_socket_length = sizeof(sockaddr_in);
@@ -41,7 +31,7 @@ namespace mantis
         f_address->sin_addr.s_addr = INADDR_ANY;
         f_address->sin_port = htons( a_port );
 
-        cout << "server address prepared..." << endl;
+        cout << "[server] address prepared..." << endl;
 
         //open socket
         f_socket = ::socket( AF_INET, SOCK_STREAM, 0 );
@@ -51,33 +41,27 @@ namespace mantis
             return;
         }
 
-        cout << "server socket open..." << endl;
+        cout << "[server] socket open..." << endl;
 
         //bind socket
         if( ::bind( f_socket, (const sockaddr*) (f_address), t_socket_length ) < 0 )
         {
-            throw exception() << "could not bind socket";
+            throw exception() << "[server] could not bind socket";
             return;
         }
 
-        cout << "server socket bound..." << endl;
+        cout << "[server] socket bound..." << endl;
 
         //start listening
         ::listen( f_socket, 10 );
 
-        cout << "server socket listening..." << endl;
+        cout << "[server] listening..." << endl;
 
         return;
     }
 
-    void server::close()
+    server::~server()
     {
-        //delete connections
-        for( int t_index = 0; t_index < f_index; t_index++ )
-        {
-            delete f_connections[ t_index ];
-        }
-
         //clean up server address
         delete f_address;
 
@@ -103,17 +87,7 @@ namespace mantis
         }
 
         //return a new connection
-        if( f_index < 16 )
-        {
-            connection* t_connection = new connection( t_socket, t_address );
-            f_connections[f_index++] = t_connection;
-            return t_connection;
-        }
-        else
-        {
-            throw exception() << "too many connections open";
-            return NULL;
-        }
+        return new connection( t_socket, t_address );
     }
 
 }

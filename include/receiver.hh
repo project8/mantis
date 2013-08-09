@@ -3,17 +3,18 @@
 
 #include "callable.hh"
 
+#include "server.hh"
+#include "queue.hh"
+#include "condition.hh"
+
 namespace mantis
 {
-
-    class server;
-    class queue;
 
     class receiver :
         public callable
     {
         public:
-            receiver( server* a_server, queue* a_queue );
+            receiver( server* a_server, queue* a_queue, condition* a_condition );
             virtual ~receiver();
 
             void execute();
@@ -21,6 +22,7 @@ namespace mantis
         private:
             server* f_server;
             queue* f_queue;
+            condition* f_condition;
     };
 
 }

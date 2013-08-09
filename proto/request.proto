@@ -2,18 +2,27 @@ package mantis;
 
 message request
 {
-	//acquisition rate
-	required double rate = 1;
-	
-	//acquisition duration
-	required double duration = 2;
-	
 	//file to write
-	required string file = 3;
-	
-	//date of request
-	required string date = 4;
+	required string file = 1;
 
 	//description of request
-	required string description = 5;
+	required string description = 2;
+
+	//date of request
+	required string date = 3;
+
+	//acquisition mode
+	enum mode_t
+	{
+		single = 0;
+		dual_interleaved = 1;
+		dual_separate = 2;
+	}
+	required mode_t mode = 4;
+
+	//acquisition rate
+	required double rate = 5;
+	
+	//acquisition duration
+	required double duration = 6;
 }

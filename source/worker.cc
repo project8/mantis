@@ -7,10 +7,11 @@ using std::endl;
 namespace mantis
 {
 
-    worker::worker( run* a_run, digitizer* a_digitizer, writer* a_writer ) :
-            f_run( a_run ),
+    worker::worker( digitizer* a_digitizer, writer* a_writer, queue* a_queue, condition* a_condition ) :
             f_digitizer( a_digitizer ),
-            f_writer( a_writer )
+            f_writer( a_writer ),
+            f_queue( a_queue ),
+            f_condition( a_condition )
     {
     }
 
@@ -20,44 +21,68 @@ namespace mantis
 
     void worker::execute()
     {
-        cout << "[worker] initializing run..." << endl;
+        context* t_context;
 
-        request& t_request = f_run->get_request();
-        response& t_response = f_run->get_response();
+        while( true )
+        {
+            if( f_queue->empty() == true )
+            {
+                f_condition->wait();
+            }
+
+            t_context = f_queue->from_front();
+
+            cout << "[worker] initializing digitizer..." << endl;
+
+            f_digitizer->initialize( t_context->request() );
+
+            cout << "[worker] initializing writer..." << endl;
+
+            f_writer->initialize( t_context->request() );
+
+            cout << "[worker] sending start message..." << endl;
+
+            t_context->status()->set_state( status_state_t_started );
+            t_context->push_status();
 
 
+            cout << "[worker] running..." << endl;
 
-        cout << "[worker] initializing digitizer..." << endl;
+            thread* t_digitizer_thread = new thread( f_digitizer );
+            thread* t_writer_thread = new thread( f_writer );
 
-        f_digitizer->initialize( f_run );
+            t_digitizer_thread->start();
+            t_writer_thread->start();
 
-        cout << "[worker] initializing writer..." << endl;
+            t_context->status()->set_state( status_state_t_running );
+            f_queue->to_front( t_context );
 
-        f_writer->initialize( f_run );
+            t_digitizer_thread->join();
+            t_writer_thread->join();
 
-        cout << "[mantis standalone] starting threads..." << endl;
+            delete t_digitizer_thread;
+            delete t_writer_thread;
 
-        thread* t_digitizer_thread = new thread( t_digitizer );
-        thread* t_writer_thread = new thread( t_writer );
 
-        t_digitizer_thread->start();
-        t_writer_thread->start();
+            t_context = f_queue->from_front();
 
-        t_digitizer_thread->join();
-        t_writer_thread->join();
+            cout << "[worker] finalizing digitizer..." << endl;
 
-        cout << "[mantis standalone] cleaning threads..." << endl;
+            f_digitizer->finalize( t_context->response() );
 
-        delete t_digitizer_thread;
-        delete t_writer_thread;
+            cout << "[worker] finalizing writer..." << endl;
 
-        cout << "[mantis standalone] finalizing digitizer..." << endl;
+            f_writer->finalize( t_context->response() );
 
-        t_digitizer->finalize( t_run );
+            cout << "[worker] sending stop message..." << endl;
 
-        cout << "[mantis standalone] finalizing writer..." << endl;
+            t_context->status()->set_state( status_state_t_stopped );
+            t_context->push_status();
 
-        t_writer->finalize( t_run );
+            delete t_context;
+        }
+
+        return;
     }
 
 }

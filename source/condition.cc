@@ -19,11 +19,11 @@ namespace mantis
 
     bool condition::is_waiting()
     {
-        bool StateCopy;
+        bool t_state;
         pthread_mutex_lock( &f_mutex );
-        StateCopy = f_state;
+        t_state = f_state;
         pthread_mutex_unlock( &f_mutex );
-        return StateCopy;
+        return t_state;
     }
 
     void condition::wait()
