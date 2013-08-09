@@ -1,5 +1,7 @@
 #include "worker.hh"
 
+#include "thread.hh"
+
 #include <iostream>
 using std::cout;
 using std::endl;
