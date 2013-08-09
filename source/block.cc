@@ -74,27 +74,27 @@ namespace mantis
         return;
     }
 
-    const block::acquisition_id_t& block::get_acquisition_id() const
+    const acquisition_id_t& block::get_acquisition_id() const
     {
         return f_acquisition_id;
     }
-    void block::set_acquisition_id( const block::acquisition_id_t& an_id )
+    void block::set_acquisition_id( const acquisition_id_t& an_id )
     {
         f_acquisition_id = an_id;
         return;
     }
 
-    const block::record_id_t& block::get_record_id() const
+    const record_id_t& block::get_record_id() const
     {
         return f_record_id;
     }
-    void block::set_record_id( const block::record_id_t& an_id )
+    void block::set_record_id( const record_id_t& an_id )
     {
         f_record_id = an_id;
         return;
     }
 
-    const block::timestamp_t& block::get_timestamp() const
+    const timestamp_t& block::get_timestamp() const
     {
         return f_timestamp;
     }
@@ -104,7 +104,7 @@ namespace mantis
         return;
     }
 
-    block::data_t* block::data()
+    data_t* block::data()
     {
         return f_data;
     }
