@@ -76,12 +76,12 @@ namespace mantis
         int t_socket = 0;
         sockaddr_in* t_address = NULL;
 
-        cout << "in connection function" << endl;
-
         //prepare the new address
         socklen_t t_socket_length = sizeof(sockaddr_in);
         t_address = new sockaddr_in();
         ::memset( &t_address, 0, t_socket_length );
+
+        cout << "in connection function" << endl;
 
         //prepare the new socket
 
