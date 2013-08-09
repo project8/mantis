@@ -9,8 +9,7 @@ project( Mantis )
 include( ${CMAKE_SOURCE_DIR}/PackageBuilder.cmake )
 pbuilder_prepare_project( 2 1 1 )
 
-include_directories( ${CMAKE_SOURCE_DIR}/Include )
-
+include_directories( ${CMAKE_SOURCE_DIR}/include )
 
 #######################
 # mantis dependencies #
