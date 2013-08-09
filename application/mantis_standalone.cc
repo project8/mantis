@@ -30,7 +30,7 @@ int main()
     run* t_run = new run( NULL );
     request& t_request = t_run->get_request();
     t_request.set_rate( 1000.0 );
-    t_request.set_duration( 2000.0 );
+    t_request.set_duration( 10000.0 );
     t_request.set_file( "/data/newtest.egg" );
     t_request.set_date( get_string_time() );
     t_request.set_description( "testing standalone mantis" );
