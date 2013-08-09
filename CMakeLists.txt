@@ -49,6 +49,7 @@ pbuilder_add_ext_libraries( ${PROTOBUF_LIBRARIES} )
 
 add_custom_command( TARGET proto
     PRE_BUILD
+    COMMAND echo ARGS building protocol buffers...
     COMMAND protoc ARGS --proto_path=${CMAKE_CURRENT_SOURCE_DIR}/proto --cpp_out=${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/request.proto
     COMMAND mv ARGS ${CMAKE_CURRENT_SOURCE_DIR}/request.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/include/request.hh
     COMMAND mv ARGS ${CMAKE_CURRENT_SOURCE_DIR}/request.pb.cc ${CMAKE_CURRENT_SOURCE_DIR}/source/request.cc
