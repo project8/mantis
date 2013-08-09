@@ -84,9 +84,9 @@ namespace mantis
             //try to advance
             if( +t_it == false )
             {
-                cout << "[writer] blocked at <" << t_it.index() << ">" << endl;
                 if( f_condition->is_waiting() == true )
                 {
+                    cout << "[writer] blocked at <" << t_it.index() << ">" << endl;
                     f_condition->release();
                 }
                 ++t_it;
