@@ -129,7 +129,7 @@ namespace mantis
         t_response.set_writer_acquisitions( f_acquisition_count );
         t_response.set_writer_live_time( double( f_live_time ) / double( 1000000 ) );
         t_response.set_writer_megabytes( (double) (4 * f_record_count) );
-        t_response.set_writer_rate( (double) (4000000 * f_record_count) / (double) (f_live_time) );
+        t_response.set_writer_rate( (double) (4 * 1000000 * f_record_count) / (double) (f_live_time) );
 
         cout << "[writer] summary:\n";
         cout << "  record count: " << t_response.writer_records() << "\n";
@@ -153,7 +153,7 @@ namespace mantis
             return false;
         }
 
-        if( f_acquisition_count != a_block->get_acquisition_id() )
+        if( f_acquisition_count == a_block->get_acquisition_id() )
         {
             f_acquisition_count++;
         }
