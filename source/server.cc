@@ -76,28 +76,32 @@ namespace mantis
         int t_socket = 0;
         sockaddr_in* t_address = NULL;
 
-        //prepare the new address
-        socklen_t t_socket_length = sizeof(sockaddr_in);
-        t_address = new sockaddr_in();
-        ::memset( &t_address, 0, t_socket_length );
+        cout << "about to segfault..." << endl;
+//
+//        //prepare the new address
+//        socklen_t t_socket_length = sizeof(sockaddr_in);
+//        t_address = new sockaddr_in();
+//        ::memset( &t_address, 0, t_socket_length );
+//
+//        cout << "in connection function" << endl;
+//
+//        //prepare the new socket
+//
+//        cout << "about to accept a socket" << endl;
+//
+//        t_socket = ::accept( f_socket, (sockaddr*) (t_address), &t_socket_length );
+//        if( t_socket < 0 )
+//        {
+//            throw exception() << "could not accept connection";
+//        }
+//
+//        //return a new connection
+//
+//        cout << "about to return a new connection" << endl;
+//
+//        return new connection( t_socket, t_address );
 
-        cout << "in connection function" << endl;
-
-        //prepare the new socket
-
-        cout << "about to accept a socket" << endl;
-
-        t_socket = ::accept( f_socket, (sockaddr*) (t_address), &t_socket_length );
-        if( t_socket < 0 )
-        {
-            throw exception() << "could not accept connection";
-        }
-
-        //return a new connection
-
-        cout << "about to return a new connection" << endl;
-
-        return new connection( t_socket, t_address );
+        return NULL;
     }
 
 }
