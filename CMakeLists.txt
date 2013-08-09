@@ -93,7 +93,7 @@ set( MANTISCORE_HEADERFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/client.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/connection.hh
     
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/run.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/context.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/queue.hh
 
     ${CMAKE_CURRENT_SOURCE_DIR}/include/block.hh
@@ -123,7 +123,7 @@ set( MANTISCORE_SOURCEFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/source/client.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/source/connection.cc
     
-    ${CMAKE_CURRENT_SOURCE_DIR}/source/run.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/source/context.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/source/queue.cc
 
     ${CMAKE_CURRENT_SOURCE_DIR}/source/block.cc
