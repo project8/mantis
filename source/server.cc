@@ -79,8 +79,8 @@ namespace mantis
         //initialize the new address
         socklen_t t_socket_length = sizeof(sockaddr_in);
         t_address = new sockaddr_in();
+        ::memset( t_address, 0, t_socket_length );
         cout << "about to segfault..." << endl;
-//        ::memset( &t_address, 0, t_socket_length );
 //
 //        cout << "in connection function" << endl;
 //
