@@ -6,6 +6,7 @@
 #include "types.hh"
 #include "buffer.hh"
 #include "condition.hh"
+#include "run.hh"
 #include "px1500.h"
 
 namespace mantis
