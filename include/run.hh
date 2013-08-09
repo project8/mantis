@@ -2,8 +2,8 @@
 #define RUN_HH_
 
 #include "connection.hh"
-#include "request.hh"
-#include "response.hh"
+#include "request.pb.h"
+#include "response.pb.h"
 
 namespace mantis
 {

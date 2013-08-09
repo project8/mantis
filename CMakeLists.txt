@@ -48,20 +48,20 @@ include_directories( ${PROTOBUF_INCLUDE_DIR} )
 pbuilder_add_ext_libraries( ${PROTOBUF_LIBRARIES} )
 
 add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/include/request.hh ${CMAKE_CURRENT_SOURCE_DIR}/source/request.cc
+    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/include/request.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/source/request.pb.cc
     COMMAND echo ARGS building request...
     COMMAND protoc ARGS --proto_path=${CMAKE_CURRENT_SOURCE_DIR}/proto --cpp_out=${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/proto/request.proto
-    COMMAND mv ARGS ${CMAKE_CURRENT_SOURCE_DIR}/request.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/include/request.hh
-    COMMAND mv ARGS ${CMAKE_CURRENT_SOURCE_DIR}/request.pb.cc ${CMAKE_CURRENT_SOURCE_DIR}/source/request.cc
+    COMMAND mv ARGS ${CMAKE_CURRENT_SOURCE_DIR}/request.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/include/request.pb.h
+    COMMAND mv ARGS ${CMAKE_CURRENT_SOURCE_DIR}/request.pb.cc ${CMAKE_CURRENT_SOURCE_DIR}/source/request.pb.cc
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/include/response.hh ${CMAKE_CURRENT_SOURCE_DIR}/source/response.cc
+    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/include/response.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/source/response.pb.cc
     COMMAND echo ARGS building response...
     COMMAND protoc ARGS --proto_path=${CMAKE_CURRENT_SOURCE_DIR}/proto --cpp_out=${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/proto/response.proto
-    COMMAND mv ARGS ${CMAKE_CURRENT_SOURCE_DIR}/response.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/include/response.hh
-    COMMAND mv ARGS ${CMAKE_CURRENT_SOURCE_DIR}/response.pb.cc ${CMAKE_CURRENT_SOURCE_DIR}/source/response.cc
+    COMMAND mv ARGS ${CMAKE_CURRENT_SOURCE_DIR}/response.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/include/response.pb.h
+    COMMAND mv ARGS ${CMAKE_CURRENT_SOURCE_DIR}/response.pb.cc ${CMAKE_CURRENT_SOURCE_DIR}/source/response.pb.cc
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
