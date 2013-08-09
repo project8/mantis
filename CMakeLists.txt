@@ -47,12 +47,18 @@ find_package( Protobuf )
 include_directories( ${PROTOBUF_INCLUDE_DIR} )
 pbuilder_add_ext_libraries( ${PROTOBUF_LIBRARIES} )
 
-add_custom_command( TARGET mantis_core
-    PRE_BUILD
-    COMMAND echo ARGS building protocol buffers...
+add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/include/request.hh ${CMAKE_CURRENT_SOURCE_DIR}/source/request.cc
+    COMMAND echo ARGS building request...
     COMMAND protoc ARGS --proto_path=${CMAKE_CURRENT_SOURCE_DIR}/proto --cpp_out=${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/request.proto
     COMMAND mv ARGS ${CMAKE_CURRENT_SOURCE_DIR}/request.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/include/request.hh
     COMMAND mv ARGS ${CMAKE_CURRENT_SOURCE_DIR}/request.pb.cc ${CMAKE_CURRENT_SOURCE_DIR}/source/request.cc
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/include/response.hh ${CMAKE_CURRENT_SOURCE_DIR}/source/response.cc
+    COMMAND echo ARGS building response...
     COMMAND protoc ARGS --proto_path=${CMAKE_CURRENT_SOURCE_DIR}/proto --cpp_out=${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/response.proto
     COMMAND mv ARGS ${CMAKE_CURRENT_SOURCE_DIR}/response.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/include/response.hh
     COMMAND mv ARGS ${CMAKE_CURRENT_SOURCE_DIR}/response.pb.cc ${CMAKE_CURRENT_SOURCE_DIR}/source/response.cc
@@ -73,8 +79,8 @@ set( MANTISCORE_HEADERFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/callable.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/thread.hh
     
-    ${REQUEST_HEADER}
-    ${RESPONSE_HEADER}
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/request.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/response.hh
     
     ${CMAKE_CURRENT_SOURCE_DIR}/include/server.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/client.hh
@@ -102,8 +108,8 @@ set( MANTISCORE_SOURCEFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/source/callable.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/source/thread.cc
     
-    ${REQUEST_SOURCE}
-    ${RESPONSE_SOURCE}
+    ${CMAKE_CURRENT_SOURCE_DIR}/source/request.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/source/response.cc
     
     ${CMAKE_CURRENT_SOURCE_DIR}/source/server.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/source/client.cc
