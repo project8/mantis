@@ -1,5 +1,6 @@
 #include "digitizer.hh"
 
+#include "iterator.hh"
 #include "time.hh"
 
 #include <cstdlib> // for exit()

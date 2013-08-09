@@ -5,7 +5,6 @@
 
 #include "types.hh"
 #include "buffer.hh"
-#include "mutex.hh"
 #include "px1500.h"
 
 namespace mantis

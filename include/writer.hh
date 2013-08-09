@@ -5,8 +5,9 @@
 
 #include "types.hh"
 #include "buffer.hh"
-#include "mutex.hh"
-#include "px1500.h"
+#include "Monarch.hpp"
+#include "MonarchHeader.hpp"
+#include "MonarchRecord.hpp"
 
 namespace mantis
 {
