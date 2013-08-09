@@ -213,7 +213,7 @@ namespace mantis
                 t_dead_stop_time = get_integral_time();
 
                 //accumulate dead time
-                f_dead_time += t_dead_stop_time - t_dead_stop_time;
+                f_dead_time += t_dead_stop_time - t_dead_start_time;
 
                 //start acquisition
                 if( start() == false )
