@@ -79,6 +79,7 @@ set( MANTISCORE_HEADERFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/types.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/time.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/exception.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/parser.hh
     
     ${CMAKE_CURRENT_SOURCE_DIR}/include/mutex.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/condition.hh
@@ -109,6 +110,7 @@ set( MANTISCORE_HEADERFILES
 
 set( MANTISCORE_SOURCEFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/source/exception.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/source/parser.cc
 
     ${CMAKE_CURRENT_SOURCE_DIR}/source/mutex.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/source/condition.cc
