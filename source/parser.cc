@@ -11,7 +11,7 @@ namespace mantis
         std::string t_name;
         std::string t_value;
 
-        for( int t_index = 0; t_index < an_argc; t_index++ )
+        for( int t_index = 1; t_index < an_argc; t_index++ )
         {
             t_argument.assign( an_argv[ t_index ] );
             t_pos = t_argument.find_last_of( f_separator );
