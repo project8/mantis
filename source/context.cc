@@ -32,7 +32,7 @@ namespace mantis
         f_request.ParseFromString( t_message );
         return;
     }
-    request* context::request()
+    request* context::get_request()
     {
         return &f_request;
     }
@@ -51,7 +51,7 @@ namespace mantis
         f_status.ParseFromString( t_message );
         return;
     }
-    status* context::status()
+    status* context::get_status()
     {
         return &f_status;
     }
@@ -70,7 +70,7 @@ namespace mantis
         f_response.ParseFromString( t_message );
         return;
     }
-    response* context::response()
+    response* context::get_response()
     {
         return &f_response;
     }

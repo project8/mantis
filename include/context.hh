@@ -15,15 +15,15 @@ namespace mantis
             context( connection* a_connection );
             virtual ~context();
 
-            request* request();
+            request* get_request();
             void push_request();
             void pull_request();
 
-            status* status();
+            status* get_status();
             void push_status();
             void pull_status();
 
-            response* response();
+            response* get_response();
             void push_response();
             void pull_response();
 

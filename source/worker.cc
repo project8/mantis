@@ -34,15 +34,15 @@ namespace mantis
 
             cout << "[worker] initializing digitizer..." << endl;
 
-            f_digitizer->initialize( t_context->request() );
+            f_digitizer->initialize( t_context->get_request() );
 
             cout << "[worker] initializing writer..." << endl;
 
-            f_writer->initialize( t_context->request() );
+            f_writer->initialize( t_context->get_request() );
 
             cout << "[worker] sending start message..." << endl;
 
-            t_context->status()->set_state( status_state_t_started );
+            t_context->get_status()->set_state( status_state_t_started );
             t_context->push_status();
 
 
@@ -54,7 +54,7 @@ namespace mantis
             t_digitizer_thread->start();
             t_writer_thread->start();
 
-            t_context->status()->set_state( status_state_t_running );
+            t_context->get_status()->set_state( status_state_t_running );
             f_queue->to_front( t_context );
 
             t_digitizer_thread->join();
@@ -68,15 +68,15 @@ namespace mantis
 
             cout << "[worker] finalizing digitizer..." << endl;
 
-            f_digitizer->finalize( t_context->response() );
+            f_digitizer->finalize( t_context->get_response() );
 
             cout << "[worker] finalizing writer..." << endl;
 
-            f_writer->finalize( t_context->response() );
+            f_writer->finalize( t_context->get_response() );
 
             cout << "[worker] sending stop message..." << endl;
 
-            t_context->status()->set_state( status_state_t_stopped );
+            t_context->get_status()->set_state( status_state_t_stopped );
             t_context->push_status();
 
             delete t_context;

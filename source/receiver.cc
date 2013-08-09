@@ -31,7 +31,7 @@ namespace mantis
             cout << "[receiver] got a connection..." << endl;
 
             t_context->pull_request();
-            t_context->status()->set_state( status_state_t_acknowledged );
+            t_context->get_status()->set_state( status_state_t_acknowledged );
             t_context->push_status();
 
             f_queue->to_back( t_context );
