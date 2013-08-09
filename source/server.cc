@@ -73,10 +73,10 @@ namespace mantis
 
     connection* server::get_connection()
     {
-        cout << "in connection function" << endl;
-
         int t_socket = 0;
         sockaddr_in* t_address = NULL;
+
+        cout << "in connection function" << endl;
 
         //prepare the new address
         socklen_t t_socket_length = sizeof(sockaddr_in);
