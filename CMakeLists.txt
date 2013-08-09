@@ -5,10 +5,8 @@ cmake_minimum_required( VERSION 2.8 )
 #########
 
 project( Mantis )
-
 include( ${CMAKE_SOURCE_DIR}/PackageBuilder.cmake )
 pbuilder_prepare_project( 2 1 1 )
-
 include_directories( ${CMAKE_SOURCE_DIR}/include )
 
 #######################
@@ -47,10 +45,18 @@ pbuilder_add_ext_libraries( ${PX1500_LIBRARIES} )
 
 find_package( Protobuf )
 include_directories( ${PROTOBUF_INCLUDE_DIR} )
-protobuf_generate_cpp( REQUEST_SOURCE REQUEST_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/proto/request.proto )
-protobuf_generate_cpp( RESPONSE_SOURCE RESPONSE_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/proto/response.proto )
-include_directories( ${CMAKE_CURRENT_BINARY_DIR} )
 pbuilder_add_ext_libraries( ${PROTOBUF_LIBRARIES} )
+
+add_custom_command( TARGET proto
+    PRE_BUILD
+    COMMAND protoc ARGS --proto_path=${CMAKE_CURRENT_SOURCE_DIR}/proto --cpp_out=${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/request.proto
+    COMMAND mv ARGS ${CMAKE_CURRENT_SOURCE_DIR}/request.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/include/request.hh
+    COMMAND mv ARGS ${CMAKE_CURRENT_SOURCE_DIR}/request.pb.cc ${CMAKE_CURRENT_SOURCE_DIR}/source/request.cc
+    COMMAND protoc ARGS --proto_path=${CMAKE_CURRENT_SOURCE_DIR}/proto --cpp_out=${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/response.proto
+    COMMAND mv ARGS ${CMAKE_CURRENT_SOURCE_DIR}/response.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/include/response.hh
+    COMMAND mv ARGS ${CMAKE_CURRENT_SOURCE_DIR}/response.pb.cc ${CMAKE_CURRENT_SOURCE_DIR}/source/response.cc
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+)
 
 ##################
 # mantis library #
