@@ -1,7 +1,6 @@
 #ifndef BUFFER_HH_
 #define BUFFER_HH_
 
-#include "iterator.hh"
 #include "block.hh"
 #include "mutex.hh"
 

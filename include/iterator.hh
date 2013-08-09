@@ -1,13 +1,12 @@
 #ifndef ITERATOR_HH_
 #define ITERATOR_HH_
 
+#include "buffer.hh"
 #include "mutex.hh"
 #include "block.hh"
 
 namespace mantis
 {
-
-    class buffer;
 
     class iterator
     {
