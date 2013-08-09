@@ -23,10 +23,12 @@ namespace mantis
     {
         cout << "[server] opening server socket on port <" << a_port << ">" << endl;
 
-        //prepare address structure
+        //initialize address
         socklen_t t_socket_length = sizeof(sockaddr_in);
         f_address = new sockaddr_in();
         ::memset( f_address, 0, t_socket_length );
+
+        //prepare address
         f_address->sin_family = AF_INET;
         f_address->sin_addr.s_addr = INADDR_ANY;
         f_address->sin_port = htons( a_port );
@@ -71,6 +73,8 @@ namespace mantis
 
     connection* server::get_connection()
     {
+        cout << "in connection function" << endl;
+
         int t_socket = 0;
         sockaddr_in* t_address = NULL;
 
