@@ -7,6 +7,8 @@
 namespace mantis
 {
 
+    class buffer;
+
     class iterator
     {
         public:
