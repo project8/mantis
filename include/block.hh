@@ -40,6 +40,7 @@ namespace mantis
             void set_timestamp( const timestamp_t& a_timestamp );
 
             data_t* data();
+            data_t** handle();
 
         private:
             state_t f_state;

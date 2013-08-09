@@ -109,4 +109,9 @@ namespace mantis
         return f_data;
     }
 
+    data_t** block::handle()
+    {
+        return &f_data;
+    }
+
 }
