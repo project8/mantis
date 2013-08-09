@@ -79,8 +79,8 @@ set( MANTISCORE_HEADERFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/callable.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/thread.hh
     
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/request.hh
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/response.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/request.pb.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/response.pb.h
     
     ${CMAKE_CURRENT_SOURCE_DIR}/include/server.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/client.hh
@@ -108,8 +108,8 @@ set( MANTISCORE_SOURCEFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/source/callable.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/source/thread.cc
     
-    ${CMAKE_CURRENT_SOURCE_DIR}/source/request.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/source/response.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/source/request.pb.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/source/response.pb.cc
     
     ${CMAKE_CURRENT_SOURCE_DIR}/source/server.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/source/client.cc
