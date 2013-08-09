@@ -3,11 +3,11 @@
 namespace mantis
 {
 
-    iterator::iterator( block* a_block_array, mutex* a_mutex_array, const unsigned int& a_size ) :
-            f_blocks( a_block_array ),
-            f_mutexes( a_mutex_array ),
-            f_size( a_size ),
-            f_previous_index( a_size ),
+    iterator::iterator( buffer* a_buffer ) :
+            f_blocks( a_buffer->f_blocks ),
+            f_mutexes( a_buffer->f_mutexes ),
+            f_size( a_buffer->f_size ),
+            f_previous_index( f_size ),
             f_current_index( 0 ),
             f_next_index( 1 )
     {
@@ -34,6 +34,11 @@ namespace mantis
     {
         return f_current_index;
     }
+    block* iterator::object()
+    {
+        return &f_blocks[ f_current_index ];
+    }
+
     block* iterator::operator->()
     {
         return &f_blocks[ f_current_index ];

@@ -15,8 +15,7 @@ namespace mantis
             f_buffer( a_buffer ),
             f_condition( a_condition ),
             f_handle(),
-            f_last( 0 ),
-            f_rate( 0. ),
+            f_record_last( 0 ),
             f_record_count( 0 ),
             f_acquisition_count( 0 ),
             f_live_time( 0 ),
@@ -53,8 +52,8 @@ namespace mantis
 
         cout << "[digitizer] allocating dma buffer..." << endl;
 
-        iterator t_it = f_buffer->get_iterator();
-        for( unsigned int index = 0; index < f_buffer->get_size(); index++ )
+        iterator t_it( f_buffer );
+        for( unsigned int index = 0; index < f_buffer->size(); index++ )
         {
             t_result = AllocateDmaBufferPX4( f_handle, 4194304, t_it->data() );
             if( t_result != SIG_SUCCESS )
@@ -71,8 +70,8 @@ namespace mantis
 
         cout << "[digitizer] deallocating dma buffer..." << endl;
 
-        iterator t_it = f_buffer->get_iterator();
-        for( size_t Index = 0; Index < f_buffer->get_size(); Index++ )
+        iterator t_it( f_buffer );
+        for( size_t Index = 0; Index < f_buffer->size(); Index++ )
         {
             t_result = FreeDmaBufferPX4( f_handle, t_it->data() );
             if( t_result != SIG_SUCCESS )
@@ -82,6 +81,8 @@ namespace mantis
             }
             ++t_it;
         }
+
+        cout << "[digitizer] disconnecting from digitizer card..." << endl;
 
         t_result = DisconnectFromDevicePX4( f_handle );
         if( t_result != SIG_SUCCESS )
@@ -93,17 +94,21 @@ namespace mantis
 
     void digitizer::initialize( run* a_run )
     {
+        int t_result;
+
         request& t_request = a_run->get_request();
 
-        f_rate = t_request.rate();
-        f_duration = t_request.duration();
-        f_last = (record_id_t) (ceil( (double) (f_rate * f_duration * 1.e3) / (double) (4194304) ));
+        cout << "[digitizer] resetting counters..." << endl;
 
-        int t_result;
+        f_record_last = (record_id_t) (ceil( (double) (t_request.rate() * t_request.duration() * 1.e3) / (double) (4194304) ));
+        f_record_count = 0;
+        f_acquisition_count = 0;
+        f_live_time = 0;
+        f_dead_time = 0;
 
         cout << "[digitizer] setting clock rate..." << endl;
 
-        t_result = SetInternalAdcClockRatePX4( f_handle, f_rate );
+        t_result = SetInternalAdcClockRatePX4( f_handle, t_request.rate() );
         if( t_result != SIG_SUCCESS )
         {
             DumpLibErrorPX4( t_result, "failed to set clock rate: " );
@@ -115,7 +120,7 @@ namespace mantis
 
     void digitizer::execute()
     {
-        iterator t_it = f_buffer->get_iterator();
+        iterator t_it( f_buffer );
 
         timestamp_t t_live_start_time;
         timestamp_t t_live_stop_time;
@@ -135,19 +140,19 @@ namespace mantis
         }
 
         //start timing
-        t_live_start_time = get_time();
+        t_live_start_time = get_integral_time();
 
         //go go go go
         while( true )
         {
             //check if we've written enough
-            if( f_record_count == f_last_record )
+            if( f_record_count == f_record_last )
             {
                 //mark the block as written
                 t_it->set_written();
 
                 //get the time and update the number of live microseconds
-                t_live_stop_time = get_time();
+                t_live_stop_time = get_integral_time();
 
                 f_live_time += t_live_stop_time - t_live_start_time;
 
@@ -163,9 +168,9 @@ namespace mantis
 
             t_it->set_record_id( f_record_count );
             t_it->set_acquisition_id( f_acquisition_count );
-            t_it->set_timestamp( get_time() );
+            t_it->set_timestamp( get_integral_time() );
 
-            if( acquire( t_it->data() ) == false )
+            if( acquire( t_it.object() ) == false )
             {
                 //mark the block as written
                 t_it->set_written();
@@ -188,7 +193,7 @@ namespace mantis
                 cout << "[digitizer] blocked at <" << t_it.index() << ">" << endl;
 
                 //get the time and update the number of live microseconds
-                t_live_stop_time = get_time();
+                t_live_stop_time = get_integral_time();
                 f_live_time += t_live_stop_time - t_live_start_time;
 
                 //halt the pci acquisition
@@ -199,13 +204,13 @@ namespace mantis
                     return;
                 }
 
-                t_dead_start_time = get_time();
+                t_dead_start_time = get_integral_time();
 
                 //wait
                 f_condition->wait();
 
                 //get the time and update the number of dead microseconds
-                t_dead_stop_time = get_time();
+                t_dead_stop_time = get_integral_time();
                 f_dead_time += t_dead_stop_time - t_dead_stop_time;
 
                 //start acquisition
@@ -217,7 +222,7 @@ namespace mantis
                 }
 
                 //start timing and pop
-                t_live_start_time = get_time();
+                t_live_start_time = get_integral_time();
                 ++t_it;
 
                 cout << "[digitizer] loose at <" << t_it.index() << ">" << endl;
@@ -252,9 +257,9 @@ namespace mantis
 
         return true;
     }
-    bool digitizer::acquire( data_t* a_block )
+    bool digitizer::acquire( block* a_block )
     {
-        int t_result = GetPciAcquisitionDataFastPX4( f_handle, 4194304, a_block, 0 );
+        int t_result = GetPciAcquisitionDataFastPX4( f_handle, 4194304, a_block->data(), 0 );
         if( t_result != SIG_SUCCESS )
         {
             DumpLibErrorPX4( t_result, "failed to acquire dma data over pci: " );

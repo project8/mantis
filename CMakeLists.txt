@@ -48,8 +48,8 @@ include_directories( ${CMAKE_SOURCE_DIR}/Include )
 
 find_package( Protobuf )
 include_directories( ${PROTOBUF_INCLUDE_DIR} )
-protobuf_generate_cpp( request_source request_header ${CMAKE_CURRENT_SOURCE_DIR}/proto/request.proto )
-protobuf_generate_cpp( response_source response_header ${CMAKE_CURRENT_SOURCE_DIR}/proto/response.proto )
+protobuf_generate_cpp( REQUEST_SOURCE REQUEST_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/proto/request.proto )
+protobuf_generate_cpp( RESPONSE_SOURCE RESPONSE_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/proto/response.proto )
 include_directories( ${CMAKE_CURRENT_BINARY_DIR} )
 pbuilder_add_ext_libraries( ${PROTOBUF_LIBRARIES} )
 
@@ -58,6 +58,8 @@ pbuilder_add_ext_libraries( ${PROTOBUF_LIBRARIES} )
 ##################
 
 set( MANTISCORE_HEADERFILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/types.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/time.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/exception.hh
     
     ${CMAKE_CURRENT_SOURCE_DIR}/include/mutex.hh
@@ -65,8 +67,8 @@ set( MANTISCORE_HEADERFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/callable.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/thread.hh
     
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/request.hh
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/response.hh
+    ${REQUEST_HEADER}
+    ${RESPONSE_HEADER}
     
     ${CMAKE_CURRENT_SOURCE_DIR}/include/server.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/client.hh
@@ -81,6 +83,9 @@ set( MANTISCORE_HEADERFILES
 
     ${CMAKE_CURRENT_SOURCE_DIR}/include/receiver.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/driver.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/sender.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/digitizer.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/writer.hh
 )
 
 set( MANTISCORE_SOURCEFILES
@@ -91,8 +96,8 @@ set( MANTISCORE_SOURCEFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/source/callable.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/source/thread.cc
     
-    ${CMAKE_CURRENT_SOURCE_DIR}/source/request.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/source/response.cc
+    ${REQUEST_SOURCE}
+    ${RESPONSE_SOURCE}
     
     ${CMAKE_CURRENT_SOURCE_DIR}/source/server.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/source/client.cc
@@ -109,24 +114,16 @@ set( MANTISCORE_SOURCEFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/source/driver.cc
 )
 
-add_library( MantisCore ${MANTISCORE_SOURCEFILES} )
-target_link_libraries( MantisCore ${EXTERNAL_LIBRARIES} )
+add_library( mantis_core ${MANTISCORE_SOURCEFILES} )
+target_link_libraries( mantis_core ${EXTERNAL_LIBRARIES} )
 
 pbuilder_install_headers( ${MANTISCORE_HEADERFILES} )
-pbuilder_install_libraries( MantisCore )
+pbuilder_install_libraries( mantis_core )
 
 ######################
 # mantis executables #
 ######################
 
-#add_executable( Mantis ${CMAKE_CURRENT_SOURCE_DIR}/Source/Mantis.cpp )
-#target_link_libraries( Mantis MantisCore ${EXTERNAL_LIBRARIES} )
-#pbuilder_install_executables( Mantis )
-
-add_executable( MantisClient ${CMAKE_CURRENT_SOURCE_DIR}/Source/MantisClient.cc )
-target_link_libraries( MantisClient MantisCore ${EXTERNAL_LIBRARIES} )
-pbuilder_install_executables( MantisClient )
-
-add_executable( MantisServer ${CMAKE_CURRENT_SOURCE_DIR}/Source/MantisServer.cc )
-target_link_libraries( MantisServer MantisCore ${EXTERNAL_LIBRARIES} )
-pbuilder_install_executables( MantisServer )
+add_executable( MantisStandalone ${CMAKE_CURRENT_SOURCE_DIR}/application/mantis_standalone.cc )
+target_link_libraries( mantis_standalone mantis_core ${EXTERNAL_LIBRARIES} )
+pbuilder_install_executables( mantis_standalone )

@@ -18,26 +18,22 @@ namespace mantis
             writer( buffer* a_buffer, condition* a_condition );
             virtual ~writer();
 
-            void Initialize( run* a_run );
-            void Execute();
-            void Finalize( run* a_run );
+            void initialize( run* a_run );
+            void execute();
+            void finalize( run* a_run );
 
         private:
-            Monarch* fMonarch;
-            MonarchRecord* fMonarchRecordInterleaved;
-            unsigned int fPciRecordSize;
-            unsigned long fRecordCount;
-            long long int fLiveTime;
+            buffer* f_buffer;
+            condition* f_condition;
+            Monarch* f_monarch;
+            MonarchHeader* f_header;
+            MonarchRecord* f_record;
 
-            string fFileName;
-            unsigned int fRunDuration;
-            double fAcquisitionRate;
-            unsigned int fRecordSize;
-            unsigned int fChannelMode;
-            long long int fStartTimeMonotonic;
-            string fDescription;
+            record_id_t f_record_count;
+            acquisition_id_t f_acquisition_count;
+            timestamp_t f_live_time;
 
-            bool Flush( MantisBufferRecord* aBufferRecord );
+            bool write( block* a_block );
     };
 
 }

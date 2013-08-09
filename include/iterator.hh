@@ -10,10 +10,12 @@ namespace mantis
     class iterator
     {
         public:
-            iterator( block* a_block_array, mutex* a_mutex_array, const unsigned int& a_size );
+            iterator( buffer* a_buffer );
             virtual ~iterator();
 
             unsigned int index();
+            block* object();
+
             block& operator*();
             block* operator->();
 
@@ -23,6 +25,9 @@ namespace mantis
             bool operator-();
 
         private:
+            iterator();
+            iterator( const iterator& );
+
             block* f_blocks;
             mutex* f_mutexes;
             unsigned int f_size;

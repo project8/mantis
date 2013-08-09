@@ -27,17 +27,14 @@ namespace mantis
             condition* f_condition;
             HPX4 f_handle;
 
-            record_id_t f_last;
-            double f_rate;
-            double f_duration;
-
+            record_id_t f_record_last;
             record_id_t f_record_count;
             acquisition_id_t f_acquisition_count;
             timestamp_t f_live_time;
             timestamp_t f_dead_time;
 
             bool start();
-            bool acquire( data_t* a_block );
+            bool acquire( block* a_block );
             bool stop();
     };
 

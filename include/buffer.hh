@@ -8,16 +8,15 @@
 namespace mantis
 {
 
-    class iterator;
-
     class buffer
     {
         public:
+            friend class iterator;
+
             buffer( const unsigned int& a_size );
             virtual ~buffer();
 
-            iterator get_iterator();
-            unsigned int get_size();
+            const unsigned int& size() const;
 
         private:
             block* f_blocks;

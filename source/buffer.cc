@@ -18,11 +18,7 @@ namespace mantis
         delete [] f_mutexes;
     }
 
-    iterator buffer::get_iterator()
-    {
-        return iterator( f_blocks, f_mutexes, f_size );
-    }
-    unsigned int buffer::get_size()
+    const unsigned int& buffer::size() const
     {
         return f_size;
     }
