@@ -75,7 +75,7 @@ namespace mantis
         while( +t_it == true )
             ;
 
-        //start timing
+        //start live timing
         t_start_time = get_integral_time();
 
         //go go go
@@ -84,6 +84,7 @@ namespace mantis
             //try to advance
             if( +t_it == false )
             {
+                cout << "[writer] blocked at <" << t_it.index() << ">" << endl;
                 if( f_condition->is_waiting() == true )
                 {
                     f_condition->release();
@@ -94,11 +95,14 @@ namespace mantis
             //if the block we're on is already written, the run is done
             if( t_it->is_written() == true )
             {
-                //get the time and update the number of live microseconds
+                //stop live timing
                 t_stop_time = get_integral_time();
+
+                //accumulate live time
                 f_live_time = t_stop_time - t_start_time;
 
                 //GET OUT
+                cout << "[writer] finished normally" << endl;
                 return;
             }
 
@@ -107,6 +111,7 @@ namespace mantis
             if( write( t_it.object() ) == false )
             {
                 //GET OUT
+                cout << "[writer] finished abnormally because writing failed" << endl;
                 return;
             }
             t_it->set_written();

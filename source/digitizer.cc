@@ -167,10 +167,6 @@ namespace mantis
 
             t_it->set_acquiring();
 
-            t_it->set_record_id( f_record_count );
-            t_it->set_acquisition_id( f_acquisition_count );
-            t_it->set_timestamp( get_integral_time() );
-
             if( acquire( t_it.object() ) == false )
             {
                 //mark the block as written
@@ -193,8 +189,10 @@ namespace mantis
             {
                 cout << "[digitizer] blocked at <" << t_it.index() << ">" << endl;
 
-                //get the time and update the number of live microseconds
+                //stop live timer
                 t_live_stop_time = get_integral_time();
+
+                //accumulate live time
                 f_live_time += t_live_stop_time - t_live_start_time;
 
                 //halt the pci acquisition
@@ -205,13 +203,16 @@ namespace mantis
                     return;
                 }
 
+                //start dead timer
                 t_dead_start_time = get_integral_time();
 
                 //wait
                 f_condition->wait();
 
-                //get the time and update the number of dead microseconds
+                //stop dead timer
                 t_dead_stop_time = get_integral_time();
+
+                //accumulate dead time
                 f_dead_time += t_dead_stop_time - t_dead_stop_time;
 
                 //start acquisition
@@ -222,8 +223,10 @@ namespace mantis
                     return;
                 }
 
-                //start timing and pop
+                //start live timer
                 t_live_start_time = get_integral_time();
+
+                //increment block
                 ++t_it;
 
                 cout << "[digitizer] loose at <" << t_it.index() << ">" << endl;
@@ -268,6 +271,10 @@ namespace mantis
     }
     bool digitizer::acquire( block* a_block )
     {
+        a_block->set_record_id( f_record_count );
+        a_block->set_acquisition_id( f_acquisition_count );
+        a_block->set_timestamp( get_integral_time() );
+
         int t_result = GetPciAcquisitionDataFastPX4( f_handle, 4194304, a_block->data(), 0 );
         if( t_result != SIG_SUCCESS )
         {
@@ -275,7 +282,9 @@ namespace mantis
             t_result = EndBufferedPciAcquisitionPX4( f_handle );
             return false;
         }
+
         ++f_record_count;
+
         return true;
     }
     bool digitizer::stop()
