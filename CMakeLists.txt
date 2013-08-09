@@ -113,7 +113,7 @@ set( MANTISCORE_SOURCEFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/source/driver.cc
     #${CMAKE_CURRENT_SOURCE_DIR}/source/sender.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/source/digitizer.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/source/dwriter.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/source/writer.cc
 )
 
 add_library( mantis_core ${MANTISCORE_SOURCEFILES} )
