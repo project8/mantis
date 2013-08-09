@@ -17,7 +17,11 @@ int main( int argc, char** argv )
 {
     parser t_parser( argc, argv );
 
+    cout << "[test_mantis_client] starting server..." << endl;
+
     server* t_server = new server( t_parser.get_required< int >( "port" ) );
+
+    cout << "[test_mantis_server] getting connection..." << endl;
 
     connection* t_connection = t_server->get_connection();
 
