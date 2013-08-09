@@ -82,7 +82,7 @@ set( MANTISCORE_HEADERFILES
 
     ${CMAKE_CURRENT_SOURCE_DIR}/include/receiver.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/driver.hh
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/sender.hh
+    #${CMAKE_CURRENT_SOURCE_DIR}/include/sender.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/digitizer.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/writer.hh
 )
