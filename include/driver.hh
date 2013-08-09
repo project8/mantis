@@ -3,6 +3,10 @@
 
 #include "callable.hh"
 
+#include "queue.hh"
+#include "digitizer.hh"
+#include "writer.hh"
+
 namespace mantis
 {
 

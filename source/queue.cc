@@ -10,6 +10,14 @@ namespace mantis
     }
     queue::~queue()
     {
+        f_mutex.lock();
+        std::list< run* >::iterator t_it;
+        for( t_it = f_runs.begin(); t_it != f_runs.end(); t_it++ )
+        {
+            delete *t_it;
+        }
+        f_mutex.unlock();
+        return;
     }
 
     bool queue::is_empty()
@@ -28,15 +36,6 @@ namespace mantis
         f_mutex.unlock();
         return;
     }
-    run* queue::from_front()
-    {
-        run* t_run = NULL;
-        f_mutex.lock();
-        t_run = f_runs.front();
-        f_runs.pop_front();
-        f_mutex.unlock();
-        return t_run;
-    }
 
     void queue::to_back( run* a_run )
     {
@@ -45,23 +44,14 @@ namespace mantis
         f_mutex.unlock();
         return;
     }
-    run* queue::from_back()
-    {
-        run* t_run = NULL;
-        f_mutex.lock();
-        t_run = f_runs.back();
-        f_runs.pop_back();
-        f_mutex.unlock();
-        return t_run;
-    }
 
-    void queue::for_each( void (run::* a_command)() )
+    void queue::push_response()
     {
         f_mutex.lock();
         std::list< run* >::iterator t_it;
         for( t_it = f_runs.begin(); t_it != f_runs.end(); t_it++ )
         {
-            ((*t_it)->*(a_command))();
+            (*t_it)->push_response();
         }
         f_mutex.unlock();
         return;

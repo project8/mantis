@@ -18,12 +18,9 @@ namespace mantis
             bool is_empty();
 
             void to_front( run* a_run );
-            run* from_front();
-
-            void to_back( run* a_run );
             run* from_back();
 
-            void for_each( void (run::* a_command )() );
+            void push_response();
 
         private:
             mutex f_mutex;

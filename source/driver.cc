@@ -27,24 +27,7 @@ namespace mantis
 
         while( true )
         {
-            usleep( 10000 );
-
-            if( t_active != NULL )
-            {
-                if( t_active->get_response().status() == response_status_t_running )
-                {
-                    t_active->push_response();
-                    continue;
-                }
-
-                if( t_active->get_response().status() == response_status_t_done )
-                {
-                    t_active->push_response();
-                    delete t_active;
-                    t_active = NULL;
-                    continue;
-                }
-            }
+            sleep( 1 );
 
             if( f_queue->is_empty() == true )
             {
@@ -53,12 +36,15 @@ namespace mantis
             else
             {
                 cout << "[driver] spooling..." << endl;
-                t_active = f_queue->from_front();
+                t_active = f_queue->from_back();
                 t_active->get_response().set_status( response_status_t_ready );
                 t_active->push_response();
-                f_queue->for_each( &run::push_response );
+
                 t_active->get_response().set_status( response_status_t_done );
             }
+
+
+            f_queue->push_response();
         }
     }
 
