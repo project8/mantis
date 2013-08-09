@@ -45,19 +45,19 @@ int main()
 
     cout << "[mantis standalone] starting threads..." << endl;
 
-    thread* t_writer_thread = new thread( t_writer );
     thread* t_digitizer_thread = new thread( t_digitizer );
+    thread* t_writer_thread = new thread( t_writer );
 
-    t_writer_thread->start();
     t_digitizer_thread->start();
+    t_writer_thread->start();
 
-    t_writer_thread->join();
     t_digitizer_thread->join();
+    t_writer_thread->join();
 
     cout << "[mantis standalone] cleaning threads..." << endl;
 
-    delete t_writer_thread;
     delete t_digitizer_thread;
+    delete t_writer_thread;
 
     cout << "[mantis standalone] finalizing digitizer..." << endl;
 
