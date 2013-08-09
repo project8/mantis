@@ -47,7 +47,7 @@ find_package( Protobuf )
 include_directories( ${PROTOBUF_INCLUDE_DIR} )
 pbuilder_add_ext_libraries( ${PROTOBUF_LIBRARIES} )
 
-add_custom_command( TARGET proto
+add_custom_command( TARGET mantis_core
     PRE_BUILD
     COMMAND echo ARGS building protocol buffers...
     COMMAND protoc ARGS --proto_path=${CMAKE_CURRENT_SOURCE_DIR}/proto --cpp_out=${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/request.proto
