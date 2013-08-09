@@ -1,5 +1,6 @@
 #include "writer.hh"
 
+#include "iterator.hh"
 #include "time.hh"
 
 #include <cstring> // for memcpy()
