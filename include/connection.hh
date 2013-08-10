@@ -16,7 +16,7 @@ namespace mantis
             void write( const std::string& a_message );
             void read( std::string& a_message );
 
-        private:
+        protected:
             const int f_socket;
             const sockaddr_in* f_address;
 
