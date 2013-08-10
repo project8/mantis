@@ -37,7 +37,7 @@ namespace mantis
             response f_response;
 
             static const unsigned long int f_buffer_length = 1024;
-            static char f_buffer[ f_buffer_length ];
+            char f_buffer[ f_buffer_length ];
     };
 
 }
