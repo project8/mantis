@@ -62,14 +62,18 @@ int main( int argc, char** argv )
     t_context->get_request()->set_duration( 2000.0 );
 
     cout << "[test_mantis_client] sending request..." << endl;
+    cout << t_context->get_request()->DebugString() << endl;
 
     t_context->push_request();
 
-    do
-    {
-        t_context->pull_status();
-    }
-    while( analyze_status( t_context ) == 0 );
+    t_context->pull_status();
+    analyze_status( t_context );
+
+//    do
+//    {
+//        t_context->pull_status();
+//    }
+//    while( analyze_status( t_context ) == 0 );
 
     cout << "[test_mantis_client] done" << endl;
 
