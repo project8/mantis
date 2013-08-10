@@ -10,7 +10,7 @@ namespace mantis
     class connection
     {
         public:
-            connection( int& a_socket, sockaddr_in* an_address );
+            connection( int a_socket, sockaddr_in* an_address );
             virtual ~connection();
 
             void write( const std::string& a_message );

@@ -13,7 +13,7 @@
 namespace mantis
 {
 
-    connection::connection( int& a_socket, sockaddr_in* an_address ) :
+    connection::connection( int a_socket, sockaddr_in* an_address ) :
             f_socket( a_socket ),
             f_address( an_address )
     {
