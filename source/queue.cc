@@ -79,7 +79,7 @@ namespace mantis
             std::list< context* >::iterator t_it;
             for( t_it = f_runs.begin(); t_it != f_runs.end(); t_it++ )
             {
-                (*t_it)->push_response();
+                (*t_it)->push_status();
             }
             f_mutex.unlock();
 

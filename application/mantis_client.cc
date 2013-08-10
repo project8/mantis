@@ -26,7 +26,7 @@ int main( int argc, char** argv )
     t_context->get_request()->set_file( t_parser.get_required< string >( "file" ) );
     t_context->get_request()->set_description( t_parser.get_required< string >( "description" ) );
     t_context->get_request()->set_date( get_string_time() );
-    t_context->get_request()->set_mode( (request_mode_t) (t_parser.get_required< unsigned int >( "mode" )) );
+    t_context->get_request()->set_mode( request_mode_t_single );
     t_context->get_request()->set_rate( t_parser.get_required< double >( "rate" ) );
     t_context->get_request()->set_duration( t_parser.get_required< double >( "duration" ) );
 
@@ -40,37 +40,37 @@ int main( int argc, char** argv )
 
         if( t_context->get_status()->state() == status_state_t_acknowledged )
         {
-            cout << "[mantis_client] request acknowledged..." << '\r';
+            cout << "[mantis_client] request acknowledged..." << '\n';
             cout.flush();
             continue;
         }
 
         if( t_context->get_status()->state() == status_state_t_waiting )
         {
-            cout << "[mantis_client] request waiting...     " << '\r';
+            cout << "[mantis_client] request waiting...     " << '\n';
             cout.flush();
             continue;
         }
 
         if( t_context->get_status()->state() == status_state_t_started )
         {
-            cout << "[mantis_client] request started...     " << '\r';
+            cout << "[mantis_client] request started...     " << '\n';
             cout.flush();
             continue;
         }
 
         if( t_context->get_status()->state() == status_state_t_running )
         {
-            cout << "[mantis_client] request running...     " << '\r';
+            cout << "[mantis_client] request running...     " << '\n';
             cout.flush();
             continue;
         }
 
         if( t_context->get_status()->state() == status_state_t_stopped )
         {
-            cout << "[mantis_client] request stopped...     " << '\r';
+            cout << "[mantis_client] request stopped...     " << '\n';
             cout.flush();
-            cout << '\n' << endl;
+            cout << endl;
             break;
         }
     }

@@ -33,6 +33,7 @@ namespace mantis
 
             t_context->pull_request();
             t_context->get_status()->set_state( status_state_t_acknowledged );
+            cout << "[receiver] pushing status..." << endl;
             t_context->push_status();
 
             f_queue->to_back( t_context );
