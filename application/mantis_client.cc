@@ -16,7 +16,7 @@ int main( int argc, char** argv )
 
     cout << "[mantis_client] creating objects..." << endl;
 
-    client* t_client = new client( t_parser.get_required< string >( "host" ), t_parser.get_required< int >( "port" ) )
+    client* t_client = new client( t_parser.get_required< string >( "host" ), t_parser.get_required< int >( "port" ) );
     context* t_context = new context();
     t_context->set_connection( t_client );
 
