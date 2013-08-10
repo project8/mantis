@@ -20,7 +20,7 @@ namespace mantis
             int f_socket;
             sockaddr_in* f_address;
 
-            static const int f_buffer_length = 512;
+            static const int f_buffer_length = 1024;
             char f_buffer_content[ f_buffer_length ];
     };
 
