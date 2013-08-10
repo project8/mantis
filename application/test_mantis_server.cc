@@ -20,23 +20,29 @@ int main( int argc, char** argv )
     cout << "[test_mantis_server] starting server..." << endl;
 
     server* t_server = new server( t_parser.get_required< int >( "port" ) );
+    context* t_context = new context();
 
-    cout << "[test_mantis_server] getting connection..." << endl;
+    cout << "[test_mantis_server] waiting for connection..." << endl;
 
-    connection* t_connection = t_server->get_connection();
+    t_context->set_connection( t_server->get_connection() );
 
-    string t_message;
+    t_context->pull_request();
 
-    t_connection->read( t_message );
+    cout << "[test_mantis_server] received request <" << t_context->get_request()->DebugString() << ">" << endl;
 
-    cout << "[test_mantis_server] received message <" << t_message << ">" << endl;
+    t_context->get_status()->set_state( status_state_t_acknowledged );
+    t_context->push_status();
 
-    t_message.assign( "is a long donger chibb" );
-    t_connection->write( t_message );
+    t_context->get_status()->set_state( status_state_t_started );
+    t_context->push_status();
 
-    cout << "[test_mantis_server] sent message <" << t_message << ">" << endl;
+    t_context->get_status()->set_state( status_state_t_stopped );
+    t_context->push_status();
 
-    delete t_connection;
+    cout << "[test_mantis_server] done" << endl;
+
+    delete t_context->get_connection();
+    delete t_context;
     delete t_server;
 
     return 0;
