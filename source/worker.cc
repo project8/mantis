@@ -81,6 +81,7 @@ namespace mantis
             t_context->get_status()->set_state( status_state_t_stopped );
             t_context->push_status();
 
+            delete t_context->get_connection();
             delete t_context;
         }
 

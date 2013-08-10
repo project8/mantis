@@ -5,17 +5,25 @@
 namespace mantis
 {
 
-    context::context( connection* a_connection ) :
-            f_connection( a_connection ),
+    context::context() :
+            f_connection(),
             f_request(),
             f_status(),
             f_response()
     {
     }
-
     context::~context()
     {
-        delete f_connection;
+    }
+
+    void context::set_connection( connection* a_connection )
+    {
+        f_connection = a_connection;
+        return;
+    }
+    connection* context::get_connection()
+    {
+        return f_connection;
     }
 
     void context::push_request()

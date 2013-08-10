@@ -26,7 +26,8 @@ namespace mantis
 
         while( true )
         {
-            t_context = new context( f_server->get_connection() );
+            t_context = new context();
+            t_context->set_connection( f_server->get_connection() );
 
             cout << "[receiver] got a connection..." << endl;
 

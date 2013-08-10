@@ -12,8 +12,11 @@ namespace mantis
     class context
     {
         public:
-            context( connection* a_connection );
+            context();
             virtual ~context();
+
+            void set_connection( connection* a_connection );
+            connection* get_connection();
 
             request* get_request();
             void push_request();
@@ -29,9 +32,9 @@ namespace mantis
 
         private:
             connection* f_connection;
-            ::mantis::request f_request;
-            ::mantis::status f_status;
-            ::mantis::response f_response;
+            request f_request;
+            status f_status;
+            response f_response;
     };
 
 }

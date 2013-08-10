@@ -101,7 +101,6 @@ set( MANTISCORE_HEADERFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/buffer.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/iterator.hh
 
-    #${CMAKE_CURRENT_SOURCE_DIR}/include/sender.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/receiver.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/worker.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/digitizer.hh
@@ -132,7 +131,6 @@ set( MANTISCORE_SOURCEFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/source/buffer.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/source/iterator.cc
     
-    #${CMAKE_CURRENT_SOURCE_DIR}/source/sender.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/source/receiver.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/source/worker.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/source/digitizer.cc
@@ -160,3 +158,11 @@ pbuilder_install_executables( test_mantis_client )
 add_executable( mantis_standalone ${CMAKE_CURRENT_SOURCE_DIR}/application/mantis_standalone.cc )
 target_link_libraries( mantis_standalone mantis_core ${EXTERNAL_LIBRARIES} )
 pbuilder_install_executables( mantis_standalone )
+
+add_executable( mantis_server ${CMAKE_CURRENT_SOURCE_DIR}/application/mantis_server.cc )
+target_link_libraries( mantis_server mantis_core ${EXTERNAL_LIBRARIES} )
+pbuilder_install_executables( mantis_server )
+
+add_executable( mantis_client ${CMAKE_CURRENT_SOURCE_DIR}/application/mantis_client.cc )
+target_link_libraries( mantis_client mantis_core ${EXTERNAL_LIBRARIES} )
+pbuilder_install_executables( mantis_client )
