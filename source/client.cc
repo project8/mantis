@@ -17,7 +17,8 @@ using std::endl;
 namespace mantis
 {
 
-    client::client( const std::string& a_host, const int& a_port )
+    client::client( const std::string& a_host, const int& a_port ) :
+            connection( -1, NULL )
     {
         cout << "[client] creating client with host <" << a_host << "> on port <" << a_port << ">" << endl;
 
