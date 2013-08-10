@@ -17,8 +17,8 @@ namespace mantis
             void read( std::string& a_message );
 
         protected:
-            const int f_socket;
-            const sockaddr_in* f_address;
+            int f_socket;
+            sockaddr_in* f_address;
 
             static const int f_buffer_length = 512;
             char f_buffer_content[ f_buffer_length ];
