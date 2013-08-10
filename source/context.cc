@@ -29,7 +29,7 @@ namespace mantis
     void context::push_request()
     {
         std::string t_message;
-        f_request.SerializePartialToString( &t_message );
+        f_request.SerializeToString( &t_message );
         f_connection->write( t_message );
         return;
     }
@@ -48,7 +48,7 @@ namespace mantis
     void context::push_status()
     {
         std::string t_message;
-        f_status.SerializePartialToString( &t_message );
+        f_status.SerializeToString( &t_message );
         f_connection->write( t_message );
         return;
     }
@@ -67,7 +67,7 @@ namespace mantis
     void context::push_response()
     {
         std::string t_message;
-        f_response.SerializePartialToString( &t_message );
+        f_response.SerializeToString( &t_message );
         f_connection->write( t_message );
         return;
     }
