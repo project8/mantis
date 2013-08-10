@@ -1,5 +1,6 @@
 #include "parser.hh"
 #include "client.hh"
+#include "context.hh"
 #include "time.hh"
 using namespace mantis;
 

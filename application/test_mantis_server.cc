@@ -1,5 +1,6 @@
 #include "parser.hh"
 #include "server.hh"
+#include "context.hh"
 #include "connection.hh"
 using namespace mantis;
 
