@@ -1,6 +1,8 @@
 #include "context.hh"
 
-#include <string>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 namespace mantis
 {
@@ -28,16 +30,16 @@ namespace mantis
 
     void context::push_request()
     {
-        std::string t_message;
-        f_request.SerializeToString( &t_message );
-        f_connection->write( t_message );
+        ::memset( f_buffer, 0, f_buffer_length );
+        f_request.SerializeToArray( f_buffer, f_buffer_length );
+        f_connection->write( f_buffer, f_buffer_length );
         return;
     }
     void context::pull_request()
     {
-        std::string t_message;
-        f_connection->read( t_message );
-        f_request.ParseFromString( t_message );
+        ::memset( f_buffer, 0, f_buffer_length );
+        f_connection->read( f_buffer, f_buffer_length );
+        f_request.ParseFromArray( f_buffer, f_buffer_length );
         return;
     }
     request* context::get_request()
@@ -47,16 +49,16 @@ namespace mantis
 
     void context::push_status()
     {
-        std::string t_message;
-        f_status.SerializeToString( &t_message );
-        f_connection->write( t_message );
+        ::memset( f_buffer, 0, f_buffer_length );
+        f_status.SerializeToArray( f_buffer, f_buffer_length );
+        f_connection->write( f_buffer, f_buffer_length );
         return;
     }
     void context::pull_status()
     {
-        std::string t_message;
-        f_connection->read( t_message );
-        f_status.ParseFromString( t_message );
+        ::memset( f_buffer, 0, f_buffer_length );
+        f_connection->read( f_buffer, f_buffer_length );
+        f_status.ParseFromArray( f_buffer, f_buffer_length );
         return;
     }
     status* context::get_status()
@@ -66,16 +68,16 @@ namespace mantis
 
     void context::push_response()
     {
-        std::string t_message;
-        f_response.SerializeToString( &t_message );
-        f_connection->write( t_message );
+        ::memset( f_buffer, 0, f_buffer_length );
+        f_response.SerializeToArray( f_buffer, f_buffer_length );
+        f_connection->write( f_buffer, f_buffer_length );
         return;
     }
     void context::pull_response()
     {
-        std::string t_message;
-        f_connection->read( t_message );
-        f_response.ParseFromString( t_message );
+        ::memset( f_buffer, 0, f_buffer_length );
+        f_connection->read( f_buffer, f_buffer_length );
+        f_response.ParseFromArray( f_buffer, f_buffer_length );
         return;
     }
     response* context::get_response()

@@ -35,6 +35,9 @@ namespace mantis
             request f_request;
             status f_status;
             response f_response;
+
+            static const unsigned long int f_buffer_length = 1024;
+            static char f_buffer[ f_buffer_length ];
     };
 
 }

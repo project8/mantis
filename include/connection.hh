@@ -13,15 +13,12 @@ namespace mantis
             connection( int a_socket, sockaddr_in* an_address );
             virtual ~connection();
 
-            void write( const std::string& a_message );
-            void read( std::string& a_message );
+            void write( const char* a_message, size_t a_size );
+            void read( char* a_message, size_t a_size );
 
         protected:
             int f_socket;
             sockaddr_in* f_address;
-
-            static const int f_buffer_length = 1024;
-            char f_buffer_content[ f_buffer_length ];
     };
 
 }
