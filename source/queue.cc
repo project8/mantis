@@ -73,7 +73,7 @@ namespace mantis
     {
         while( true )
         {
-            usleep( 100000 );
+            sleep( 1 );
 
             f_mutex.lock();
             std::list< context* >::iterator t_it;
