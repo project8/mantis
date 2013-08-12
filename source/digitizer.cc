@@ -254,7 +254,7 @@ namespace mantis
         a_response->set_digitizer_live_time( (double) (f_live_time) / (double) (1000000) );
         a_response->set_digitizer_dead_time( (double) (f_dead_time) / (double) (1000000) );
         a_response->set_digitizer_megabytes( (double) (4 * f_record_count) );
-        a_response->set_digitizer_rate( (double) (4 * 1000000 * f_record_count) / (double) (f_live_time) );
+        a_response->set_digitizer_rate( (double) (4 * f_record_count) / (double) (f_live_time) / (double) (1000000) );
 
         return;
     }
