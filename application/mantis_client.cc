@@ -40,7 +40,7 @@ int main( int argc, char** argv )
         {
             cout << "[mantis_client] request acknowledged...";
             cout.flush();
-            cout << "\r";
+            cout << "\n";
             continue;
         }
 
@@ -48,7 +48,7 @@ int main( int argc, char** argv )
         {
             cout << "[mantis_client] request waiting...     ";
             cout.flush();
-            cout << "\r";
+            cout << "\n";
             continue;
         }
 
@@ -56,7 +56,7 @@ int main( int argc, char** argv )
         {
             cout << "[mantis_client] request started...     ";
             cout.flush();
-            cout << "\r";
+            cout << "\n";
             continue;
         }
 
@@ -64,7 +64,7 @@ int main( int argc, char** argv )
         {
             cout << "[mantis_client] request running...     ";
             cout.flush();
-            cout << "\r";
+            cout << "\n";
             continue;
         }
 
@@ -72,7 +72,7 @@ int main( int argc, char** argv )
         {
             cout << "[mantis_client] request stopped...     ";
             cout.flush();
-            cout << "\r";
+            cout << "\n";
             cout << endl;
             break;
         }

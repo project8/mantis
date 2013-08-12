@@ -97,7 +97,7 @@ namespace mantis
             {
                 if( f_condition->is_waiting() == true )
                 {
-                    //cout << "[writer] releasing" << endl;
+                    cout << "[writer] releasing" << endl;
                     f_condition->release();
                 }
                 ++t_it;
@@ -113,7 +113,7 @@ namespace mantis
                 f_live_time = t_stop_time - t_start_time;
 
                 //GET OUT
-                //cout << "[writer] finished normally" << endl;
+                cout << "[writer] finished normally" << endl;
                 return;
             }
 
@@ -122,7 +122,7 @@ namespace mantis
             if( write( t_it.object() ) == false )
             {
                 //GET OUT
-                //cout << "[writer] finished abnormally because writing failed" << endl;
+                cout << "[writer] finished abnormally because writing failed" << endl;
                 return;
             }
             t_it->set_written();

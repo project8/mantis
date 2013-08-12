@@ -138,11 +138,11 @@ namespace mantis
         timestamp_t t_dead_start_time;
         timestamp_t t_dead_stop_time;
 
-        //cout << "[digitizer] waiting" << endl;
+        cout << "[digitizer] waiting" << endl;
 
         f_condition->wait();
 
-        //cout << "[digitizer] loose at <" << t_it.index() << ">" << endl;
+        cout << "[digitizer] loose at <" << t_it.index() << ">" << endl;
 
         //start acquisition
         if( start() == false )
@@ -171,7 +171,7 @@ namespace mantis
                 stop();
 
                 //GET OUT
-                //cout << "[digitizer] finished normally" << endl;
+                cout << "[digitizer] finished normally" << endl;
                 return;
             }
 
@@ -189,7 +189,7 @@ namespace mantis
                 stop();
 
                 //GET OUT
-                //cout << "[digitizer] finished abnormally because acquisition failed" << endl;
+                cout << "[digitizer] finished abnormally because acquisition failed" << endl;
                 return;
             }
 
@@ -197,7 +197,7 @@ namespace mantis
 
             if( +t_it == false )
             {
-                //cout << "[digitizer] blocked at <" << t_it.index() << ">" << endl;
+                cout << "[digitizer] blocked at <" << t_it.index() << ">" << endl;
 
                 //stop live timer
                 t_live_stop_time = get_integral_time();
@@ -209,7 +209,7 @@ namespace mantis
                 if( stop() == false )
                 {
                     //GET OUT
-                    //cout << "[digitizer] finished abnormally because halting streaming failed" << endl;
+                    cout << "[digitizer] finished abnormally because halting streaming failed" << endl;
                     return;
                 }
 
@@ -229,7 +229,7 @@ namespace mantis
                 if( start() == false )
                 {
                     //GET OUT
-                    //cout << "[digitizer] finished abnormally because starting streaming failed" << endl;
+                    cout << "[digitizer] finished abnormally because starting streaming failed" << endl;
                     return;
                 }
 
@@ -239,7 +239,7 @@ namespace mantis
                 //increment block
                 ++t_it;
 
-                //cout << "[digitizer] loose at <" << t_it.index() << ">" << endl;
+                cout << "[digitizer] loose at <" << t_it.index() << ">" << endl;
             }
         }
 
