@@ -139,7 +139,7 @@ namespace mantis
         a_response->set_writer_acquisitions( f_acquisition_count );
         a_response->set_writer_live_time( double( f_live_time ) / double( 1000000 ) );
         a_response->set_writer_megabytes( (double) (4 * f_record_count) );
-        a_response->set_writer_rate( (double) (4 * 1000000 * f_record_count) / (double) (f_live_time) );
+        a_response->set_writer_rate( a_response->writer_megabytes() / a_response->writer_live_time() );
 
         return;
     }
