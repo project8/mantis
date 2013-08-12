@@ -42,15 +42,6 @@ namespace mantis
             exit( -1 );
         }
 
-        cout << "[digitizer] setting one active channel..." << endl;
-
-        t_result = SetActiveChannelsPX4( f_handle, PX4CHANSEL_SINGLE_CH1 );
-        if( t_result != SIG_SUCCESS )
-        {
-            DumpLibErrorPX4( t_result, "failed to activate channel 1: " );
-            exit( -1 );
-        }
-
         cout << "[digitizer] allocating dma buffer..." << endl;
 
         iterator t_it( f_buffer );
@@ -105,6 +96,28 @@ namespace mantis
         f_live_time = 0;
         f_dead_time = 0;
 
+        cout << "[digitizer] setting run mode..." << endl;
+
+        if( a_request->mode() == request_mode_t_single )
+        {
+            t_result = SetActiveChannelsPX4( f_handle, PX4CHANSEL_SINGLE_CH1 );
+            if( t_result != SIG_SUCCESS )
+            {
+                DumpLibErrorPX4( t_result, "failed to activate channel 1: " );
+                exit( -1 );
+            }
+
+        }
+        if( a_request->mode() == request_mode_t_dual_separate || a_request->mode() == request_mode_t_dual_interleaved )
+        {
+            t_result = SetActiveChannelsPX4( f_handle, PX4CHANSEL_DUAL_1_2 );
+            if( t_result != SIG_SUCCESS )
+            {
+                DumpLibErrorPX4( t_result, "failed to activate channels 1 and 2: " );
+                exit( -1 );
+            }
+        }
+
         cout << "[digitizer] setting clock rate..." << endl;
 
         t_result = SetInternalAdcClockRatePX4( f_handle, a_request->rate() );
@@ -116,7 +129,6 @@ namespace mantis
 
         return;
     }
-
     void digitizer::execute()
     {
         iterator t_it( f_buffer );
@@ -126,11 +138,11 @@ namespace mantis
         timestamp_t t_dead_start_time;
         timestamp_t t_dead_stop_time;
 
-        cout << "[digitizer] waiting" << endl;
+        //cout << "[digitizer] waiting" << endl;
 
         f_condition->wait();
 
-        cout << "[digitizer] loose at <" << t_it.index() << ">" << endl;
+        //cout << "[digitizer] loose at <" << t_it.index() << ">" << endl;
 
         //start acquisition
         if( start() == false )
@@ -159,7 +171,7 @@ namespace mantis
                 stop();
 
                 //GET OUT
-                cout << "[digitizer] finished normally" << endl;
+                //cout << "[digitizer] finished normally" << endl;
                 return;
             }
 
@@ -177,7 +189,7 @@ namespace mantis
                 stop();
 
                 //GET OUT
-                cout << "[digitizer] finished abnormally because acquisition failed" << endl;
+                //cout << "[digitizer] finished abnormally because acquisition failed" << endl;
                 return;
             }
 
@@ -185,7 +197,7 @@ namespace mantis
 
             if( +t_it == false )
             {
-                cout << "[digitizer] blocked at <" << t_it.index() << ">" << endl;
+                //cout << "[digitizer] blocked at <" << t_it.index() << ">" << endl;
 
                 //stop live timer
                 t_live_stop_time = get_integral_time();
@@ -197,7 +209,7 @@ namespace mantis
                 if( stop() == false )
                 {
                     //GET OUT
-                    cout << "[digitizer] finished abnormally because halting streaming failed" << endl;
+                    //cout << "[digitizer] finished abnormally because halting streaming failed" << endl;
                     return;
                 }
 
@@ -217,7 +229,7 @@ namespace mantis
                 if( start() == false )
                 {
                     //GET OUT
-                    cout << "[digitizer] finished abnormally because starting streaming failed" << endl;
+                    //cout << "[digitizer] finished abnormally because starting streaming failed" << endl;
                     return;
                 }
 
@@ -227,29 +239,22 @@ namespace mantis
                 //increment block
                 ++t_it;
 
-                cout << "[digitizer] loose at <" << t_it.index() << ">" << endl;
+                //cout << "[digitizer] loose at <" << t_it.index() << ">" << endl;
             }
         }
 
         return;
     }
-
     void digitizer::finalize( response* a_response )
     {
+        cout << "[digitizer] calculating statistics..." << endl;
+
         a_response->set_digitizer_records( f_record_count );
         a_response->set_digitizer_acquisitions( f_acquisition_count );
         a_response->set_digitizer_live_time( (double) (f_live_time) / (double) (1000000) );
         a_response->set_digitizer_dead_time( (double) (f_dead_time) / (double) (1000000) );
         a_response->set_digitizer_megabytes( (double) (4 * f_record_count) );
         a_response->set_digitizer_rate( (double) (4 * 1000000 * f_record_count) / (double) (f_live_time) );
-
-        cout << "[digitizer] summary:\n";
-        cout << "  record count: " << a_response->digitizer_records() << " [#]\n";
-        cout << "  acquisition count: " << a_response->digitizer_acquisitions() << " [#]\n";
-        cout << "  live time: " << a_response->digitizer_live_time() << " [sec]\n";
-        cout << "  dead time: " << a_response->digitizer_dead_time() << " [sec]\n";
-        cout << "  megabytes: " << a_response->digitizer_megabytes() << " [Mb]\n";
-        cout << "  rate: " << a_response->digitizer_rate() << " [Mb/sec]\n";
 
         return;
     }

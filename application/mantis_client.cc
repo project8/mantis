@@ -21,8 +21,6 @@ int main( int argc, char** argv )
     context* t_context = new context();
     t_context->set_connection( t_client );
 
-    cout << "[mantis_client] initializing request..." << endl;
-
     t_context->get_request()->set_file( t_parser.get_required< string >( "file" ) );
     t_context->get_request()->set_description( t_parser.get_required< string >( "description" ) );
     t_context->get_request()->set_date( get_string_time() );
@@ -40,44 +38,66 @@ int main( int argc, char** argv )
 
         if( t_context->get_status()->state() == status_state_t_acknowledged )
         {
-            cout << "[mantis_client] request acknowledged..." << '\n';
+            cout << "[mantis_client] request acknowledged...";
             cout.flush();
+            cout << "\r";
             continue;
         }
 
         if( t_context->get_status()->state() == status_state_t_waiting )
         {
-            cout << "[mantis_client] request waiting...     " << '\n';
+            cout << "[mantis_client] request waiting...     ";
             cout.flush();
+            cout << "\r";
             continue;
         }
 
         if( t_context->get_status()->state() == status_state_t_started )
         {
-            cout << "[mantis_client] request started...     " << '\n';
+            cout << "[mantis_client] request started...     ";
             cout.flush();
+            cout << "\r";
             continue;
         }
 
         if( t_context->get_status()->state() == status_state_t_running )
         {
-            cout << "[mantis_client] request running...     " << '\n';
+            cout << "[mantis_client] request running...     ";
             cout.flush();
+            cout << "\r";
             continue;
         }
 
         if( t_context->get_status()->state() == status_state_t_stopped )
         {
-            cout << "[mantis_client] request stopped...     " << '\n';
+            cout << "[mantis_client] request stopped...     ";
             cout.flush();
+            cout << "\r";
             cout << endl;
             break;
         }
     }
 
+    cout << "[mantis_client] receiving response..." << endl;
+
     t_context->pull_response();
 
-    cout << "[mantis_client] done!" << endl;
+    cout << "[mantis_client] digitizer summary:\n";
+    cout << "  record count: " << t_context->get_response()->digitizer_records() << " [#]\n";
+    cout << "  acquisition count: " << t_context->get_response()->digitizer_acquisitions() << " [#]\n";
+    cout << "  live time: " << t_context->get_response()->digitizer_live_time() << " [sec]\n";
+    cout << "  dead time: " << t_context->get_response()->digitizer_dead_time() << " [sec]\n";
+    cout << "  megabytes: " << t_context->get_response()->digitizer_megabytes() << " [Mb]\n";
+    cout << "  rate: " << t_context->get_response()->digitizer_rate() << " [Mb/sec]\n";
+
+    cout << endl;
+
+    cout << "[mantis_client] writer summary:\n";
+    cout << "  record count: " << t_context->get_response()->writer_records() << "\n";
+    cout << "  acquisition count: " << t_context->get_response()->writer_acquisitions() << "\n";
+    cout << "  live time: " << t_context->get_response()->writer_live_time() << "\n";
+    cout << "  megabytes: " << t_context->get_response()->writer_megabytes() << "\n";
+    cout << "  rate: " << t_context->get_response()->writer_rate() << "\n";
 
     delete t_context;
     delete t_client;

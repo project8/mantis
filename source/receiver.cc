@@ -29,18 +29,16 @@ namespace mantis
             t_context = new context();
             t_context->set_connection( f_server->get_connection() );
 
-            cout << "[receiver] got a connection..." << endl;
+            cout << "[receiver] receiving request..." << endl;
 
-
-            cout << "[receiver] pulling request..." << endl;
             t_context->pull_request();
 
-            cout << "[receiver] requested clock rate was <" << t_context->get_request()->rate() << ">" << endl;
+            cout << "[receiver] sending status <acknowledged>..." << endl;
 
             t_context->get_status()->set_state( status_state_t_acknowledged );
-
-            cout << "[receiver] pushing status..." << endl;
             t_context->push_status();
+
+            cout << "[receiver] queuing request..." << endl;
 
             t_context->get_status()->set_state( status_state_t_waiting );
             f_queue->to_back( t_context );

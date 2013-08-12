@@ -42,8 +42,22 @@ namespace mantis
 
         //required fields
         f_header->SetFilename( a_request->file() );
-        f_header->SetAcquisitionMode( sOneChannel );
-        f_header->SetAcquisitionRate( a_request->rate( ) );
+        if( a_request->mode() == request_mode_t_single )
+        {
+            f_header->SetAcquisitionMode( sOneChannel );
+            f_header->SetFormatMode( sFormatSingle );
+        }
+        if( a_request->mode() == request_mode_t_dual_separate )
+        {
+            f_header->SetAcquisitionMode( sTwoChannel );
+            f_header->SetFormatMode( sFormatMultiSeparate );
+        }
+        if( a_request->mode() == request_mode_t_dual_interleaved )
+        {
+            f_header->SetAcquisitionMode( sTwoChannel );
+            f_header->SetFormatMode( sFormatMultiInterleaved );
+        }
+        f_header->SetAcquisitionRate( a_request->rate() );
         f_header->SetRunDuration( a_request->duration() );
         f_header->SetRecordSize( 4194304 );
 
@@ -62,7 +76,6 @@ namespace mantis
 
         return;
     }
-
     void writer::execute()
     {
         iterator t_it( f_buffer );
@@ -84,7 +97,7 @@ namespace mantis
             {
                 if( f_condition->is_waiting() == true )
                 {
-                    cout << "[writer] releasing" << endl;
+                    //cout << "[writer] releasing" << endl;
                     f_condition->release();
                 }
                 ++t_it;
@@ -100,7 +113,7 @@ namespace mantis
                 f_live_time = t_stop_time - t_start_time;
 
                 //GET OUT
-                cout << "[writer] finished normally" << endl;
+                //cout << "[writer] finished normally" << endl;
                 return;
             }
 
@@ -109,7 +122,7 @@ namespace mantis
             if( write( t_it.object() ) == false )
             {
                 //GET OUT
-                cout << "[writer] finished abnormally because writing failed" << endl;
+                //cout << "[writer] finished abnormally because writing failed" << endl;
                 return;
             }
             t_it->set_written();
@@ -118,30 +131,24 @@ namespace mantis
 
         return;
     }
-
     void writer::finalize( response* a_response )
     {
+        cout << "[writer] calculating statistics..." << endl;
+
         a_response->set_writer_records( f_record_count );
         a_response->set_writer_acquisitions( f_acquisition_count );
         a_response->set_writer_live_time( double( f_live_time ) / double( 1000000 ) );
         a_response->set_writer_megabytes( (double) (4 * f_record_count) );
         a_response->set_writer_rate( (double) (4 * 1000000 * f_record_count) / (double) (f_live_time) );
 
-        cout << "[writer] summary:\n";
-        cout << "  record count: " << a_response->writer_records() << "\n";
-        cout << "  acquisition count: " << a_response->writer_acquisitions() << "\n";
-        cout << "  live time: " << a_response->writer_live_time() << "\n";
-        cout << "  megabytes: " << a_response->writer_megabytes() << "\n";
-        cout << "  rate: " << a_response->writer_rate() << "\n";
-
         return;
     }
 
     bool writer::write( block* a_block )
     {
-        f_record->fAcquisitionId = (AcquisitionIdType)( a_block->get_acquisition_id() );
-        f_record->fRecordId = (RecordIdType)( a_block->get_record_id() );
-        f_record->fTime = (TimeType)( a_block->get_timestamp() );
+        f_record->fAcquisitionId = (AcquisitionIdType) (a_block->get_acquisition_id());
+        f_record->fRecordId = (RecordIdType) (a_block->get_record_id());
+        f_record->fTime = (TimeType) (a_block->get_timestamp());
         memcpy( f_record->fData, a_block->data(), 4194304 );
 
         if( f_monarch->WriteRecord() == false )
