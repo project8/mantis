@@ -20,7 +20,7 @@ namespace mantis
     client::client( const std::string& a_host, const int& a_port ) :
             connection( -1, NULL )
     {
-        cout << "[client] creating client with host <" << a_host << "> on port <" << a_port << ">" << endl;
+        //cout << "[client] creating client with host <" << a_host << "> on port <" << a_port << ">" << endl;
 
         //find host
         hostent* t_host = gethostbyname( a_host.c_str() );
@@ -30,7 +30,7 @@ namespace mantis
             return;
         }
 
-        cout << "[client] host found..." << endl;
+        //cout << "[client] host found..." << endl;
 
         //initialize address
         socklen_t t_address_length = sizeof(sockaddr_in);
@@ -42,7 +42,7 @@ namespace mantis
         ::memcpy( t_host->h_addr_list[ 0 ], &(f_address->sin_addr.s_addr), t_host->h_length );
         f_address->sin_port = htons( a_port );
 
-        cout << "[client] address prepared..." << endl;
+        //cout << "[client] address prepared..." << endl;
 
         //open socket
         f_socket = ::socket( AF_INET, SOCK_STREAM, 0 );
@@ -52,7 +52,7 @@ namespace mantis
             return;
         }
 
-        cout << "[client] socket opened..." << endl;
+        //cout << "[client] socket opened..." << endl;
 
         //connect socket
         if( ::connect( f_socket, (sockaddr*) (f_address), t_address_length ) < 0 )
@@ -60,7 +60,7 @@ namespace mantis
             throw exception() << "could not create connection";
         }
 
-        cout << "[client] socket connected..." << endl;
+        //cout << "[client] socket connected..." << endl;
 
         return;
     }

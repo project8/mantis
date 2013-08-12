@@ -18,7 +18,7 @@ int main( int argc, char** argv )
 {
     parser t_parser( argc, argv );
 
-    cout << "[server] creating objects..." << endl;
+    cout << "[mantis_server] creating objects..." << endl;
 
     server t_server( t_parser.get_required< int >( "port" ) );
 
@@ -34,7 +34,7 @@ int main( int argc, char** argv )
     receiver t_receiver( &t_server, &t_queue, &t_queue_condition );
     worker t_worker( &t_digitizer, &t_writer, &t_queue, &t_queue_condition );
 
-    cout << "[server] starting threads..." << endl;
+    cout << "[mantis_server] starting threads..." << endl;
 
     thread t_queue_thread( &t_queue );
     thread t_receiver_thread( &t_receiver );
@@ -44,13 +44,13 @@ int main( int argc, char** argv )
     t_receiver_thread.start();
     t_worker_thread.start();
 
-    cout << "[server] joining threads..." << endl;
+    cout << "[mantis_server] joining threads..." << endl;
 
     t_queue_thread.join();
     t_receiver_thread.join();
     t_worker_thread.join();
 
-    cout << "[server] shutting down..." << endl;
+    cout << "[mantis_server] shutting down..." << endl;
 
     return 0;
 }

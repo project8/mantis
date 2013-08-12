@@ -21,7 +21,7 @@ namespace mantis
             f_socket( 0 ),
             f_address( NULL )
     {
-        cout << "[server] opening server socket on port <" << a_port << ">" << endl;
+        //cout << "[server] opening server socket on port <" << a_port << ">" << endl;
 
         //initialize address
         socklen_t t_socket_length = sizeof(sockaddr_in);
@@ -33,7 +33,7 @@ namespace mantis
         f_address->sin_addr.s_addr = INADDR_ANY;
         f_address->sin_port = htons( a_port );
 
-        cout << "[server] address prepared..." << endl;
+        //cout << "[server] address prepared..." << endl;
 
         //open socket
         f_socket = ::socket( AF_INET, SOCK_STREAM, 0 );
@@ -43,7 +43,7 @@ namespace mantis
             return;
         }
 
-        cout << "[server] socket open..." << endl;
+        //cout << "[server] socket open..." << endl;
 
         //bind socket
         if( ::bind( f_socket, (const sockaddr*) (f_address), t_socket_length ) < 0 )
@@ -52,12 +52,12 @@ namespace mantis
             return;
         }
 
-        cout << "[server] socket bound..." << endl;
+        //cout << "[server] socket bound..." << endl;
 
         //start listening
         ::listen( f_socket, 10 );
 
-        cout << "[server] listening..." << endl;
+        //cout << "[server] listening..." << endl;
 
         return;
     }
@@ -88,7 +88,7 @@ namespace mantis
             throw exception() << "could not accept connection";
         }
 
-        cout << "[server] connection accepted..." << endl;
+        //cout << "[server] connection accepted..." << endl;
 
         //return a new connection
         return new connection( t_socket, t_address );
