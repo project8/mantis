@@ -14,7 +14,7 @@ namespace mantis
     {
         timeval t_timeval;
         gettimeofday( &t_timeval, NULL );
-        return 1000000 * t_timeval.tv_sec + t_timeval.tv_usec;
+        return( 1000000 * t_timeval.tv_sec + t_timeval.tv_usec );
     }
 
     inline std::string get_string_time()

@@ -133,8 +133,8 @@ namespace mantis
     {
         iterator t_it( f_buffer );
 
-        timestamp_t t_live_start_time;
-        timestamp_t t_live_stop_time;
+        timestamp_t t_live_start_time = 0;
+        timestamp_t t_live_stop_time = 0;
         timestamp_t t_dead_start_time;
         timestamp_t t_dead_stop_time;
 
@@ -233,11 +233,11 @@ namespace mantis
                     return;
                 }
 
-                //start live timer
-                t_live_start_time = get_integral_time();
-
                 //increment block
                 ++t_it;
+
+                //start live timer
+                t_live_start_time = get_integral_time();
 
                 cout << "[digitizer] loose at <" << t_it.index() << ">" << endl;
             }

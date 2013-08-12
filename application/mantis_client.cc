@@ -93,11 +93,11 @@ int main( int argc, char** argv )
     cout << endl;
 
     cout << "[mantis_client] writer summary:\n";
-    cout << "  record count: " << t_context->get_response()->writer_records() << "\n";
-    cout << "  acquisition count: " << t_context->get_response()->writer_acquisitions() << "\n";
-    cout << "  live time: " << t_context->get_response()->writer_live_time() << "\n";
-    cout << "  megabytes: " << t_context->get_response()->writer_megabytes() << "\n";
-    cout << "  rate: " << t_context->get_response()->writer_rate() << "\n";
+    cout << "  record count: " << t_context->get_response()->writer_records() << " [#]\n";
+    cout << "  acquisition count: " << t_context->get_response()->writer_acquisitions() << " [#]\n";
+    cout << "  live time: " << t_context->get_response()->writer_live_time() << " [sec]\n";
+    cout << "  megabytes: " << t_context->get_response()->writer_megabytes() << "[Mb]\n";
+    cout << "  rate: " << t_context->get_response()->writer_rate() << " [Mb/sec]\n";
 
     delete t_context;
     delete t_client;
