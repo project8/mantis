@@ -51,6 +51,13 @@ int main( int argc, char** argv )
     cout << "[mantis standalone] starting threads..." << endl;
 
     thread* t_digitizer_thread = new thread( t_digitizer );
+
+    while( t_condition->is_waiting() == false )
+    {
+        usleep( 1000 );
+        cout << "not ready yet..." << endl;
+    }
+
     thread* t_writer_thread = new thread( t_writer );
 
     t_digitizer_thread->start();
