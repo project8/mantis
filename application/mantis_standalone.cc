@@ -58,7 +58,6 @@ int main( int argc, char** argv )
     while( t_condition->is_waiting() == false )
     {
         usleep( 1000 );
-        cout << "not ready yet..." << endl;
     }
 
     t_writer_thread->start();
