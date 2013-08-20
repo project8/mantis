@@ -9,11 +9,12 @@ using std::endl;
 namespace mantis
 {
 
-    worker::worker( digitizer* a_digitizer, writer* a_writer, queue* a_queue, condition* a_condition ) :
+    worker::worker( digitizer* a_digitizer, writer* a_writer, queue* a_queue, condition* a_queue_condition, condition* a_buffer_condition ) :
             f_digitizer( a_digitizer ),
             f_writer( a_writer ),
             f_queue( a_queue ),
-            f_condition( a_condition )
+            f_queue_condition( a_queue_condition ),
+            f_buffer_condition( a_buffer_condition )
     {
     }
 
@@ -29,7 +30,7 @@ namespace mantis
         {
             if( f_queue->empty() == true )
             {
-                f_condition->wait();
+                f_queue_condition->wait();
             }
 
             cout << "[worker] sending status <started>..." << endl;
@@ -49,6 +50,12 @@ namespace mantis
             thread* t_writer_thread = new thread( f_writer );
 
             t_digitizer_thread->start();
+
+            while( f_buffer_condition->is_waiting() == false )
+            {
+                usleep( 1000 );
+            }
+
             t_writer_thread->start();
 
             t_context->get_status()->set_state( status_state_t_running );

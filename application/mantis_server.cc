@@ -32,7 +32,7 @@ int main( int argc, char** argv )
     queue t_queue;
 
     receiver t_receiver( &t_server, &t_queue, &t_queue_condition );
-    worker t_worker( &t_digitizer, &t_writer, &t_queue, &t_queue_condition );
+    worker t_worker( &t_digitizer, &t_writer, &t_queue, &t_queue_condition, &t_buffer_condition );
 
     cout << "[mantis_server] starting threads..." << endl;
 
