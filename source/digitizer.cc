@@ -1,7 +1,6 @@
 #include "digitizer.hh"
 
 #include "iterator.hh"
-#include "time.hh"
 
 #include <cstdlib> // for exit()
 #include <cmath> // for ceil()
@@ -90,7 +89,7 @@ namespace mantis
 
         cout << "[digitizer] resetting counters..." << endl;
 
-        f_record_last = (record_id_t) (ceil( (double) (a_request->rate() * a_request->duration() * 1.e3) / (double) (4194304) ));
+        f_record_last = (record_id_type) (ceil( (double) (a_request->rate() * a_request->duration() * 1.e3) / (double) (4194304) ));
         f_record_count = 0;
         f_acquisition_count = 0;
         f_live_time = 0;
@@ -133,10 +132,11 @@ namespace mantis
     {
         iterator t_it( f_buffer );
 
-        timestamp_t t_live_start_time = 0;
-        timestamp_t t_live_stop_time = 0;
-        timestamp_t t_dead_start_time;
-        timestamp_t t_dead_stop_time;
+        timespec t_live_start_time;
+        timespec t_live_stop_time;
+        timespec t_dead_start_time;
+        timespec t_dead_stop_time;
+        timespec t_stamp_time;
 
         cout << "[digitizer] waiting" << endl;
 
@@ -151,7 +151,7 @@ namespace mantis
         }
 
         //start timing
-        t_live_start_time = get_integral_time();
+        get_time_monotonic( &t_live_start_time );
 
         //go go go go
         while( true )
@@ -162,10 +162,10 @@ namespace mantis
                 //mark the block as written
                 t_it->set_written();
 
-                //get the time and update the number of live microseconds
-                t_live_stop_time = get_integral_time();
+                //get the time and update the number of live nanoseconds
+                get_time_monotonic( &t_live_stop_time );		
 
-                f_live_time += t_live_stop_time - t_live_start_time;
+                f_live_time += time_to_nsec( t_live_stop_time ) - time_to_nsec( t_live_start_time );
 
                 //halt the pci acquisition
                 stop();
@@ -177,13 +177,13 @@ namespace mantis
 
             t_it->set_acquiring();
 
-            if( acquire( t_it.object() ) == false )
+            if( acquire( t_it.object(), t_stamp_time ) == false )
             {
                 //mark the block as written
                 t_it->set_written();
 
                 //get the time and update the number of live microseconds
-                f_live_time += t_live_stop_time - t_live_start_time;
+                f_live_time += time_to_nsec( t_live_stop_time ) - time_to_nsec( t_live_start_time );
 
                 //halt the pci acquisition
                 stop();
@@ -200,10 +200,10 @@ namespace mantis
                 cout << "[digitizer] blocked at <" << t_it.index() << ">" << endl;
 
                 //stop live timer
-                t_live_stop_time = get_integral_time();
+                get_time_monotonic( &t_live_stop_time );
 
                 //accumulate live time
-                f_live_time += t_live_stop_time - t_live_start_time;
+                f_live_time += time_to_nsec( t_live_stop_time ) - time_to_nsec( t_live_start_time );
 
                 //halt the pci acquisition
                 if( stop() == false )
@@ -214,16 +214,16 @@ namespace mantis
                 }
 
                 //start dead timer
-                t_dead_start_time = get_integral_time();
+                get_time_monotonic( &t_dead_start_time );
 
                 //wait
                 f_condition->wait();
 
                 //stop dead timer
-                t_dead_stop_time = get_integral_time();
+                get_time_monotonic( &t_dead_stop_time );
 
                 //accumulate dead time
-                f_dead_time += t_dead_stop_time - t_dead_start_time;
+                f_dead_time += time_to_nsec( t_dead_stop_time ) - time_to_nsec( t_dead_start_time );
 
                 //start acquisition
                 if( start() == false )
@@ -237,7 +237,7 @@ namespace mantis
                 ++t_it;
 
                 //start live timer
-                t_live_start_time = get_integral_time();
+                get_time_monotonic( &t_live_start_time );;
 
                 cout << "[digitizer] loose at <" << t_it.index() << ">" << endl;
             }
@@ -251,8 +251,8 @@ namespace mantis
 
         a_response->set_digitizer_records( f_record_count );
         a_response->set_digitizer_acquisitions( f_acquisition_count );
-        a_response->set_digitizer_live_time( (double) (f_live_time) / (double) (1000000) );
-        a_response->set_digitizer_dead_time( (double) (f_dead_time) / (double) (1000000) );
+        a_response->set_digitizer_live_time( (double) f_live_time * SEC_PER_NSEC );
+        a_response->set_digitizer_dead_time( (double) f_dead_time * SEC_PER_NSEC );
         a_response->set_digitizer_megabytes( (double) (4 * f_record_count) );
         a_response->set_digitizer_rate( a_response->digitizer_megabytes() / a_response->digitizer_live_time() );
 
@@ -270,11 +270,12 @@ namespace mantis
 
         return true;
     }
-    bool digitizer::acquire( block* a_block )
+    bool digitizer::acquire( block* a_block, timespec& a_stamp_time )
     {
         a_block->set_record_id( f_record_count );
         a_block->set_acquisition_id( f_acquisition_count );
-        a_block->set_timestamp( get_integral_time() );
+        get_time_monotonic( &a_stamp_time );
+        a_block->set_timestamp( time_to_nsec( a_stamp_time ) );
 
         int t_result = GetPciAcquisitionDataFastPX4( f_handle, 4194304, a_block->data(), 0 );
         if( t_result != SIG_SUCCESS )

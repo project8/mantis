@@ -3,7 +3,6 @@
 
 #include "callable.hh"
 
-#include "types.hh"
 #include "buffer.hh"
 #include "condition.hh"
 #include "request.pb.h"
@@ -11,6 +10,7 @@
 #include "Monarch.hpp"
 #include "MonarchHeader.hpp"
 #include "MonarchRecord.hpp"
+#include "thorax.hh"
 
 namespace mantis
 {
@@ -33,9 +33,9 @@ namespace mantis
             MonarchHeader* f_header;
             MonarchRecord* f_record;
 
-            record_id_t f_record_count;
-            acquisition_id_t f_acquisition_count;
-            timestamp_t f_live_time;
+            record_id_type f_record_count;
+            acquisition_id_type f_acquisition_count;
+            time_nsec_type f_live_time;
 
             bool write( block* a_block );
     };

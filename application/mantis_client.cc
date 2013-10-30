@@ -1,7 +1,7 @@
 #include "parser.hh"
 #include "client.hh"
 #include "context.hh"
-#include "time.hh"
+#include "thorax.hh"
 using namespace mantis;
 
 #include <string>
@@ -23,7 +23,7 @@ int main( int argc, char** argv )
 
     t_context->get_request()->set_file( t_parser.get_required< string >( "file" ) );
     t_context->get_request()->set_description( t_parser.get_required< string >( "description" ) );
-    t_context->get_request()->set_date( get_string_time() );
+    t_context->get_request()->set_date( get_absolute_time_string() );
     t_context->get_request()->set_mode( request_mode_t_single );
     t_context->get_request()->set_rate( t_parser.get_required< double >( "rate" ) );
     t_context->get_request()->set_duration( t_parser.get_required< double >( "duration" ) );

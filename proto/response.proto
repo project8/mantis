@@ -4,16 +4,16 @@ message response
 {
 
 	//reader statistics
-	optional uint32 digitizer_records = 2;
-	optional uint32 digitizer_acquisitions = 3;
+	optional uint64 digitizer_records = 2;
+	optional uint64 digitizer_acquisitions = 3;
 	optional double digitizer_live_time = 4;
 	optional double digitizer_dead_time = 5;
 	optional double digitizer_megabytes = 6;
 	optional double digitizer_rate = 7;
 
 	//writer statistics
-	optional uint32 writer_records = 8;
-	optional uint32 writer_acquisitions = 9;
+	optional uint64 writer_records = 8;
+	optional uint64 writer_acquisitions = 9;
 	optional double writer_live_time = 10;
 	optional double writer_megabytes = 11;
 	optional double writer_rate = 12;

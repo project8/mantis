@@ -1,7 +1,6 @@
 #include "writer.hh"
 
 #include "iterator.hh"
-#include "time.hh"
 
 #include <cstring> // for memcpy()
 #include <iostream>
@@ -80,14 +79,14 @@ namespace mantis
     {
         iterator t_it( f_buffer );
 
-        timestamp_t t_start_time;
-        timestamp_t t_stop_time;
+        timespec t_start_time;
+        timespec t_stop_time;
 
         while( +t_it == true )
             ;
 
         //start live timing
-        t_start_time = get_integral_time();
+        get_time_monotonic( &t_start_time );
 
         //go go go
         while( true )
@@ -107,10 +106,10 @@ namespace mantis
             if( t_it->is_written() == true )
             {
                 //stop live timing
-                t_stop_time = get_integral_time();
+                get_time_monotonic( &t_stop_time );
 
                 //accumulate live time
-                f_live_time = t_stop_time - t_start_time;
+                f_live_time = time_to_nsec( t_stop_time ) - time_to_nsec( t_start_time );
 
                 //GET OUT
                 cout << "[writer] finished normally" << endl;
@@ -137,7 +136,7 @@ namespace mantis
 
         a_response->set_writer_records( f_record_count );
         a_response->set_writer_acquisitions( f_acquisition_count );
-        a_response->set_writer_live_time( double( f_live_time ) / double( 1000000 ) );
+        a_response->set_writer_live_time( (double) (f_live_time) * SEC_PER_NSEC );
         a_response->set_writer_megabytes( (double) (4 * f_record_count) );
         a_response->set_writer_rate( a_response->writer_megabytes() / a_response->writer_live_time() );
 
