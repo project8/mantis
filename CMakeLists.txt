@@ -23,6 +23,8 @@ if ("${isSystemDir}" STREQUAL "-1")
    list (APPEND CMAKE_INSTALL_RPATH ${Monarch_LIBRARY_DIR})
 endif ("${isSystemDir}" STREQUAL "-1")
 include_directories (${PROJECT_SOURCE_DIR}/monarch/Include)
+include_directories (${PROJECT_SOURCE_DIR}/monarch/libthorax/cpp)
+include_directories (${PROJECT_SOURCE_DIR}/monarch/libthorax)
 
 find_path( PX1500_INCLUDE_DIR px1500.h PATHS ${PX1500_PREFIX} )
 if( NOT PX1500_INCLUDE_DIR )
