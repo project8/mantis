@@ -16,8 +16,6 @@ include_directories( ${PROJECT_SOURCE_DIR}/include )
 # Option for a non-px1500 build, which includes only the client application
 set( Mantis_USE_PX1500 TRUE CACHE BOOL "Flag to optionally use the px1500 library" )
 
-#pbuilder_add_ext_libraries( "rt" )
-
 add_subdirectory (monarch)
 pbuilder_add_ext_libraries (${Monarch_LIBRARIES})
 # add to the RPATH to be used when installing, but only if it's not a system directory
@@ -51,29 +49,11 @@ find_package( Protobuf )
 include_directories( ${PROTOBUF_INCLUDE_DIR} )
 pbuilder_add_ext_libraries( ${PROTOBUF_LIBRARIES} )
 
-add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/include/request.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/source/request.pb.cc
-    COMMAND protoc ARGS --proto_path=${CMAKE_CURRENT_SOURCE_DIR}/proto --cpp_out=${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/proto/request.proto
-    COMMAND mv ARGS ${CMAKE_CURRENT_SOURCE_DIR}/request.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/include/request.pb.h
-    COMMAND mv ARGS ${CMAKE_CURRENT_SOURCE_DIR}/request.pb.cc ${CMAKE_CURRENT_SOURCE_DIR}/source/request.pb.cc
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-)
+protobuf_generate_cpp( Mantis_PB_Request_Source Mantis_PB_Request_Header ${CMAKE_CURRENT_SOURCE_DIR}/proto/request.proto )
+protobuf_generate_cpp( Mantis_PB_Status_Source Mantis_PB_Status_Header ${CMAKE_CURRENT_SOURCE_DIR}/proto/status.proto )
+protobuf_generate_cpp( Mantis_PB_Response_Source Mantis_PB_Response_Header ${CMAKE_CURRENT_SOURCE_DIR}/proto/response.proto )
+include_directories( ${CMAKE_CURRENT_BINARY_DIR} )
 
-add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/include/status.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/source/status.pb.cc
-    COMMAND protoc ARGS --proto_path=${CMAKE_CURRENT_SOURCE_DIR}/proto --cpp_out=${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/proto/status.proto
-    COMMAND mv ARGS ${CMAKE_CURRENT_SOURCE_DIR}/status.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/include/status.pb.h
-    COMMAND mv ARGS ${CMAKE_CURRENT_SOURCE_DIR}/status.pb.cc ${CMAKE_CURRENT_SOURCE_DIR}/source/status.pb.cc
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-)
-
-add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/include/response.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/source/response.pb.cc
-    COMMAND protoc ARGS --proto_path=${CMAKE_CURRENT_SOURCE_DIR}/proto --cpp_out=${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/proto/response.proto
-    COMMAND mv ARGS ${CMAKE_CURRENT_SOURCE_DIR}/response.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/include/response.pb.h
-    COMMAND mv ARGS ${CMAKE_CURRENT_SOURCE_DIR}/response.pb.cc ${CMAKE_CURRENT_SOURCE_DIR}/source/response.pb.cc
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-)
 
 ##################
 # mantis library #
@@ -90,9 +70,9 @@ set( MANTISCORE_HEADERFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/callable.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/thread.hh
     
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/request.pb.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/status.pb.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/response.pb.h
+#    ${CMAKE_CURRENT_SOURCE_DIR}/include/request.pb.h
+#    ${CMAKE_CURRENT_SOURCE_DIR}/include/status.pb.h
+#    ${CMAKE_CURRENT_SOURCE_DIR}/include/response.pb.h
     
     ${CMAKE_CURRENT_SOURCE_DIR}/include/server.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/client.hh
@@ -107,6 +87,10 @@ set( MANTISCORE_HEADERFILES
 
     ${CMAKE_CURRENT_SOURCE_DIR}/include/receiver.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/writer.hh
+
+    ${Mantis_PB_Request_Header}
+    ${Mantis_PB_Status_Header}
+    ${Mantis_PB_Response_Header}
 )
 
 set( MANTISCORE_SOURCEFILES
@@ -118,9 +102,9 @@ set( MANTISCORE_SOURCEFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/source/callable.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/source/thread.cc
     
-    ${CMAKE_CURRENT_SOURCE_DIR}/source/request.pb.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/source/status.pb.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/source/response.pb.cc
+#    ${CMAKE_CURRENT_SOURCE_DIR}/source/request.pb.cc
+#    ${CMAKE_CURRENT_SOURCE_DIR}/source/status.pb.cc
+#    ${CMAKE_CURRENT_SOURCE_DIR}/source/response.pb.cc
     
     ${CMAKE_CURRENT_SOURCE_DIR}/source/server.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/source/client.cc
@@ -135,6 +119,10 @@ set( MANTISCORE_SOURCEFILES
     
     ${CMAKE_CURRENT_SOURCE_DIR}/source/receiver.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/source/writer.cc
+
+    ${Mantis_PB_Request_Source}
+    ${Mantis_PB_Status_Source}
+    ${Mantis_PB_Response_Source}
 )
 
 if (Mantis_USE_PX1500)
