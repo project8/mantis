@@ -9,3 +9,5 @@
 .project
 .cproject
 .DS_Store
+build*/
+cbuild*/
