@@ -16,7 +16,7 @@ include_directories( ${PROJECT_SOURCE_DIR}/include )
 # Option for a non-px1500 build, which includes only the client application
 set( Mantis_USE_PX1500 TRUE CACHE BOOL "Flag to optionally use the px1500 library" )
 
-pbuilder_add_ext_libraries( "rt" )
+#pbuilder_add_ext_libraries( "rt" )
 
 add_subdirectory (monarch)
 pbuilder_add_ext_libraries (${Monarch_LIBRARIES})
@@ -106,7 +106,6 @@ set( MANTISCORE_HEADERFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/iterator.hh
 
     ${CMAKE_CURRENT_SOURCE_DIR}/include/receiver.hh
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/worker.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/writer.hh
 )
 
@@ -135,7 +134,6 @@ set( MANTISCORE_SOURCEFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/source/iterator.cc
     
     ${CMAKE_CURRENT_SOURCE_DIR}/source/receiver.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/source/worker.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/source/writer.cc
 )
 
@@ -143,11 +141,13 @@ if (Mantis_USE_PX1500)
     set( MANTISCORE_HEADERFILES
         ${MANTISCORE_HEADERFILES}
         ${CMAKE_CURRENT_SOURCE_DIR}/include/digitizer.hh
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/worker.hh
     )
     
     set( MANTISCORE_SOURCEFILES
         ${MANTISCORE_SOURCEFILES}
         ${CMAKE_CURRENT_SOURCE_DIR}/source/digitizer.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/source/worker.cc
     )
 endif (Mantis_USE_PX1500)
 
