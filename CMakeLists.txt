@@ -14,150 +14,172 @@ include_directories( ${PROJECT_SOURCE_DIR}/include )
 #######################
 
 # Option for a non-px1500 build, which includes only the client application
-set( Mantis_USE_PX1500 TRUE CACHE BOOL "Flag to optionally use the px1500 library" )
+set( Mantis_BUILD_SERVER FALSE CACHE BOOL "Flag to enable building of the server library and applications" )
+set( Mantis_INCLUDE_PX1500_SERVER TRUE CACHE BOOL "Flat to include the px1500 server; ignored unless the build-server flag is enabled" )
 
-add_subdirectory (monarch)
-pbuilder_add_ext_libraries (${Monarch_LIBRARIES})
+add_subdirectory( Monarch )
+pbuilder_add_ext_libraries( ${Monarch_LIBRARIES} )
 # add to the RPATH to be used when installing, but only if it's not a system directory
-list (FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${Monarch_LIBRARY_DIR}" isSystemDir)
-if ("${isSystemDir}" STREQUAL "-1")
-   list (APPEND CMAKE_INSTALL_RPATH ${Monarch_LIBRARY_DIR})
-endif ("${isSystemDir}" STREQUAL "-1")
-include_directories (${PROJECT_SOURCE_DIR}/monarch/Include)
-include_directories (${PROJECT_SOURCE_DIR}/monarch/libthorax/cpp)
-include_directories (${PROJECT_SOURCE_DIR}/monarch/libthorax)
+list( FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${Monarch_LIBRARY_DIR}" isSystemDir )
+if( "${isSystemDir}" STREQUAL "-1" )
+   list( APPEND CMAKE_INSTALL_RPATH ${Monarch_LIBRARY_DIR} )
+endif( "${isSystemDir}" STREQUAL "-1" )
+include_directories( ${PROJECT_SOURCE_DIR}/Monarch/Include )
+include_directories( ${PROJECT_SOURCE_DIR}/Monarch/libthorax/cpp )
+include_directories( ${PROJECT_SOURCE_DIR}/Monarch/libthorax )
 
-if (Mantis_USE_PX1500)
-    find_path( PX1500_INCLUDE_DIR px1500.h PATHS ${PX1500_PREFIX} )
-    if( NOT PX1500_INCLUDE_DIR )
-        message( FATAL_ERROR "Did not find px1500 header; set PX1500_PREFIX to suggest a path" )
-    endif( NOT PX1500_INCLUDE_DIR )
-    include_directories( ${PX1500_INCLUDE_DIR} )
-    link_directories( ${PX1500_PREFIX} )
-        
-    find_library( PX1500_LIBRARIES sig_px1500 PATHS ${PX1500_PREFIX} )
-    if( NOT PX1500_LIBRARIES )
-        message( FATAL_ERROR "Did not find px1500 library; set PX1500_PREFIX to suggest a path" )
-    endif( NOT PX1500_LIBRARIES )
-    message( STATUS "Found px1500 library: ${PX1500_LIBRARIES}" )
-    pbuilder_add_ext_libraries( ${PX1500_LIBRARIES} )
-else (Mantis_USE_PX1500)
-    message( STATUS "Client only (non-px1500) build")
-endif (Mantis_USE_PX1500)
+if( Mantis_BUILD_SERVER )
+    if( Mantis_INCLUDE_PX1500_SERVER )
+        find_path( PX1500_INCLUDE_DIR px1500.h PATHS ${PX1500_PREFIX} )
+        if( NOT PX1500_INCLUDE_DIR )
+            message( FATAL_ERROR "Did not find px1500 header; set PX1500_PREFIX to suggest a path" )
+        endif( NOT PX1500_INCLUDE_DIR )
+        include_directories( ${PX1500_INCLUDE_DIR} )
+        link_directories( ${PX1500_PREFIX} )
+            
+        find_library( PX1500_LIBRARIES sig_px1500 PATHS ${PX1500_PREFIX} )
+        if( NOT PX1500_LIBRARIES )
+            message( FATAL_ERROR "Did not find px1500 library; set PX1500_PREFIX to suggest a path" )
+        endif( NOT PX1500_LIBRARIES )
+        message( STATUS "Found px1500 library: ${PX1500_LIBRARIES}" )
+        pbuilder_add_ext_libraries( ${PX1500_LIBRARIES} )
+        message( STATUS "Will include the PX1500 server" )
+    endif (Mantis_INCLUDE_PX1500_SERVER)
+else( Mantis_BUILD_SERVER )
+    message( STATUS "Will perform a client-only build")
+endif( Mantis_BUILD_SERVER )
 
 find_package( Protobuf )
 include_directories( ${PROTOBUF_INCLUDE_DIR} )
 pbuilder_add_ext_libraries( ${PROTOBUF_LIBRARIES} )
 
-protobuf_generate_cpp( Mantis_PB_Request_Source Mantis_PB_Request_Header ${CMAKE_CURRENT_SOURCE_DIR}/proto/request.proto )
-protobuf_generate_cpp( Mantis_PB_Status_Source Mantis_PB_Status_Header ${CMAKE_CURRENT_SOURCE_DIR}/proto/status.proto )
-protobuf_generate_cpp( Mantis_PB_Response_Source Mantis_PB_Response_Header ${CMAKE_CURRENT_SOURCE_DIR}/proto/response.proto )
+protobuf_generate_cpp( Mantis_PB_Request_Source Mantis_PB_Request_Header ${CMAKE_CURRENT_SOURCE_DIR}/Protobuf/request.proto )
+protobuf_generate_cpp( Mantis_PB_Status_Source Mantis_PB_Status_Header ${CMAKE_CURRENT_SOURCE_DIR}/Protobuf/status.proto )
+protobuf_generate_cpp( Mantis_PB_Response_Source Mantis_PB_Response_Header ${CMAKE_CURRENT_SOURCE_DIR}/Protobuf/response.proto )
 include_directories( ${CMAKE_CURRENT_BINARY_DIR} )
 
 
-##################
-# mantis library #
-##################
+#################
+# mantis client #
+#################
 
-set( MANTISCORE_HEADERFILES
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/exception.hh
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/parser.hh
+set( MANTIS_CLIENT_HEADERFILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/Client/exception.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/Client/parser.hh
     
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/mutex.hh
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/condition.hh
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/callable.hh
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/thread.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/Client/client.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/Client/connection.hh
     
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/server.hh
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/client.hh
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/connection.hh
-    
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/context.hh
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/queue.hh
-
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/block.hh
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/buffer.hh
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/iterator.hh
-
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/receiver.hh
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/writer.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/Client/context.hh
 
     ${Mantis_PB_Request_Header}
     ${Mantis_PB_Status_Header}
     ${Mantis_PB_Response_Header}
 )
 
-set( MANTISCORE_SOURCEFILES
-    ${CMAKE_CURRENT_SOURCE_DIR}/source/exception.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/source/parser.cc
+set( MANTIS_CLIENT_SOURCEFILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/Client/exception.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/Client/parser.cc
 
-    ${CMAKE_CURRENT_SOURCE_DIR}/source/mutex.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/source/condition.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/source/callable.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/source/thread.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/Client/client.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/Client/connection.cc
     
-    ${CMAKE_CURRENT_SOURCE_DIR}/source/server.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/source/client.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/source/connection.cc
-    
-    ${CMAKE_CURRENT_SOURCE_DIR}/source/context.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/source/queue.cc
-
-    ${CMAKE_CURRENT_SOURCE_DIR}/source/block.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/source/buffer.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/source/iterator.cc
-    
-    ${CMAKE_CURRENT_SOURCE_DIR}/source/receiver.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/source/writer.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/Client/context.cc
 
     ${Mantis_PB_Request_Source}
     ${Mantis_PB_Status_Source}
     ${Mantis_PB_Response_Source}
 )
 
-if (Mantis_USE_PX1500)
-    set( MANTISCORE_HEADERFILES
-        ${MANTISCORE_HEADERFILES}
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/digitizer.hh
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/worker.hh
-    )
-    
-    set( MANTISCORE_SOURCEFILES
-        ${MANTISCORE_SOURCEFILES}
-        ${CMAKE_CURRENT_SOURCE_DIR}/source/digitizer.cc
-        ${CMAKE_CURRENT_SOURCE_DIR}/source/worker.cc
-    )
-endif (Mantis_USE_PX1500)
+add_library( MantisClient ${MANTIS_CLIENT_SOURCEFILES} )
+target_link_libraries( MantisClient ${EXTERNAL_LIBRARIES} )
 
-add_library( mantis_core ${MANTISCORE_SOURCEFILES} )
-target_link_libraries( mantis_core ${EXTERNAL_LIBRARIES} )
+pbuilder_install_headers( ${MANTIS_CLIENT_HEADERFILES} )
+pbuilder_install_libraries( MantisClient )
 
-pbuilder_install_headers( ${MANTISCORE_HEADERFILES} )
-pbuilder_install_libraries( mantis_core )
-
-######################
-# mantis executables #
-######################
-
-add_executable( test_mantis_client ${CMAKE_CURRENT_SOURCE_DIR}/application/test_mantis_client.cc )
-target_link_libraries( test_mantis_client mantis_core ${EXTERNAL_LIBRARIES} )
+add_executable( test_mantis_client ${CMAKE_CURRENT_SOURCE_DIR}/Applications/test_mantis_client.cc )
+target_link_libraries( test_mantis_client MantisClient ${EXTERNAL_LIBRARIES} )
 pbuilder_install_executables( test_mantis_client )
 
-add_executable( mantis_client ${CMAKE_CURRENT_SOURCE_DIR}/application/mantis_client.cc )
-target_link_libraries( mantis_client mantis_core ${EXTERNAL_LIBRARIES} )
+add_executable( mantis_client ${CMAKE_CURRENT_SOURCE_DIR}/Applications/mantis_client.cc )
+target_link_libraries( mantis_client MantisClient ${EXTERNAL_LIBRARIES} )
 pbuilder_install_executables( mantis_client )
 
-if (Mantis_USE_PX1500)
+
+#################
+# mantis server #
+#################
+
+if( Mantis_BUILD_SERVER )
+
+    set( MANTIS_SERVER_HEADERFILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mutex.hh
+        ${CMAKE_CURRENT_SOURCE_DIR}/Server/condition.hh
+        ${CMAKE_CURRENT_SOURCE_DIR}/Server/callable.hh
+        ${CMAKE_CURRENT_SOURCE_DIR}/Server/thread.hh
+        
+        ${CMAKE_CURRENT_SOURCE_DIR}/Server/server.hh
+        
+        ${CMAKE_CURRENT_SOURCE_DIR}/Server/queue.hh
+    
+        ${CMAKE_CURRENT_SOURCE_DIR}/Server/block.hh
+        ${CMAKE_CURRENT_SOURCE_DIR}/Server/buffer.hh
+        ${CMAKE_CURRENT_SOURCE_DIR}/Server/iterator.hh
+    
+        ${CMAKE_CURRENT_SOURCE_DIR}/Server/receiver.hh
+        ${CMAKE_CURRENT_SOURCE_DIR}/Server/writer.hh
+    )
+    
+    set( MANTIS_SERVER_SOURCEFILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mutex.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/Server/condition.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/Server/callable.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/Server/thread.cc
+        
+        ${CMAKE_CURRENT_SOURCE_DIR}/Server/server.cc
+        
+        ${CMAKE_CURRENT_SOURCE_DIR}/Server/queue.cc
+    
+        ${CMAKE_CURRENT_SOURCE_DIR}/Server/block.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/Server/buffer.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/Server/iterator.cc
+        
+        ${CMAKE_CURRENT_SOURCE_DIR}/Server/receiver.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/Server/writer.cc
+    )
+    
+    if( Mantis_INCLUDE_PX1500_SERVER )
+        set( MANTIS_SERVER_HEADERFILES
+            ${MANTIS_SERVER_HEADERFILES}
+            ${CMAKE_CURRENT_SOURCE_DIR}/Server/digitizer.hh
+            ${CMAKE_CURRENT_SOURCE_DIR}/Server/worker.hh
+        )
+        
+        set( MANTIS_SERVER_SOURCEFILES
+            ${MANTIS_SERVER_SOURCEFILES}
+            ${CMAKE_CURRENT_SOURCE_DIR}/Server/digitizer.cc
+            ${CMAKE_CURRENT_SOURCE_DIR}/Server/worker.cc
+        )
+    endif( Mantis_INCLUDE_PX1500_SERVER )
+
+    add_library( MantisServer ${MANTIS_SERVER_SOURCEFILES} )
+    target_link_libraries( MantisServer MantisClient ${EXTERNAL_LIBRARIES} )
+    
+    pbuilder_install_headers( ${MANTIS_SERVER_HEADERFILES} )
+    pbuilder_install_libraries( MantisServer )
+    
     add_executable( test_mantis_server ${CMAKE_CURRENT_SOURCE_DIR}/application/test_mantis_server.cc )
-    target_link_libraries( test_mantis_server mantis_core ${EXTERNAL_LIBRARIES} )
+    target_link_libraries( test_mantis_server MantisClient MantisServer ${EXTERNAL_LIBRARIES} )
     pbuilder_install_executables( test_mantis_server )
     
-    add_executable( mantis_standalone ${CMAKE_CURRENT_SOURCE_DIR}/application/mantis_standalone.cc )
-    target_link_libraries( mantis_standalone mantis_core ${EXTERNAL_LIBRARIES} )
-    pbuilder_install_executables( mantis_standalone )
+    if (Mantis_USE_PX1500)
+        add_executable( mantis_standalone ${CMAKE_CURRENT_SOURCE_DIR}/application/mantis_standalone.cc )
+        target_link_libraries( mantis_standalone MantisClient MantisServer ${EXTERNAL_LIBRARIES} )
+        pbuilder_install_executables( mantis_standalone )
+        
+        add_executable( mantis_server ${CMAKE_CURRENT_SOURCE_DIR}/application/mantis_server.cc )
+        target_link_libraries( mantis_server MantisClient MantisServer ${EXTERNAL_LIBRARIES} )
+        pbuilder_install_executables( mantis_server )
+    endif (Mantis_USE_PX1500)
     
-    add_executable( mantis_server ${CMAKE_CURRENT_SOURCE_DIR}/application/mantis_server.cc )
-    target_link_libraries( mantis_server mantis_core ${EXTERNAL_LIBRARIES} )
-    pbuilder_install_executables( mantis_server )
-endif (Mantis_USE_PX1500)
-
+endif( Mantis_BUILD_SERVER )
