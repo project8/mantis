@@ -1,5 +1,5 @@
-#ifndef DIGITIZER_HH_
-#define DIGITIZER_HH_
+#ifndef DIGITIZER_PX1500_HH_
+#define DIGITIZER_PX1500_HH_
 
 #include "callable.hh"
 

@@ -2,7 +2,7 @@
 #include "request.pb.h"
 #include "response.pb.h"
 #include "buffer.hh"
-#include "digitizer.hh"
+#include "digitizer_px1500.hh"
 #include "writer.hh"
 #include "thread.hh"
 #include "thorax.hh"

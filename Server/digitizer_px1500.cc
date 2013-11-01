@@ -1,4 +1,4 @@
-#include "digitizer.hh"
+#include "digitizer_px1500.hh"
 
 #include "iterator.hh"
 

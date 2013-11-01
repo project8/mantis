@@ -5,7 +5,7 @@
 #include "buffer.hh"
 #include "receiver.hh"
 #include "worker.hh"
-#include "digitizer.hh"
+#include "digitizer_px1500.hh"
 #include "writer.hh"
 #include "thread.hh"
 using namespace mantis;
