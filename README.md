@@ -2,7 +2,8 @@ Mantis is the data-acquisition software for the Project 8 collaboration.
 
 The package is divided into a Server component that communicates and reads data 
 from a digitizer, and a Client component that writes the data to disk.  
-The client and server communicate via TCP/IP.
+The client and server can be run on the same machine, or communicate with one 
+another over a network.
 
 It is currently able to record data taken from a Signatec PX1500 digitizer.
 
