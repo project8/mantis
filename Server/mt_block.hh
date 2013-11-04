@@ -39,6 +39,9 @@ namespace mantis
             const time_nsec_type& get_timestamp() const;
             void set_timestamp( const time_nsec_type& a_timestamp );
 
+            const size_t& get_data_size() const;
+            void set_data_size( const size_t& a_size );
+
             data_type* data();
             data_type** handle();
 
@@ -48,6 +51,7 @@ namespace mantis
             record_id_type f_record_id;
             time_nsec_type f_timestamp;
             data_type* f_data;
+            size_t f_data_size;
 
     };
 

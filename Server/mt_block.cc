@@ -10,7 +10,8 @@ namespace mantis
             f_acquisition_id( 0 ),
             f_record_id( 0 ),
             f_timestamp( 0 ),
-            f_data( NULL )
+            f_data( NULL ),
+            f_data_size( 4194304 )
     {
     }
 
@@ -101,6 +102,16 @@ namespace mantis
     void block::set_timestamp( const time_nsec_type& a_timestamp )
     {
         f_timestamp = a_timestamp;
+        return;
+    }
+
+    const size_t& block::get_data_size() const
+    {
+        return f_data_size;
+    }
+    void block::set_data_size( const size_t& a_size )
+    {
+        f_data_size = a_size;
         return;
     }
 

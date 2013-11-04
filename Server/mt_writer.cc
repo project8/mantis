@@ -148,7 +148,7 @@ namespace mantis
         f_record->fAcquisitionId = (AcquisitionIdType) (a_block->get_acquisition_id());
         f_record->fRecordId = (RecordIdType) (a_block->get_record_id());
         f_record->fTime = (TimeType) (a_block->get_timestamp());
-        memcpy( f_record->fData, a_block->data(), 4194304 );
+        memcpy( f_record->fData, a_block->data(), a_block->get_data_size() );
 
         if( f_monarch->WriteRecord() == false )
         {
