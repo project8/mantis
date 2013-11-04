@@ -1,3 +1,24 @@
+/*
+ * mantis_client.cc
+ *
+ *      Author: Dan Furse
+ *
+ *  Client (file-writing) component of the DAQ
+ *
+ *  Usage:
+ *  $> mantis_client host=<some host name> port=<some port number> file=<some file name> description=<describe your run> mode=<one or two channel> rate=<sampling rate> duration=<sampling duration>
+ *
+ *  Arguments:
+ *  - host        (string; required):  address of the Mantis server host
+ *  - port        (integer; required): port number opened by the server
+ *  - file        (string; required):  egg filename
+ *  - description (string; optional):  describe the run
+ *  - mode        (integer; required): '1' for single-channel; '2' for double-channel
+ *  - rate        (float; required):   digitization rate in MHz
+ *  - duration    (float; required):   length of the run in ms
+ *
+ */
+
 #include "mt_parser.hh"
 #include "mt_client.hh"
 #include "mt_context.hh"

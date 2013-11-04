@@ -1,3 +1,18 @@
+/*
+ * mantis_px1500_server.cc
+ *
+ *      Author: Dan Furse
+ *
+ *  Server component of the DAQ for the px1500 digitizer.
+ *
+ *  Usage:
+ *  $> mantis_px1500_server port=<some port number>
+ *
+ *  Arguments:
+ *  - port (integer; required): port number to be opened by the server
+ *
+ */
+
 #include "mt_parser.hh"
 #include "mt_server.hh"
 #include "mt_condition.hh"

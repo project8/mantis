@@ -1,3 +1,22 @@
+/*
+ * mantis_px1500_standalone.cc
+ *
+ *      Author: Dan Furse
+ *
+ *  Standalone DAQ operation using the px1500 digitizer.
+ *
+ *  Usage:
+ *  $> mantis_px1500_standalone file=<filename> description=<description> mode=<1 or 2> rate=<sampling rate> duration=<sampling duration>
+ *
+ *  Arguments:
+ *  - file        (string; required):  egg filename
+ *  - description (string; optional):  describe the run
+ *  - mode        (integer; required): '1' for single-channel; '2' for double-channel
+ *  - rate        (float; required):   digitization rate in MHz
+ *  - duration    (float; required):   length of the run in ms
+ *
+ */
+
 #include "mt_parser.hh"
 #include "request.pb.h"
 #include "response.pb.h"
