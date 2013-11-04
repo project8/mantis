@@ -15,8 +15,8 @@ namespace mantis
             digitizer();
             virtual ~digitizer();
 
-            void initialize( request* a_request ) = 0;
-            void finalize( response* a_response ) = 0;
+            virtual void initialize( request* a_request ) = 0;
+            virtual void finalize( response* a_response ) = 0;
 
     };
 
