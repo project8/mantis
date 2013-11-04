@@ -1,5 +1,3 @@
 #!/bin/bash
 
-protoc --cpp_out=. --proto_path=${PWD}/proto ${PWD}/proto/request.proto ${PWD}/proto/status.proto ${PWD}/proto/response.proto
-mv ./*.pb.h ./include
-mv ./*.pb.cc ./source
+protoc --cpp_out=. --proto_path=${PWD}/proto ${PWD}/Protobuf/request.proto ${PWD}/Protobuf/status.proto ${PWD}/Protobuf/response.proto
