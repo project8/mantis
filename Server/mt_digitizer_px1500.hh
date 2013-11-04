@@ -1,7 +1,7 @@
 #ifndef MT_DIGITIZER_PX1500_HH_
 #define MT_DIGITIZER_PX1500_HH_
 
-#include "mt_callable.hh"
+#include "mt_digitizer.hh"
 
 #include "mt_buffer.hh"
 #include "mt_condition.hh"
@@ -14,7 +14,7 @@ namespace mantis
 {
 
     class digitizer_px1500 :
-        public callable
+        public digitizer
     {
         public:
             digitizer_px1500( buffer* a_buffer, condition* a_condition );

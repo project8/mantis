@@ -127,6 +127,7 @@ if( Mantis_BUILD_SERVER )
         ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_buffer.hh
         ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_iterator.hh
     
+        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_digitizer.hh
         ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_receiver.hh
         ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_writer.hh
     )
@@ -145,6 +146,7 @@ if( Mantis_BUILD_SERVER )
         ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_buffer.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_iterator.cc
         
+        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_digitizer.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_receiver.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_writer.cc
     )

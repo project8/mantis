@@ -34,7 +34,7 @@ int main( int argc, char** argv )
 
     cout << "[mantis_standalone] making digitizer..." << endl;
 
-    digitizer* t_digitizer = new digitizer( t_buffer, t_condition );
+    digitizer* t_digitizer = new digitizer_px1500( t_buffer, t_condition );
 
     cout << "[mantis_standalone] making writer..." << endl;
 
