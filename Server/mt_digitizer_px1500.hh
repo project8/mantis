@@ -13,12 +13,12 @@
 namespace mantis
 {
 
-    class digitizer :
+    class digitizer_px1500 :
         public callable
     {
         public:
-            digitizer( buffer* a_buffer, condition* a_condition );
-            virtual ~digitizer();
+            digitizer_px1500( buffer* a_buffer, condition* a_condition );
+            virtual ~digitizer_px1500();
 
             void initialize( request* a_request );
             void execute();

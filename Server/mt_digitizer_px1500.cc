@@ -11,7 +11,7 @@ using std::endl;
 namespace mantis
 {
 
-    digitizer::digitizer( buffer* a_buffer, condition* a_condition ) :
+    digitizer_px1500::digitizer_px1500( buffer* a_buffer, condition* a_condition ) :
             f_buffer( a_buffer ),
             f_condition( a_condition ),
             f_handle(),
@@ -55,7 +55,7 @@ namespace mantis
             ++t_it;
         }
     }
-    digitizer::~digitizer()
+    digitizer_px1500::~digitizer_px1500()
     {
         int t_result;
 
@@ -83,7 +83,7 @@ namespace mantis
         }
     }
 
-    void digitizer::initialize( request* a_request )
+    void digitizer_px1500::initialize( request* a_request )
     {
         int t_result;
 
@@ -128,7 +128,7 @@ namespace mantis
 
         return;
     }
-    void digitizer::execute()
+    void digitizer_px1500::execute()
     {
         iterator t_it( f_buffer );
 
@@ -245,7 +245,7 @@ namespace mantis
 
         return;
     }
-    void digitizer::finalize( response* a_response )
+    void digitizer_px1500::finalize( response* a_response )
     {
         cout << "[digitizer] calculating statistics..." << endl;
 
@@ -259,7 +259,7 @@ namespace mantis
         return;
     }
 
-    bool digitizer::start()
+    bool digitizer_px1500::start()
     {
         int t_result = BeginBufferedPciAcquisitionPX4( f_handle, PX4_FREE_RUN );
         if( t_result != SIG_SUCCESS )
@@ -270,7 +270,7 @@ namespace mantis
 
         return true;
     }
-    bool digitizer::acquire( block* a_block, timespec& a_stamp_time )
+    bool digitizer_px1500::acquire( block* a_block, timespec& a_stamp_time )
     {
         a_block->set_record_id( f_record_count );
         a_block->set_acquisition_id( f_acquisition_count );
@@ -289,7 +289,7 @@ namespace mantis
 
         return true;
     }
-    bool digitizer::stop()
+    bool digitizer_px1500::stop()
     {
         int t_result = EndBufferedPciAcquisitionPX4( f_handle );
         if( t_result != SIG_SUCCESS )

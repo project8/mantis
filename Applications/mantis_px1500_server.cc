@@ -25,7 +25,7 @@ int main( int argc, char** argv )
     condition t_buffer_condition;
     buffer t_buffer( 512 );
 
-    digitizer t_digitizer( &t_buffer, &t_buffer_condition );
+    digitizer_px1500 t_digitizer( &t_buffer, &t_buffer_condition );
     writer t_writer( &t_buffer, &t_buffer_condition );
 
     condition t_queue_condition;
