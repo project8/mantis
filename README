@@ -48,7 +48,9 @@ every second to waiting clients.  At the end of a run, a summary response
 object with live-time and dead time statistics is sent to the client.
 Usage is:
 
-$> mantis_server port=<some port number>
+```
+$> mantis_px1500_server port=<some port number>
+```
 
 ### Client
 This program is intended to be run on anyone's computer or the server machine itself.  
@@ -56,13 +58,17 @@ When run it submits a request object to the server, after which it receives a se
 of status objects.  After a received status object indicates the run is complete, 
 the client program spits out the run summary. Usage is:
 
+```
 $> mantis_client host=<some host name> port=<some port number> file=<some file name> description=<describe your run> mode=<one or two channel> rate=<sampling rate> duration=<sampling duration>
+```
 
 ### Standalone
 There's also a program that you can run on the server machine by itself, almost exactly 
 previous versions of Mantis.  Usage is:
 
-$> mantis_standalone file=<filename> description=<description> mode=<1 or 2> rate=<sampling rate> duration=<sampling duration>
+```
+$> mantis_px1500_standalone file=<filename> description=<description> mode=<1 or 2> rate=<sampling rate> duration=<sampling duration>
+```
 
 Potential Issues
 ----------------
