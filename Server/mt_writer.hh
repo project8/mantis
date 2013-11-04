@@ -1,10 +1,10 @@
-#ifndef WRITER_HH_
-#define WRITER_HH_
+#ifndef MT_WRITER_HH_
+#define MT_WRITER_HH_
 
-#include "callable.hh"
+#include "mt_callable.hh"
 
-#include "buffer.hh"
-#include "condition.hh"
+#include "mt_buffer.hh"
+#include "mt_condition.hh"
 #include "request.pb.h"
 #include "response.pb.h"
 #include "Monarch.hpp"

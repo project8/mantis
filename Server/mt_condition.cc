@@ -1,4 +1,4 @@
-#include "condition.hh"
+#include "mt_condition.hh"
 
 namespace mantis
 {

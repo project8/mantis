@@ -1,5 +1,5 @@
-#ifndef CONDITION_HH_
-#define CONDITION_HH_
+#ifndef MT_CONDITION_HH_
+#define MT_CONDITION_HH_
 
 #include <pthread.h>
 #include <cstddef>

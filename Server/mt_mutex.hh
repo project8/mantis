@@ -1,5 +1,5 @@
-#ifndef MUTEX_HH_
-#define MUTEX_HH_
+#ifndef MT_MUTEX_HH_
+#define MT_MUTEX_HH_
 
 #include <pthread.h>
 #include <cstddef>

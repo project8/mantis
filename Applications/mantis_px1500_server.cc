@@ -1,13 +1,13 @@
 #include "mt_parser.hh"
-#include "server.hh"
-#include "condition.hh"
-#include "queue.hh"
-#include "buffer.hh"
-#include "receiver.hh"
-#include "worker.hh"
-#include "digitizer_px1500.hh"
-#include "writer.hh"
-#include "thread.hh"
+#include "mt_server.hh"
+#include "mt_condition.hh"
+#include "mt_queue.hh"
+#include "mt_buffer.hh"
+#include "mt_receiver.hh"
+#include "mt_worker.hh"
+#include "mt_digitizer_px1500.hh"
+#include "mt_writer.hh"
+#include "mt_thread.hh"
 using namespace mantis;
 
 #include <iostream>

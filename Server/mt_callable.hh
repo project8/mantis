@@ -1,5 +1,5 @@
-#ifndef CALLABLE_HH_
-#define CALLABLE_HH_
+#ifndef MT_CALLABLE_HH_
+#define MT_CALLABLE_HH_
 
 namespace mantis
 {

@@ -1,11 +1,11 @@
-#ifndef RECEIVER_HH_
-#define RECEIVER_HH_
+#ifndef MT_RECEIVER_HH_
+#define MT_RECEIVER_HH_
 
-#include "callable.hh"
+#include "mt_callable.hh"
 
-#include "server.hh"
-#include "queue.hh"
-#include "condition.hh"
+#include "mt_server.hh"
+#include "mt_queue.hh"
+#include "mt_condition.hh"
 
 namespace mantis
 {

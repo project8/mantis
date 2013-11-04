@@ -1,5 +1,5 @@
-#ifndef BLOCK_HH_
-#define BLOCK_HH_
+#ifndef MT_BLOCK_HH_
+#define MT_BLOCK_HH_
 
 #include "thorax.hh"
 

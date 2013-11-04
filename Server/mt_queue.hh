@@ -1,9 +1,9 @@
-#ifndef QUEUE_HH_
-#define QUEUE_HH_
+#ifndef MT_QUEUE_HH_
+#define MT_QUEUE_HH_
 
-#include "callable.hh"
+#include "mt_callable.hh"
 
-#include "mutex.hh"
+#include "mt_mutex.hh"
 #include "mt_context.hh"
 
 #include <list>

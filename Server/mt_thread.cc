@@ -1,4 +1,4 @@
-#include "thread.hh"
+#include "mt_thread.hh"
 
 namespace mantis
 {

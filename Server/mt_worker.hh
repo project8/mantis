@@ -1,12 +1,12 @@
-#ifndef WORKER_HH_
-#define WORKER_HH_
+#ifndef MT_WORKER_HH_
+#define MT_WORKER_HH_
 
-#include "callable.hh"
+#include "mt_callable.hh"
 
-#include "digitizer_px1500.hh"
-#include "writer.hh"
-#include "queue.hh"
-#include "condition.hh"
+#include "mt_digitizer_px1500.hh"
+#include "mt_writer.hh"
+#include "mt_queue.hh"
+#include "mt_condition.hh"
 
 namespace mantis
 {

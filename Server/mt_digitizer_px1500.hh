@@ -1,10 +1,10 @@
-#ifndef DIGITIZER_PX1500_HH_
-#define DIGITIZER_PX1500_HH_
+#ifndef MT_DIGITIZER_PX1500_HH_
+#define MT_DIGITIZER_PX1500_HH_
 
-#include "callable.hh"
+#include "mt_callable.hh"
 
-#include "buffer.hh"
-#include "condition.hh"
+#include "mt_buffer.hh"
+#include "mt_condition.hh"
 #include "request.pb.h"
 #include "response.pb.h"
 #include "px1500.h"

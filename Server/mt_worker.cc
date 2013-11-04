@@ -1,6 +1,6 @@
-#include "worker.hh"
+#include "mt_worker.hh"
 
-#include "thread.hh"
+#include "mt_thread.hh"
 
 #include <iostream>
 using std::cout;

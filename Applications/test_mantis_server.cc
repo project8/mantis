@@ -1,6 +1,6 @@
 #include "mt_parser.hh"
-#include "server.hh"
-#include "context.hh"
+#include "mt_server.hh"
+#include "mt_context.hh"
 #include "mt_connection.hh"
 using namespace mantis;
 

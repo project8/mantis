@@ -1,8 +1,8 @@
-#ifndef BUFFER_HH_
-#define BUFFER_HH_
+#ifndef MT_BUFFER_HH_
+#define MT_BUFFER_HH_
 
-#include "block.hh"
-#include "mutex.hh"
+#include "mt_block.hh"
+#include "mt_mutex.hh"
 
 namespace mantis
 {

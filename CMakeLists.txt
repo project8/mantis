@@ -114,52 +114,52 @@ pbuilder_install_executables( mantis_client )
 if( Mantis_BUILD_SERVER )
 
     set( MANTIS_SERVER_HEADERFILES
-        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mutex.hh
-        ${CMAKE_CURRENT_SOURCE_DIR}/Server/condition.hh
-        ${CMAKE_CURRENT_SOURCE_DIR}/Server/callable.hh
-        ${CMAKE_CURRENT_SOURCE_DIR}/Server/thread.hh
+        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_mutex.hh
+        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_condition.hh
+        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_callable.hh
+        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_thread.hh
         
-        ${CMAKE_CURRENT_SOURCE_DIR}/Server/server.hh
+        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_server.hh
         
-        ${CMAKE_CURRENT_SOURCE_DIR}/Server/queue.hh
+        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_queue.hh
     
-        ${CMAKE_CURRENT_SOURCE_DIR}/Server/block.hh
-        ${CMAKE_CURRENT_SOURCE_DIR}/Server/buffer.hh
-        ${CMAKE_CURRENT_SOURCE_DIR}/Server/iterator.hh
+        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_block.hh
+        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_buffer.hh
+        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_iterator.hh
     
-        ${CMAKE_CURRENT_SOURCE_DIR}/Server/receiver.hh
-        ${CMAKE_CURRENT_SOURCE_DIR}/Server/writer.hh
+        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_receiver.hh
+        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_writer.hh
     )
     
     set( MANTIS_SERVER_SOURCEFILES
-        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mutex.cc
-        ${CMAKE_CURRENT_SOURCE_DIR}/Server/condition.cc
-        ${CMAKE_CURRENT_SOURCE_DIR}/Server/callable.cc
-        ${CMAKE_CURRENT_SOURCE_DIR}/Server/thread.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_mutex.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_condition.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_callable.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_thread.cc
         
-        ${CMAKE_CURRENT_SOURCE_DIR}/Server/server.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_server.cc
         
-        ${CMAKE_CURRENT_SOURCE_DIR}/Server/queue.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_queue.cc
     
-        ${CMAKE_CURRENT_SOURCE_DIR}/Server/block.cc
-        ${CMAKE_CURRENT_SOURCE_DIR}/Server/buffer.cc
-        ${CMAKE_CURRENT_SOURCE_DIR}/Server/iterator.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_block.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_buffer.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_iterator.cc
         
-        ${CMAKE_CURRENT_SOURCE_DIR}/Server/receiver.cc
-        ${CMAKE_CURRENT_SOURCE_DIR}/Server/writer.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_receiver.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_writer.cc
     )
     
     if( Mantis_INCLUDE_PX1500_SERVER )
         set( MANTIS_SERVER_HEADERFILES
             ${MANTIS_SERVER_HEADERFILES}
-            ${CMAKE_CURRENT_SOURCE_DIR}/Server/digitizer_px1500.hh
-            ${CMAKE_CURRENT_SOURCE_DIR}/Server/worker.hh
+            ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_digitizer_px1500.hh
+            ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_worker.hh
         )
         
         set( MANTIS_SERVER_SOURCEFILES
             ${MANTIS_SERVER_SOURCEFILES}
-            ${CMAKE_CURRENT_SOURCE_DIR}/Server/digitizer_px1500.cc
-            ${CMAKE_CURRENT_SOURCE_DIR}/Server/worker.cc
+            ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_digitizer_px1500.cc
+            ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_worker.cc
         )
     endif( Mantis_INCLUDE_PX1500_SERVER )
 

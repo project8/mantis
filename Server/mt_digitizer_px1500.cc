@@ -1,6 +1,6 @@
-#include "digitizer_px1500.hh"
+#include "mt_digitizer_px1500.hh"
 
-#include "iterator.hh"
+#include "mt_iterator.hh"
 
 #include <cstdlib> // for exit()
 #include <cmath> // for ceil()

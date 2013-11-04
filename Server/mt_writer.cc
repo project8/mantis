@@ -1,6 +1,6 @@
-#include "writer.hh"
+#include "mt_writer.hh"
 
-#include "iterator.hh"
+#include "mt_iterator.hh"
 
 #include <cstring> // for memcpy()
 #include <iostream>

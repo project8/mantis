@@ -1,5 +1,5 @@
-#ifndef SERVER_HH_
-#define SERVER_HH_
+#ifndef MT_SERVER_HH_
+#define MT_SERVER_HH_
 
 #include "mt_connection.hh"
 

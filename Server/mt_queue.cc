@@ -1,4 +1,4 @@
-#include "queue.hh"
+#include "mt_queue.hh"
 
 namespace mantis
 {

@@ -1,4 +1,4 @@
-#include "buffer.hh"
+#include "mt_buffer.hh"
 
 namespace mantis
 {

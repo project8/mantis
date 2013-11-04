@@ -1,7 +1,7 @@
-#ifndef THREAD_HH_
-#define THREAD_HH_
+#ifndef MT_THREAD_HH_
+#define MT_THREAD_HH_
 
-#include "callable.hh"
+#include "mt_callable.hh"
 
 #include <pthread.h>
 
