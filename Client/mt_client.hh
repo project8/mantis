@@ -1,7 +1,7 @@
-#ifndef CLIENT_HH_
-#define CLIENT_HH_
+#ifndef MT_CLIENT_HH_
+#define MT_CLIENT_HH_
 
-#include "connection.hh"
+#include "mt_connection.hh"
 
 namespace mantis
 {

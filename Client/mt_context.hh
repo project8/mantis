@@ -1,7 +1,7 @@
-#ifndef RUN_HH_
-#define RUN_HH_
+#ifndef MT_CONTEXT_HH_
+#define MT_CONTEXT_HH_
 
-#include "connection.hh"
+#include "mt_connection.hh"
 #include "request.pb.h"
 #include "status.pb.h"
 #include "response.pb.h"

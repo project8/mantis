@@ -1,5 +1,5 @@
-#ifndef CONNECTION_HH_
-#define CONNECTION_HH_
+#ifndef MT_CONNECTION_HH_
+#define MT_CONNECTION_HH_
 
 #include <netinet/in.h>
 #include <string>

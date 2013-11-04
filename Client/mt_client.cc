@@ -1,6 +1,6 @@
-#include "client.hh"
+#include "mt_client.hh"
 
-#include "exception.hh"
+#include "mt_exception.hh"
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -1,7 +1,7 @@
-#include "parser.hh"
+#include "mt_parser.hh"
 #include "server.hh"
 #include "context.hh"
-#include "connection.hh"
+#include "mt_connection.hh"
 using namespace mantis;
 
 #include <string>

@@ -1,4 +1,4 @@
-#include "exception.hh"
+#include "mt_exception.hh"
 
 namespace mantis
 {

@@ -1,6 +1,6 @@
-#include "parser.hh"
-#include "client.hh"
-#include "context.hh"
+#include "mt_parser.hh"
+#include "mt_client.hh"
+#include "mt_context.hh"
 #include "thorax.hh"
 using namespace mantis;
 

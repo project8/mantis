@@ -1,5 +1,5 @@
-#ifndef EXCEPTION_HH_
-#define EXCEPTION_HH_
+#ifndef MT_EXCEPTION_HH_
+#define MT_EXCEPTION_HH_
 
 #include <sstream>
 #include <exception>

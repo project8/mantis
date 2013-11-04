@@ -1,6 +1,6 @@
 #include "server.hh"
 
-#include "exception.hh"
+#include "mt_exception.hh"
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -65,13 +65,13 @@ include_directories( ${CMAKE_CURRENT_BINARY_DIR} )
 #################
 
 set( MANTIS_CLIENT_HEADERFILES
-    ${CMAKE_CURRENT_SOURCE_DIR}/Client/exception.hh
-    ${CMAKE_CURRENT_SOURCE_DIR}/Client/parser.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_exception.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_parser.hh
     
-    ${CMAKE_CURRENT_SOURCE_DIR}/Client/client.hh
-    ${CMAKE_CURRENT_SOURCE_DIR}/Client/connection.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_client.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_connection.hh
     
-    ${CMAKE_CURRENT_SOURCE_DIR}/Client/context.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_context.hh
 
     ${Mantis_PB_Request_Header}
     ${Mantis_PB_Status_Header}
@@ -79,13 +79,13 @@ set( MANTIS_CLIENT_HEADERFILES
 )
 
 set( MANTIS_CLIENT_SOURCEFILES
-    ${CMAKE_CURRENT_SOURCE_DIR}/Client/exception.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/Client/parser.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_exception.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_parser.cc
 
-    ${CMAKE_CURRENT_SOURCE_DIR}/Client/client.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/Client/connection.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_client.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_connection.cc
     
-    ${CMAKE_CURRENT_SOURCE_DIR}/Client/context.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_context.cc
 
     ${Mantis_PB_Request_Source}
     ${Mantis_PB_Status_Source}

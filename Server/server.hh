@@ -1,7 +1,7 @@
 #ifndef SERVER_HH_
 #define SERVER_HH_
 
-#include "connection.hh"
+#include "mt_connection.hh"
 
 #include <netinet/in.h>
 #include <string>

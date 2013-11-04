@@ -1,7 +1,7 @@
-#ifndef PARSER_HH_
-#define PARSER_HH_
+#ifndef MT_PARSER_HH_
+#define MT_PARSER_HH_
 
-#include "exception.hh"
+#include "mt_exception.hh"
 
 #include <map>
 #include <string>
