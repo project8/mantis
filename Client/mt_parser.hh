@@ -13,8 +13,18 @@ namespace mantis
     class parser
     {
         public:
+            typedef std::map< std::string, std::string > item_map;
+            typedef item_map::const_iterator imap_cit;
+
+        public:
             parser( int an_argc, char** an_argv );
             virtual ~parser();
+
+            void parse( int an_argc, char** an_argv );
+            void clear();
+
+            imap_cit begin() const;
+            imap_cit end() const;
 
             template< class x_type >
             x_type get_required( const std::string& a_name )
@@ -53,7 +63,7 @@ namespace mantis
             }
 
         private:
-            std::map< std::string, std::string > f_map;
+            item_map f_map;
             static const char f_separator = '=';
             static const size_t f_npos = std::string::npos;
     };

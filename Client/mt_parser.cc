@@ -6,6 +6,15 @@ namespace mantis
     parser::parser( int an_argc, char** an_argv ) :
             f_map()
     {
+        parse(an_argc, an_argv);
+    }
+
+    parser::~parser()
+    {
+    }
+
+    void parser::parse( int an_argc, char** an_argv )
+    {
         size_t t_pos;
         std::string t_argument;
         std::string t_name;
@@ -25,10 +34,23 @@ namespace mantis
 
             throw exception() << "argument <" << t_argument << "> does not match <name>=<value> pattern";
         }
+        return;
     }
 
-    parser::~parser()
+    void parser::clear()
     {
+        f_map.clear();
     }
+
+    parser::imap_cit parser::begin() const
+    {
+        return f_map.begin();
+    }
+
+    parser::imap_cit parser::end() const
+    {
+        return f_map.end();
+    }
+
 
 }
