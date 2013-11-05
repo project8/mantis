@@ -10,11 +10,10 @@
 #include<string>
 using std::string;
 
-namespace Katydid
+namespace mantis
 {
 
-    client_config::client_config() :
-            rapidjson::Document()
+    client_config::client_config()
     {
         // default client configuration
         rapidjson::Value port( 98342 );

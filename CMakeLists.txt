@@ -73,6 +73,7 @@ include_directories( ${CMAKE_CURRENT_BINARY_DIR} )
 
 set( MANTIS_CLIENT_HEADERFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_client_config.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_configuration.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_exception.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_parser.hh
     
@@ -88,6 +89,7 @@ set( MANTIS_CLIENT_HEADERFILES
 
 set( MANTIS_CLIENT_SOURCEFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_client_config.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_configuration.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_exception.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_parser.cc
 
@@ -123,7 +125,7 @@ pbuilder_install_executables( mantis_client )
 if( Mantis_BUILD_SERVER )
 
     set( MANTIS_SERVER_HEADERFILES
-        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_server_config.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_server_config.hh
         
         ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_mutex.hh
         ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_condition.hh

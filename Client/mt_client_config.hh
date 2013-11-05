@@ -8,12 +8,12 @@
 #ifndef MT_CLIENT_CONFIG_HH_
 #define MT_CLIENT_CONFIG_HH_
 
-#include "document.h"
+#include "mt_configuration.hh"
 
-namespace Katydid
+namespace mantis
 {
 
-    class client_config : public rapidjson::Document
+    class client_config : public configuration
     {
         public:
             client_config();

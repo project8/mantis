@@ -8,19 +8,19 @@
 #ifndef MT_SERVER_CONFIG_HH_
 #define MT_SERVER_CONFIG_HH_
 
-#include "document.h"
+#include "mt_configuration.hh"
 
-namespace Katydid
+namespace mantis
 {
 
-    class server_config : public rapidjson::Document
+    class server_config : public configuration
     {
         public:
             server_config();
             virtual ~server_config();
     };
 
-    class standalone_config : public rapidjson::Document
+    class standalone_config : public configuration
     {
         public:
             standalone_config();
