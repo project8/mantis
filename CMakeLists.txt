@@ -183,6 +183,10 @@ if( Mantis_BUILD_SERVER )
         add_executable( mantis_px1500_server ${CMAKE_CURRENT_SOURCE_DIR}/Applications/mantis_px1500_server.cc )
         target_link_libraries( mantis_px1500_server MantisClient MantisServer ${EXTERNAL_LIBRARIES} )
         pbuilder_install_executables( mantis_px1500_server )
+
+        add_executable( mantis_px1500_daemon ${CMAKE_CURRENT_SOURCE_DIR}/Applications/mantis_px1500_daemon.cc )
+        target_link_libraries( mantis_px1500_daemon MantisClient MantisServer ${EXTERNAL_LIBRARIES} )
+        pbuilder_install_executables( mantis_px1500_daemon )
     endif( Mantis_INCLUDE_PX1500_SERVER )
     
 endif( Mantis_BUILD_SERVER )
