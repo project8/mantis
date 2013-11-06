@@ -16,8 +16,11 @@ namespace mantis
     class configurator
     {
         public:
-            configurator( int an_argc, char** an_argv, configuration a_default = configuration() );
+            configurator( int an_argc, char** an_argv, configuration* a_default = NULL );
             virtual ~configurator();
+
+            configuration& config();
+            const configuration& config() const;
 
         private:
             configuration f_master_config;

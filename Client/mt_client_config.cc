@@ -10,6 +10,8 @@
 #include<string>
 using std::string;
 
+#include<iostream>
+
 namespace mantis
 {
 
@@ -26,6 +28,8 @@ namespace mantis
         AddMember( "file", filename, GetAllocator() );
         AddMember( "rate", rate, GetAllocator() );
         AddMember( "duration", duration, GetAllocator() );
+
+        std::cout << "(client config constructor) port: " << (*this)["port"].GetInt() << std::endl;
     }
 
     client_config::~client_config()

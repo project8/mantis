@@ -12,65 +12,108 @@
 #include "filestream.h"
 
 #include <cstdio>
-
+#include <string>
 using std::string;
+
+#include <iostream>
 
 namespace mantis
 {
 
-    configurator::configurator( int an_argc, char** an_argv, configuration a_default ) :
+    configurator::configurator( int an_argc, char** an_argv, configuration* a_default ) :
             f_master_config()
     {
         parser t_parser( an_argc, an_argv );
+        std::cout << "options parsed" << std::endl;
+        t_parser.print();
 
         // first configuration: defaults
-        f_master_config += a_default;
+        if ( a_default != NULL )
+        {
+            f_master_config += *a_default;
+        }
+
+        std::cout << "first configuration complete" << std::endl;
+        f_master_config.print();
+        t_parser.print();
 
         string t_name_config("config");
         string t_name_json("json");
 
         // second configuration: config file
-        string t_config_filename = t_parser.get_optional( t_name_config, string() );
-        if ( ! t_config_filename.empty() )
+
+        rapidjson::Value& t_config_filename = t_parser[t_name_config.c_str()];
+        if ( t_config_filename.IsString() )
         {
-            FILE* config_file = fopen( t_config_filename.c_str(), "r" );
-            rapidjson::FileStream config_stream( config_file );
-            if( config_file != NULL )
+            FILE* config_file = fopen( t_config_filename.GetString(), "r" );
+            if( config_file == NULL )
             {
-                throw exception() << "config file <" << t_config_filename << "> did not open";
+                std::cerr << "file <" << t_config_filename.GetString() << "> did not open" << std::endl;
+                throw exception() << "config file <" << t_config_filename.GetString() << "> did not open";
             }
 
+            rapidjson::FileStream config_stream( config_file );
+
             configuration t_second_config;
-            t_second_config.ParseStream<0>( config_stream );
-            // TODO: detect error in parsing
+            if( t_second_config.ParseStream<0>( config_stream ).HasParseError() )
+            {
+                std::cerr << "error parsing config file:\n" << t_second_config.GetParseError() << std::endl;
+                throw exception() << "error parsing config file";
+            }
             fclose( config_file );
 
             f_master_config += t_second_config;
         }
 
+        std::cout << "second configuration complete" << std::endl;
+        f_master_config.print();
+        t_parser.print();
+
         // third configuration: command line json
-        string t_config_json = t_parser.get_optional( t_name_json, string() );
-        if( ! t_config_filename.empty() )
+        rapidjson::Value& t_config_json = t_parser[t_name_json.c_str()];
+        if( t_config_json.IsString() )
         {
             configuration t_third_config;
-            t_third_config.Parse<0>( t_config_json.c_str() );
-            // TODO: detect error in parsing
+            if( t_third_config.Parse<0>( t_config_json.GetString() ).HasParseError() )
+            {
+                std::cerr << "error parsing command-line json: " << t_third_config.GetParseError() << std::endl;
+                throw exception() << "error parsing command-line json";
+            }
+            std::cout << "command-line json:" << std::endl;
+            t_third_config.print();
 
             f_master_config += t_third_config;
         }
 
-        // fourth configuration: command line arguments
-        for( parser::imap_cit iter = t_parser.begin(); iter != t_parser.end(); ++iter )
-        {
-            if ( iter->first == t_name_config || iter->first == t_name_json )
-                continue;
+        std::cout << "third configuration complete" << std::endl;
+        f_master_config.print();
+        t_parser.print();
 
-            f_master_config.AddMember( iter->first.c_str(), iter->second.c_str(), f_master_config.GetAllocator() );
-        }
+        // fourth configuration: command line arguments
+        t_parser.RemoveMember( t_name_config.c_str() );
+        t_parser.RemoveMember( t_name_json.c_str() );
+        std::cout << "removed config and json from parsed options" << std::endl;
+        t_parser.print();
+        f_master_config += t_parser;
+
+        std::cout << "fourth configuration complete" << std::endl;
+        f_master_config.print();
+
     }
 
     configurator::~configurator()
     {
     }
+
+    configuration& configurator::config()
+    {
+        return f_master_config;
+    }
+
+    const configuration& configurator::config() const
+    {
+        return f_master_config;
+    }
+
 
 } /* namespace mantis */

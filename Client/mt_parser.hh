@@ -1,6 +1,8 @@
 #ifndef MT_PARSER_HH_
 #define MT_PARSER_HH_
 
+#include "mt_configuration.hh"
+
 #include "mt_exception.hh"
 
 #include <map>
@@ -10,22 +12,27 @@
 namespace mantis
 {
 
-    class parser
+    class parser : public configuration
     {
-        public:
-            typedef std::map< std::string, std::string > item_map;
-            typedef item_map::const_iterator imap_cit;
-
         public:
             parser( int an_argc, char** an_argv );
             virtual ~parser();
 
             void parse( int an_argc, char** an_argv );
-            void clear();
 
-            imap_cit begin() const;
-            imap_cit end() const;
+        private:
+            static const char f_separator = '=';
+            static const char f_type_sep = '/';
+            static const char f_type_bool = 'b';
+            static const char f_type_int = 'i';
+            static const char f_type_uint = 'u';
+            static const char f_type_double = 'd';
+            static const size_t f_npos = std::string::npos;
 
+        public:
+
+            //TODO: remove get_required and get_optional, and f_map
+            /**/ // temporarily still here
             template< class x_type >
             x_type get_required( const std::string& a_name )
             {
@@ -63,9 +70,8 @@ namespace mantis
             }
 
         private:
-            item_map f_map;
-            static const char f_separator = '=';
-            static const size_t f_npos = std::string::npos;
+            std::map< std::string, std::string > f_map;
+            /**/
     };
 
 }

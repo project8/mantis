@@ -10,6 +10,8 @@
 
 #include "document.h"
 
+#include <string>
+
 namespace mantis
 {
 
@@ -20,6 +22,8 @@ namespace mantis
             virtual ~configuration();
 
             configuration& operator+=( configuration& rhs );
+
+            void print() const;
     };
 
 } /* namespace mantis */
