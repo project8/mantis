@@ -16,7 +16,7 @@
 #include "mt_parser.hh"
 #include "mt_server.hh"
 #include "mt_condition.hh"
-#include "mt_queue.hh"
+#include "mt_run_queue.hh"
 #include "mt_buffer.hh"
 #include "mt_receiver.hh"
 #include "mt_worker.hh"
@@ -101,14 +101,14 @@ int main( int argc, char** argv )
     writer t_writer( &t_buffer, &t_buffer_condition );
 
     condition t_queue_condition;
-    queue t_queue;
+    run_queue t_run_queue;
 
-    receiver t_receiver( &t_server, &t_queue, &t_queue_condition );
-    worker t_worker( &t_digitizer, &t_writer, &t_queue, &t_queue_condition, &t_buffer_condition );
+    receiver t_receiver( &t_server, &t_run_queue, &t_queue_condition );
+    worker t_worker( &t_digitizer, &t_writer, &t_run_queue, &t_queue_condition, &t_buffer_condition );
 
     syslog( LOG_INFO, "[mantis_daemon] starting threads\n");
 
-    thread t_queue_thread( &t_queue );
+    thread t_queue_thread( &t_run_queue );
     thread t_receiver_thread( &t_receiver );
     thread t_worker_thread( &t_worker );
 

@@ -1,6 +1,6 @@
 #include "mt_parser.hh"
 #include "mt_server.hh"
-#include "mt_context.hh"
+#include "mt_run_context.hh"
 #include "mt_connection.hh"
 using namespace mantis;
 
@@ -21,29 +21,29 @@ int main( int argc, char** argv )
     cout << "[test_mantis_server] starting server..." << endl;
 
     server* t_server = new server( t_parser.get_required< int >( "port" ) );
-    context* t_context = new context();
+    run_context* t_run_context = new run_context();
 
     cout << "[test_mantis_server] waiting for connection..." << endl;
 
-    t_context->set_connection( t_server->get_connection() );
+    t_run_context->set_connection( t_server->get_connection() );
 
-    t_context->pull_request();
+    t_run_context->pull_request();
 
-    cout << "[test_mantis_server] received request <" << t_context->get_request()->DebugString() << ">" << endl;
+    cout << "[test_mantis_server] received request <" << t_run_context->get_request()->DebugString() << ">" << endl;
 
-    t_context->get_status()->set_state( status_state_t_acknowledged );
-    t_context->push_status();
+    t_run_context->get_status()->set_state( status_state_t_acknowledged );
+    t_run_context->push_status();
 
-    t_context->get_status()->set_state( status_state_t_started );
-    t_context->push_status();
+    t_run_context->get_status()->set_state( status_state_t_started );
+    t_run_context->push_status();
 
-    t_context->get_status()->set_state( status_state_t_stopped );
-    t_context->push_status();
+    t_run_context->get_status()->set_state( status_state_t_stopped );
+    t_run_context->push_status();
 
     cout << "[test_mantis_server] done" << endl;
 
-    delete t_context->get_connection();
-    delete t_context;
+    delete t_run_context->get_connection();
+    delete t_run_context;
     delete t_server;
 
     return 0;
