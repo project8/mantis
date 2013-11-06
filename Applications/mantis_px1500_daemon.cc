@@ -35,6 +35,8 @@ using namespace mantis;
 #include <syslog.h>
 #include <string.h>
 
+#include <iostream>
+
 
 int main( int argc, char** argv )
 {
@@ -45,12 +47,14 @@ int main( int argc, char** argv )
     pid = fork();
     if( pid < 0 )
     {
+        std::cerr << "Fork failed" << std::endl;
         exit( EXIT_FAILURE );
     }
     /* If we got a good PID, then
                we can exit the parent process. */
     if( pid > 0 )
     {
+        std::cout << "pid of the child process is " << pid << std::endl;
         exit( EXIT_SUCCESS );
     }
 
