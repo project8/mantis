@@ -19,7 +19,8 @@
  *
  */
 
-#include "mt_parser.hh"
+#include "mt_configurator.hh"
+#include "mt_client_config.hh"
 #include "mt_client.hh"
 #include "mt_context.hh"
 #include "thorax.hh"
@@ -34,20 +35,21 @@ using std::endl;
 
 int main( int argc, char** argv )
 {
-    parser t_parser( argc, argv );
+    client_config t_cc;
+    configurator t_config( argc, argv, &t_cc );
 
     cout << "[mantis_client] creating objects..." << endl;
 
-    client* t_client = new client( t_parser.get_required< string >( "host" ), t_parser.get_required< int >( "port" ) );
+    client* t_client = new client( t_config.get_string_required( "host" ), t_config.get_int_required( "port" ) );
     context* t_context = new context();
     t_context->set_connection( t_client );
 
-    t_context->get_request()->set_file( t_parser.get_required< string >( "file" ) );
-    t_context->get_request()->set_description( t_parser.get_required< string >( "description" ) );
+    t_context->get_request()->set_file( t_config.get_string_required( "file" ) );
+    t_context->get_request()->set_description( t_config.get_string_optional( "description", "default client run" ) );
     t_context->get_request()->set_date( get_absolute_time_string() );
-    t_context->get_request()->set_mode( request_mode_t_single );
-    t_context->get_request()->set_rate( t_parser.get_required< double >( "rate" ) );
-    t_context->get_request()->set_duration( t_parser.get_required< double >( "duration" ) );
+    t_context->get_request()->set_mode( (request_mode_t)t_config.get_uint_required( "mode" ) );
+    t_context->get_request()->set_rate( t_config.get_double_required( "rate" ) );
+    t_context->get_request()->set_duration( t_config.get_double_required( "duration" ) );
 
     cout << "[mantis_client] sending request..." << endl;
 
