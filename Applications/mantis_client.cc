@@ -66,12 +66,16 @@ int main( int argc, char** argv )
         return -1;
     }
 
+    unsigned t_sleep_time = 0;
+
     // =0 -> in progress
     // <0 -> unsuccessful
     // >0 -> successful
     int t_run_success = 0;
     while( true )
     {
+        sleep( t_sleep_time );
+
         t_run_context->pull_status();
 
         if( t_run_context->get_status()->state() == status_state_t_acknowledged )
@@ -79,6 +83,7 @@ int main( int argc, char** argv )
             cout << "[mantis_client] run request acknowledged...";
             cout.flush();
             cout << "\n";
+            t_sleep_time = 1;
             continue;
         }
 
@@ -87,6 +92,7 @@ int main( int argc, char** argv )
             cout << "[mantis_client] waiting for run...";
             cout.flush();
             cout << "\n";
+            t_sleep_time = 1;
             continue;
         }
 
@@ -95,6 +101,7 @@ int main( int argc, char** argv )
             cout << "[mantis_client] run has started...";
             cout.flush();
             cout << "\n";
+            t_sleep_time = 1;
             continue;
         }
 
@@ -103,6 +110,7 @@ int main( int argc, char** argv )
             cout << "[mantis_client] run is in progress...";
             cout.flush();
             cout << "\n";
+            t_sleep_time = 10;
             continue;
         }
 
