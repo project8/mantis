@@ -28,6 +28,9 @@ namespace mantis
         while( true )
         {
             t_run_context = new run_context();
+            cout << "[receiver] waiting for incoming connections" << endl;
+            // thread is blocked by the accept call in server::get_connection 
+	    // until an incoming connection is received
             t_run_context->set_connection( f_server->get_connection() );
 
             cout << "[receiver] receiving request..." << endl;
@@ -37,25 +40,33 @@ namespace mantis
                 cerr << "[receiver] unable to pull run request" << endl;
                 cout << "[receiver] sending status <error>" << endl;
                 t_run_context->get_status()->set_state( status_state_t_error );
-                t_run_context->push_status();
+                cout << "pushing status; result: " << t_run_context->push_status() << endl;
+                // wait a second to make sure status is received before deleting context
+                //sleep( 1 );
                 delete t_run_context;
-                continue;
             }
+            else
+	    {
+                cout << "[receiver] sending status <acknowledged>..." << endl;
 
-            cout << "[receiver] sending status <acknowledged>..." << endl;
+                t_run_context->get_status()->set_state( status_state_t_acknowledged );
+                t_run_context->push_status();
 
-            t_run_context->get_status()->set_state( status_state_t_acknowledged );
-            t_run_context->push_status();
+                cout << "[receiver] queuing request..." << endl;
 
-            cout << "[receiver] queuing request..." << endl;
+                t_run_context->get_status()->set_state( status_state_t_waiting );
+                f_run_queue->to_back( t_run_context );
 
-            t_run_context->get_status()->set_state( status_state_t_waiting );
-            f_run_queue->to_back( t_run_context );
 
-            if( f_condition->is_waiting() == true )
-            {
-                f_condition->release();
-            }
+                // if the queue condition is waiting, release it
+                if( f_condition->is_waiting() == true )
+                {
+	            cout << "[receiver] releasing queue condition" << endl;
+                    f_condition->release();
+                }
+	    }
+
+            cout << "[receiver] finished processing request" << endl;
         }
 
         return;
