@@ -9,10 +9,10 @@ using std::endl;
 namespace mantis
 {
 
-    worker::worker( digitizer* a_digitizer, writer* a_writer, queue* a_queue, condition* a_queue_condition, condition* a_buffer_condition ) :
+    worker::worker( digitizer* a_digitizer, writer* a_writer, run_context_queue* a_run_queue, condition* a_queue_condition, condition* a_buffer_condition ) :
             f_digitizer( a_digitizer ),
             f_writer( a_writer ),
-            f_queue( a_queue ),
+            f_run_queue( a_run_queue ),
             f_queue_condition( a_queue_condition ),
             f_buffer_condition( a_buffer_condition )
     {
@@ -28,14 +28,14 @@ namespace mantis
 
         while( true )
         {
-            if( f_queue->empty() == true )
+            if( f_run_queue->empty() == true )
             {
                 f_queue_condition->wait();
             }
 
             cout << "[worker] sending status <started>..." << endl;
 
-            t_run_context = f_queue->from_front();
+            t_run_context = f_run_queue->from_front();
             t_run_context->get_status()->set_state( status_state_t_started );
             t_run_context->push_status();
 
@@ -59,7 +59,7 @@ namespace mantis
             t_writer_thread->start();
 
             t_run_context->get_status()->set_state( status_state_t_running );
-            f_queue->to_front( t_run_context );
+            f_run_queue->to_front( t_run_context );
             t_run_context = NULL;
 
             t_digitizer_thread->join();
@@ -70,7 +70,7 @@ namespace mantis
 
             cout << "[worker] sending status <stopped>..." << endl;
 
-            t_run_context = f_queue->from_front();
+            t_run_context = f_run_queue->from_front();
             t_run_context->get_status()->set_state( status_state_t_stopped );
             t_run_context->push_status();
 

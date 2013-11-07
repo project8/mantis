@@ -4,7 +4,7 @@
 #include "mt_callable.hh"
 
 #include "mt_server.hh"
-#include "mt_queue.hh"
+#include "mt_run_queue.hh"
 #include "mt_condition.hh"
 
 namespace mantis
@@ -14,14 +14,14 @@ namespace mantis
         public callable
     {
         public:
-            receiver( server* a_server, queue* a_queue, condition* a_condition );
+            receiver( server* a_server, run_context_queue* a_run_queue, condition* a_condition );
             virtual ~receiver();
 
             void execute();
 
         private:
             server* f_server;
-            queue* f_queue;
+            run_context_queue* f_run_queue;
             condition* f_condition;
     };
 

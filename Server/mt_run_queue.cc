@@ -1,14 +1,14 @@
-#include "mt_queue.hh"
+#include "mt_run_queue.hh"
 
 namespace mantis
 {
 
-    queue::queue() :
+    run_context_queue::run_context_queue() :
             f_mutex(),
             f_runs()
     {
     }
-    queue::~queue()
+    run_context_queue::~run_context_queue()
     {
         f_mutex.lock();
         std::list< run_context* >::iterator t_it;
@@ -20,7 +20,7 @@ namespace mantis
         return;
     }
 
-    bool queue::empty()
+    bool run_context_queue::empty()
     {
         bool t_empty;
         f_mutex.lock();
@@ -29,14 +29,14 @@ namespace mantis
         return t_empty;
     }
 
-    void queue::to_front( run_context* a_run )
+    void run_context_queue::to_front( run_context* a_run )
     {
         f_mutex.lock();
         f_runs.push_front( a_run );
         f_mutex.unlock();
         return;
     }
-    run_context* queue::from_front()
+    run_context* run_context_queue::from_front()
     {
         run_context* t_front = NULL;
         f_mutex.lock();
@@ -49,14 +49,14 @@ namespace mantis
         return t_front;
     }
 
-    void queue::to_back( run_context* a_run )
+    void run_context_queue::to_back( run_context* a_run )
     {
         f_mutex.lock();
         f_runs.push_back( a_run );
         f_mutex.unlock();
         return;
     }
-    run_context* queue::from_back()
+    run_context* run_context_queue::from_back()
     {
         run_context* t_back = NULL;
         f_mutex.lock();
@@ -69,7 +69,7 @@ namespace mantis
         return t_back;
     }
 
-    void queue::execute()
+    void run_context_queue::execute()
     {
         while( true )
         {
