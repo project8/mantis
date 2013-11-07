@@ -17,7 +17,8 @@
  *
  */
 
-#include "mt_parser.hh"
+#include "mt_configurator.hh"
+#include "mt_server_config.hh"
 #include "request.pb.h"
 #include "response.pb.h"
 #include "mt_buffer.hh"
@@ -33,23 +34,25 @@ using std::endl;
 
 int main( int argc, char** argv )
 {
-    parser t_parser( argc, argv );
+    standalone_config t_sc;
+    configurator t_config( argc, argv, &t_sc );
+
     request t_request;
     response t_response;
 
     cout << "[mantis_standalone] making request..." << endl;
 
-    t_request.set_file( t_parser.get_required< string >( "file" ) );
-    t_request.set_description( t_parser.get_optional< string >( "description", "default mantis standalone run" ) );
+    t_request.set_file( t_config.get_string_required( "file" ) );
+    t_request.set_description( t_config.get_string_optional( "description", "default standalone run" ) );
     t_request.set_date( get_absolute_time_string() );
-    t_request.set_mode( (request_mode_t) (t_parser.get_required< unsigned int >( "mode" )) );
-    t_request.set_rate( t_parser.get_required< double >( "rate" ) );
-    t_request.set_duration( t_parser.get_required< double >( "duration" ) );
+    t_request.set_mode( (request_mode_t)t_config.get_uint_required( "mode" ) );
+    t_request.set_rate( t_config.get_double_required( "rate" ) );
+    t_request.set_duration( t_config.get_double_required( "duration" ) );
 
     cout << "[mantis_standalone] making condition and buffer..." << endl;
 
     condition* t_condition = new condition();
-    buffer* t_buffer = new buffer( 512 );
+    buffer* t_buffer = new buffer( t_config.get_uint_required( "buffer-size" ) );
 
     cout << "[mantis_standalone] making digitizer..." << endl;
 

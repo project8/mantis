@@ -14,7 +14,8 @@
  */
 
 #include "mt_exception.hh"
-#include "mt_parser.hh"
+#include "mt_configurator.hh"
+#include "mt_server_config.hh"
 #include "mt_server.hh"
 #include "mt_condition.hh"
 #include "mt_run_queue.hh"
@@ -33,14 +34,15 @@ using std::endl;
 
 int main( int argc, char** argv )
 {
-    parser t_parser( argc, argv );
+    server_config t_sc;
+    configurator t_config( argc, argv, &t_sc );
 
     cout << "[mantis_server] creating objects..." << endl;
 
-    server t_server( t_parser.get_required< int >( "port" ) );
+    server t_server( t_config.get_string_required( "port" ) );
 
     condition t_buffer_condition;
-    buffer t_buffer( 512 );
+    buffer t_buffer( t_config.get_uint_required( "buffer-size" ) );
 
     digitizer_px1500 t_digitizer( &t_buffer, &t_buffer_condition );
     writer t_writer( &t_buffer, &t_buffer_condition );

@@ -10,13 +10,20 @@ pbuilder_prepare_project( 2 1 1 )
 include_directories( ${PROJECT_SOURCE_DIR}/Client )
 include_directories( ${PROJECT_SOURCE_DIR}/Server )
 
-#######################
-# mantis dependencies #
-#######################
+##################
+# mantis options #
+##################
 
 # Option for a non-px1500 build, which includes only the client application
 set( Mantis_BUILD_SERVER FALSE CACHE BOOL "Flag to enable building of the server library and applications" )
 set( Mantis_INCLUDE_PX1500_SERVER TRUE CACHE BOOL "Flat to include the px1500 server; ignored unless the build-server flag is enabled" )
+
+
+#######################
+# mantis dependencies #
+#######################
+
+include_directories ("${PROJECT_SOURCE_DIR}/RapidJSON")
 
 add_subdirectory( Monarch )
 pbuilder_add_ext_libraries( ${Monarch_LIBRARIES} )
@@ -68,6 +75,10 @@ set( MANTIS_CLIENT_HEADERFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_exception.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_parser.hh
     
+    ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_client_config.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_configuration.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_configurator.hh
+    
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_client.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_connection.hh
     
@@ -81,6 +92,10 @@ set( MANTIS_CLIENT_HEADERFILES
 set( MANTIS_CLIENT_SOURCEFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_exception.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_parser.cc
+
+    ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_client_config.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_configuration.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_configurator.cc
 
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_client.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_connection.cc
@@ -102,6 +117,10 @@ add_executable( test_mantis_client ${CMAKE_CURRENT_SOURCE_DIR}/Applications/test
 target_link_libraries( test_mantis_client MantisClient ${EXTERNAL_LIBRARIES} )
 pbuilder_install_executables( test_mantis_client )
 
+add_executable( test_mantis_config ${CMAKE_CURRENT_SOURCE_DIR}/Applications/test_mantis_config.cc )
+target_link_libraries( test_mantis_config MantisClient ${EXTERNAL_LIBRARIES} )
+pbuilder_install_executables( test_mantis_config )
+
 add_executable( mantis_client ${CMAKE_CURRENT_SOURCE_DIR}/Applications/mantis_client.cc )
 target_link_libraries( mantis_client MantisClient ${EXTERNAL_LIBRARIES} )
 pbuilder_install_executables( mantis_client )
@@ -114,6 +133,8 @@ pbuilder_install_executables( mantis_client )
 if( Mantis_BUILD_SERVER )
 
     set( MANTIS_SERVER_HEADERFILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_server_config.hh
+        
         ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_mutex.hh
         ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_condition.hh
         ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_callable.hh
@@ -133,6 +154,8 @@ if( Mantis_BUILD_SERVER )
     )
     
     set( MANTIS_SERVER_SOURCEFILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_server_config.cc
+
         ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_mutex.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_condition.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_callable.cc
