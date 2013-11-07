@@ -71,7 +71,7 @@ set( MANTIS_CLIENT_HEADERFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_client.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_connection.hh
     
-    ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_context.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_run_context.hh
 
     ${Mantis_PB_Request_Header}
     ${Mantis_PB_Status_Header}
