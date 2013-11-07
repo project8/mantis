@@ -60,19 +60,17 @@ int main( int argc, char** argv )
         return -1;
     }
 
+    // =0 -> in progress
+    // <0 -> unsuccessful
+    // >0 -> successful
+    int t_run_success = 0;
     while( true )
     {
         t_run_context->pull_status();
-      //if( ! t_run_context->pull_status() )
-      //{
-      //    cerr << "[mantis_client] error pulling status; quitting" << endl;
-      //    break;
-      //}
-        cout << "waiting for status" << endl;
 
         if( t_run_context->get_status()->state() == status_state_t_acknowledged )
         {
-            cout << "[mantis_client] request acknowledged...";
+            cout << "[mantis_client] run request acknowledged...";
             cout.flush();
             cout << "\n";
             continue;
@@ -80,7 +78,7 @@ int main( int argc, char** argv )
 
         if( t_run_context->get_status()->state() == status_state_t_waiting )
         {
-            cout << "[mantis_client] request waiting...     ";
+            cout << "[mantis_client] waiting for run...";
             cout.flush();
             cout << "\n";
             continue;
@@ -88,7 +86,7 @@ int main( int argc, char** argv )
 
         if( t_run_context->get_status()->state() == status_state_t_started )
         {
-            cout << "[mantis_client] request started...     ";
+            cout << "[mantis_client] run has started...";
             cout.flush();
             cout << "\n";
             continue;
@@ -96,7 +94,7 @@ int main( int argc, char** argv )
 
         if( t_run_context->get_status()->state() == status_state_t_running )
         {
-            cout << "[mantis_client] request running...     ";
+            cout << "[mantis_client] run is in progress...";
             cout.flush();
             cout << "\n";
             continue;
@@ -104,52 +102,55 @@ int main( int argc, char** argv )
 
         if( t_run_context->get_status()->state() == status_state_t_stopped )
         {
-            cout << "[mantis_client] request stopped...     ";
+            cout << "[mantis_client] run status: stopped; run should be complete";
             cout.flush();
-            cout << "\n";
-            cout << endl;
+            cout << "\n" << endl;
+            t_run_success = 1;
             break;
         }
 
         if( t_run_context->get_status()->state() == status_state_t_error )
         {
-            cout << "[mantis_client] request error...       ";
+            cout << "[mantis_client] error reported; run did not complete";
             cout.flush();
-            cout << "\n";
-            cout << endl;
+            cout << "\n" << endl;
+            t_run_success = -1;
             break;
         }
     }
 
-    cout << "[mantis_client] receiving response..." << endl;
-
-    if( ! t_run_context->pull_response() )
+    if( t_run_success > 0 )
     {
-        cerr << "error receiving response" << endl;
-        delete t_run_context;
-        delete t_client;
-        return -1;
+        cout << "[mantis_client] receiving response..." << endl;
+
+        if( ! t_run_context->pull_response() )
+        {
+            cerr << "error receiving response" << endl;
+            delete t_run_context;
+            delete t_client;
+            return -1;
+        }
+
+        cout << "[mantis_client] digitizer summary:\n";
+        cout << "  record count: " << t_run_context->get_response()->digitizer_records() << " [#]\n";
+        cout << "  acquisition count: " << t_run_context->get_response()->digitizer_acquisitions() << " [#]\n";
+        cout << "  live time: " << t_run_context->get_response()->digitizer_live_time() << " [sec]\n";
+        cout << "  dead time: " << t_run_context->get_response()->digitizer_dead_time() << " [sec]\n";
+        cout << "  megabytes: " << t_run_context->get_response()->digitizer_megabytes() << " [Mb]\n";
+        cout << "  rate: " << t_run_context->get_response()->digitizer_rate() << " [Mb/sec]\n";
+
+        cout << endl;
+
+        cout << "[mantis_client] writer summary:\n";
+        cout << "  record count: " << t_run_context->get_response()->writer_records() << " [#]\n";
+        cout << "  acquisition count: " << t_run_context->get_response()->writer_acquisitions() << " [#]\n";
+        cout << "  live time: " << t_run_context->get_response()->writer_live_time() << " [sec]\n";
+        cout << "  megabytes: " << t_run_context->get_response()->writer_megabytes() << "[Mb]\n";
+        cout << "  rate: " << t_run_context->get_response()->writer_rate() << " [Mb/sec]\n";
     }
-
-    cout << "[mantis_client] digitizer summary:\n";
-    cout << "  record count: " << t_run_context->get_response()->digitizer_records() << " [#]\n";
-    cout << "  acquisition count: " << t_run_context->get_response()->digitizer_acquisitions() << " [#]\n";
-    cout << "  live time: " << t_run_context->get_response()->digitizer_live_time() << " [sec]\n";
-    cout << "  dead time: " << t_run_context->get_response()->digitizer_dead_time() << " [sec]\n";
-    cout << "  megabytes: " << t_run_context->get_response()->digitizer_megabytes() << " [Mb]\n";
-    cout << "  rate: " << t_run_context->get_response()->digitizer_rate() << " [Mb/sec]\n";
-
-    cout << endl;
-
-    cout << "[mantis_client] writer summary:\n";
-    cout << "  record count: " << t_run_context->get_response()->writer_records() << " [#]\n";
-    cout << "  acquisition count: " << t_run_context->get_response()->writer_acquisitions() << " [#]\n";
-    cout << "  live time: " << t_run_context->get_response()->writer_live_time() << " [sec]\n";
-    cout << "  megabytes: " << t_run_context->get_response()->writer_megabytes() << "[Mb]\n";
-    cout << "  rate: " << t_run_context->get_response()->writer_rate() << " [Mb/sec]\n";
 
     delete t_run_context;
     delete t_client;
 
-    return 0;
+    return t_run_success;
 }
