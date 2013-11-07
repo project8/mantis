@@ -82,6 +82,7 @@ namespace mantis
         ::memset( t_address, 0, t_address_length );
 
         //accept a connection
+        //blocks the thread while waiting for an incoming connection
         t_socket = ::accept( f_socket, (sockaddr*) (t_address), &t_address_length );
         if( t_socket < 0 )
         {
