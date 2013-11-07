@@ -31,12 +31,14 @@ namespace mantis
             bool pull_response();
 
         private:
+            size_t reset_buffer( size_t a_size );
+
             connection* f_connection;
             request f_request;
             status f_status;
             response f_response;
 
-            size_t f_buffer_length;
+            size_t f_buffer_size;
             char* f_buffer;
     };
 
