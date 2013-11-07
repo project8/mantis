@@ -33,22 +33,28 @@ using std::cerr;
 using std::cout;
 using std::endl;
 
+#include <google/protobuf/text_format.h>
+
 int main( int argc, char** argv )
 {
     parser t_parser( argc, argv );
 
     cout << "[mantis_client] creating objects..." << endl;
 
-    client* t_client = new client( t_parser.get_required< string >( "host" ), t_parser.get_required< int >( "port" ) );
     run_context* t_run_context = new run_context();
-    t_run_context->set_connection( t_client );
-
     t_run_context->get_request()->set_file( t_parser.get_required< string >( "file" ) );
     t_run_context->get_request()->set_description( t_parser.get_optional< string >( "description", "default mantis client description" ) );
     t_run_context->get_request()->set_date( get_absolute_time_string() );
     t_run_context->get_request()->set_mode( request_mode_t_single );
     t_run_context->get_request()->set_rate( t_parser.get_required< double >( "rate" ) );
     t_run_context->get_request()->set_duration( t_parser.get_required< double >( "duration" ) );
+
+    std::string str;
+    google::protobuf::TextFormat::PrintToString(*(t_run_context->get_request()), &str);
+    cout << str << endl;
+
+    client* t_client = new client( t_parser.get_required< string >( "host" ), t_parser.get_required< int >( "port" ) );
+    t_run_context->set_connection( t_client );
 
     cout << "[mantis_client] sending request..." << endl;
 

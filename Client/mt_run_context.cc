@@ -11,6 +11,8 @@ using std::cerr;
 using std::cout;
 using std::endl;
 
+#include <google/protobuf/text_format.h>
+
 namespace mantis
 {
 
@@ -20,6 +22,7 @@ namespace mantis
             f_status(),
             f_response()
     {
+        f_buffer_length = 0;
     }
     run_context::~run_context()
     {
@@ -37,12 +40,14 @@ namespace mantis
 
     bool run_context::push_request()
     {
-        ::memset( f_buffer, 0, f_buffer_length );
-        if( ! f_request.SerializeToArray( f_buffer, f_buffer_length ) )
+        size_t t_request_size = reset_buffer( f_request.ByteSize() );
+        //::memset( f_buffer, 0, f_buffer_length );
+        if( ! f_request.SerializeToArray( f_buffer, t_request_size ) )
             return false;
         try
         {
-            f_connection->write( f_buffer, f_buffer_length );
+            f_connection->write( &t_request_size, sizeof( size_t ) );
+            f_connection->write( f_buffer, t_request_size );
         }
         catch( exception& e )
         {
@@ -53,18 +58,29 @@ namespace mantis
     }
     bool run_context::pull_request()
     {
-        ::memset( f_buffer, 0, f_buffer_length );
+      size_t t_request_size;
+      //::memset( f_buffer, 0, f_buffer_length );
         try
         {
-            if( f_connection->read( f_buffer, f_buffer_length ) == 0 )
+	  f_connection->read( &t_request_size, sizeof( size_t ) );
+          cout << "request size read: " << t_request_size << endl;
+          reset_buffer( t_request_size );
+            if( f_connection->read( f_buffer, t_request_size ) == 0 )
+	    {
+                cout << "connection read length was 0" << endl;
                 return false;
+	    }
         }
         catch( exception& e )
         {
             cerr << "a read error occurred while pulling a request: " << e.what() << endl;
             return false;
         }
-        return f_request.ParseFromArray( f_buffer, f_buffer_length );
+        cout << f_request.ParseFromArray( f_buffer, t_request_size ) << endl;
+	std::string str;
+	google::protobuf::TextFormat::PrintToString(f_request, &str);
+	cout << str << endl;
+        return f_request.ParseFromArray( f_buffer, t_request_size );
     }
     request* run_context::get_request()
     {
