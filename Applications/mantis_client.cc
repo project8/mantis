@@ -49,10 +49,6 @@ int main( int argc, char** argv )
     t_run_context->get_request()->set_rate( t_parser.get_required< double >( "rate" ) );
     t_run_context->get_request()->set_duration( t_parser.get_required< double >( "duration" ) );
 
-    std::string str;
-    google::protobuf::TextFormat::PrintToString(*(t_run_context->get_request()), &str);
-    cout << str << endl;
-
     client* t_client = new client( t_parser.get_required< string >( "host" ), t_parser.get_required< int >( "port" ) );
     t_run_context->set_connection( t_client );
 

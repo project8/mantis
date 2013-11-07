@@ -21,9 +21,9 @@ namespace mantis
                     f_request(),
                     f_status(),
                     f_response(),
+                    f_buffer_size(0),
                     f_buffer(NULL)
     {
-        f_buffer_size = 0;
     }
     run_context::~run_context()
     {
@@ -63,7 +63,6 @@ namespace mantis
         try
         {
             f_connection->read( (char*)&t_request_size, sizeof( size_t ) );
-            cout << "request size read: " << t_request_size << endl;
             reset_buffer( t_request_size );
             if( f_connection->read( f_buffer, t_request_size ) == 0 )
             {
@@ -76,10 +75,6 @@ namespace mantis
             cerr << "a read error occurred while pulling a request: " << e.what() << endl;
             return false;
         }
-        cout << f_request.ParseFromArray( f_buffer, t_request_size ) << endl;
-        std::string str;
-        google::protobuf::TextFormat::PrintToString(f_request, &str);
-        cout << str << endl;
         return f_request.ParseFromArray( f_buffer, t_request_size );
     }
     request* run_context::get_request()
@@ -149,7 +144,7 @@ namespace mantis
         try
         {
             f_connection->read( (char*)&t_response_size, sizeof( size_t ) );
-            reset_buffer( t_status_size );
+            reset_buffer( t_response_size );
             if( f_connection->read( f_buffer, t_response_size ) == 0 )
                 return false;
         }
