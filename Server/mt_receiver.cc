@@ -35,6 +35,9 @@ namespace mantis
             if( ! t_run_context->pull_request() )
             {
                 cerr << "[receiver] unable to pull run request" << endl;
+                cout << "[receiver] sending status <error>" << endl;
+                t_run_context->get_status()->set_state( status_state_t_error );
+                t_run_context->push_status();
                 delete t_run_context;
                 continue;
             }

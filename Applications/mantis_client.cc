@@ -104,6 +104,15 @@ int main( int argc, char** argv )
             cout << endl;
             break;
         }
+
+        if( t_run_context->get_status()->state() == status_state_t_error )
+        {
+            cout << "[mantis_client] request error...       ";
+            cout.flush();
+            cout << "\n";
+            cout << endl;
+            break;
+        }
     }
 
     cout << "[mantis_client] receiving response..." << endl;

@@ -43,6 +43,12 @@ int analyze_status( run_context* t_run_context )
             cout.flush();
             cout << endl;
             return 1;
+
+        case status_state_t_error :
+            cout << "[test_mantis_client] error..." << '\r';
+            cout.flush();
+            cout << endl;
+            return -1;
     }
 }
 
