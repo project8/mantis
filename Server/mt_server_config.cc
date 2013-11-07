@@ -21,10 +21,14 @@ namespace mantis
         host.SetString( "localhost", 9 );
         rapidjson::Value digitizer;
         digitizer.SetString( "px1500", 6 );
+        rapidjson::Value buffer_size( 512 );
+        rapidjson::Value record_size( 4194304 );
 
         AddMember( "port", port, GetAllocator() );
         AddMember( "host", host, GetAllocator() );
         AddMember( "digitizer", digitizer, GetAllocator() );
+        AddMember( "buffer-size", buffer_size, GetAllocator() );
+        AddMember( "record-size", record_size, GetAllocator() );
     }
 
     server_config::~server_config()
@@ -41,11 +45,15 @@ namespace mantis
         rapidjson::Value duration( 1000 );
         rapidjson::Value digitizer;
         digitizer.SetString( "px1500", 6 );
+        rapidjson::Value buffer_size( 512 );
+        rapidjson::Value record_size( 4194304 );
 
         AddMember( "file", filename, GetAllocator() );
         AddMember( "rate", rate, GetAllocator() );
         AddMember( "duration", duration, GetAllocator() );
         AddMember( "digitizer", digitizer, GetAllocator() );
+        AddMember( "buffer-size", buffer_size, GetAllocator() );
+        AddMember( "record-size", record_size, GetAllocator() );
     }
 
     standalone_config::~standalone_config()
