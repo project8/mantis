@@ -62,6 +62,7 @@ int main( int argc, char** argv )
 
     while( true )
     {
+        t_run_context->pull_status();
       //if( ! t_run_context->pull_status() )
       //{
       //    cerr << "[mantis_client] error pulling status; quitting" << endl;
