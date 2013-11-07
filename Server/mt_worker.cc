@@ -9,7 +9,7 @@ using std::endl;
 namespace mantis
 {
 
-    worker::worker( digitizer* a_digitizer, writer* a_writer, run_context_queue* a_run_queue, condition* a_queue_condition, condition* a_buffer_condition ) :
+    worker::worker( digitizer* a_digitizer, writer* a_writer, run_queue* a_run_queue, condition* a_queue_condition, condition* a_buffer_condition ) :
             f_digitizer( a_digitizer ),
             f_writer( a_writer ),
             f_run_queue( a_run_queue ),

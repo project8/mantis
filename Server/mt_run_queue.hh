@@ -11,12 +11,12 @@
 namespace mantis
 {
 
-    class run_context_queue :
+    class run_queue :
         public callable
     {
         public:
-            run_context_queue();
-            virtual ~run_context_queue();
+            run_queue();
+            virtual ~run_queue();
 
             bool empty();
 

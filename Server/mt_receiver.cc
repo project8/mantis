@@ -10,7 +10,7 @@ using std::endl;
 namespace mantis
 {
 
-    receiver::receiver( server* a_server, run_context_queue* a_run_queue, condition* a_condition ) :
+    receiver::receiver( server* a_server, run_queue* a_run_queue, condition* a_condition ) :
             f_server( a_server ),
             f_run_queue( a_run_queue ),
             f_condition( a_condition )

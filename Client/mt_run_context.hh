@@ -9,26 +9,26 @@
 namespace mantis
 {
 
-    class context
+    class run_context
     {
         public:
-            context();
-            virtual ~context();
+            run_context();
+            virtual ~run_context();
 
             void set_connection( connection* a_connection );
             connection* get_connection();
 
             request* get_request();
-            void push_request();
-            void pull_request();
+            bool push_request();
+            bool pull_request();
 
             status* get_status();
-            void push_status();
-            void pull_status();
+            bool push_status();
+            bool pull_status();
 
             response* get_response();
-            void push_response();
-            void pull_response();
+            bool push_response();
+            bool pull_response();
 
         private:
             connection* f_connection;

@@ -1,86 +1,138 @@
 #include "mt_context.hh"
 
+#include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+using std::cerr;
+using std::endl;
+
 namespace mantis
 {
 
-    context::context() :
+    run_context::run_context() :
             f_connection(),
             f_request(),
             f_status(),
             f_response()
     {
     }
-    context::~context()
+    run_context::~run_context()
     {
     }
 
-    void context::set_connection( connection* a_connection )
+    void run_context::set_connection( connection* a_connection )
     {
         f_connection = a_connection;
         return;
     }
-    connection* context::get_connection()
+    connection* run_context::get_connection()
     {
         return f_connection;
     }
 
-    void context::push_request()
+    bool run_context::push_request()
     {
         ::memset( f_buffer, 0, f_buffer_length );
-        f_request.SerializeToArray( f_buffer, f_buffer_length );
-        f_connection->write( f_buffer, f_buffer_length );
-        return;
+        if( ! f_request.SerializeToArray( f_buffer, f_buffer_length ) )
+            return false;
+        try
+        {
+            f_connection->write( f_buffer, f_buffer_length );
+        }
+        catch( exception& e )
+        {
+            cerr << "an error occurred while pushing a request: " << e.what() << endl;
+            return false;
+        }
+        return true;
     }
-    void context::pull_request()
+    bool run_context::pull_request()
     {
         ::memset( f_buffer, 0, f_buffer_length );
-        f_connection->read( f_buffer, f_buffer_length );
-        f_request.ParseFromArray( f_buffer, f_buffer_length );
-        return;
+        try
+        {
+            f_connection->read( f_buffer, f_buffer_length );
+        }
+        catch( exception& e )
+        {
+            cerr << "an error occurred while pulling a request: " << e.what() << endl;
+            return false;
+        }
+        return f_request.ParseFromArray( f_buffer, f_buffer_length );
     }
-    request* context::get_request()
+    request* run_context::get_request()
     {
         return &f_request;
     }
 
-    void context::push_status()
+    bool run_context::push_status()
     {
         ::memset( f_buffer, 0, f_buffer_length );
-        f_status.SerializeToArray( f_buffer, f_buffer_length );
-        f_connection->write( f_buffer, f_buffer_length );
-        return;
+        if( ! f_status.SerializeToArray( f_buffer, f_buffer_length ) )
+            return false;
+        try
+        {
+            f_connection->write( f_buffer, f_buffer_length );
+        }
+        catch( exception& e )
+        {
+            cerr << "an error occurred while pushing a status: " << e.what() << endl;
+            return false;
+        }
+        return true;
     }
-    void context::pull_status()
+    bool run_context::pull_status()
     {
         ::memset( f_buffer, 0, f_buffer_length );
-        f_connection->read( f_buffer, f_buffer_length );
-        f_status.ParseFromArray( f_buffer, f_buffer_length );
-        return;
+        try
+        {
+            f_connection->read( f_buffer, f_buffer_length );
+        }
+        catch( exception& e )
+        {
+            cerr << "an error occurred while pulling a status: " << e.what() << endl;
+            return false;
+        }
+        return f_status.ParseFromArray( f_buffer, f_buffer_length );
     }
-    status* context::get_status()
+    status* run_context::get_status()
     {
         return &f_status;
     }
 
-    void context::push_response()
+    bool run_context::push_response()
     {
         ::memset( f_buffer, 0, f_buffer_length );
-        f_response.SerializeToArray( f_buffer, f_buffer_length );
-        f_connection->write( f_buffer, f_buffer_length );
-        return;
+        if( ! f_response.SerializeToArray( f_buffer, f_buffer_length ) )
+            return false;
+        try
+        {
+            f_connection->write( f_buffer, f_buffer_length );
+        }
+        catch( exception& e )
+        {
+            cerr << "an error occurred while pushing a response: " << e.what() << endl;
+            return false;
+        }
+        return true;
     }
-    void context::pull_response()
+    bool run_context::pull_response()
     {
         ::memset( f_buffer, 0, f_buffer_length );
-        f_connection->read( f_buffer, f_buffer_length );
-        f_response.ParseFromArray( f_buffer, f_buffer_length );
-        return;
+        try
+        {
+            f_connection->read( f_buffer, f_buffer_length );
+        }
+        catch( exception& e )
+        {
+            cerr << "an error occurred while pulling a response: " << e.what() << endl;
+            return false;
+        }
+        return f_response.ParseFromArray( f_buffer, f_buffer_length );
     }
-    response* context::get_response()
+    response* run_context::get_response()
     {
         return &f_response;
     }

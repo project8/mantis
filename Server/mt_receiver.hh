@@ -14,14 +14,14 @@ namespace mantis
         public callable
     {
         public:
-            receiver( server* a_server, run_context_queue* a_run_queue, condition* a_condition );
+            receiver( server* a_server, run_queue* a_run_queue, condition* a_condition );
             virtual ~receiver();
 
             void execute();
 
         private:
             server* f_server;
-            run_context_queue* f_run_queue;
+            run_queue* f_run_queue;
             condition* f_condition;
     };
 

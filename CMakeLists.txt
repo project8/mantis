@@ -121,7 +121,7 @@ if( Mantis_BUILD_SERVER )
         
         ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_server.hh
         
-        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_queue.hh
+        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_run_queue.hh
     
         ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_block.hh
         ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_buffer.hh
@@ -140,7 +140,7 @@ if( Mantis_BUILD_SERVER )
         
         ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_server.cc
         
-        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_queue.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_run_queue.cc
     
         ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_block.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_buffer.cc
