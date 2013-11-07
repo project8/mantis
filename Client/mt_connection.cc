@@ -2,6 +2,7 @@
 
 #include "mt_exception.hh"
 
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -28,28 +29,28 @@ namespace mantis
         delete f_address;
     }
 
-    void connection::write( const char* a_message, size_t a_length )
+    ssize_t connection::write( const char* a_message, size_t a_length )
     {
-        int t_written_length = ::write( f_socket, a_message, a_length );
+        ssize_t t_written_length = ::write( f_socket, a_message, a_length );
         if( t_written_length != a_length )
         {
-            throw exception() << "could not write to socket";
-            return;
+            throw exception() << "could not write to socket (" << strerror(errno) << ")";
+            return t_written_length;
         }
 
-        return;
+        return t_written_length;
     }
 
-    void connection::read( char* a_message, size_t a_length )
+    ssize_t connection::read( char* a_message, size_t a_length )
     {
-        int t_read_length = ::read( f_socket, a_message, a_length );
+        ssize_t t_read_length = ::read( f_socket, a_message, a_length );
         if( t_read_length < 0 )
         {
-            throw exception() << "could not read from socket";
-            return;
+            throw exception() << "could not read from socket (" << strerror(errno) << ")";
+            return t_read_length;
         }
 
-        return;
+        return t_read_length;
     }
 
 }

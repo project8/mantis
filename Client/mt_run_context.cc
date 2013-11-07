@@ -8,6 +8,7 @@
 #include <string.h>
 
 using std::cerr;
+using std::cout;
 using std::endl;
 
 namespace mantis
@@ -45,7 +46,7 @@ namespace mantis
         }
         catch( exception& e )
         {
-            cerr << "an error occurred while pushing a request: " << e.what() << endl;
+            cerr << "a write error occurred while pushing a request: " << e.what() << endl;
             return false;
         }
         return true;
@@ -55,11 +56,12 @@ namespace mantis
         ::memset( f_buffer, 0, f_buffer_length );
         try
         {
-            f_connection->read( f_buffer, f_buffer_length );
+            if( f_connection->read( f_buffer, f_buffer_length ) == 0 )
+                return false;
         }
         catch( exception& e )
         {
-            cerr << "an error occurred while pulling a request: " << e.what() << endl;
+            cerr << "a read error occurred while pulling a request: " << e.what() << endl;
             return false;
         }
         return f_request.ParseFromArray( f_buffer, f_buffer_length );
@@ -80,7 +82,7 @@ namespace mantis
         }
         catch( exception& e )
         {
-            cerr << "an error occurred while pushing a status: " << e.what() << endl;
+            cerr << "a write error occurred while pushing a status: " << e.what() << endl;
             return false;
         }
         return true;
@@ -90,13 +92,19 @@ namespace mantis
         ::memset( f_buffer, 0, f_buffer_length );
         try
         {
-            f_connection->read( f_buffer, f_buffer_length );
+            if( f_connection->read( f_buffer, f_buffer_length ) == 0 )
+                return false;
         }
         catch( exception& e )
         {
-            cerr << "an error occurred while pulling a status: " << e.what() << endl;
+            cerr << "a read error occurred while pulling a status: " << e.what() << endl;
             return false;
         }
+        for (int i=0; i<f_buffer_length; ++i)
+        {
+          cout << f_buffer[i];
+        }
+        cout << endl;
         return f_status.ParseFromArray( f_buffer, f_buffer_length );
     }
     status* run_context::get_status()
@@ -115,7 +123,7 @@ namespace mantis
         }
         catch( exception& e )
         {
-            cerr << "an error occurred while pushing a response: " << e.what() << endl;
+            cerr << "a write error occurred while pushing a response: " << e.what() << endl;
             return false;
         }
         return true;
@@ -125,11 +133,12 @@ namespace mantis
         ::memset( f_buffer, 0, f_buffer_length );
         try
         {
-            f_connection->read( f_buffer, f_buffer_length );
+            if( f_connection->read( f_buffer, f_buffer_length ) == 0 )
+                return false;
         }
         catch( exception& e )
         {
-            cerr << "an error occurred while pulling a response: " << e.what() << endl;
+            cerr << "a read error occurred while pulling a response: " << e.what() << endl;
             return false;
         }
         return f_response.ParseFromArray( f_buffer, f_buffer_length );

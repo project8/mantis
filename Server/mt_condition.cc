@@ -32,6 +32,7 @@ namespace mantis
         f_state = true;
         while( f_state == true )
         {
+            // unlocks the mutex and waits for signal (via condition::release) from a different thread
             pthread_cond_wait( &f_condition, &f_mutex );
         }
         pthread_mutex_unlock( &f_mutex );
