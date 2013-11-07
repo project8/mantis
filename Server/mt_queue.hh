@@ -4,7 +4,7 @@
 #include "mt_callable.hh"
 
 #include "mt_mutex.hh"
-#include "mt_context.hh"
+#include "mt_run_context.hh"
 
 #include <list>
 
@@ -20,17 +20,17 @@ namespace mantis
 
             bool empty();
 
-            void to_front( context* a_run );
-            context* from_front();
+            void to_front( run_context* a_run );
+            run_context* from_front();
 
-            void to_back( context* a_run );
-            context* from_back();
+            void to_back( run_context* a_run );
+            run_context* from_back();
 
             void execute();
 
         private:
             mutex f_mutex;
-            std::list< context* > f_runs;
+            std::list< run_context* > f_runs;
     };
 
 }

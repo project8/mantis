@@ -11,7 +11,7 @@ namespace mantis
     queue::~queue()
     {
         f_mutex.lock();
-        std::list< context* >::iterator t_it;
+        std::list< run_context* >::iterator t_it;
         for( t_it = f_runs.begin(); t_it != f_runs.end(); t_it++ )
         {
             delete *t_it;
@@ -29,16 +29,16 @@ namespace mantis
         return t_empty;
     }
 
-    void queue::to_front( context* a_run )
+    void queue::to_front( run_context* a_run )
     {
         f_mutex.lock();
         f_runs.push_front( a_run );
         f_mutex.unlock();
         return;
     }
-    context* queue::from_front()
+    run_context* queue::from_front()
     {
-        context* t_front = NULL;
+        run_context* t_front = NULL;
         f_mutex.lock();
         if( f_runs.empty() == false )
         {
@@ -49,16 +49,16 @@ namespace mantis
         return t_front;
     }
 
-    void queue::to_back( context* a_run )
+    void queue::to_back( run_context* a_run )
     {
         f_mutex.lock();
         f_runs.push_back( a_run );
         f_mutex.unlock();
         return;
     }
-    context* queue::from_back()
+    run_context* queue::from_back()
     {
-        context* t_back = NULL;
+        run_context* t_back = NULL;
         f_mutex.lock();
         if( f_runs.empty() == false )
         {
@@ -76,7 +76,7 @@ namespace mantis
             sleep( 1 );
 
             f_mutex.lock();
-            std::list< context* >::iterator t_it;
+            std::list< run_context* >::iterator t_it;
             for( t_it = f_runs.begin(); t_it != f_runs.end(); t_it++ )
             {
                 (*t_it)->push_status();

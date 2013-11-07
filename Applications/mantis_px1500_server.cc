@@ -13,6 +13,7 @@
  *
  */
 
+#include "mt_exception.hh"
 #include "mt_parser.hh"
 #include "mt_server.hh"
 #include "mt_condition.hh"
@@ -26,6 +27,7 @@
 using namespace mantis;
 
 #include <iostream>
+using std::cerr;
 using std::cout;
 using std::endl;
 
@@ -55,15 +57,23 @@ int main( int argc, char** argv )
     thread t_receiver_thread( &t_receiver );
     thread t_worker_thread( &t_worker );
 
-    t_queue_thread.start();
-    t_receiver_thread.start();
-    t_worker_thread.start();
+    try
+    {
+        t_queue_thread.start();
+        t_receiver_thread.start();
+        t_worker_thread.start();
 
-    cout << "[mantis_server] joining threads..." << endl;
+        cout << "[mantis_server] running..." << endl;
 
-    t_queue_thread.join();
-    t_receiver_thread.join();
-    t_worker_thread.join();
+        t_queue_thread.join();
+        t_receiver_thread.join();
+        t_worker_thread.join();
+    }
+    catch( exception& e)
+    {
+        cerr << "exception caught during server running" << endl;
+        return -1;
+    }
 
     cout << "[mantis_server] shutting down..." << endl;
 

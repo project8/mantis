@@ -21,7 +21,7 @@
 
 #include "mt_parser.hh"
 #include "mt_client.hh"
-#include "mt_context.hh"
+#include "mt_run_context.hh"
 #include "thorax.hh"
 using namespace mantis;
 
@@ -29,6 +29,7 @@ using namespace mantis;
 using std::string;
 
 #include <iostream>
+using std::cerr;
 using std::cout;
 using std::endl;
 
@@ -39,25 +40,31 @@ int main( int argc, char** argv )
     cout << "[mantis_client] creating objects..." << endl;
 
     client* t_client = new client( t_parser.get_required< string >( "host" ), t_parser.get_required< int >( "port" ) );
-    context* t_context = new context();
-    t_context->set_connection( t_client );
+    run_context* t_run_context = new run_context();
+    t_run_context->set_connection( t_client );
 
-    t_context->get_request()->set_file( t_parser.get_required< string >( "file" ) );
-    t_context->get_request()->set_description( t_parser.get_required< string >( "description" ) );
-    t_context->get_request()->set_date( get_absolute_time_string() );
-    t_context->get_request()->set_mode( request_mode_t_single );
-    t_context->get_request()->set_rate( t_parser.get_required< double >( "rate" ) );
-    t_context->get_request()->set_duration( t_parser.get_required< double >( "duration" ) );
+    t_run_context->get_request()->set_file( t_parser.get_required< string >( "file" ) );
+    t_run_context->get_request()->set_description( t_parser.get_optional< string >( "description", "default mantis client description" ) );
+    t_run_context->get_request()->set_date( get_absolute_time_string() );
+    t_run_context->get_request()->set_mode( request_mode_t_single );
+    t_run_context->get_request()->set_rate( t_parser.get_required< double >( "rate" ) );
+    t_run_context->get_request()->set_duration( t_parser.get_required< double >( "duration" ) );
 
     cout << "[mantis_client] sending request..." << endl;
 
-    t_context->push_request();
+    if( ! t_run_context->push_request() )
+    {
+        cerr << "[mantis_client] error sending request" << endl;
+        delete t_run_context;
+        delete t_client;
+        return -1;
+    }
 
     while( true )
     {
-        t_context->pull_status();
+        t_run_context->pull_status();
 
-        if( t_context->get_status()->state() == status_state_t_acknowledged )
+        if( t_run_context->get_status()->state() == status_state_t_acknowledged )
         {
             cout << "[mantis_client] request acknowledged...";
             cout.flush();
@@ -65,7 +72,7 @@ int main( int argc, char** argv )
             continue;
         }
 
-        if( t_context->get_status()->state() == status_state_t_waiting )
+        if( t_run_context->get_status()->state() == status_state_t_waiting )
         {
             cout << "[mantis_client] request waiting...     ";
             cout.flush();
@@ -73,7 +80,7 @@ int main( int argc, char** argv )
             continue;
         }
 
-        if( t_context->get_status()->state() == status_state_t_started )
+        if( t_run_context->get_status()->state() == status_state_t_started )
         {
             cout << "[mantis_client] request started...     ";
             cout.flush();
@@ -81,7 +88,7 @@ int main( int argc, char** argv )
             continue;
         }
 
-        if( t_context->get_status()->state() == status_state_t_running )
+        if( t_run_context->get_status()->state() == status_state_t_running )
         {
             cout << "[mantis_client] request running...     ";
             cout.flush();
@@ -89,7 +96,7 @@ int main( int argc, char** argv )
             continue;
         }
 
-        if( t_context->get_status()->state() == status_state_t_stopped )
+        if( t_run_context->get_status()->state() == status_state_t_stopped )
         {
             cout << "[mantis_client] request stopped...     ";
             cout.flush();
@@ -101,26 +108,32 @@ int main( int argc, char** argv )
 
     cout << "[mantis_client] receiving response..." << endl;
 
-    t_context->pull_response();
+    if( ! t_run_context->pull_response() )
+    {
+        cerr << "error receiving response" << endl;
+        delete t_run_context;
+        delete t_client;
+        return -1;
+    }
 
     cout << "[mantis_client] digitizer summary:\n";
-    cout << "  record count: " << t_context->get_response()->digitizer_records() << " [#]\n";
-    cout << "  acquisition count: " << t_context->get_response()->digitizer_acquisitions() << " [#]\n";
-    cout << "  live time: " << t_context->get_response()->digitizer_live_time() << " [sec]\n";
-    cout << "  dead time: " << t_context->get_response()->digitizer_dead_time() << " [sec]\n";
-    cout << "  megabytes: " << t_context->get_response()->digitizer_megabytes() << " [Mb]\n";
-    cout << "  rate: " << t_context->get_response()->digitizer_rate() << " [Mb/sec]\n";
+    cout << "  record count: " << t_run_context->get_response()->digitizer_records() << " [#]\n";
+    cout << "  acquisition count: " << t_run_context->get_response()->digitizer_acquisitions() << " [#]\n";
+    cout << "  live time: " << t_run_context->get_response()->digitizer_live_time() << " [sec]\n";
+    cout << "  dead time: " << t_run_context->get_response()->digitizer_dead_time() << " [sec]\n";
+    cout << "  megabytes: " << t_run_context->get_response()->digitizer_megabytes() << " [Mb]\n";
+    cout << "  rate: " << t_run_context->get_response()->digitizer_rate() << " [Mb/sec]\n";
 
     cout << endl;
 
     cout << "[mantis_client] writer summary:\n";
-    cout << "  record count: " << t_context->get_response()->writer_records() << " [#]\n";
-    cout << "  acquisition count: " << t_context->get_response()->writer_acquisitions() << " [#]\n";
-    cout << "  live time: " << t_context->get_response()->writer_live_time() << " [sec]\n";
-    cout << "  megabytes: " << t_context->get_response()->writer_megabytes() << "[Mb]\n";
-    cout << "  rate: " << t_context->get_response()->writer_rate() << " [Mb/sec]\n";
+    cout << "  record count: " << t_run_context->get_response()->writer_records() << " [#]\n";
+    cout << "  acquisition count: " << t_run_context->get_response()->writer_acquisitions() << " [#]\n";
+    cout << "  live time: " << t_run_context->get_response()->writer_live_time() << " [sec]\n";
+    cout << "  megabytes: " << t_run_context->get_response()->writer_megabytes() << "[Mb]\n";
+    cout << "  rate: " << t_run_context->get_response()->writer_rate() << " [Mb/sec]\n";
 
-    delete t_context;
+    delete t_run_context;
     delete t_client;
 
     return 0;

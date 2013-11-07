@@ -85,7 +85,7 @@ set( MANTIS_CLIENT_SOURCEFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_client.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_connection.cc
     
-    ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_context.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_run_context.cc
 
     ${Mantis_PB_Request_Source}
     ${Mantis_PB_Status_Source}

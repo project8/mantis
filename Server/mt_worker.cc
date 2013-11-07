@@ -24,7 +24,7 @@ namespace mantis
 
     void worker::execute()
     {
-        context* t_context;
+        run_context* t_run_context;
 
         while( true )
         {
@@ -35,14 +35,14 @@ namespace mantis
 
             cout << "[worker] sending status <started>..." << endl;
 
-            t_context = f_queue->from_front();
-            t_context->get_status()->set_state( status_state_t_started );
-            t_context->push_status();
+            t_run_context = f_queue->from_front();
+            t_run_context->get_status()->set_state( status_state_t_started );
+            t_run_context->push_status();
 
             cout << "[worker] initializing..." << endl;
 
-            f_digitizer->initialize( t_context->get_request() );
-            f_writer->initialize( t_context->get_request() );
+            f_digitizer->initialize( t_run_context->get_request() );
+            f_writer->initialize( t_run_context->get_request() );
 
             cout << "[worker] running..." << endl;
 
@@ -58,9 +58,9 @@ namespace mantis
 
             t_writer_thread->start();
 
-            t_context->get_status()->set_state( status_state_t_running );
-            f_queue->to_front( t_context );
-            t_context = NULL;
+            t_run_context->get_status()->set_state( status_state_t_running );
+            f_queue->to_front( t_run_context );
+            t_run_context = NULL;
 
             t_digitizer_thread->join();
             t_writer_thread->join();
@@ -70,18 +70,18 @@ namespace mantis
 
             cout << "[worker] sending status <stopped>..." << endl;
 
-            t_context = f_queue->from_front();
-            t_context->get_status()->set_state( status_state_t_stopped );
-            t_context->push_status();
+            t_run_context = f_queue->from_front();
+            t_run_context->get_status()->set_state( status_state_t_stopped );
+            t_run_context->push_status();
 
             cout << "[worker] finalizing..." << endl;
 
-            f_digitizer->finalize( t_context->get_response() );
-            f_writer->finalize( t_context->get_response() );
-            t_context->push_response();
+            f_digitizer->finalize( t_run_context->get_response() );
+            f_writer->finalize( t_run_context->get_response() );
+            t_run_context->push_response();
 
-            delete t_context->get_connection();
-            delete t_context;
+            delete t_run_context->get_connection();
+            delete t_run_context;
         }
 
         return;

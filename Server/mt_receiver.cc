@@ -4,6 +4,7 @@
 
 #include <iostream>
 using std::cout;
+using std::cerr;
 using std::endl;
 
 namespace mantis
@@ -22,26 +23,31 @@ namespace mantis
 
     void receiver::execute()
     {
-        context* t_context;
+        run_context* t_run_context;
 
         while( true )
         {
-            t_context = new context();
-            t_context->set_connection( f_server->get_connection() );
+            t_run_context = new run_context();
+            t_run_context->set_connection( f_server->get_connection() );
 
             cout << "[receiver] receiving request..." << endl;
 
-            t_context->pull_request();
+            if( ! t_run_context->pull_request() )
+            {
+                cerr << "[receiver] unable to pull run request" << endl;
+                delete t_run_context;
+                continue;
+            }
 
             cout << "[receiver] sending status <acknowledged>..." << endl;
 
-            t_context->get_status()->set_state( status_state_t_acknowledged );
-            t_context->push_status();
+            t_run_context->get_status()->set_state( status_state_t_acknowledged );
+            t_run_context->push_status();
 
             cout << "[receiver] queuing request..." << endl;
 
-            t_context->get_status()->set_state( status_state_t_waiting );
-            f_queue->to_back( t_context );
+            t_run_context->get_status()->set_state( status_state_t_waiting );
+            f_queue->to_back( t_run_context );
 
             if( f_condition->is_waiting() == true )
             {

@@ -40,7 +40,7 @@ int main( int argc, char** argv )
     cout << "[mantis_standalone] making request..." << endl;
 
     t_request.set_file( t_parser.get_required< string >( "file" ) );
-    t_request.set_description( t_parser.get_optional< string >( "description", "testing standalone mantis" ) );
+    t_request.set_description( t_parser.get_optional< string >( "description", "default mantis standalone run" ) );
     t_request.set_date( get_absolute_time_string() );
     t_request.set_mode( (request_mode_t) (t_parser.get_required< unsigned int >( "mode" )) );
     t_request.set_rate( t_parser.get_required< double >( "rate" ) );
