@@ -17,15 +17,12 @@ namespace mantis
     {
         // default client configuration
         rapidjson::Value port( 98342 );
-        rapidjson::Value host;
-        host.SetString( "localhost", 9 );
         rapidjson::Value digitizer;
         digitizer.SetString( "px1500", 6 );
         rapidjson::Value buffer_size( 512 );
         rapidjson::Value record_size( 4194304 );
 
         AddMember( "port", port, GetAllocator() );
-        AddMember( "host", host, GetAllocator() );
         AddMember( "digitizer", digitizer, GetAllocator() );
         AddMember( "buffer-size", buffer_size, GetAllocator() );
         AddMember( "record-size", record_size, GetAllocator() );

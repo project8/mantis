@@ -19,17 +19,18 @@ namespace mantis
     {
         // default client configuration
         rapidjson::Value port( 98342 );
+        rapidjson::Value host;
+        host.SetString( "localhost", 9 );
         rapidjson::Value filename;
         filename.SetString( "mantis_client_out.egg", 21 );
         rapidjson::Value rate( 250.0 );
         rapidjson::Value duration( 1000 );
 
         AddMember( "port", port, GetAllocator() );
+        AddMember( "host", host, GetAllocator() );
         AddMember( "file", filename, GetAllocator() );
         AddMember( "rate", rate, GetAllocator() );
         AddMember( "duration", duration, GetAllocator() );
-
-        std::cout << "(client config constructor) port: " << (*this)["port"].GetInt() << std::endl;
     }
 
     client_config::~client_config()
