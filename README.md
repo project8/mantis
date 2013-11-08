@@ -37,6 +37,44 @@ build directory.
 
 Instructions for Use
 --------------------
+### Configuration
+Executables are configured in four stages, with each stage able to overwrite 
+settings from the previous stages:
+1. Default configuration (hard-coded)
+2. Configuration file (json format)
+3. json given on the command line (NOTE: does not currently work)
+4. Individual command-line options
+
+#### Configuration files
+The configuration file is specified on the command line with config=[filename]
+
+Examples:
+- Server
+```
+{
+    "port": 4587
+}
+```
+
+- Client
+```
+{
+    "port": 4587,
+    "host": "localhost",
+    "file": "some-file.egg",
+    "rate": "500",
+    "duration": "100"
+}
+``` 
+#### Command-line options
+You can use individual command-line options to overwrite specific configuration
+values.  The format for options is: [name]/[type]=[value]
+For example:
+- port/i=12345
+- file/s="a-different-filename.egg"
+
+The types are bool (b), integer (i), unsigned integer (u), double (d), and string (s).
+
 ### Server
 This program is intended to be run in the background on the server machine.  
 It just sits and waits for client programs to submit run request objects.  
@@ -50,7 +88,7 @@ object with live-time and dead time statistics is sent to the client.
 Usage is:
 
 ```
-$> mantis_px1500_server port=<some port number>
+$> mantis_px1500_server config=server-config.json
 ```
 
 ### Client
@@ -60,7 +98,7 @@ of status objects.  After a received status object indicates the run is complete
 the client program spits out the run summary. Usage is:
 
 ```
-$> mantis_client host=<some host name> port=<some port number> file=<some file name> description=<describe your run> mode=<one or two channel> rate=<sampling rate> duration=<sampling duration>
+$> mantis_client config=client-config.json file/s=new-filename.egg description/s="this is an awesome run"
 ```
 
 ### Standalone
@@ -68,7 +106,7 @@ There's also a program that you can run on the server machine by itself, almost 
 previous versions of Mantis.  Usage is:
 
 ```
-$> mantis_px1500_standalone file=<filename> description=<description> mode=<1 or 2> rate=<sampling rate> duration=<sampling duration>
+$> mantis_px1500_standalone config=standalone-config.json
 ```
 
 Potential Issues
@@ -78,6 +116,4 @@ Potential Issues
 * Once running, the server port is wide open and therefore totally vulnerable
 * Killing the server is done with a harsh ctrl-C which we ought to do more gracefully
 * Starting the server has to be done manually; might it fit better to start on boot?
-* Port numbers have to be given in manually every time, and if they don't match up, exceptions are thrown; should we pick a port for this and stick with it?
-* The description strings are required to be given on the command line; should we pick some kind of default?
 * There's no way to even optionally tell a run from the command line whether it's signal, background or some other type
