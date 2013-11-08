@@ -90,7 +90,7 @@ namespace mantis
 
         cout << "[digitizer] resetting counters..." << endl;
 
-        f_record_last = (record_id_type) (ceil( (double) (a_request->rate() * a_request->duration() * 1.e3) / (double) (PX1500_BUFFER_SIZE) ));
+        f_record_last = (record_id_type) (ceil( (double) (a_request->rate() * a_request->duration() * 1.e3) / (double) (f_buffer->record_size()) ));
         f_record_count = 0;
         f_acquisition_count = 0;
         f_live_time = 0;
@@ -278,7 +278,7 @@ namespace mantis
         get_time_monotonic( &a_stamp_time );
         a_block->set_timestamp( time_to_nsec( a_stamp_time ) );
 
-        int t_result = GetPciAcquisitionDataFastPX4( f_handle, PX1500_BUFFER_SIZE, a_block->data(), 0 );
+        int t_result = GetPciAcquisitionDataFastPX4( f_handle, f_buffer->record_size(), a_block->data(), 0 );
         if( t_result != SIG_SUCCESS )
         {
             DumpLibErrorPX4( t_result, "failed to acquire dma data over pci: " );
