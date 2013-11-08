@@ -46,13 +46,13 @@ namespace mantis
         iterator t_it( f_buffer );
         for( unsigned int index = 0; index < f_buffer->size(); index++ )
         {
-            t_result = AllocateDmaBufferPX4( f_handle, PX1500_BUFFER_SIZE, t_it->handle() );
+            t_result = AllocateDmaBufferPX4( f_handle, f_buffer->record_size(), t_it->handle() );
             if( t_result != SIG_SUCCESS )
             {
                 DumpLibErrorPX4( t_result, "failed to allocate dma memory: " );
                 exit( -1 );
             }
-            t_it->set_data_size( PX1500_BUFFER_SIZE );
+            t_it->set_data_size( f_buffer->record_size() );
             ++t_it;
         }
     }

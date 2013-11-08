@@ -52,7 +52,7 @@ int main( int argc, char** argv )
     cout << "[mantis_standalone] making condition and buffer..." << endl;
 
     condition* t_condition = new condition();
-    buffer* t_buffer = new buffer( t_config.get_uint_required( "buffer-size" ) );
+    buffer* t_buffer = new buffer( t_config.get_uint_required( "buffer-size" ), t_config.get_uint_required( "record-size" ) );
 
     cout << "[mantis_standalone] making digitizer..." << endl;
 

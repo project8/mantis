@@ -10,10 +10,6 @@
 #include "px1500.h"
 #include "thorax.hh"
 
-#ifndef PX1500_BUFFER_SIZE
-#define PX1500_BUFFER_SIZE 4194304
-#endif
-
 namespace mantis
 {
 
