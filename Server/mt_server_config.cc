@@ -32,8 +32,7 @@ namespace mantis
     {
     }
 
-    standalone_config::standalone_config() :
-            rapidjson::Document()
+    standalone_config::standalone_config()
     {
         // default client configuration
         rapidjson::Value filename;
