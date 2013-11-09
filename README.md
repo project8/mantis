@@ -70,7 +70,7 @@ Examples:
 You can use individual command-line options to overwrite specific configuration
 values.  The format for options is: [name]/[type]=[value]
 For example:
-- port/i=12345
+- port/u=12345
 - file/s="a-different-filename.egg"
 
 The types are bool (b), integer (i), unsigned integer (u), double (d), and string (s).

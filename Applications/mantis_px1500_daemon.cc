@@ -40,31 +40,34 @@ using namespace mantis;
 
 int main( int argc, char** argv )
 {
-    /* Our process ID and Session ID */
+    std::cout << "I'm not ready for use yet, sorry!" << std::endl;
+    exit(0);
+    /*
+    // Our process ID and Session ID
     pid_t pid, sid;
 
-    /* Fork off the parent process */
+    //Fork off the parent process
     pid = fork();
     if( pid < 0 )
     {
         std::cerr << "Fork failed" << std::endl;
         exit( EXIT_FAILURE );
     }
-    /* If we got a good PID, then
-               we can exit the parent process. */
+    // If we got a good PID, then
+    //         we can exit the parent process.
     if( pid > 0 )
     {
         std::cout << "pid of the child process is " << pid << std::endl;
         exit( EXIT_SUCCESS );
     }
 
-    /* Change the file mode mask */
+    // Change the file mode mask
     umask( 0 );
 
-    /* Open log */
+    // Open log
     openlog( "mt_log", LOG_PID | LOG_CONS, LOG_DAEMON );
 
-    /* Create a new SID for the child process */
+    // Create a new SID for the child process
     sid = setsid();
     if( sid < 0 )
     {
@@ -73,7 +76,7 @@ int main( int argc, char** argv )
         exit( EXIT_FAILURE );
     }
 
-    /* Change the current working directory */
+    // Change the current working directory
     if( ( chdir("/") ) < 0 )
     {
         syslog( LOG_ERR, "[mantis_daemon] unable to change the working directory\n");
@@ -81,12 +84,12 @@ int main( int argc, char** argv )
         exit( EXIT_FAILURE );
     }
 
-    /* Close out the standard file descriptors */
+    // Close out the standard file descriptors
     close( STDIN_FILENO );
     close( STDOUT_FILENO );
     close( STDERR_FILENO );
 
-    /* Server initialization */
+    // Server initialization
 
     parser t_parser( argc, argv );
 
@@ -125,5 +128,6 @@ int main( int argc, char** argv )
     syslog( LOG_INFO, "[mantis_daemon] shutting down\n");
 
     exit(EXIT_SUCCESS);
+    */
 }
 

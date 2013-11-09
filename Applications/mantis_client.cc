@@ -51,7 +51,7 @@ int main( int argc, char** argv )
     t_run_context->get_request()->set_rate( t_config.get_double_required( "rate" ) );
     t_run_context->get_request()->set_duration( t_config.get_double_required( "duration" ) );
 
-    client* t_client = new client( t_config.get_string_required( "host" ), t_config.get_int_required( "port" ) );
+    client* t_client = new client( t_config.get_string_required( "host" ), t_config.get_uint_required( "port" ) );
     t_run_context->set_connection( t_client );
 
     cout << "[mantis_client] sending request..." << endl;

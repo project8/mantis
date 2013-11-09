@@ -39,7 +39,7 @@ int main( int argc, char** argv )
 
     cout << "[mantis_server] creating objects..." << endl;
 
-    server t_server( t_config.get_string_required( "port" ) );
+    server t_server( t_config.get_uint_required( "port" ) );
 
     condition t_buffer_condition;
     buffer t_buffer( t_config.get_uint_required( "buffer-size" ), t_config.get_uint_required( "record-size" ) );
