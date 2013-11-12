@@ -8,7 +8,7 @@ namespace mantis
 
     class block
     {
-        private:
+        public:
             typedef enum
             {
                 e_acquiring = 0, e_acquired = 1, e_writing = 2, e_written = 3
