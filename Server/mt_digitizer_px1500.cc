@@ -1,5 +1,6 @@
 #include "mt_digitizer_px1500.hh"
 
+#include "mt_factory.hh"
 #include "mt_iterator.hh"
 
 #include <cstdlib> // for exit()
@@ -10,6 +11,7 @@ using std::endl;
 
 namespace mantis
 {
+    static registrar< digitizer, digitizer_px1500 > s_px1500_registrar("px1500");
 
     digitizer_px1500::digitizer_px1500( buffer* a_buffer, condition* a_condition ) :
             f_buffer( a_buffer ),
