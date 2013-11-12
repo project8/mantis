@@ -133,6 +133,10 @@ pbuilder_install_executables( mantis_client )
 if( Mantis_BUILD_SERVER )
 
     set( MANTIS_SERVER_HEADERFILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_destroyer.hh
+        ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_singleton.hh
+        ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_factory.hh
+
         ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_server_config.hh
         
         ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_mutex.hh
