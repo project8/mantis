@@ -1,11 +1,10 @@
-#include "mt_run_context.hh"
+#include "mt_request_dist.hh"
 
 #include "mt_exception.hh"
 
 #include <iostream>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cstdio>
+#include <cstdlib>
 
 using std::cerr;
 using std::cout;
@@ -16,30 +15,17 @@ using std::endl;
 namespace mantis
 {
 
-    run_context::run_context() :
-                    f_connection(),
+    request_dist::request_dist() :
                     f_request(),
                     f_status(),
-                    f_response(),
-                    f_buffer_size(0),
-                    f_buffer(NULL)
+                    f_response()
     {
     }
-    run_context::~run_context()
+    request_dist::~request_dist()
     {
     }
 
-    void run_context::set_connection( connection* a_connection )
-    {
-        f_connection = a_connection;
-        return;
-    }
-    connection* run_context::get_connection()
-    {
-        return f_connection;
-    }
-
-    bool run_context::push_request()
+    bool request_dist::push_request()
     {
         size_t t_request_size = reset_buffer( f_request.ByteSize() );
         cout << "request size to write: " << t_request_size << endl;
@@ -57,7 +43,7 @@ namespace mantis
         }
         return true;
     }
-    bool run_context::pull_request()
+    bool request_dist::pull_request()
     {
         size_t t_request_size = f_buffer_size;
         try
@@ -77,12 +63,12 @@ namespace mantis
         }
         return f_request.ParseFromArray( f_buffer, t_request_size );
     }
-    request* run_context::get_request()
+    request* request_dist::get_request()
     {
         return &f_request;
     }
 
-    bool run_context::push_status()
+    bool request_dist::push_status()
     {
         size_t t_status_size = reset_buffer( f_status.ByteSize() );
         if( ! f_status.SerializeToArray( f_buffer, t_status_size ) )
@@ -99,7 +85,7 @@ namespace mantis
         }
         return true;
     }
-    bool run_context::pull_status()
+    bool request_dist::pull_status()
     {
         size_t t_status_size = f_buffer_size;
         try
@@ -116,12 +102,12 @@ namespace mantis
         }
         return f_status.ParseFromArray( f_buffer, t_status_size );
     }
-    status* run_context::get_status()
+    status* request_dist::get_status()
     {
         return &f_status;
     }
 
-    bool run_context::push_response()
+    bool request_dist::push_response()
     {
         size_t t_response_size = reset_buffer( f_response.ByteSize() );
         if( ! f_response.SerializeToArray( f_buffer, t_response_size ) )
@@ -138,7 +124,7 @@ namespace mantis
         }
         return true;
     }
-    bool run_context::pull_response()
+    bool request_dist::pull_response()
     {
         size_t t_response_size = f_buffer_size;
         try
@@ -155,22 +141,9 @@ namespace mantis
         }
         return f_response.ParseFromArray( f_buffer, t_response_size );
     }
-    response* run_context::get_response()
+    response* request_dist::get_response()
     {
         return &f_response;
-    }
-
-    size_t run_context::reset_buffer( size_t a_size )
-    {
-        if( a_size > f_buffer_size )
-        {
-            delete [] f_buffer;
-            f_buffer_size = a_size;
-            f_buffer = new char[ f_buffer_size ];
-        }
-        ::memset( f_buffer, 0, f_buffer_size );
-        // return the requested size
-        return a_size;
     }
 
 }
