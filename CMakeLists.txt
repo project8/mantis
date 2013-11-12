@@ -129,6 +129,10 @@ add_executable( mantis_client ${CMAKE_CURRENT_SOURCE_DIR}/Applications/mantis_cl
 target_link_libraries( mantis_client MantisClient ${EXTERNAL_LIBRARIES} )
 pbuilder_install_executables( mantis_client )
 
+add_executable( mantis_new_client ${CMAKE_CURRENT_SOURCE_DIR}/Applications/mantis_new_client.cc )
+target_link_libraries( mantis_new_client MantisClient ${EXTERNAL_LIBRARIES} )
+pbuilder_install_executables( mantis_new_client )
+
 
 #################
 # mantis server #
