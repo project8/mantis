@@ -8,6 +8,7 @@
 
 namespace mantis
 {
+    class block;
 
     class digitizer_px1500 :
         public digitizer
@@ -24,6 +25,9 @@ namespace mantis
         private:
             HPX4 f_handle;
             bool f_allocated;
+
+            buffer* f_buffer;
+            condition* f_condition;
 
             record_id_type f_record_last;
             record_id_type f_record_count;

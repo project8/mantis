@@ -99,7 +99,7 @@ namespace mantis
     }
 
     template< class XBaseType >
-    void factory< XBaseType >::register_class(const std::string& a_class_name, const base_registrar< XBaseType >* base_registrar)
+    void factory< XBaseType >::register_class(const std::string& a_class_name, const base_registrar< XBaseType >* a_registrar)
     {
         FactoryCIt it = fMap->find(a_class_name);
         if (it != fMap->end())
@@ -107,7 +107,7 @@ namespace mantis
             std::cerr << "Already have factory register_classed for <" << a_class_name << ">." << std::endl;
             return;
         }
-        fMap->insert(std::pair< std::string, const base_registrar< XBaseType >* >(a_class_name, base_registrar));
+        fMap->insert(std::pair< std::string, const base_registrar< XBaseType >* >(a_class_name, a_registrar));
         std::cout << "register_classed a factory for class " << a_class_name << ", factory #" << fMap->size()-1 << std::endl;
     }
 
@@ -151,7 +151,7 @@ namespace mantis
     template< class XBaseType, class XDerivedType >
     void registrar< XBaseType, XDerivedType >::register_class(const std::string& a_class_name) const
     {
-        factory< XBaseType >::GetInstance()->register_class(a_class_name, this);
+        factory< XBaseType >::get_instance()->register_class(a_class_name, this);
         return;
     }
 

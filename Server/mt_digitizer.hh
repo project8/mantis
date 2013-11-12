@@ -3,6 +3,8 @@
 
 #include "mt_callable.hh"
 
+#include <cstddef>
+
 namespace mantis
 {
     class buffer;
@@ -17,13 +19,9 @@ namespace mantis
             digitizer();
             virtual ~digitizer();
 
-            virtual void allocate( buffer* a_buffer, condition* a_condition );
+            virtual void allocate( buffer* a_buffer, condition* a_condition ) = 0;
             virtual void initialize( request* a_request ) = 0;
             virtual void finalize( response* a_response ) = 0;
-
-        private:
-            buffer* f_buffer;
-            condition* f_condition;
 
     };
 

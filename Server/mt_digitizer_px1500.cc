@@ -31,6 +31,9 @@ namespace mantis
 
     void digitizer_px1500::allocate( buffer* a_buffer, condition* a_condition )
     {
+        f_buffer = a_buffer;
+        f_condition = a_condition;
+
         int t_result;
 
         cout << "[digitzer] connecting to digitizer card..." << endl;
