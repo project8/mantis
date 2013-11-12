@@ -14,6 +14,7 @@
  */
 
 #include "mt_exception.hh"
+#include "mt_factory.hh"
 #include "mt_configurator.hh"
 #include "mt_server_config.hh"
 #include "mt_server.hh"
@@ -44,14 +45,17 @@ int main( int argc, char** argv )
     condition t_buffer_condition;
     buffer t_buffer( t_config.get_uint_required( "buffer-size" ), t_config.get_uint_required( "record-size" ) );
 
-    digitizer_px1500 t_digitizer( &t_buffer, &t_buffer_condition );
+    factory< digitizer >* t_dig_factory = factory< digitizer >::get_instance();
+    digitizer* t_digitizer = t_dig_factory->create( t_config.get_string_required( "digitizer" ) );
+    t_digitizer->allocate( &t_buffer, &t_buffer_condition );
+
     writer t_writer( &t_buffer, &t_buffer_condition );
 
     condition t_queue_condition;
     run_queue t_run_queue;
 
     receiver t_receiver( &t_server, &t_run_queue, &t_queue_condition );
-    worker t_worker( &t_digitizer, &t_writer, &t_run_queue, &t_queue_condition, &t_buffer_condition );
+    worker t_worker( t_digitizer, &t_writer, &t_run_queue, &t_queue_condition, &t_buffer_condition );
 
     cout << "[mantis_server] starting threads..." << endl;
 
