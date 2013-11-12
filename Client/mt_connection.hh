@@ -14,8 +14,10 @@ namespace mantis
             connection( int a_socket, sockaddr_in* an_address );
             virtual ~connection();
 
-            ssize_t write( const char* a_message, size_t a_size );
-            ssize_t read( char* a_message, size_t a_size );
+            ssize_t send( const char* a_message, size_t a_size );
+            ssize_t recv( char* a_message, size_t a_size );
+
+            size_t recv_size();
 
         protected:
             int f_socket;
