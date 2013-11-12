@@ -33,8 +33,7 @@ namespace mantis
             return false;
         try
         {
-            f_connection->write( (char*)&t_request_size, sizeof( size_t ) );
-            f_connection->write( f_buffer, t_request_size );
+            f_connection->send( f_buffer, t_request_size );
         }
         catch( exception& e )
         {
@@ -48,9 +47,10 @@ namespace mantis
         size_t t_request_size = f_buffer_size;
         try
         {
-            f_connection->read( (char*)&t_request_size, sizeof( size_t ) );
+            t_request_size = f_connection->recv_size();
+            if( t_request_size == 0 ) return false;
             reset_buffer( t_request_size );
-            if( f_connection->read( f_buffer, t_request_size ) == 0 )
+            if( f_connection->recv( f_buffer, t_request_size ) == 0 )
             {
                 cout << "connection read length was 0" << endl;
                 return false;
@@ -75,8 +75,7 @@ namespace mantis
             return false;
         try
         {
-            f_connection->write( (char*)&t_status_size, sizeof( size_t ) );
-            f_connection->write( f_buffer, t_status_size );
+            f_connection->send( f_buffer, t_status_size );
         }
         catch( exception& e )
         {
@@ -90,9 +89,10 @@ namespace mantis
         size_t t_status_size = f_buffer_size;
         try
         {
-            f_connection->read( (char*)&t_status_size, sizeof( size_t ) );
+            t_status_size = f_connection->recv_size();
+            if( t_status_size == 0 ) return false;
             reset_buffer( t_status_size );
-            if( f_connection->read( f_buffer, t_status_size ) == 0 )
+            if( f_connection->recv( f_buffer, t_status_size ) == 0 )
                 return false;
         }
         catch( exception& e )
@@ -114,8 +114,7 @@ namespace mantis
             return false;
         try
         {
-            f_connection->write( (char*)&t_response_size, sizeof( size_t ) );
-            f_connection->write( f_buffer, t_response_size );
+            f_connection->send( f_buffer, t_response_size );
         }
         catch( exception& e )
         {
@@ -129,9 +128,10 @@ namespace mantis
         size_t t_response_size = f_buffer_size;
         try
         {
-            f_connection->read( (char*)&t_response_size, sizeof( size_t ) );
+            t_response_size = f_connection->recv_size();
+            if( t_response_size == 0 ) return false;
             reset_buffer( t_response_size );
-            if( f_connection->read( f_buffer, t_response_size ) == 0 )
+            if( f_connection->recv( f_buffer, t_response_size ) == 0 )
                 return false;
         }
         catch( exception& e )
