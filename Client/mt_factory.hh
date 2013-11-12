@@ -1,7 +1,7 @@
 /*
  * mt_factory.hh
  *
- *  Created on: Jul 31, 2012
+ *  created on: Jul 31, 2012
  *      Author: nsoblath
  */
 
@@ -15,7 +15,7 @@
 #include <string>
 #include <utility>
 
-namespace Katydid
+namespace mantis
 {
     template< class XBaseType >
     class factory;
@@ -31,7 +31,7 @@ namespace Katydid
             friend class factory< XBaseType >;
 
         protected:
-            virtual XBaseType* Create() const = 0;
+            virtual XBaseType* create() const = 0;
 
     };
 
@@ -39,13 +39,13 @@ namespace Katydid
     class registrar : public base_registrar< XBaseType >
     {
         public:
-            registrar(const std::string& className);
+            registrar(const std::string& a_class_name);
             virtual ~registrar();
 
         protected:
-            void Register(const std::string& className) const;
+            void register_class(const std::string& a_class_name) const;
 
-            XBaseType* Create() const;
+            XBaseType* create() const;
 
     };
 
@@ -60,10 +60,10 @@ namespace Katydid
             typedef typename FactoryMap::const_iterator FactoryCIt;
 
         public:
-            XBaseType* Create(const std::string& className);
-            XBaseType* Create(const FactoryCIt& iter);
+            XBaseType* create(const std::string& a_class_name);
+            XBaseType* create(const FactoryCIt& iter);
 
-            void Register(const std::string& className, const base_registrar< XBaseType >* base_registrar);
+            void register_class(const std::string& a_class_name, const base_registrar< XBaseType >* base_registrar);
 
             FactoryCIt GetFactoryMapBegin() const;
             FactoryCIt GetFactoryMapEnd() const;
@@ -80,35 +80,35 @@ namespace Katydid
     };
 
     template< class XBaseType >
-    XBaseType* factory< XBaseType >::Create(const FactoryCIt& iter)
+    XBaseType* factory< XBaseType >::create(const FactoryCIt& iter)
     {
-        return iter->second->Create();
+        return iter->second->create();
     }
 
     template< class XBaseType >
-    XBaseType* factory< XBaseType >::Create(const std::string& className)
+    XBaseType* factory< XBaseType >::create(const std::string& a_class_name)
     {
-        FactoryCIt it = fMap->find(className);
+        FactoryCIt it = fMap->find(a_class_name);
         if (it == fMap->end())
         {
-            std::cerr << "Did not find factory for <" << className << ">." << std::endl;
+            std::cerr << "Did not find factory for <" << a_class_name << ">." << std::endl;
             return NULL;
         }
 
-        return it->second->Create();
+        return it->second->create();
     }
 
     template< class XBaseType >
-    void factory< XBaseType >::Register(const std::string& className, const base_registrar< XBaseType >* base_registrar)
+    void factory< XBaseType >::register_class(const std::string& a_class_name, const base_registrar< XBaseType >* base_registrar)
     {
-        FactoryCIt it = fMap->find(className);
+        FactoryCIt it = fMap->find(a_class_name);
         if (it != fMap->end())
         {
-            std::cerr << "Already have factory registered for <" << className << ">." << std::endl;
+            std::cerr << "Already have factory register_classed for <" << a_class_name << ">." << std::endl;
             return;
         }
-        fMap->insert(std::pair< std::string, const base_registrar< XBaseType >* >(className, base_registrar));
-        std::cout << "Registered a factory for class " << className << ", factory #" << fMap->size()-1 << std::endl;
+        fMap->insert(std::pair< std::string, const base_registrar< XBaseType >* >(a_class_name, base_registrar));
+        std::cout << "register_classed a factory for class " << a_class_name << ", factory #" << fMap->size()-1 << std::endl;
     }
 
     template< class XBaseType >
@@ -138,10 +138,10 @@ namespace Katydid
 
 
     template< class XBaseType, class XDerivedType >
-    registrar< XBaseType, XDerivedType >::registrar(const std::string& className) :
+    registrar< XBaseType, XDerivedType >::registrar(const std::string& a_class_name) :
             base_registrar< XBaseType >()
     {
-        Register(className);
+        register_class(a_class_name);
     }
 
     template< class XBaseType, class XDerivedType >
@@ -149,14 +149,14 @@ namespace Katydid
     {}
 
     template< class XBaseType, class XDerivedType >
-    void registrar< XBaseType, XDerivedType >::Register(const std::string& className) const
+    void registrar< XBaseType, XDerivedType >::register_class(const std::string& a_class_name) const
     {
-        factory< XBaseType >::GetInstance()->Register(className, this);
+        factory< XBaseType >::GetInstance()->register_class(a_class_name, this);
         return;
     }
 
     template< class XBaseType, class XDerivedType >
-    XBaseType* registrar< XBaseType, XDerivedType >::Create() const
+    XBaseType* registrar< XBaseType, XDerivedType >::create() const
     {
         return dynamic_cast< XBaseType* >(new XDerivedType());
     }
