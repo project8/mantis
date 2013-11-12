@@ -3,10 +3,6 @@
 
 #include "mt_digitizer.hh"
 
-#include "mt_buffer.hh"
-#include "mt_condition.hh"
-#include "request.pb.h"
-#include "response.pb.h"
 #include "px1500.h"
 #include "thorax.hh"
 
@@ -17,17 +13,17 @@ namespace mantis
         public digitizer
     {
         public:
-            digitizer_px1500( buffer* a_buffer, condition* a_condition );
+            digitizer_px1500();
             virtual ~digitizer_px1500();
 
+            void allocate( buffer* a_buffer, condition* a_condition );
             void initialize( request* a_request );
             void execute();
             void finalize( response* a_response );
 
         private:
-            buffer* f_buffer;
-            condition* f_condition;
             HPX4 f_handle;
+            bool f_allocated;
 
             record_id_type f_record_last;
             record_id_type f_record_count;

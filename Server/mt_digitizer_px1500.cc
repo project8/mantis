@@ -1,7 +1,12 @@
 #include "mt_digitizer_px1500.hh"
 
+#include "mt_buffer.hh"
+#include "mt_condition.hh"
 #include "mt_factory.hh"
 #include "mt_iterator.hh"
+
+#include "request.pb.h"
+#include "response.pb.h"
 
 #include <cstdlib> // for exit()
 #include <cmath> // for ceil()
@@ -13,15 +18,18 @@ namespace mantis
 {
     static registrar< digitizer, digitizer_px1500 > s_px1500_registrar("px1500");
 
-    digitizer_px1500::digitizer_px1500( buffer* a_buffer, condition* a_condition ) :
-            f_buffer( a_buffer ),
-            f_condition( a_condition ),
+    digitizer_px1500::digitizer_px1500() :
+            f_allocated( false ),
             f_handle(),
             f_record_last( 0 ),
             f_record_count( 0 ),
             f_acquisition_count( 0 ),
             f_live_time( 0 ),
             f_dead_time( 0 )
+    {
+    }
+
+    void digitizer_px1500::allocate( buffer* a_buffer, condition* a_condition )
     {
         int t_result;
 
@@ -57,32 +65,38 @@ namespace mantis
             t_it->set_data_size( f_buffer->record_size() );
             ++t_it;
         }
+
+        f_allocated = true;
+        return;
     }
     digitizer_px1500::~digitizer_px1500()
     {
-        int t_result;
-
-        cout << "[digitizer] deallocating dma buffer..." << endl;
-
-        iterator t_it( f_buffer );
-        for( size_t Index = 0; Index < f_buffer->size(); Index++ )
+        if( f_allocated )
         {
-            t_result = FreeDmaBufferPX4( f_handle, t_it->data() );
+            int t_result;
+
+            cout << "[digitizer] deallocating dma buffer..." << endl;
+
+            iterator t_it( f_buffer );
+            for( size_t Index = 0; Index < f_buffer->size(); Index++ )
+            {
+                t_result = FreeDmaBufferPX4( f_handle, t_it->data() );
+                if( t_result != SIG_SUCCESS )
+                {
+                    DumpLibErrorPX4( t_result, "failed to deallocate dma memory: " );
+                    exit( -1 );
+                }
+                ++t_it;
+            }
+
+            cout << "[digitizer] disconnecting from digitizer card..." << endl;
+
+            t_result = DisconnectFromDevicePX4( f_handle );
             if( t_result != SIG_SUCCESS )
             {
-                DumpLibErrorPX4( t_result, "failed to deallocate dma memory: " );
+                DumpLibErrorPX4( t_result, "failed to disconnect from digitizer card: " );
                 exit( -1 );
             }
-            ++t_it;
-        }
-
-        cout << "[digitizer] disconnecting from digitizer card..." << endl;
-
-        t_result = DisconnectFromDevicePX4( f_handle );
-        if( t_result != SIG_SUCCESS )
-        {
-            DumpLibErrorPX4( t_result, "failed to disconnect from digitizer card: " );
-            exit( -1 );
         }
     }
 

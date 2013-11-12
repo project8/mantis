@@ -3,7 +3,9 @@
 namespace mantis
 {
 
-    digitizer::digitizer()
+    digitizer::digitizer() :
+            f_buffer( NULL ),
+            f_condition( NULL )
     {
     }
 
