@@ -81,8 +81,10 @@ set( MANTIS_CLIENT_HEADERFILES
     
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_client.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_connection.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_server.hh
     
-    ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_run_context.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_distribution.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_request_dist.hh
 
     ${Mantis_PB_Request_Header}
     ${Mantis_PB_Status_Header}
@@ -99,8 +101,10 @@ set( MANTIS_CLIENT_SOURCEFILES
 
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_client.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_connection.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_server.cc
     
-    ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_run_context.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_distribution.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_request_dist.cc
 
     ${Mantis_PB_Request_Source}
     ${Mantis_PB_Status_Source}
@@ -139,9 +143,7 @@ if( Mantis_BUILD_SERVER )
         ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_condition.hh
         ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_callable.hh
         ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_thread.hh
-        
-        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_server.hh
-        
+                
         ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_run_queue.hh
     
         ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_block.hh
@@ -160,9 +162,7 @@ if( Mantis_BUILD_SERVER )
         ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_condition.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_callable.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_thread.cc
-        
-        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_server.cc
-        
+                
         ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_run_queue.cc
     
         ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_block.cc
