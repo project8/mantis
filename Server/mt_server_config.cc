@@ -17,14 +17,16 @@ namespace mantis
     {
         // default client configuration
         rapidjson::Value port( 98342 );
+        AddMember( "port", port, GetAllocator() );
+
         rapidjson::Value digitizer;
         digitizer.SetString( "px1500", 6 );
-        rapidjson::Value buffer_size( 512 );
-        rapidjson::Value record_size( 4194304 );
-
-        AddMember( "port", port, GetAllocator() );
         AddMember( "digitizer", digitizer, GetAllocator() );
+
+        rapidjson::Value buffer_size( 512 );
         AddMember( "buffer-size", buffer_size, GetAllocator() );
+
+        rapidjson::Value record_size( 4194304 );
         AddMember( "record-size", record_size, GetAllocator() );
     }
 
@@ -36,19 +38,26 @@ namespace mantis
     {
         // default client configuration
         rapidjson::Value filename;
-        filename.SetString( "mantis_client_out.egg", 21 );
+        filename.SetString( "mantis_standalone_out.egg", 21 );
+        AddMember( "file", filename, GetAllocator() );
+
         rapidjson::Value rate( 250.0 );
+        AddMember( "rate", rate, GetAllocator() );
+
         rapidjson::Value duration( 1000 );
+        AddMember( "duration", duration, GetAllocator() );
+
+        rapidjson::Value mode( 0 );
+        AddMember( "mode", mode, GetAllocator() );
+
         rapidjson::Value digitizer;
         digitizer.SetString( "px1500", 6 );
-        rapidjson::Value buffer_size( 512 );
-        rapidjson::Value record_size( 4194304 );
-
-        AddMember( "file", filename, GetAllocator() );
-        AddMember( "rate", rate, GetAllocator() );
-        AddMember( "duration", duration, GetAllocator() );
         AddMember( "digitizer", digitizer, GetAllocator() );
+
+        rapidjson::Value buffer_size( 512 );
         AddMember( "buffer-size", buffer_size, GetAllocator() );
+
+        rapidjson::Value record_size( 4194304 );
         AddMember( "record-size", record_size, GetAllocator() );
     }
 
