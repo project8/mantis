@@ -1,3 +1,5 @@
+Mantis
+======
 Mantis is the data-acquisition software for the Project 8 collaboration.
 
 The package is divided into a Server component that communicates and reads data 

@@ -45,7 +45,7 @@ int main( int argc, char** argv )
     t_request.set_file( t_config.get_string_required( "file" ) );
     t_request.set_description( t_config.get_string_optional( "description", "default standalone run" ) );
     t_request.set_date( get_absolute_time_string() );
-    t_request.set_mode( (request_mode_t)t_config.get_uint_required( "mode" ) );
+    t_request.set_mode( (request_mode_t)t_config.get_int_required( "mode" ) );
     t_request.set_rate( t_config.get_double_required( "rate" ) );
     t_request.set_duration( t_config.get_double_required( "duration" ) );
 
