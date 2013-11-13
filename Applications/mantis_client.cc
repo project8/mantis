@@ -108,7 +108,7 @@ int main( int argc, char** argv )
             cout << "[mantis_client] run is in progress...";
             cout.flush();
             cout << "\n";
-            t_sleep_time = 10;
+            t_sleep_time = 1;
             continue;
         }
 
