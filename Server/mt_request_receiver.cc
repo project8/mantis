@@ -1,5 +1,7 @@
 #include "mt_request_receiver.hh"
 
+#include "mt_buffer.hh"
+
 #include <cstddef>
 
 #include <iostream>
@@ -10,10 +12,12 @@ using std::endl;
 namespace mantis
 {
 
-    request_receiver::request_receiver( server* a_server, request_queue* a_request_queue, condition* a_condition ) :
+    request_receiver::request_receiver( server* a_server, request_queue* a_request_queue, condition* a_condition, buffer* a_buffer ) :
             f_server( a_server ),
             f_request_queue( a_request_queue ),
-            f_condition( a_condition )
+            f_condition( a_condition ),
+            f_buffer_size( a_buffer->size() ),
+            f_record_size( a_buffer->record_size() )
     {
     }
 
@@ -35,7 +39,8 @@ namespace mantis
 
             cout << "[request_receiver] receiving request..." << endl;
 
-            if( ! t_request_dist->pull_request() )
+            // use blocking option for pull request
+            if( ! t_request_dist->pull_request( MSG_WAITALL ) )
             {
                 cerr << "[request_receiver] unable to pull run request; sending server status <error>" << endl;
                 t_request_dist->get_status()->set_server_state( status_state_t_error );
@@ -46,6 +51,11 @@ namespace mantis
             else
             {
                 cout << "[request_receiver] sending server status <acknowledged>..." << endl;
+
+                // pass buffer and record sizes back in the request
+                t_request_dist->get_request()->set_buffer_size( f_buffer_size );
+                t_request_dist->get_request()->set_record_size( f_record_size );
+                t_request_dist->push_request();
 
                 t_request_dist->get_status()->set_server_state( status_state_t_acknowledged );
                 t_request_dist->push_status();

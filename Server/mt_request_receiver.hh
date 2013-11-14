@@ -9,12 +9,13 @@
 
 namespace mantis
 {
+    class buffer;
 
     class request_receiver :
         public callable
     {
         public:
-            request_receiver( server* a_server, request_queue* a_request_queue, condition* a_condition );
+            request_receiver( server* a_server, request_queue* a_request_queue, condition* a_condition, buffer* a_buffer );
             virtual ~request_receiver();
 
             void execute();
@@ -23,6 +24,9 @@ namespace mantis
             server* f_server;
             request_queue* f_request_queue;
             condition* f_condition;
+
+            size_t f_buffer_size;
+            size_t f_record_size;
     };
 
 }
