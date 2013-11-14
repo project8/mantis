@@ -19,6 +19,8 @@ namespace mantis
     static registrar< digitizer, digitizer_px1500 > s_px1500_registrar("px1500");
 
     digitizer_px1500::digitizer_px1500() :
+            f_buffer( NULL ),
+            f_condition( NULL ),
             f_allocated( false ),
             f_handle(),
             f_record_last( 0 ),
