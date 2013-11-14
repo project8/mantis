@@ -31,4 +31,10 @@ message request
 	
 	//acquisition duration
 	required double duration = 8;
+	
+	//buffer size
+	required uint32 buffer_size = 9;
+	
+	//record size
+	required uint32 record_size = 10;
 }

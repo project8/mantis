@@ -43,7 +43,7 @@ int main( int argc, char** argv )
     client_config t_cc;
     configurator t_config( argc, argv, &t_cc );
 
-    cout << "[mantis_client] creating objects..." << endl;
+    cout << "[mantis_client] creating request objects..." << endl;
 
     string t_request_host = t_config.get_string_required( "host" );
     int t_request_port = t_config.get_int_required( "port" );
@@ -65,13 +65,44 @@ int main( int argc, char** argv )
     client* t_request_client = new client( t_request_host, t_request_port );
     t_request_dist->set_connection( t_request_client );
 
+    cout << "[mantis_client] sending request..." << endl;
+
+    if( ! t_request_dist->push_request() )
+    {
+        delete t_request_dist;
+        delete t_request_client;
+        throw exception() << "[mantis_client] error sending request";
+    }
+
+    // wait for acknowledgement
+    while( true )
+    {
+        t_request_dist->pull_status();
+        if( t_request_dist->get_status()->server_state() == status_state_t_acknowledged )
+        {
+            cout << "[mantis_client] run request acknowledged...\n" << endl;
+            break;
+        }
+    }
+
+    cout << "[mantis_client] creating run objects..." << endl;
+
+    // get buffer size and record size from the request
+    t_request_dist->pull_request();
+    int t_buffer_size = t_request_dist->get_request()->buffer_size();
+    int t_record_size = t_request_dist->get_request()->record_size();
+
     // objects for receiving and writing data
+    server t_server( t_write_port );
+
     condition t_buffer_condition;
-    buffer t_buffer( t_config.get_int_required( "buffer-size" ), t_config.get_int_required( "record-size" ) );
+    buffer t_buffer( t_buffer_size, t_record_size );
+
+    record_receiver t_receiver( &t_server, &t_buffer, &t_buffer_condition );
 
     file_writer t_writer( &t_buffer, &t_buffer_condition );
 
-    client_worker t_worker( &t_writer, &t_buffer_condition );
+    client_worker t_worker( t_request_dist->get_request(), &t_receiver, &t_writer, &t_buffer_condition );
 
     thread t_worker_thread( &t_worker );
 
@@ -80,15 +111,8 @@ int main( int argc, char** argv )
     try
     {
         t_worker_thread.start();
-
-        cout << "[mantis_client] sending request..." << endl;
-
-        if( ! t_request_dist->push_request() )
-        {
-            delete t_request_dist;
-            delete t_request_client;
-            throw exception() << "[mantis_client] error sending request";
-        }
+        t_request_dist->get_status()->set_client_state( status_state_t_started );
+        t_request_dist->push_status();
 
         cout << "[mantis_client] running..." << endl;
 

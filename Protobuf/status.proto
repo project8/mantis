@@ -6,12 +6,13 @@ message status
 	//state of request
 	enum state_t
 	{
-		acknowledged = 0;
-		waiting = 1;
-		started = 2;
-		running = 3;
-		stopped = 4;
-		error = 5;
+	    not_ready = 0
+		acknowledged = 1;
+		waiting = 2;
+		started = 3;
+		running = 4;
+		stopped = 5;
+		error = 6;
 	}
 	
 	required state_t server_state = 1;

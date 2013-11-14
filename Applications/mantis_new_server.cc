@@ -67,7 +67,7 @@ int main( int argc, char** argv )
     condition t_queue_condition;
     request_queue t_request_queue;
 
-    request_receiver t_receiver( &t_server, &t_request_queue, &t_queue_condition );
+    request_receiver t_receiver( &t_server, &t_request_queue, &t_queue_condition, &t_buffer );
     server_worker t_worker( t_digitizer, &t_writer, &t_request_queue, &t_queue_condition, &t_buffer_condition );
 
     cout << "[mantis_server] starting threads..." << endl;

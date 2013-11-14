@@ -33,6 +33,17 @@ namespace mantis
                 f_queue_condition->wait();
             }
 
+            cout << "[server_worker] beginning work on request" << endl;
+
+            cout << "[server_worker] waiting for client to be ready" << endl;
+            while( t_request_dist->pull_status( MSG_WAITALL ) )
+            {
+                if( t_request_dist->get_status()->client_status() == status_state_t_started )
+                {
+                    break;
+                }
+            }
+
             cout << "[server_worker] sending server status <started>..." << endl;
 
             t_request_dist = f_request_queue->from_front();
