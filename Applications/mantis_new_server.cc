@@ -34,8 +34,8 @@
 #include "mt_condition.hh"
 #include "mt_request_queue.hh"
 #include "mt_buffer.hh"
-#include "mt_receiver.hh"
-#include "mt_worker.hh"
+#include "mt_request_receiver.hh"
+#include "mt_server_worker.hh"
 #include "mt_digitizer.hh"
 #include "mt_network_writer.hh"
 #include "mt_thread.hh"
@@ -67,8 +67,8 @@ int main( int argc, char** argv )
     condition t_queue_condition;
     request_queue t_request_queue;
 
-    receiver t_receiver( &t_server, &t_request_queue, &t_queue_condition );
-    worker t_worker( t_digitizer, &t_writer, &t_request_queue, &t_queue_condition, &t_buffer_condition );
+    request_receiver t_receiver( &t_server, &t_request_queue, &t_queue_condition );
+    server_worker t_worker( t_digitizer, &t_writer, &t_request_queue, &t_queue_condition, &t_buffer_condition );
 
     cout << "[mantis_server] starting threads..." << endl;
 

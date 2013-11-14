@@ -21,7 +21,9 @@
 
 #include "mt_configurator.hh"
 #include "mt_client_config.hh"
+#include "mt_client_worker.hh"
 #include "mt_client.hh"
+#include "mt_file_writer.hh"
 #include "mt_request_dist.hh"
 #include "thorax.hh"
 using namespace mantis;
@@ -63,26 +65,55 @@ int main( int argc, char** argv )
     client* t_request_client = new client( t_request_host, t_request_port );
     t_request_dist->set_connection( t_request_client );
 
+    // objects for receiving and writing data
+    condition t_buffer_condition;
+    buffer t_buffer( t_config.get_int_required( "buffer-size" ), t_config.get_int_required( "record-size" ) );
+
+    file_writer t_writer( &t_buffer, &t_buffer_condition );
+
+    client_worker t_worker( &t_writer, &t_buffer_condition );
+
+    thread t_worker_thread( &t_worker );
+
+    cout << "[mantis_client] starting run" << endl;
+
+    try
+    {
+        t_worker_thread.start();
+
+        cout << "[mantis_client] sending request..." << endl;
+
+        if( ! t_request_dist->push_request() )
+        {
+            delete t_request_dist;
+            delete t_request_client;
+            throw exception() << "[mantis_client] error sending request";
+        }
+
+        cout << "[mantis_client] running..." << endl;
+
+        t_worker_thread.join();
+    }
+    catch( exception& e)
+    {
+        cerr << "exception caught during client running" << e.what() << endl;
+        return -1;
+    }
+
+    delete t_request_dist;
+    delete t_request_client;
+
+
+
+
     // start server waiting for incoming write connection
     server* t_write_server = new server( t_write_port );
 
-    cout << "[mantis_client] sending request..." << endl;
-
-    if( ! t_request_dist->push_request() )
-    {
-        cerr << "[mantis_client] error sending request" << endl;
-        delete t_write_server;
-        delete t_request_dist;
-        delete t_request_client;
-        return -1;
-    }
 
 
     // TODO: check with daq server on run status?
     //       eventually timeout?
 
-    delete t_request_dist;
-    delete t_request_client;
 
     delete t_write_server;
 
