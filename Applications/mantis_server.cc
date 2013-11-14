@@ -1,19 +1,33 @@
 /*
- * mantis_px1500_server.cc
+ * mantis_server.cc
  *
  *      Author: Dan Furse
  *
- *  Server component of the DAQ for the px1500 digitizer.
+ *  Server component of the DAQ for the any of the available digitizers.
+ *  Default configuration options are given in class server_config (see mt_server_config.cc)
+ *
+ *  The server can be configured in three ways, each of which can override previous values:
+ *   1. Default configuration (see class server_config in mt_server_config.cc)
+ *   2. Configuration file supplied by the user (json-formatted)
+ *   3. Command line options
+ *
+ *  The server requires the following configuration values:
+ *   - port (integer; must match the port used by the client)
+ *   - buffer-size (integer; number of record blocks in the DMA buffer)
+ *   - record-size (integer; number of samples in a record)
  *
  *  Usage:
- *  $> mantis_px1500_server port=<some port number>
+ *  $> mantis_server config=config_file.json [further configuration]
  *
  *  Arguments:
- *  - port (integer; required): port number to be opened by the server
- *
+ *  - config (string; optional): json-formatted configuration file
+ *  - further configuration: override or add new values
+ *    format: name/type=value
+ *    e.g.:   port/i=8235
  */
 
 #include "mt_exception.hh"
+#include "mt_factory.hh"
 #include "mt_configurator.hh"
 #include "mt_server_config.hh"
 #include "mt_server.hh"
@@ -22,7 +36,7 @@
 #include "mt_buffer.hh"
 #include "mt_receiver.hh"
 #include "mt_worker.hh"
-#include "mt_digitizer_px1500.hh"
+#include "mt_digitizer.hh"
 #include "mt_writer.hh"
 #include "mt_thread.hh"
 using namespace mantis;
@@ -44,14 +58,17 @@ int main( int argc, char** argv )
     condition t_buffer_condition;
     buffer t_buffer( t_config.get_int_required( "buffer-size" ), t_config.get_int_required( "record-size" ) );
 
-    digitizer_px1500 t_digitizer( &t_buffer, &t_buffer_condition );
+    factory< digitizer >* t_dig_factory = factory< digitizer >::get_instance();
+    digitizer* t_digitizer = t_dig_factory->create( t_config.get_string_required( "digitizer" ) );
+    t_digitizer->allocate( &t_buffer, &t_buffer_condition );
+
     writer t_writer( &t_buffer, &t_buffer_condition );
 
     condition t_queue_condition;
     run_queue t_run_queue;
 
     receiver t_receiver( &t_server, &t_run_queue, &t_queue_condition );
-    worker t_worker( &t_digitizer, &t_writer, &t_run_queue, &t_queue_condition, &t_buffer_condition );
+    worker t_worker( t_digitizer, &t_writer, &t_run_queue, &t_queue_condition, &t_buffer_condition );
 
     cout << "[mantis_server] starting threads..." << endl;
 

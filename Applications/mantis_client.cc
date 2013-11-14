@@ -5,18 +5,34 @@
  *
  *  Client (file-writing) component of the DAQ
  *
+ *  The client can be configured in three ways, each of which can override previous values:
+ *   1. Default configuration (see class client_config in mt_client_config.cc)
+ *   2. Configuration file supplied by the user (json-formatted)
+ *   3. Command line options
+ *
+ *  The client requires the following configuration values:
+ *   - host (string; typically localhost or an IP address)
+ *   - port (integer; must match the port used by the server)
+ *   - file (string; egg filename)
+ *   - mode (integer; 0 = single channel; 1 = dual-channel interleaved; 2 = dual-channel separate)
+ *   - rate (double; digitization rate in MHz)
+ *   - duration (double; run length in ms)
+ *
+ *  The description is optional; a default one will be used if one is not supplied.
+ *
  *  Usage:
- *  $> mantis_client host=<some host name> port=<some port number> file=<some file name> description=<describe your run> mode=<one or two channel> rate=<sampling rate> duration=<sampling duration>
+ *  $> mantis_client config=config_file.json [further configuration]
  *
  *  Arguments:
- *  - host        (string; required):  address of the Mantis server host
- *  - port        (integer; required): port number opened by the server
- *  - file        (string; required):  egg filename
- *  - description (string; optional):  describe the run
- *  - mode        (integer; required): '1' for single-channel; '2' for double-channel
- *  - rate        (float; required):   digitization rate in MHz
- *  - duration    (float; required):   length of the run in ms
- *
+ *  - config (optional): json-formatted configuration file
+ *  - further configuration: override or add new values
+ *    format: name/type=value
+ *    e.g.:   host/s=192.168.0.0
+ *            port/i=8390
+ *            file/s=new_filename.egg
+ *            description/s="This will be an awesome run"
+ *            rate/d=500.0
+ *            duration/d=1000.0
  */
 
 #include "mt_configurator.hh"
@@ -108,7 +124,7 @@ int main( int argc, char** argv )
             cout << "[mantis_client] run is in progress...";
             cout.flush();
             cout << "\n";
-            t_sleep_time = 10;
+            t_sleep_time = 1;
             continue;
         }
 

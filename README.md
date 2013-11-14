@@ -2,8 +2,8 @@ Mantis
 ======
 Mantis is the data-acquisition software for the Project 8 collaboration.
 
-The package is divided into a Server component that communicates and reads data 
-from a digitizer, and a Client component that writes the data to disk.  
+The package is divided into a Server component that communicates, reads data 
+from a digitizer, and writes data files, and a Client component that makes run requests..  
 The client and server can be run on the same machine, or communicate with one 
 another over a network.
 
@@ -54,7 +54,10 @@ Examples:
 - Server
 ```
 {
-    "port": 4587
+    "port": 4587,
+    "digitizer": "px1500",
+    "buffer-size": 512,
+    "record-size": 4194304
 }
 ```
 
@@ -64,20 +67,21 @@ Examples:
     "port": 4587,
     "host": "localhost",
     "file": "some-file.egg",
-    "rate": "500",
-    "duration": "100"
+    "rate": "500.0",
+    "duration": "1000.0"
 }
 ``` 
 #### Command-line options
 You can use individual command-line options to overwrite specific configuration
 values.  The format for options is: [name]/[type]=[value]
 For example:
-- port/u=12345
+- port/i=12345
 - file/s="a-different-filename.egg"
 
-The types are bool (b), integer (i), unsigned integer (u), double (d), and string (s).
+The types are bool (b), integer (i), double (d), and string (s).
 
-### Server
+### Executables
+#### Server
 This program is intended to be run in the background on the server machine.  
 It just sits and waits for client programs to submit run request objects.  
 When received, the run requests are put onto the back of a queue from whose 
@@ -90,10 +94,10 @@ object with live-time and dead time statistics is sent to the client.
 Usage is:
 
 ```
-$> mantis_px1500_server config=server-config.json
+$> mantis_server config=server-config.json
 ```
 
-### Client
+#### Client
 This program is intended to be run on anyone's computer or the server machine itself.  
 When run it submits a request object to the server, after which it receives a series 
 of status objects.  After a received status object indicates the run is complete, 
@@ -103,9 +107,9 @@ the client program spits out the run summary. Usage is:
 $> mantis_client config=client-config.json file/s=new-filename.egg description/s="this is an awesome run"
 ```
 
-### Standalone
+#### Standalone
 There's also a program that you can run on the server machine by itself, almost exactly 
-previous versions of Mantis.  Usage is:
+previous versions of Mantis.  This is only available for the px1500 digitizer. Usage is:
 
 ```
 $> mantis_px1500_standalone config=standalone-config.json
