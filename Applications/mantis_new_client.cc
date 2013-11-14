@@ -45,9 +45,13 @@ int main( int argc, char** argv )
 
     string t_request_host = t_config.get_string_required( "host" );
     int t_request_port = t_config.get_int_required( "port" );
+
+    string t_write_host = t_config.get_string_required( "client-host" );
     int t_write_port = t_request_port + 1;
 
     request_dist* t_request_dist = new request_dist();
+    t_request_dist->get_request()->set_write_host( t_write_host );
+    t_request_dist->get_request()->set_write_port( t_write_port );
     t_request_dist->get_request()->set_file( t_config.get_string_required( "file" ) );
     t_request_dist->get_request()->set_description( t_config.get_string_optional( "description", "default client run" ) );
     t_request_dist->get_request()->set_date( get_absolute_time_string() );
@@ -55,9 +59,11 @@ int main( int argc, char** argv )
     t_request_dist->get_request()->set_rate( t_config.get_double_required( "rate" ) );
     t_request_dist->get_request()->set_duration( t_config.get_double_required( "duration" ) );
 
+    // start the client for sending the request
     client* t_request_client = new client( t_request_host, t_request_port );
     t_request_dist->set_connection( t_request_client );
 
+    // start server waiting for incoming write connection
     server* t_write_server = new server( t_write_port );
 
     cout << "[mantis_client] sending request..." << endl;

@@ -2,14 +2,20 @@ package mantis;
 
 message request
 {
+    //host to send data to
+    required string write_host = 1;
+    
+    //port to send data to
+    required uint32 write_port = 2;
+    
 	//file to write
-	required string file = 1;
+	required string file = 3;
 
 	//description of request
-	required string description = 2;
+	required string description = 4;
 
 	//date of request
-	required string date = 3;
+	required string date = 5;
 
 	//acquisition mode
 	enum mode_t
@@ -18,11 +24,11 @@ message request
 		dual_interleaved = 1;
 		dual_separate = 2;
 	}
-	required mode_t mode = 4;
+	required mode_t mode = 6;
 
 	//acquisition rate
-	required double rate = 5;
+	required double rate = 7;
 	
 	//acquisition duration
-	required double duration = 6;
+	required double duration = 8;
 }
