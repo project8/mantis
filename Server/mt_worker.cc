@@ -9,10 +9,10 @@ using std::endl;
 namespace mantis
 {
 
-    worker::worker( digitizer* a_digitizer, writer* a_writer, run_queue* a_run_queue, condition* a_queue_condition, condition* a_buffer_condition ) :
+    worker::worker( digitizer* a_digitizer, writer* a_writer, request_queue* a_request_queue, condition* a_queue_condition, condition* a_buffer_condition ) :
             f_digitizer( a_digitizer ),
             f_writer( a_writer ),
-            f_run_queue( a_run_queue ),
+            f_request_queue( a_request_queue ),
             f_queue_condition( a_queue_condition ),
             f_buffer_condition( a_buffer_condition )
     {
@@ -24,25 +24,25 @@ namespace mantis
 
     void worker::execute()
     {
-        run_context* t_run_context;
+        request_dist* t_request_dist;
 
         while( true )
         {
-            if( f_run_queue->empty() == true )
+            if( f_request_queue->empty() == true )
             {
                 f_queue_condition->wait();
             }
 
             cout << "[worker] sending status <started>..." << endl;
 
-            t_run_context = f_run_queue->from_front();
-            t_run_context->get_status()->set_state( status_state_t_started );
-            t_run_context->push_status();
+            t_request_dist = f_request_queue->from_front();
+            t_request_dist->get_status()->set_state( status_state_t_started );
+            t_request_dist->push_status();
 
             cout << "[worker] initializing..." << endl;
 
-            f_digitizer->initialize( t_run_context->get_request() );
-            f_writer->initialize( t_run_context->get_request() );
+            f_digitizer->initialize( t_request_dist->get_request() );
+            f_writer->initialize( t_request_dist->get_request() );
 
             cout << "[worker] running..." << endl;
 
@@ -58,9 +58,9 @@ namespace mantis
 
             t_writer_thread->start();
 
-            t_run_context->get_status()->set_state( status_state_t_running );
-            f_run_queue->to_front( t_run_context );
-            t_run_context = NULL;
+            t_request_dist->get_status()->set_state( status_state_t_running );
+            f_request_queue->to_front( t_request_dist );
+            t_request_dist = NULL;
 
             t_digitizer_thread->join();
             t_writer_thread->join();
@@ -70,18 +70,18 @@ namespace mantis
 
             cout << "[worker] sending status <stopped>..." << endl;
 
-            t_run_context = f_run_queue->from_front();
-            t_run_context->get_status()->set_state( status_state_t_stopped );
-            t_run_context->push_status();
+            t_request_dist = f_request_queue->from_front();
+            t_request_dist->get_status()->set_state( status_state_t_stopped );
+            t_request_dist->push_status();
 
             cout << "[worker] finalizing..." << endl;
 
-            f_digitizer->finalize( t_run_context->get_response() );
-            f_writer->finalize( t_run_context->get_response() );
-            t_run_context->push_response();
+            f_digitizer->finalize( t_request_dist->get_response() );
+            f_writer->finalize( t_request_dist->get_response() );
+            t_request_dist->push_response();
 
-            delete t_run_context->get_connection();
-            delete t_run_context;
+            delete t_request_dist->get_connection();
+            delete t_request_dist;
         }
 
         return;
