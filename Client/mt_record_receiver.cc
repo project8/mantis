@@ -50,7 +50,8 @@ namespace mantis
         record_dist->set_connection( f_server->get_connection() );
 
         iterator t_it( f_buffer );
-        while( t_record_dist->pull_record( t_it.object() ) )
+        // pass MSG_WAITALL to recv function to block thread until a record is received
+        while( t_record_dist->pull_record( t_it.object(), MSG_WAITALL ) )
         {
 
         }
