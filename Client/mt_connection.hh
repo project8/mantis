@@ -14,10 +14,10 @@ namespace mantis
             connection( int a_socket, sockaddr_in* an_address );
             virtual ~connection();
 
-            ssize_t send( const char* a_message, size_t a_size );
-            ssize_t recv( char* a_message, size_t a_size );
+            ssize_t send( const char* a_message, size_t a_size, int flags = 0 );
+            ssize_t recv( char* a_message, size_t a_size, int flags = 0 );
 
-            size_t recv_size();
+            size_t recv_size( int flags = 0 );
 
         protected:
             int f_socket;

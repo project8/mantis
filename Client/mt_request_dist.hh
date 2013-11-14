@@ -16,16 +16,16 @@ namespace mantis
             virtual ~request_dist();
 
             request* get_request();
-            bool push_request();
-            bool pull_request();
+            bool push_request( int flags = 0 );
+            bool pull_request( int flags = 0 );
 
             status* get_status();
-            bool push_status();
-            bool pull_status();
+            bool push_status( int flags = 0 );
+            bool pull_status( int flags = 0 );
 
             response* get_response();
-            bool push_response();
-            bool pull_response();
+            bool push_response( int flags = 0 );
+            bool pull_response( int flags = 0 );
 
         private:
             request f_request;

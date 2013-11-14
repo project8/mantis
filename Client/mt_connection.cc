@@ -29,10 +29,10 @@ namespace mantis
         delete f_address;
     }
 
-    ssize_t connection::send( const char* a_message, size_t a_size )
+    ssize_t connection::send( const char* a_message, size_t a_size, int flags )
     {
         send( (char*)&a_size, sizeof( size_t ) );
-        ssize_t t_written_size = ::send( f_socket, a_message, a_size, 0 );
+        ssize_t t_written_size = ::send( f_socket, a_message, a_size, flags );
         if( t_written_size != a_size )
         {
             throw exception() << "could not write to socket (" << strerror(errno) << ")";
@@ -42,9 +42,9 @@ namespace mantis
         return t_written_size;
     }
 
-    ssize_t connection::recv( char* a_message, size_t a_size )
+    ssize_t connection::recv( char* a_message, size_t a_size, int flags )
     {
-        ssize_t t_read_size = ::recv( f_socket, a_message, a_size, 0 );
+        ssize_t t_read_size = ::recv( f_socket, a_message, a_size, flags );
         if( t_read_size < 0 )
         {
             throw exception() << "could not read from socket (" << strerror(errno) << ")";
@@ -54,10 +54,10 @@ namespace mantis
         return t_read_size;
     }
 
-    size_t connection::recv_size()
+    size_t connection::recv_size( int flags )
     {
         size_t t_size = 0;
-        ssize_t t_recv_size = ::recv( f_socket, (void*)&t_size, sizeof( size_t ), 0 );
+        ssize_t t_recv_size = ::recv( f_socket, (void*)&t_size, sizeof( size_t ), flags );
         return t_size;
     }
 

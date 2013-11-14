@@ -20,8 +20,8 @@ namespace mantis
             time_nsec_type get_timestamp() const;
             size_t get_data_size() const;
             const data_type* get_data() const;
-            bool push_record( const block* a_block );
-            bool pull_record( block* a_block );
+            bool push_record( const block* a_block, int flags = 0 );
+            bool pull_record( block* a_block, int flags = 0 );
 
 
         private:

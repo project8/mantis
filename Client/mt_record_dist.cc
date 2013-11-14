@@ -64,14 +64,14 @@ namespace mantis
         cout << "[record dist] data[0]: " << (data_type*)(f_buffer + f_data_offset)[0] << endl;
         return (data_type*)(f_buffer + f_data_offset);
     }
-    bool record_dist::push_record( const block* a_block )
+    bool record_dist::push_record( const block* a_block, int flags )
     {
         size_t t_block_size = reset_buffer( block_size( a_block ) );
         if( ! serialize_block( a_block ) )
             return false;
         try
         {
-            f_connection->send( f_buffer, t_block_size );
+            f_connection->send( f_buffer, t_block_size, flags );
         }
         catch( exception& e )
         {
@@ -80,15 +80,15 @@ namespace mantis
         }
         return true;
     }
-    bool record_dist::pull_record( block* a_block )
+    bool record_dist::pull_record( block* a_block, int flags )
     {
         size_t t_block_size = f_buffer_size;
         try
         {
-            t_block_size = f_connection->recv_size();
+            t_block_size = f_connection->recv_size( flags );
             if( t_block_size == 0 ) return false;
             reset_buffer( t_block_size );
-            if( f_connection->recv( f_buffer, t_block_size ) == 0 )
+            if( f_connection->recv( f_buffer, t_block_size, flags ) == 0 )
                 return false;
         }
         catch( exception& e )

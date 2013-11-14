@@ -25,7 +25,7 @@ namespace mantis
     {
     }
 
-    bool request_dist::push_request()
+    bool request_dist::push_request( int flags )
     {
         size_t t_request_size = reset_buffer( f_request.ByteSize() );
         cout << "request size to write: " << t_request_size << endl;
@@ -33,7 +33,7 @@ namespace mantis
             return false;
         try
         {
-            f_connection->send( f_buffer, t_request_size );
+            f_connection->send( f_buffer, t_request_size, flags );
         }
         catch( exception& e )
         {
@@ -42,15 +42,15 @@ namespace mantis
         }
         return true;
     }
-    bool request_dist::pull_request()
+    bool request_dist::pull_request( int flags )
     {
         size_t t_request_size = f_buffer_size;
         try
         {
-            t_request_size = f_connection->recv_size();
+            t_request_size = f_connection->recv_size( flags );
             if( t_request_size == 0 ) return false;
             reset_buffer( t_request_size );
-            if( f_connection->recv( f_buffer, t_request_size ) == 0 )
+            if( f_connection->recv( f_buffer, t_request_size, flags ) == 0 )
             {
                 cout << "connection read length was 0" << endl;
                 return false;
@@ -68,14 +68,14 @@ namespace mantis
         return &f_request;
     }
 
-    bool request_dist::push_status()
+    bool request_dist::push_status( int flags )
     {
         size_t t_status_size = reset_buffer( f_status.ByteSize() );
         if( ! f_status.SerializeToArray( f_buffer, t_status_size ) )
             return false;
         try
         {
-            f_connection->send( f_buffer, t_status_size );
+            f_connection->send( f_buffer, t_status_size, flags );
         }
         catch( exception& e )
         {
@@ -84,15 +84,15 @@ namespace mantis
         }
         return true;
     }
-    bool request_dist::pull_status()
+    bool request_dist::pull_status( int flags )
     {
         size_t t_status_size = f_buffer_size;
         try
         {
-            t_status_size = f_connection->recv_size();
+            t_status_size = f_connection->recv_size( flags );
             if( t_status_size == 0 ) return false;
             reset_buffer( t_status_size );
-            if( f_connection->recv( f_buffer, t_status_size ) == 0 )
+            if( f_connection->recv( f_buffer, t_status_size, flags ) == 0 )
                 return false;
         }
         catch( exception& e )
@@ -107,14 +107,14 @@ namespace mantis
         return &f_status;
     }
 
-    bool request_dist::push_response()
+    bool request_dist::push_response( int flags )
     {
         size_t t_response_size = reset_buffer( f_response.ByteSize() );
         if( ! f_response.SerializeToArray( f_buffer, t_response_size ) )
             return false;
         try
         {
-            f_connection->send( f_buffer, t_response_size );
+            f_connection->send( f_buffer, t_response_size, flags );
         }
         catch( exception& e )
         {
@@ -123,15 +123,15 @@ namespace mantis
         }
         return true;
     }
-    bool request_dist::pull_response()
+    bool request_dist::pull_response( int flags )
     {
         size_t t_response_size = f_buffer_size;
         try
         {
-            t_response_size = f_connection->recv_size();
+            t_response_size = f_connection->recv_size( flags );
             if( t_response_size == 0 ) return false;
             reset_buffer( t_response_size );
-            if( f_connection->recv( f_buffer, t_response_size ) == 0 )
+            if( f_connection->recv( f_buffer, t_response_size, flags ) == 0 )
                 return false;
         }
         catch( exception& e )
