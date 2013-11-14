@@ -33,10 +33,10 @@ namespace mantis
                 f_queue_condition->wait();
             }
 
-            cout << "[server_worker] sending status <started>..." << endl;
+            cout << "[server_worker] sending server status <started>..." << endl;
 
             t_request_dist = f_request_queue->from_front();
-            t_request_dist->get_status()->set_state( status_state_t_started );
+            t_request_dist->get_status()->set_server_state( status_state_t_started );
             t_request_dist->push_status();
 
             cout << "[server_worker] initializing..." << endl;
@@ -58,7 +58,7 @@ namespace mantis
 
             t_writer_thread->start();
 
-            t_request_dist->get_status()->set_state( status_state_t_running );
+            t_request_dist->get_status()->set_server_state( status_state_t_running );
             f_request_queue->to_front( t_request_dist );
             t_request_dist = NULL;
 
@@ -68,10 +68,10 @@ namespace mantis
             delete t_digitizer_thread;
             delete t_writer_thread;
 
-            cout << "[server_worker] sending status <stopped>..." << endl;
+            cout << "[server_worker] sending server status <stopped>..." << endl;
 
             t_request_dist = f_request_queue->from_front();
-            t_request_dist->get_status()->set_state( status_state_t_stopped );
+            t_request_dist->get_status()->set_server_state( status_state_t_stopped );
             t_request_dist->push_status();
 
             cout << "[server_worker] finalizing..." << endl;

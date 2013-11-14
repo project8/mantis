@@ -133,7 +133,7 @@ int main( int argc, char** argv )
 
         t_run_context->pull_status();
 
-        if( t_run_context->get_status()->state() == status_state_t_acknowledged )
+        if( t_run_context->get_server_status()->state() == status_state_t_acknowledged )
         {
             cout << "[mantis_client] run request acknowledged...";
             cout.flush();
@@ -145,7 +145,7 @@ int main( int argc, char** argv )
 
 
 
-        if( t_run_context->get_status()->state() == status_state_t_waiting )
+        if( t_run_context->get_server_status()->state() == status_state_t_waiting )
         {
             cout << "[mantis_client] waiting for run...";
             cout.flush();
@@ -154,7 +154,7 @@ int main( int argc, char** argv )
             continue;
         }
 
-        if( t_run_context->get_status()->state() == status_state_t_started )
+        if( t_run_context->get_server_status()->state() == status_state_t_started )
         {
             cout << "[mantis_client] run has started...";
             cout.flush();
@@ -163,7 +163,7 @@ int main( int argc, char** argv )
             continue;
         }
 
-        if( t_run_context->get_status()->state() == status_state_t_running )
+        if( t_run_context->get_server_status()->state() == status_state_t_running )
         {
             cout << "[mantis_client] run is in progress...";
             cout.flush();
@@ -172,16 +172,16 @@ int main( int argc, char** argv )
             continue;
         }
 
-        if( t_run_context->get_status()->state() == status_state_t_stopped )
+        if( t_run_context->get_server_status()->state() == status_state_t_stopped )
         {
-            cout << "[mantis_client] run status: stopped; run should be complete";
+            cout << "[mantis_client] server status: stopped; run should be complete";
             cout.flush();
             cout << "\n" << endl;
             t_run_success = 1;
             break;
         }
 
-        if( t_run_context->get_status()->state() == status_state_t_error )
+        if( t_run_context->get_server_status()->state() == status_state_t_error )
         {
             cout << "[mantis_client] error reported; run did not complete";
             cout.flush();

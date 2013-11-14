@@ -37,21 +37,22 @@ namespace mantis
 
             if( ! t_request_dist->pull_request() )
             {
-                cerr << "[request_receiver] unable to pull run request; sending status <error>" << endl;
-                t_request_dist->get_status()->set_state( status_state_t_error );
+                cerr << "[request_receiver] unable to pull run request; sending server status <error>" << endl;
+                t_request_dist->get_status()->set_server_state( status_state_t_error );
+                t_request_dist->push_status();
                 delete t_request_dist->get_connection();
                 delete t_request_dist;
             }
             else
             {
-                cout << "[request_receiver] sending status <acknowledged>..." << endl;
+                cout << "[request_receiver] sending server status <acknowledged>..." << endl;
 
-                t_request_dist->get_status()->set_state( status_state_t_acknowledged );
+                t_request_dist->get_status()->set_server_state( status_state_t_acknowledged );
                 t_request_dist->push_status();
 
                 cout << "[request_receiver] queuing request..." << endl;
 
-                t_request_dist->get_status()->set_state( status_state_t_waiting );
+                t_request_dist->get_status()->set_server_state( status_state_t_waiting );
                 f_request_queue->to_back( t_request_dist );
 
 

@@ -13,6 +13,8 @@ message status
 		stopped = 4;
 		error = 5;
 	}
-	required state_t state = 1;
+	
+	required state_t server_state = 1;
+	required state_t client_state = 2;
 
 }
