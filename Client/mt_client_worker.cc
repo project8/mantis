@@ -9,8 +9,8 @@ using std::endl;
 namespace mantis
 {
 
-    client_worker::client_worker( request* a_request, writer* a_writer, condition* a_buffer_condition ) :
-            f_server( new server( a_request->write_port() ) ),
+    client_worker::client_worker( request* a_request, record_receiver* a_receiver, writer* a_writer, condition* a_buffer_condition ) :
+            f_receiver( a_receiver ),
             f_writer( a_writer ),
             f_buffer_condition( a_buffer_condition )
     {
@@ -23,7 +23,32 @@ namespace mantis
 
     void client_worker::execute()
     {
-        request_dist* t_request_dist;
+        record_dist* t_record_dist;
+
+
+        thread* t_receiver_thread = new thread( f_receiver );
+        thread* t_writer_thread = new thread( f_writer );
+
+        t_receiver_thread->start();
+
+        while( f_buffer_condition->is_waiting() == false )
+        {
+            usleep( 1000 );
+        }
+
+        t_writer_thread->start();
+
+        cout << "[client_worker] running..." << endl;
+
+        t_receiver_thread->join();
+        t_writer_thread->join();
+
+        delete t_receiver_thread;
+        delete t_writer_thread;
+
+
+
+
 
         while( true )
         {

@@ -3,10 +3,10 @@
 
 #include "mt_callable.hh"
 
-#include "mt_writer.hh"
 #include "mt_condition.hh"
 #include "request.pb.h"
-#include "mt_server.hh"
+#include "mt_record_receiver.hh"
+#include "mt_writer.hh"
 
 namespace mantis
 {
@@ -15,13 +15,13 @@ namespace mantis
         public callable
     {
         public:
-            client_worker( request* a_request, writer* a_writer, condition* a_buffer_condition );
+            client_worker( request* a_request, record_receiver* a_receiver, writer* a_writer, condition* a_buffer_condition );
             virtual ~client_worker();
 
             void execute();
 
         private:
-            server* f_server;
+            record_receiver* f_receiver;
             writer* f_writer;
             condition* f_buffer_condition;
     };
