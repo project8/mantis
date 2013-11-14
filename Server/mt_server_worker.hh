@@ -1,5 +1,5 @@
-#ifndef MT_WORKER_HH_
-#define MT_WORKER_HH_
+#ifndef MT_SERVER_WORKER_HH_
+#define MT_SERVER_WORKER_HH_
 
 #include "mt_callable.hh"
 
@@ -11,12 +11,12 @@
 namespace mantis
 {
 
-    class worker :
+    class server_worker :
         public callable
     {
         public:
-            worker( digitizer* a_digitizer, writer* a_writer, request_queue* a_request_queue, condition* a_queue_condition, condition* a_buffer_condition );
-            virtual ~worker();
+            server_worker( digitizer* a_digitizer, writer* a_writer, request_queue* a_request_queue, condition* a_queue_condition, condition* a_buffer_condition );
+            virtual ~server_worker();
 
             void execute();
 

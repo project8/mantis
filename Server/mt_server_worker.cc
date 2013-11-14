@@ -1,4 +1,4 @@
-#include "mt_worker.hh"
+#include "mt_server_worker.hh"
 
 #include "mt_thread.hh"
 
@@ -9,7 +9,7 @@ using std::endl;
 namespace mantis
 {
 
-    worker::worker( digitizer* a_digitizer, writer* a_writer, request_queue* a_request_queue, condition* a_queue_condition, condition* a_buffer_condition ) :
+    server_worker::server_worker( digitizer* a_digitizer, writer* a_writer, request_queue* a_request_queue, condition* a_queue_condition, condition* a_buffer_condition ) :
             f_digitizer( a_digitizer ),
             f_writer( a_writer ),
             f_request_queue( a_request_queue ),
@@ -18,11 +18,11 @@ namespace mantis
     {
     }
 
-    worker::~worker()
+    server_worker::~server_worker()
     {
     }
 
-    void worker::execute()
+    void server_worker::execute()
     {
         request_dist* t_request_dist;
 
@@ -33,18 +33,18 @@ namespace mantis
                 f_queue_condition->wait();
             }
 
-            cout << "[worker] sending status <started>..." << endl;
+            cout << "[server_worker] sending status <started>..." << endl;
 
             t_request_dist = f_request_queue->from_front();
             t_request_dist->get_status()->set_state( status_state_t_started );
             t_request_dist->push_status();
 
-            cout << "[worker] initializing..." << endl;
+            cout << "[server_worker] initializing..." << endl;
 
             f_digitizer->initialize( t_request_dist->get_request() );
             f_writer->initialize( t_request_dist->get_request() );
 
-            cout << "[worker] running..." << endl;
+            cout << "[server_worker] running..." << endl;
 
             thread* t_digitizer_thread = new thread( f_digitizer );
             thread* t_writer_thread = new thread( f_writer );
@@ -68,13 +68,13 @@ namespace mantis
             delete t_digitizer_thread;
             delete t_writer_thread;
 
-            cout << "[worker] sending status <stopped>..." << endl;
+            cout << "[server_worker] sending status <stopped>..." << endl;
 
             t_request_dist = f_request_queue->from_front();
             t_request_dist->get_status()->set_state( status_state_t_stopped );
             t_request_dist->push_status();
 
-            cout << "[worker] finalizing..." << endl;
+            cout << "[server_worker] finalizing..." << endl;
 
             f_digitizer->finalize( t_request_dist->get_response() );
             f_writer->finalize( t_request_dist->get_response() );

@@ -10,9 +10,9 @@ using std::endl;
 namespace mantis
 {
 
-    receiver::receiver( server* a_server, run_queue* a_run_queue, condition* a_condition ) :
+    receiver::receiver( server* a_server, request_queue* a_request_queue, condition* a_condition ) :
             f_server( a_server ),
-            f_run_queue( a_run_queue ),
+            f_request_queue( a_request_queue ),
             f_condition( a_condition )
     {
     }
@@ -23,36 +23,36 @@ namespace mantis
 
     void receiver::execute()
     {
-        run_context* t_run_context;
+        request_dist* t_request_dist;
 
         while( true )
         {
-            t_run_context = new run_context();
+            t_request_dist = new request_dist();
             cout << "[receiver] waiting for incoming connections" << endl;
             // thread is blocked by the accept call in server::get_connection 
             // until an incoming connection is received
-            t_run_context->set_connection( f_server->get_connection() );
+            t_request_dist->set_connection( f_server->get_connection() );
 
             cout << "[receiver] receiving request..." << endl;
 
-            if( ! t_run_context->pull_request() )
+            if( ! t_request_dist->pull_request() )
             {
                 cerr << "[receiver] unable to pull run request; sending status <error>" << endl;
-                t_run_context->get_status()->set_state( status_state_t_error );
-                delete t_run_context->get_connection();
-                delete t_run_context;
+                t_request_dist->get_status()->set_state( status_state_t_error );
+                delete t_request_dist->get_connection();
+                delete t_request_dist;
             }
             else
             {
                 cout << "[receiver] sending status <acknowledged>..." << endl;
 
-                t_run_context->get_status()->set_state( status_state_t_acknowledged );
-                t_run_context->push_status();
+                t_request_dist->get_status()->set_state( status_state_t_acknowledged );
+                t_request_dist->push_status();
 
                 cout << "[receiver] queuing request..." << endl;
 
-                t_run_context->get_status()->set_state( status_state_t_waiting );
-                f_run_queue->to_back( t_run_context );
+                t_request_dist->get_status()->set_state( status_state_t_waiting );
+                f_request_queue->to_back( t_request_dist );
 
 
                 // if the queue condition is waiting, release it
