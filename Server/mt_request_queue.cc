@@ -1,17 +1,17 @@
-#include "mt_run_queue.hh"
+#include "mt_request_queue.hh"
 
 namespace mantis
 {
 
-    run_queue::run_queue() :
+    request_queue::request_queue() :
             f_mutex(),
             f_runs()
     {
     }
-    run_queue::~run_queue()
+    request_queue::~request_queue()
     {
         f_mutex.lock();
-        std::list< run_context* >::iterator t_it;
+        std::list< request_dist* >::iterator t_it;
         for( t_it = f_runs.begin(); t_it != f_runs.end(); t_it++ )
         {
             delete *t_it;
@@ -20,7 +20,7 @@ namespace mantis
         return;
     }
 
-    bool run_queue::empty()
+    bool request_queue::empty()
     {
         bool t_empty;
         f_mutex.lock();
@@ -29,16 +29,16 @@ namespace mantis
         return t_empty;
     }
 
-    void run_queue::to_front( run_context* a_run )
+    void request_queue::to_front( request_dist* a_run )
     {
         f_mutex.lock();
         f_runs.push_front( a_run );
         f_mutex.unlock();
         return;
     }
-    run_context* run_queue::from_front()
+    request_dist* request_queue::from_front()
     {
-        run_context* t_front = NULL;
+        request_dist* t_front = NULL;
         f_mutex.lock();
         if( f_runs.empty() == false )
         {
@@ -49,16 +49,16 @@ namespace mantis
         return t_front;
     }
 
-    void run_queue::to_back( run_context* a_run )
+    void request_queue::to_back( request_dist* a_run )
     {
         f_mutex.lock();
         f_runs.push_back( a_run );
         f_mutex.unlock();
         return;
     }
-    run_context* run_queue::from_back()
+    request_dist* request_queue::from_back()
     {
-        run_context* t_back = NULL;
+        request_dist* t_back = NULL;
         f_mutex.lock();
         if( f_runs.empty() == false )
         {
@@ -69,14 +69,14 @@ namespace mantis
         return t_back;
     }
 
-    void run_queue::execute()
+    void request_queue::execute()
     {
         while( true )
         {
             sleep( 1 );
 
             f_mutex.lock();
-            std::list< run_context* >::iterator t_it;
+            std::list< request_dist* >::iterator t_it;
             for( t_it = f_runs.begin(); t_it != f_runs.end(); t_it++ )
             {
                 (*t_it)->push_status();
