@@ -3,6 +3,7 @@
 
 #include "mt_writer.hh"
 
+#include "mt_client.hh"
 #include "mt_record_dist.hh"
 
 namespace mantis
@@ -15,10 +16,12 @@ namespace mantis
             network_writer( buffer* a_buffer, condition* a_condition );
             virtual ~network_writer();
 
-            void initialize( request* a_response );
+            void initialize( request* a_request );
+            void finalize( response* a_response );
 
         private:
             record_dist* f_record_dist;
+            client* f_client;
 
             bool write( block* a_block );
     };
