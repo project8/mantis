@@ -19,6 +19,16 @@ namespace mantis
     {
     }
 
+    block::state_type block::get_state() const
+    {
+        return f_state;
+    }
+    void block::set_state( block::state_type a_state )
+    {
+        f_state = a_state;
+        return;
+    }
+
     bool block::is_acquiring() const
     {
         if( f_state == e_acquiring )
@@ -116,6 +126,11 @@ namespace mantis
     }
 
     data_type* block::data()
+    {
+        return f_data;
+    }
+
+    const data_type* block::data() const
     {
         return f_data;
     }

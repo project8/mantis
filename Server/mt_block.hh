@@ -18,6 +18,9 @@ namespace mantis
             block();
             virtual ~block();
 
+            state_type get_state() const;
+            void set_state( state_type a_state );
+
             bool is_acquiring() const;
             void set_acquiring();
 
@@ -43,6 +46,8 @@ namespace mantis
             void set_data_size( const size_t& a_size );
 
             data_type* data();
+            const data_type* data() const;
+
             data_type** handle();
 
         private:
@@ -50,8 +55,8 @@ namespace mantis
             acquisition_id_type f_acquisition_id;
             record_id_type f_record_id;
             time_nsec_type f_timestamp;
-            data_type* f_data;
             size_t f_data_size;
+            data_type* f_data;
 
     };
 
