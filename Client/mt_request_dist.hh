@@ -12,8 +12,18 @@ namespace mantis
     class request_dist : public distribution
     {
         public:
+            enum message_type
+            {
+                request,
+                status,
+                response
+            };
+
+        public:
             request_dist();
             virtual ~request_dist();
+
+            message_type pull_type( int flags = 0 );
 
             request* get_request();
             bool push_request( int flags = 0 );
