@@ -47,58 +47,22 @@ namespace mantis
         cout << "[record_receiver] waiting for incomming record connection" << endl;
         // thread is blocked by the accept call in server::get_connection
         // until an incoming connection is received
-        record_dist->set_connection( f_server->get_connection() );
+        t_record_dist->set_connection( f_server->get_connection() );
 
         iterator t_it( f_buffer );
         // pass MSG_WAITALL to recv function to block thread until a record is received
         while( t_record_dist->pull_record( t_it.object(), MSG_WAITALL ) )
         {
+            cout << "[record_receiver] record received" << endl;
 
+            //TODO: loop exit condition
+            //TODO: livetime/deadtime calculation, as in digitizer_px1500
         }
 
+        cout << "[record_receiver] finished processing records" << endl;
 
-
-
-        while( true )
-        {
-            t_request_dist = new request_dist();
-            cout << "[record_receiver] waiting for incoming connections" << endl;
-            // thread is blocked by the accept call in server::get_connection 
-            // until an incoming connection is received
-            t_request_dist->set_connection( f_server->get_connection() );
-
-            cout << "[record_receiver] receiving request..." << endl;
-
-            if( ! t_request_dist->pull_request() )
-            {
-                cerr << "[record_receiver] unable to pull run request; sending status <error>" << endl;
-                t_request_dist->get_status()->set_state( status_state_t_error );
-                delete t_request_dist->get_connection();
-                delete t_request_dist;
-            }
-            else
-            {
-                cout << "[record_receiver] sending status <acknowledged>..." << endl;
-
-                t_request_dist->get_status()->set_state( status_state_t_acknowledged );
-                t_request_dist->push_status();
-
-                cout << "[record_receiver] queuing request..." << endl;
-
-                t_request_dist->get_status()->set_state( status_state_t_waiting );
-                f_request_queue->to_back( t_request_dist );
-
-
-                // if the queue condition is waiting, release it
-                if( f_condition->is_waiting() == true )
-                {
-                    cout << "[record_receiver] releasing queue condition" << endl;
-                    f_condition->release();
-                }
-            }
-
-            cout << "[record_receiver] finished processing request" << endl;
-        }
+        delete t_record_dist->get_connection();
+        delete t_record_dist;
 
         return;
     }
