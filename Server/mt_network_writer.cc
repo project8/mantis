@@ -12,7 +12,8 @@ namespace mantis
     network_writer::network_writer( buffer* a_buffer, condition* a_condition ) :
             writer( a_buffer, a_condition ),
             f_record_dist( NULL ),
-            f_client( NULL )
+            f_client( NULL ),
+            f_data_chunk_size( 1024 )
     {
     }
     network_writer::~network_writer()
@@ -28,6 +29,7 @@ namespace mantis
         cout << "[network_writer] opening write connection..." << endl;
 
         f_record_dist = new record_dist();
+        f_record_dist->set_data_chunk_size( f_data_chunk_size );
 
         f_client = new client( a_request->write_host(), a_request->write_port() );
         f_record_dist->set_connection( f_client );
@@ -50,5 +52,16 @@ namespace mantis
     {
         return f_record_dist->push_record( a_block );
     }
+
+    size_t network_writer::get_data_chunk_size() const
+    {
+        return f_data_chunk_size;
+    }
+    void network_writer::set_data_chunk_size( size_t size )
+    {
+        f_data_chunk_size = size;
+        return;
+    }
+
 
 }

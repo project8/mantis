@@ -110,8 +110,9 @@ int main( int argc, char** argv )
 
     // get buffer size and record size from the request
     t_connection_to_server->pull_request();
-    int t_buffer_size = t_connection_to_server->get_status()->buffer_size();
-    int t_record_size = t_connection_to_server->get_status()->record_size();
+    size_t t_buffer_size = t_connection_to_server->get_status()->buffer_size();
+    size_t t_record_size = t_connection_to_server->get_status()->record_size();
+    size_t t_data_chunk_size = t_connection_to_server->get_status()->data_chunk_size();
 
     // objects for receiving and writing data
     server t_server( t_write_port );
@@ -120,6 +121,7 @@ int main( int argc, char** argv )
     buffer t_buffer( t_buffer_size, t_record_size );
 
     record_receiver t_receiver( &t_server, &t_buffer, &t_buffer_condition );
+    t_receiver.set_data_chunk_size( t_data_chunk_size );
 
     file_writer t_writer( &t_buffer, &t_buffer_condition );
 
@@ -136,7 +138,7 @@ int main( int argc, char** argv )
     catch( exception& e )
     {
         cerr << "[mantis_client] unable to start record-receiving server" << endl;
-        delete t_request_client;
+        delete t_connection_to_server;
         delete t_request_client;
         return -1;
     }

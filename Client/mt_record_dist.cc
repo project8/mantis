@@ -14,7 +14,10 @@ using std::endl;
 namespace mantis
 {
 
-    record_dist::record_dist()
+    record_dist::record_dist() :
+            f_data_chunk_size( 1024 ),
+            f_n_full_chunks( 0 ),
+            f_last_data_chunk_size( 0 )
     {
     }
     record_dist::~record_dist()
@@ -28,6 +31,10 @@ namespace mantis
             cerr << "[record_dist] a write error occurred while pushing a block's header" << endl;
             return false;
         }
+
+        f_n_full_chunks = a_block->header()->data_size() / f_data_chunk_size;
+        f_last_data_chunk_size = a_block->header()->data_size() - f_data_chunk_size * f_n_full_chunks;
+
         if( ! push_data( a_block->data(), flags ) )
         {
             cerr << "[record_dist] a write error occurred while pushing a block's data" << endl;
@@ -42,6 +49,10 @@ namespace mantis
             cerr << "[record_dist] a read error occurred while pulling a block's header" << endl;
             return false;
         }
+
+        f_n_full_chunks = a_block->header()->data_size() / f_data_chunk_size;
+        f_last_data_chunk_size = a_block->header()->data_size() - f_data_chunk_size * f_n_full_chunks;
+
         if( ! pull_data( a_block->data(), flags ) )
         {
             cerr << "[record_dist] a read error occurred while pulling a block's data" << endl;
@@ -70,22 +81,32 @@ namespace mantis
 
     bool record_dist::push_data( const data_type* a_block_data, int flags )
     {
-        return false;
-        /*
-        size_t t_block_size = reset_buffer( block_size( a_block ) );
-        if( ! serialize_block( a_block ) )
-            return false;
+        size_t t_offset = 0;
+        for( unsigned i_chunk = 0; i_chunk < f_n_full_chunks; ++i_chunk )
+        {
+            try
+            {
+                f_connection->send( (char*)( a_block_data + t_offset ), f_data_chunk_size, flags );
+            }
+            catch( exception& e )
+            {
+                cerr << "a write error occurred while pulling chunk " << i_chunk << " of the data from a record: " << e.what() << endl;
+                return false;
+            }
+            t_offset += f_data_chunk_size;
+        }
+
         try
         {
-            f_connection->send( f_buffer, t_block_size, flags );
+            f_connection->send( (char*)( a_block_data + t_offset ), f_data_chunk_size, flags );
         }
         catch( exception& e )
         {
-            cerr << "a write error occurred while pushing a record: " << e.what() << endl;
+            cerr << "a write error occurred while pulling the last chunk of the data from a record: " << e.what() << endl;
             return false;
         }
+
         return true;
-         */
     }
 
     bool record_dist::pull_header( block_header* a_block_header, int flags )
@@ -112,24 +133,45 @@ namespace mantis
 
     bool record_dist::pull_data( data_type* a_block_data, int flags )
     {
-        return false;
-        /*
-        size_t t_block_size = f_buffer_size;
+        size_t t_offset = 0;
+        for( unsigned i_chunk = 0; i_chunk < f_n_full_chunks; ++i_chunk )
+        {
+            try
+            {
+                f_connection->recv_size( flags );
+                if( f_connection->recv( (char*)( a_block_data + t_offset ), f_data_chunk_size, flags ) == 0 )
+                    return false;
+            }
+            catch( exception& e )
+            {
+                cerr << "a read error occurred while pulling chunk " << i_chunk << " of the data from a record: " << e.what() << endl;
+                return false;
+            }
+            t_offset += f_data_chunk_size;
+        }
+
         try
         {
-            t_block_size = f_connection->recv_size( flags );
-            if( t_block_size == 0 ) return false;
-            reset_buffer( t_block_size );
-            if( f_connection->recv( f_buffer, t_block_size, flags ) == 0 )
+            f_connection->recv_size( flags );
+            if( f_connection->recv( (char*)( a_block_data + t_offset ), f_last_data_chunk_size, flags ) == 0 )
                 return false;
         }
         catch( exception& e )
         {
-            cerr << "a read error occurred while pulling a record: " << e.what() << endl;
+            cerr << "a read error occurred while pulling the last chunk of the data from a record: " << e.what() << endl;
             return false;
         }
-        return deserialize_block( a_block );
-         */
+
+        return true;
     }
 
+    size_t record_dist::get_data_chunk_size()
+    {
+        return f_data_chunk_size;
+    }
+    void record_dist::set_data_chunk_size( size_t size )
+    {
+        f_data_chunk_size = size;
+        return;
+    }
 }

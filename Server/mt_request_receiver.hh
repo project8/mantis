@@ -15,10 +15,19 @@ namespace mantis
         public callable
     {
         public:
-            request_receiver( server* a_server, request_queue* a_request_queue, condition* a_condition, buffer* a_buffer );
+            request_receiver( server* a_server, request_queue* a_request_queue, condition* a_condition );
             virtual ~request_receiver();
 
             void execute();
+
+            size_t get_buffer_size() const;
+            void set_buffer_size( size_t size );
+
+            size_t get_record_size() const;
+            void set_record_size( size_t size );
+
+            size_t get_data_chunk_size() const;
+            void set_data_chunk_size( size_t size );
 
         private:
             server* f_server;
@@ -27,6 +36,7 @@ namespace mantis
 
             size_t f_buffer_size;
             size_t f_record_size;
+            size_t f_data_chunk_size;
     };
 
 }

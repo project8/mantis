@@ -21,6 +21,9 @@ message status
     
     //record size
     required uint32 record_size = 3;
+    
+    //record chunk size
+    required uint32 data_chunk_size = 4;
 	
 
 }

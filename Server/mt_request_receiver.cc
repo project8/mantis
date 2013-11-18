@@ -12,12 +12,13 @@ using std::endl;
 namespace mantis
 {
 
-    request_receiver::request_receiver( server* a_server, request_queue* a_request_queue, condition* a_condition, buffer* a_buffer ) :
+    request_receiver::request_receiver( server* a_server, request_queue* a_request_queue, condition* a_condition ) :
             f_server( a_server ),
             f_request_queue( a_request_queue ),
             f_condition( a_condition ),
-            f_buffer_size( a_buffer->size() ),
-            f_record_size( a_buffer->record_size() )
+            f_buffer_size( 512 ),
+            f_record_size( 419304 ),
+            f_data_chunk_size( 1024 )
     {
     }
 
@@ -43,7 +44,7 @@ namespace mantis
             if( ! t_request_dist->pull_request( MSG_WAITALL ) )
             {
                 cerr << "[request_receiver] unable to pull run request; sending server status <error>" << endl;
-                t_request_dist->get_status()->set_server_state( status_state_t_error );
+                t_request_dist->get_status()->set_state( status_state_t_error );
                 t_request_dist->push_status();
                 delete t_request_dist->get_connection();
                 delete t_request_dist;
@@ -52,17 +53,17 @@ namespace mantis
             {
                 cout << "[request_receiver] sending server status <acknowledged>..." << endl;
 
-                // pass buffer and record sizes back in the request
-                t_request_dist->get_request()->set_buffer_size( f_buffer_size );
-                t_request_dist->get_request()->set_record_size( f_record_size );
-                t_request_dist->push_request();
-
-                t_request_dist->get_status()->set_server_state( status_state_t_acknowledged );
+                t_request_dist->get_status()->set_state( status_state_t_acknowledged );
+                t_request_dist->get_status()->set_buffer_size( f_buffer_size );
+                t_request_dist->get_status()->set_record_size( f_record_size );
+                t_request_dist->get_status()->set_data_chunk_size( f_data_chunk_size );
                 t_request_dist->push_status();
+
+                // TODO: wait here until client sends client_status ready
 
                 cout << "[request_receiver] queuing request..." << endl;
 
-                t_request_dist->get_status()->set_server_state( status_state_t_waiting );
+                t_request_dist->get_status()->set_state( status_state_t_waiting );
                 f_request_queue->to_back( t_request_dist );
 
 
@@ -77,6 +78,36 @@ namespace mantis
             cout << "[request_receiver] finished processing request" << endl;
         }
 
+        return;
+    }
+
+    size_t request_receiver::get_buffer_size() const
+    {
+        return f_buffer_size;
+    }
+    void request_receiver::set_buffer_size( size_t size )
+    {
+        f_buffer_size = size;
+        return;
+    }
+
+    size_t request_receiver::get_record_size() const
+    {
+        return f_record_size;
+    }
+    void request_receiver::set_record_size( size_t size )
+    {
+        f_record_size = size;
+        return;
+    }
+
+    size_t request_receiver::get_data_chunk_size() const
+    {
+        return f_data_chunk_size;
+    }
+    void request_receiver::set_data_chunk_size( size_t size )
+    {
+        f_data_chunk_size = size;
         return;
     }
 

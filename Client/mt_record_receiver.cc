@@ -16,7 +16,8 @@ namespace mantis
     record_receiver::record_receiver( server* a_server, buffer* a_buffer, condition* a_condition ) :
             f_server( a_server ),
             f_buffer( a_buffer ),
-            f_condition( a_condition )
+            f_condition( a_condition ),
+            f_data_chunk_size( 1024 )
     {
         cout << "[record_receiver] allocating buffer..." << endl;
 
@@ -44,6 +45,7 @@ namespace mantis
     void record_receiver::execute()
     {
         record_dist* t_record_dist = new record_dist();
+        t_record_dist->set_data_chunk_size( f_data_chunk_size );
         cout << "[record_receiver] waiting for incomming record connection" << endl;
         // thread is blocked by the accept call in server::get_connection
         // until an incoming connection is received
@@ -64,6 +66,16 @@ namespace mantis
         delete t_record_dist->get_connection();
         delete t_record_dist;
 
+        return;
+    }
+
+    size_t record_receiver::get_data_chunk_size()
+    {
+        return f_data_chunk_size;
+    }
+    void record_receiver::set_data_chunk_size( size_t size )
+    {
+        f_data_chunk_size = size;
         return;
     }
 

@@ -19,10 +19,15 @@ namespace mantis
 
             void execute();
 
+            size_t get_data_chunk_size();
+            void set_data_chunk_size( size_t size );
+
         private:
             server* f_server;
             buffer* f_buffer;
             condition* f_condition;
+
+            size_t f_data_chunk_size;
     };
 
 }

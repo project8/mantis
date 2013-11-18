@@ -1,7 +1,5 @@
 #include "mt_block.hh"
 
-#include <sys/time.h>
-
 namespace mantis
 {
 
