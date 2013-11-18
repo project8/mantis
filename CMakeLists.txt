@@ -63,6 +63,7 @@ pbuilder_add_ext_libraries( ${PROTOBUF_LIBRARIES} )
 
 protobuf_generate_cpp( Mantis_PB_Request_Source Mantis_PB_Request_Header ${CMAKE_CURRENT_SOURCE_DIR}/Protobuf/request.proto )
 protobuf_generate_cpp( Mantis_PB_Status_Source Mantis_PB_Status_Header ${CMAKE_CURRENT_SOURCE_DIR}/Protobuf/status.proto )
+protobuf_generate_cpp( Mantis_PB_Client_Status_Source Mantis_PB_Client_Status_Header ${CMAKE_CURRENT_SOURCE_DIR}/Protobuf/client_status.proto )
 protobuf_generate_cpp( Mantis_PB_Response_Source Mantis_PB_Response_Header ${CMAKE_CURRENT_SOURCE_DIR}/Protobuf/response.proto )
 include_directories( ${CMAKE_CURRENT_BINARY_DIR} )
 
@@ -72,42 +73,62 @@ include_directories( ${CMAKE_CURRENT_BINARY_DIR} )
 #################
 
 set( MANTIS_CLIENT_HEADERFILES
-    ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_exception.hh
-    ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_parser.hh
-    
+    ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_block.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_buffer.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_callable.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_client_config.hh
-    ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_configuration.hh
-    ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_configurator.hh
-    
+    ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_client_worker.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_client.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_condition.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_configuration.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_configurator.hh    
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_connection.hh
-    ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_server.hh
-    
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_distribution.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_exception.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_iterator.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_mutex.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_parser.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_receiver.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_record_dist.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_record_receiver.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_request_dist.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_server.hh    
+    ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_thread.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_writer.hh
 
     ${Mantis_PB_Request_Header}
     ${Mantis_PB_Status_Header}
+    ${Mantis_PB_Client_Status_Header}
     ${Mantis_PB_Response_Header}
 )
 
 set( MANTIS_CLIENT_SOURCEFILES
-    ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_exception.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_parser.cc
-
+    ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_block.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_buffer.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_callable.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_client_config.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_configuration.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_configurator.cc
-
+    ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_client_worker.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_client.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_condition.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_configuration.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_configurator.cc    
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_connection.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_server.cc
-    
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_distribution.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_exception.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_iterator.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_mutex.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_parser.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_receiver.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_record_dist.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_record_receiver.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_request_dist.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_server.cc    
+    ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_thread.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_writer.cc
 
     ${Mantis_PB_Request_Source}
     ${Mantis_PB_Status_Source}
+    ${Mantis_PB_Client_Status_Source}
     ${Mantis_PB_Response_Source}
 )
 
@@ -125,9 +146,9 @@ add_executable( test_mantis_config ${CMAKE_CURRENT_SOURCE_DIR}/Applications/test
 target_link_libraries( test_mantis_config MantisClient ${EXTERNAL_LIBRARIES} )
 pbuilder_install_executables( test_mantis_config )
 
-add_executable( mantis_client ${CMAKE_CURRENT_SOURCE_DIR}/Applications/mantis_client.cc )
-target_link_libraries( mantis_client MantisClient ${EXTERNAL_LIBRARIES} )
-pbuilder_install_executables( mantis_client )
+#add_executable( mantis_client ${CMAKE_CURRENT_SOURCE_DIR}/Applications/mantis_client.cc )
+#target_link_libraries( mantis_client MantisClient ${EXTERNAL_LIBRARIES} )
+#pbuilder_install_executables( mantis_client )
 
 add_executable( mantis_new_client ${CMAKE_CURRENT_SOURCE_DIR}/Applications/mantis_new_client.cc )
 target_link_libraries( mantis_new_client MantisClient ${EXTERNAL_LIBRARIES} )
@@ -142,44 +163,20 @@ if( Mantis_BUILD_SERVER )
 
     set( MANTIS_SERVER_HEADERFILES
         ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_destroyer.hh
-        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_singleton.hh
-        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_factory.hh
-
-        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_server_config.hh
-        
-        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_mutex.hh
-        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_condition.hh
-        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_callable.hh
-        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_thread.hh
-                
-        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_run_queue.hh
-    
-        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_block.hh
-        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_buffer.hh
-        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_iterator.hh
-    
         ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_digitizer.hh
-        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_receiver.hh
-        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_writer.hh
+        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_factory.hh
+        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_run_queue.hh
+        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_server_config.hh
+        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_singleton.hh
     )
     
     set( MANTIS_SERVER_SOURCEFILES
-        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_server_config.cc
-
-        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_mutex.cc
-        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_condition.cc
-        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_callable.cc
-        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_thread.cc
-                
-        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_run_queue.cc
-    
-        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_block.cc
-        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_buffer.cc
-        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_iterator.cc
-        
+        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_destroyer.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_digitizer.cc
-        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_receiver.cc
-        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_writer.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_factory.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_run_queue.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_server_config.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_singleton.cc
     )
     
     if( Mantis_INCLUDE_PX1500_SERVER )
@@ -206,14 +203,14 @@ if( Mantis_BUILD_SERVER )
     target_link_libraries( test_mantis_server MantisClient MantisServer ${EXTERNAL_LIBRARIES} )
     pbuilder_install_executables( test_mantis_server )
     
-    add_executable( mantis_server ${CMAKE_CURRENT_SOURCE_DIR}/Applications/mantis_server.cc )
-    target_link_libraries( mantis_server MantisClient MantisServer ${EXTERNAL_LIBRARIES} )
-    pbuilder_install_executables( mantis_server )
+    #add_executable( mantis_server ${CMAKE_CURRENT_SOURCE_DIR}/Applications/mantis_server.cc )
+    #target_link_libraries( mantis_server MantisClient MantisServer ${EXTERNAL_LIBRARIES} )
+    #pbuilder_install_executables( mantis_server )
 
     if( Mantis_INCLUDE_PX1500_SERVER )
-        add_executable( mantis_px1500_standalone ${CMAKE_CURRENT_SOURCE_DIR}/Applications/mantis_px1500_standalone.cc )
-        target_link_libraries( mantis_px1500_standalone MantisClient MantisServer ${EXTERNAL_LIBRARIES} )
-        pbuilder_install_executables( mantis_px1500_standalone )
+        #add_executable( mantis_px1500_standalone ${CMAKE_CURRENT_SOURCE_DIR}/Applications/mantis_px1500_standalone.cc )
+        #target_link_libraries( mantis_px1500_standalone MantisClient MantisServer ${EXTERNAL_LIBRARIES} )
+        #pbuilder_install_executables( mantis_px1500_standalone )
         
         add_executable( mantis_px1500_daemon ${CMAKE_CURRENT_SOURCE_DIR}/Applications/mantis_px1500_daemon.cc )
         target_link_libraries( mantis_px1500_daemon MantisClient MantisServer ${EXTERNAL_LIBRARIES} )
