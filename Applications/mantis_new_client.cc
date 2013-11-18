@@ -29,6 +29,7 @@
 using namespace mantis;
 
 #include <string>
+#include <unistd.h>
 using std::string;
 
 #include <iostream>
@@ -51,46 +52,64 @@ int main( int argc, char** argv )
     string t_write_host = t_config.get_string_required( "client-host" );
     int t_write_port = t_request_port + 1;
 
-    request_dist* t_request_dist = new request_dist();
-    t_request_dist->get_request()->set_write_host( t_write_host );
-    t_request_dist->get_request()->set_write_port( t_write_port );
-    t_request_dist->get_request()->set_file( t_config.get_string_required( "file" ) );
-    t_request_dist->get_request()->set_description( t_config.get_string_optional( "description", "default client run" ) );
-    t_request_dist->get_request()->set_date( get_absolute_time_string() );
-    t_request_dist->get_request()->set_mode( (request_mode_t)t_config.get_int_required( "mode" ) );
-    t_request_dist->get_request()->set_rate( t_config.get_double_required( "rate" ) );
-    t_request_dist->get_request()->set_duration( t_config.get_double_required( "duration" ) );
+    double t_duration = t_config.get_double_required( "duration" );
+    useconds_t t_wait_during_run = ( useconds_t )( t_duration / 10. );
+
+    request_dist* t_connection_to_server = new request_dist();
+    t_connection_to_server->get_request()->set_write_host( t_write_host );
+    t_connection_to_server->get_request()->set_write_port( t_write_port );
+    t_connection_to_server->get_request()->set_file( t_config.get_string_required( "file" ) );
+    t_connection_to_server->get_request()->set_description( t_config.get_string_optional( "description", "default client run" ) );
+    t_connection_to_server->get_request()->set_date( get_absolute_time_string() );
+    t_connection_to_server->get_request()->set_mode( (request_mode_t)t_config.get_int_required( "mode" ) );
+    t_connection_to_server->get_request()->set_rate( t_config.get_double_required( "rate" ) );
+    t_connection_to_server->get_request()->set_duration( t_duration );
 
     // start the client for sending the request
+    cout << "[mantis_client] connecting with the server" << endl;
     client* t_request_client = new client( t_request_host, t_request_port );
-    t_request_dist->set_connection( t_request_client );
+    t_connection_to_server->set_connection( t_request_client );
+
 
     cout << "[mantis_client] sending request..." << endl;
 
-    if( ! t_request_dist->push_request() )
+    if( ! t_connection_to_server->push_request() )
     {
-        delete t_request_dist;
+        delete t_connection_to_server;
         delete t_request_client;
-        throw exception() << "[mantis_client] error sending request";
+        cerr << "[mantis_client] error sending request" << endl;
+        return -1;
     }
 
-    // wait for acknowledgement
+    useconds_t t_sleep_time = 100;  // in usec
+
     while( true )
     {
-        t_request_dist->pull_status();
-        if( t_request_dist->get_status()->server_state() == status_state_t_acknowledged )
+        usleep( t_sleep_time );
+
+        t_connection_to_server->pull_status( MSG_WAITALL );
+
+        if( t_connection_to_server->get_status()->state() == status_state_t_acknowledged )
         {
             cout << "[mantis_client] run request acknowledged...\n" << endl;
             break;
+        }
+
+        if( t_connection_to_server->get_status()->state() == status_state_t_error )
+        {
+            delete t_connection_to_server;
+            delete t_request_client;
+            cerr << "[mantis_client] error reported; run was not acknowledged\n" << endl;
+            return -1;
         }
     }
 
     cout << "[mantis_client] creating run objects..." << endl;
 
     // get buffer size and record size from the request
-    t_request_dist->pull_request();
-    int t_buffer_size = t_request_dist->get_request()->buffer_size();
-    int t_record_size = t_request_dist->get_request()->record_size();
+    t_connection_to_server->pull_request();
+    int t_buffer_size = t_connection_to_server->get_status()->buffer_size();
+    int t_record_size = t_connection_to_server->get_status()->record_size();
 
     // objects for receiving and writing data
     server t_server( t_write_port );
@@ -102,49 +121,36 @@ int main( int argc, char** argv )
 
     file_writer t_writer( &t_buffer, &t_buffer_condition );
 
-    client_worker t_worker( t_request_dist->get_request(), &t_receiver, &t_writer, &t_buffer_condition );
+    client_worker t_worker( t_connection_to_server->get_request(), &t_receiver, &t_writer, &t_buffer_condition );
 
     thread t_worker_thread( &t_worker );
 
-    cout << "[mantis_client] starting run" << endl;
+    cout << "[mantis_client] starting record receiver" << endl;
 
     try
     {
         t_worker_thread.start();
-        t_request_dist->get_status()->set_client_state( status_state_t_started );
-        t_request_dist->push_status();
-
-        cout << "[mantis_client] running..." << endl;
-
-        t_worker_thread.join();
     }
-    catch( exception& e)
+    catch( exception& e )
     {
-        cerr << "exception caught during client running" << e.what() << endl;
+        cerr << "[mantis_client] unable to start record-receiving server" << endl;
+        delete t_request_client;
+        delete t_request_client;
         return -1;
     }
 
-    delete t_request_dist;
-    delete t_request_client;
+    cout << "[mantis_client] transmitting status: ready" << endl;
 
+    t_connection_to_server->get_client_status()->set_state( client_status_state_t_ready );
 
+    if( ! t_connection_to_server->push_client_status() )
+    {
+        delete t_connection_to_server;
+        delete t_request_client;
+        cerr << "[mantis_client] error sending client status" << endl;
+        return -1;
+    }
 
-
-    // start server waiting for incoming write connection
-    server* t_write_server = new server( t_write_port );
-
-
-
-    // TODO: check with daq server on run status?
-    //       eventually timeout?
-
-
-    delete t_write_server;
-
-
-
-
-    unsigned t_sleep_time = 1;
 
     // =0 -> in progress
     // <0 -> unsuccessful
@@ -152,101 +158,87 @@ int main( int argc, char** argv )
     int t_run_success = 0;
     while( true )
     {
-        // TODO: consider putting in a timeout for waiting for acknowledgement?
-        sleep( t_sleep_time );
+        usleep( t_sleep_time );
 
-        t_run_context->pull_status();
+        t_connection_to_server->pull_status( MSG_WAITALL );
 
-        if( t_run_context->get_server_status()->state() == status_state_t_acknowledged )
+        if( t_connection_to_server->get_status()->state() == status_state_t_waiting )
         {
-            cout << "[mantis_client] run request acknowledged...";
-            cout.flush();
-            cout << "\n";
-            t_sleep_time = 1;
-            break;
-        }
-    }
-
-
-
-        if( t_run_context->get_server_status()->state() == status_state_t_waiting )
-        {
-            cout << "[mantis_client] waiting for run...";
-            cout.flush();
-            cout << "\n";
-            t_sleep_time = 1;
+            cout << "[mantis_client] waiting for run...\n" << endl;
+            t_sleep_time = 100;
             continue;
         }
 
-        if( t_run_context->get_server_status()->state() == status_state_t_started )
+        if( t_connection_to_server->get_status()->state() == status_state_t_started )
         {
-            cout << "[mantis_client] run has started...";
-            cout.flush();
-            cout << "\n";
-            t_sleep_time = 1;
+            cout << "[mantis_client] run has started...\n" << endl;
+            t_sleep_time = t_wait_during_run;
             continue;
         }
 
-        if( t_run_context->get_server_status()->state() == status_state_t_running )
+        if( t_connection_to_server->get_status()->state() == status_state_t_running )
         {
-            cout << "[mantis_client] run is in progress...";
-            cout.flush();
-            cout << "\n";
-            t_sleep_time = 10;
+            cout << "[mantis_client] run is in progress...\n" << endl;
+            t_sleep_time = t_wait_during_run;
             continue;
         }
 
-        if( t_run_context->get_server_status()->state() == status_state_t_stopped )
+        if( t_connection_to_server->get_status()->state() == status_state_t_stopped )
         {
-            cout << "[mantis_client] server status: stopped; run should be complete";
-            cout.flush();
-            cout << "\n" << endl;
+            cout << "[mantis_client] run status: stopped; run should be complete\n" << endl;
             t_run_success = 1;
             break;
         }
 
-        if( t_run_context->get_server_status()->state() == status_state_t_error )
+        if( t_connection_to_server->get_status()->state() == status_state_t_error )
         {
-            cout << "[mantis_client] error reported; run did not complete";
-            cout.flush();
-            cout << "\n" << endl;
+            cout << "[mantis_client] error reported; run did not complete\n" << endl;
             t_run_success = -1;
             break;
         }
     }
 
+    cout << "[mantis_client] shutting down record receiver" << endl;
+
+    // TODO: tell worker to stop waiting for records
+
+    t_worker_thread.join();
+
+
     if( t_run_success > 0 )
     {
         cout << "[mantis_client] receiving response..." << endl;
 
-        if( ! t_run_context->pull_response() )
+        if( ! t_connection_to_server->pull_response() )
         {
             cerr << "error receiving response" << endl;
-            delete t_run_context;
-            delete t_client;
+            delete t_connection_to_server;
+            delete t_request_client;
             return -1;
         }
 
         cout << "[mantis_client] digitizer summary:\n";
-        cout << "  record count: " << t_run_context->get_response()->digitizer_records() << " [#]\n";
-        cout << "  acquisition count: " << t_run_context->get_response()->digitizer_acquisitions() << " [#]\n";
-        cout << "  live time: " << t_run_context->get_response()->digitizer_live_time() << " [sec]\n";
-        cout << "  dead time: " << t_run_context->get_response()->digitizer_dead_time() << " [sec]\n";
-        cout << "  megabytes: " << t_run_context->get_response()->digitizer_megabytes() << " [Mb]\n";
-        cout << "  rate: " << t_run_context->get_response()->digitizer_rate() << " [Mb/sec]\n";
+        cout << "  record count: " << t_connection_to_server->get_response()->digitizer_records() << " [#]\n";
+        cout << "  acquisition count: " << t_connection_to_server->get_response()->digitizer_acquisitions() << " [#]\n";
+        cout << "  live time: " << t_connection_to_server->get_response()->digitizer_live_time() << " [sec]\n";
+        cout << "  dead time: " << t_connection_to_server->get_response()->digitizer_dead_time() << " [sec]\n";
+        cout << "  megabytes: " << t_connection_to_server->get_response()->digitizer_megabytes() << " [Mb]\n";
+        cout << "  rate: " << t_connection_to_server->get_response()->digitizer_rate() << " [Mb/sec]\n";
 
         cout << endl;
 
         cout << "[mantis_client] writer summary:\n";
-        cout << "  record count: " << t_run_context->get_response()->writer_records() << " [#]\n";
-        cout << "  acquisition count: " << t_run_context->get_response()->writer_acquisitions() << " [#]\n";
-        cout << "  live time: " << t_run_context->get_response()->writer_live_time() << " [sec]\n";
-        cout << "  megabytes: " << t_run_context->get_response()->writer_megabytes() << "[Mb]\n";
-        cout << "  rate: " << t_run_context->get_response()->writer_rate() << " [Mb/sec]\n";
+        cout << "  record count: " << t_connection_to_server->get_response()->writer_records() << " [#]\n";
+        cout << "  acquisition count: " << t_connection_to_server->get_response()->writer_acquisitions() << " [#]\n";
+        cout << "  live time: " << t_connection_to_server->get_response()->writer_live_time() << " [sec]\n";
+        cout << "  megabytes: " << t_connection_to_server->get_response()->writer_megabytes() << "[Mb]\n";
+        cout << "  rate: " << t_connection_to_server->get_response()->writer_rate() << " [Mb/sec]\n";
+
+        cout << endl;
     }
 
-    delete t_run_context;
-    delete t_client;
+    delete t_connection_to_server;
+    delete t_request_client;
 
     return t_run_success;
 }

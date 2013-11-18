@@ -6,7 +6,6 @@ message status
 	//state of request
 	enum state_t
 	{
-	    not_ready = 0
 		acknowledged = 1;
 		waiting = 2;
 		started = 3;
@@ -15,7 +14,13 @@ message status
 		error = 6;
 	}
 	
-	required state_t server_state = 1;
-	required state_t client_state = 2;
+	required state_t state = 1;
+	   
+    //buffer size
+    required uint32 buffer_size = 2;
+    
+    //record size
+    required uint32 record_size = 3;
+	
 
 }

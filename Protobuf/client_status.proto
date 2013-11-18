@@ -1,0 +1,15 @@
+package mantis;
+
+message client_status
+{
+
+	//state of request
+	enum state_t
+	{
+        ready = 1
+		error = 2;
+	}
+	
+	required state_t state = 1;
+
+}

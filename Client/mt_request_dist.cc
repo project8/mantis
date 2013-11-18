@@ -18,6 +18,7 @@ namespace mantis
     request_dist::request_dist() :
                     f_request(),
                     f_status(),
+                    f_client_status(),
                     f_response()
     {
     }
@@ -105,6 +106,45 @@ namespace mantis
     status* request_dist::get_status()
     {
         return &f_status;
+    }
+
+    bool request_dist::push_client_status( int flags )
+    {
+        size_t t_client_status_size = reset_buffer( f_client_status.ByteSize() );
+        if( ! f_client_status.SerializeToArray( f_buffer, t_client_status_size ) )
+            return false;
+        try
+        {
+            f_connection->send( f_buffer, t_client_status_size, flags );
+        }
+        catch( exception& e )
+        {
+            cerr << "a write error occurred while pushing a client_status: " << e.what() << endl;
+            return false;
+        }
+        return true;
+    }
+    bool request_dist::pull_client_status( int flags )
+    {
+        size_t t_client_status_size = f_buffer_size;
+        try
+        {
+            t_client_status_size = f_connection->recv_size( flags );
+            if( t_client_status_size == 0 ) return false;
+            reset_buffer( t_client_status_size );
+            if( f_connection->recv( f_buffer, t_client_status_size, flags ) == 0 )
+                return false;
+        }
+        catch( exception& e )
+        {
+            cerr << "a read error occurred while pulling a client_status: " << e.what() << endl;
+            return false;
+        }
+        return f_client_status.ParseFromArray( f_buffer, t_client_status_size );
+    }
+    client_status* request_dist::get_client_status()
+    {
+        return &f_client_status;
     }
 
     bool request_dist::push_response( int flags )
