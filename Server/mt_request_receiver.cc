@@ -48,31 +48,49 @@ namespace mantis
                 t_request_dist->push_status();
                 delete t_request_dist->get_connection();
                 delete t_request_dist;
+                continue;
             }
-            else
+
+            cout << "[request_receiver] sending server status <acknowledged>..." << endl;
+
+            t_request_dist->get_status()->set_state( status_state_t_acknowledged );
+            t_request_dist->get_status()->set_buffer_size( f_buffer_size );
+            t_request_dist->get_status()->set_record_size( f_record_size );
+            t_request_dist->get_status()->set_data_chunk_size( f_data_chunk_size );
+            t_request_dist->push_status();
+
+            cout << "[request_receiver] waiting for client readiness..." << endl;
+
+            if( ! t_request_dist->pull_client_status( MSG_WAITALL ) )
             {
-                cout << "[request_receiver] sending server status <acknowledged>..." << endl;
-
-                t_request_dist->get_status()->set_state( status_state_t_acknowledged );
-                t_request_dist->get_status()->set_buffer_size( f_buffer_size );
-                t_request_dist->get_status()->set_record_size( f_record_size );
-                t_request_dist->get_status()->set_data_chunk_size( f_data_chunk_size );
+                cerr << "[request_receiver] unable to pull client status; sending server status <error>" << endl;
+                t_request_dist->get_status()->set_state( status_state_t_error );
                 t_request_dist->push_status();
+                delete t_request_dist->get_connection();
+                delete t_request_dist;
+                continue;
+            }
+            if( ! t_request_dist->get_client_status()->state() == client_status_state_t_ready )
+            {
+                cerr << "[request_receiver] client did not get ready; sending server status <error>" << endl;
+                t_request_dist->get_status()->set_state( status_state_t_error );
+                t_request_dist->push_status();
+                delete t_request_dist->get_connection();
+                delete t_request_dist;
+                continue;
+            }
 
-                // TODO: wait here until client sends client_status ready
+            cout << "[request_receiver] queuing request..." << endl;
 
-                cout << "[request_receiver] queuing request..." << endl;
-
-                t_request_dist->get_status()->set_state( status_state_t_waiting );
-                f_request_queue->to_back( t_request_dist );
+            t_request_dist->get_status()->set_state( status_state_t_waiting );
+            f_request_queue->to_back( t_request_dist );
 
 
-                // if the queue condition is waiting, release it
-                if( f_condition->is_waiting() == true )
-                {
-                    cout << "[request_receiver] releasing queue condition" << endl;
-                    f_condition->release();
-                }
+            // if the queue condition is waiting, release it
+            if( f_condition->is_waiting() == true )
+            {
+                cout << "[request_receiver] releasing queue condition" << endl;
+                f_condition->release();
             }
 
             cout << "[request_receiver] finished processing request" << endl;
