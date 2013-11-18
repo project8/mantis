@@ -24,7 +24,7 @@ namespace mantis
             bool push_status( int flags = 0 );
             bool pull_status( int flags = 0 );
 
-            status* get_client_status();
+            client_status* get_client_status();
             bool push_client_status( int flags = 0 );
             bool pull_client_status( int flags = 0 );
 
@@ -35,7 +35,7 @@ namespace mantis
         private:
             request f_request;
             status f_status;
-            client_status* f_client_status;
+            client_status f_client_status;
             response f_response;
     };
 

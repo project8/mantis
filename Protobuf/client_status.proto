@@ -6,7 +6,7 @@ message client_status
 	//state of request
 	enum state_t
 	{
-        ready = 1
+        ready = 1;
 		error = 2;
 	}
 	

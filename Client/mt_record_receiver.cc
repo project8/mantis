@@ -23,7 +23,7 @@ namespace mantis
         iterator t_it( f_buffer );
         for( unsigned int index = 0; index < f_buffer->size(); index++ )
         {
-            t_it->data() = new data_type[ f_buffer->record_size() ];
+            *( t_it->handle() ) = new data_type[ f_buffer->record_size() ];
             t_it->set_data_size( f_buffer->record_size() );
             ++t_it;
         }

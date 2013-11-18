@@ -17,12 +17,12 @@ namespace mantis
     {
     }
 
-    void distribution::distribution( connection* a_connection )
+    void distribution::set_connection( connection* a_connection )
     {
         f_connection = a_connection;
         return;
     }
-    connection* distribution::distribution()
+    connection* distribution::get_connection()
     {
         return f_connection;
     }

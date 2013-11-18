@@ -23,8 +23,10 @@
 #include "mt_client_config.hh"
 #include "mt_client_worker.hh"
 #include "mt_client.hh"
+#include "mt_exception.hh"
 #include "mt_file_writer.hh"
 #include "mt_request_dist.hh"
+#include "mt_thread.hh"
 #include "thorax.hh"
 using namespace mantis;
 

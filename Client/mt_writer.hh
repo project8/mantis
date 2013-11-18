@@ -23,7 +23,7 @@ namespace mantis
             void execute();
             virtual void finalize( response* a_response );
 
-        private:
+        protected:
             buffer* f_buffer;
             condition* f_condition;
 
