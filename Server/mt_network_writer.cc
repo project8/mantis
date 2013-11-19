@@ -1,5 +1,7 @@
 #include "mt_network_writer.hh"
 
+#include "mt_exception.hh"
+
 #include <cstring> // for memcpy()
 #include <iostream>
 #include <sstream>
