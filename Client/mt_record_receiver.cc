@@ -2,6 +2,7 @@
 
 #include "mt_iterator.hh"
 #include "mt_record_dist.hh"
+#include "response.pb.h"
 
 #include <cstddef>
 
@@ -17,6 +18,7 @@ namespace mantis
             f_server( a_server ),
             f_buffer( a_buffer ),
             f_condition( a_condition ),
+            f_record_count( 0 ),
             f_live_time( 0 ),
             f_dead_time( 0 ),
             f_data_chunk_size( 1024 )
@@ -61,6 +63,8 @@ namespace mantis
         timespec t_dead_stop_time;
         timespec t_stamp_time;
 
+        f_record_count = 0;
+
         cout << "[record_receiver] waiting" << endl;
 
         f_condition->wait();
@@ -73,22 +77,6 @@ namespace mantis
         //go go go go
         while( true )
         {
-            //check if we've written enough
-            if( f_record_count == f_record_last )
-            {
-                //mark the block as written
-                t_it->set_written();
-
-                //get the time and update the number of live nanoseconds
-                get_time_monotonic( &t_live_stop_time );
-
-                f_live_time += time_to_nsec( t_live_stop_time ) - time_to_nsec( t_live_start_time );
-
-                //GET OUT
-                cout << "[record_receiver] finished normally" << endl;
-                break;
-            }
-
             t_it->set_acquiring();
 
             if( receive( t_it.object(), t_record_dist ) == false )
@@ -102,6 +90,24 @@ namespace mantis
                 //GET OUT
                 cout << "[record_receiver] finished abnormally because receive failed" << endl;
                 return;
+            }
+
+            ++f_record_count;
+
+            //a zero-length data array indicates the end of the data
+            if( t_it.object()->get_data_size() == 0 )
+            {
+                //mark the block as written
+                t_it->set_written();
+
+                //get the time and update the number of live nanoseconds
+                get_time_monotonic( &t_live_stop_time );
+
+                f_live_time += time_to_nsec( t_live_stop_time ) - time_to_nsec( t_live_start_time );
+
+                //GET OUT
+                cout << "[record_receiver] finished normally" << endl;
+                break;
             }
 
             t_it->set_acquired();
@@ -151,7 +157,6 @@ namespace mantis
         cout << "[digitizer] calculating statistics..." << endl;
 
         a_response->set_digitizer_records( f_record_count );
-        a_response->set_digitizer_acquisitions( f_acquisition_count );
         a_response->set_digitizer_live_time( (double) f_live_time * SEC_PER_NSEC );
         a_response->set_digitizer_dead_time( (double) f_dead_time * SEC_PER_NSEC );
         a_response->set_digitizer_megabytes( (double) (4 * f_record_count) );

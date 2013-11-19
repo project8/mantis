@@ -4,6 +4,7 @@
 #include <iostream>
 #include <sstream>
 using std::cout;
+using std::cerr;
 using std::endl;
 using std::stringstream;
 
@@ -39,6 +40,13 @@ namespace mantis
 
     void network_writer::finalize( response* a_response )
     {
+        // push empty block to indicate end of run
+        block t_block;
+        if(! f_record_dist->push_record( &t_block ) )
+        {
+            cerr << "[network_writer] there was an error pushing the end-of-run block" << endl;
+        }
+
         writer::finalize( a_response );
 
         delete f_client;

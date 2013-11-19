@@ -9,6 +9,8 @@
 
 namespace mantis
 {
+    class record_dist;
+    class response;
 
     class record_receiver :
         public callable
@@ -28,6 +30,7 @@ namespace mantis
             buffer* f_buffer;
             condition* f_condition;
 
+            record_id_type f_record_count;
             time_nsec_type f_live_time;
             time_nsec_type f_dead_time;
 

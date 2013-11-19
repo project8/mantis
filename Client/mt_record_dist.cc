@@ -32,14 +32,18 @@ namespace mantis
             return false;
         }
 
-        f_n_full_chunks = a_block->header()->data_size() / f_data_chunk_size;
-        f_last_data_chunk_size = a_block->header()->data_size() - f_data_chunk_size * f_n_full_chunks;
-
-        if( ! push_data( a_block->data(), flags ) )
+        if( a_block->header()->data_size() > 0 )
         {
-            cerr << "[record_dist] a write error occurred while pushing a block's data" << endl;
-            return false;
+            f_n_full_chunks = a_block->header()->data_size() / f_data_chunk_size;
+            f_last_data_chunk_size = a_block->header()->data_size() - f_data_chunk_size * f_n_full_chunks;
+
+            if( ! push_data( a_block->data(), flags ) )
+            {
+                cerr << "[record_dist] a write error occurred while pushing a block's data" << endl;
+                return false;
+            }
         }
+
         return true;
     }
     bool record_dist::pull_record( block* a_block, int flags )
@@ -50,13 +54,16 @@ namespace mantis
             return false;
         }
 
-        f_n_full_chunks = a_block->header()->data_size() / f_data_chunk_size;
-        f_last_data_chunk_size = a_block->header()->data_size() - f_data_chunk_size * f_n_full_chunks;
-
-        if( ! pull_data( a_block->data(), flags ) )
+        if( a_block->header()->data_size() > 0 )
         {
-            cerr << "[record_dist] a read error occurred while pulling a block's data" << endl;
-            return false;
+            f_n_full_chunks = a_block->header()->data_size() / f_data_chunk_size;
+            f_last_data_chunk_size = a_block->header()->data_size() - f_data_chunk_size * f_n_full_chunks;
+
+            if( ! pull_data( a_block->data(), flags ) )
+            {
+                cerr << "[record_dist] a read error occurred while pulling a block's data" << endl;
+                return false;
+            }
         }
         return true;
     }
@@ -81,7 +88,7 @@ namespace mantis
 
     bool record_dist::push_data( const data_type* a_block_data, int flags )
     {
-        data_type* t_offset_data = a_block_data;
+        const data_type* t_offset_data = a_block_data;
         for( unsigned i_chunk = 0; i_chunk < f_n_full_chunks; ++i_chunk )
         {
             try

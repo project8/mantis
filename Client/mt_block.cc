@@ -11,7 +11,7 @@ namespace mantis
         f_header.set_acquisition_id( 0 );
         f_header.set_record_id( 0 );
         f_header.set_timestamp( 0 );
-        f_header.set_data_size( 4194304 );
+        f_header.set_data_size( 0 );
     }
 
     block::~block()
