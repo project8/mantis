@@ -81,29 +81,32 @@ namespace mantis
 
     bool record_dist::push_data( const data_type* a_block_data, int flags )
     {
-        size_t t_offset = 0;
+        data_type* t_offset_data = a_block_data;
         for( unsigned i_chunk = 0; i_chunk < f_n_full_chunks; ++i_chunk )
         {
             try
             {
-                f_connection->send( (char*)( a_block_data + t_offset ), f_data_chunk_size, flags );
+                f_connection->send( (char*)( t_offset_data ), f_data_chunk_size, flags );
             }
             catch( exception& e )
             {
                 cerr << "a write error occurred while pulling chunk " << i_chunk << " of the data from a record: " << e.what() << endl;
                 return false;
             }
-            t_offset += f_data_chunk_size;
+            t_offset_data += f_data_chunk_size;
         }
 
-        try
+        if( f_last_data_chunk_size > 0 )
         {
-            f_connection->send( (char*)( a_block_data + t_offset ), f_data_chunk_size, flags );
-        }
-        catch( exception& e )
-        {
-            cerr << "a write error occurred while pulling the last chunk of the data from a record: " << e.what() << endl;
-            return false;
+            try
+            {
+                f_connection->send( (char*)( t_offset_data ), f_last_data_chunk_size, flags );
+            }
+            catch( exception& e )
+            {
+                cerr << "a write error occurred while pulling the last chunk of the data from a record: " << e.what() << endl;
+                return false;
+            }
         }
 
         return true;
@@ -133,13 +136,13 @@ namespace mantis
 
     bool record_dist::pull_data( data_type* a_block_data, int flags )
     {
-        size_t t_offset = 0;
+        data_type* t_offset_data = a_block_data;
         for( unsigned i_chunk = 0; i_chunk < f_n_full_chunks; ++i_chunk )
         {
             try
             {
                 f_connection->recv_size( flags );
-                if( f_connection->recv( (char*)( a_block_data + t_offset ), f_data_chunk_size, flags ) == 0 )
+                if( f_connection->recv( (char*)( t_offset_data ), f_data_chunk_size, flags ) == 0 )
                     return false;
             }
             catch( exception& e )
@@ -147,19 +150,22 @@ namespace mantis
                 cerr << "a read error occurred while pulling chunk " << i_chunk << " of the data from a record: " << e.what() << endl;
                 return false;
             }
-            t_offset += f_data_chunk_size;
+            t_offset_data += f_data_chunk_size;
         }
 
-        try
+        if( f_last_data_chunk_size > 0 )
         {
-            f_connection->recv_size( flags );
-            if( f_connection->recv( (char*)( a_block_data + t_offset ), f_last_data_chunk_size, flags ) == 0 )
+            try
+            {
+                f_connection->recv_size( flags );
+                if( f_connection->recv( (char*)( t_offset_data ), f_last_data_chunk_size, flags ) == 0 )
+                    return false;
+            }
+            catch( exception& e )
+            {
+                cerr << "a read error occurred while pulling the last chunk of the data from a record: " << e.what() << endl;
                 return false;
-        }
-        catch( exception& e )
-        {
-            cerr << "a read error occurred while pulling the last chunk of the data from a record: " << e.what() << endl;
-            return false;
+            }
         }
 
         return true;
