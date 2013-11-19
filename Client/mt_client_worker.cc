@@ -45,11 +45,27 @@ namespace mantis
 
         cout << "[client_worker] finalizing..." << endl;
 
-        response* t_response = new response();
-        //f_receiver->finalize( t_response );
-        f_writer->finalize( t_response );
-        //TODO: do something with the response
-        //t_request_dist->push_response();
+        response t_response;
+        f_receiver->finalize( &t_response );
+        f_writer->finalize( &t_response );
+        cout << "[client_worker] record_receiver summary:\n";
+        cout << "  record count: " << t_response.digitizer_records() << " [#]\n";
+        cout << "  acquisition count: " << t_response.digitizer_acquisitions() << " [#]\n";
+        cout << "  live time: " << t_response.digitizer_live_time() << " [sec]\n";
+        cout << "  dead time: " << t_response.digitizer_dead_time() << " [sec]\n";
+        cout << "  megabytes: " << t_response.digitizer_megabytes() << " [Mb]\n";
+        cout << "  rate: " << t_response.digitizer_rate() << " [Mb/sec]\n";
+
+        cout << endl;
+
+        cout << "[client_worker] file_writer summary:\n";
+        cout << "  record count: " << t_response.writer_records() << " [#]\n";
+        cout << "  acquisition count: " << t_response.writer_acquisitions() << " [#]\n";
+        cout << "  live time: " << t_response.writer_live_time() << " [sec]\n";
+        cout << "  megabytes: " << t_response.writer_megabytes() << "[Mb]\n";
+        cout << "  rate: " << t_response.writer_rate() << " [Mb/sec]\n";
+
+        cout << endl;
 
          return;
     }

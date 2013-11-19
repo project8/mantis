@@ -202,12 +202,11 @@ int main( int argc, char** argv )
         }
     }
 
-    cout << "[mantis_client] shutting down record receiver" << endl;
-
-    // TODO: tell worker to stop waiting for records
+    cout << "[mantis_client] waiting for record reception to end..." << endl;
 
     t_worker_thread.join();
 
+    cout << "[mantis_client] shutting down record receiver" << endl;
 
     if( t_run_success > 0 )
     {

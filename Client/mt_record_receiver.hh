@@ -18,6 +18,7 @@ namespace mantis
             virtual ~record_receiver();
 
             void execute();
+            void finalize( response* a_response );
 
             size_t get_data_chunk_size();
             void set_data_chunk_size( size_t size );
@@ -27,7 +28,13 @@ namespace mantis
             buffer* f_buffer;
             condition* f_condition;
 
+            time_nsec_type f_live_time;
+            time_nsec_type f_dead_time;
+
             size_t f_data_chunk_size;
+
+            bool receive( block* a_block, record_dist* a_dist );
+
     };
 
 }
