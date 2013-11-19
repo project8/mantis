@@ -53,7 +53,16 @@ int main( int argc, char** argv )
 
     cout << "[mantis_server] creating objects..." << endl;
 
-    server t_server( t_config.get_int_required( "port" ) );
+    server* t_server;
+    try
+    {
+        server t_server( t_config.get_int_required( "port" ) );
+    }
+    catch( exception& e )
+    {
+        cerr << "[mantis_server] unable to start server: " << e.what();
+        return -1;
+    }
 
     size_t t_buffer_size = t_config.get_int_required( "buffer-size" );
     size_t t_record_size = t_config.get_int_required( "record-size" );
@@ -72,7 +81,7 @@ int main( int argc, char** argv )
     condition t_queue_condition;
     request_queue t_request_queue;
 
-    request_receiver t_receiver( &t_server, &t_request_queue, &t_queue_condition );
+    request_receiver t_receiver( t_server, &t_request_queue, &t_queue_condition );
     t_receiver.set_buffer_size( t_buffer_size );
     t_receiver.set_record_size( t_record_size );
     t_receiver.set_data_chunk_size( t_data_chunk_size );
@@ -104,6 +113,8 @@ int main( int argc, char** argv )
     }
 
     cout << "[mantis_server] shutting down..." << endl;
+
+    delete t_server;
 
     return 0;
 }

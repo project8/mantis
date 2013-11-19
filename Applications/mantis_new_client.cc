@@ -68,8 +68,19 @@ int main( int argc, char** argv )
     t_connection_to_server->get_request()->set_duration( t_duration );
 
     // start the client for sending the request
-    cout << "[mantis_client] connecting with the server" << endl;
-    client* t_request_client = new client( t_request_host, t_request_port );
+    cout << "[mantis_client] connecting with the server..." << endl;
+
+    client* t_request_client;
+    try
+    {
+        t_request_client = new client( t_request_host, t_request_port );
+    }
+    catch( exception& e )
+    {
+        cerr << "[mantis_client] unable to start client: " << e.what() << endl;
+        return -1;
+    }
+
     t_connection_to_server->set_connection( t_request_client );
 
 
@@ -104,8 +115,15 @@ int main( int argc, char** argv )
             cerr << "[mantis_client] error reported; run was not acknowledged\n" << endl;
             return -1;
         }
+
+        cerr << "[mantis_client] server reported unusual status: " << t_connection_to_server->get_status()->state() << endl;
     }
 
+    // Server is now waiting for a client status update
+
+    /****************************************************************/
+    /************************ move this *****************************/
+    /****************************************************************/
     cout << "[mantis_client] creating run objects..." << endl;
 
     // get buffer size and record size from the request
@@ -115,12 +133,25 @@ int main( int argc, char** argv )
     size_t t_data_chunk_size = t_connection_to_server->get_status()->data_chunk_size();
 
     // objects for receiving and writing data
-    server t_server( t_write_port );
+    server* t_server;
+    try
+    {
+        t_server = new server( t_write_port );
+    }
+    catch( exception& e)
+    {
+        cerr << "[mantis_client] unable to create record-receiver server: " << e.what() << endl;
+        t_connection_to_server->get_client_status()->set_state( client_status_state_t_error );
+        t_connection_to_server->push_client_status();
+        delete t_connection_to_server;
+        delete t_request_client;
+        return -1;
+    }
 
     condition t_buffer_condition;
     buffer t_buffer( t_buffer_size, t_record_size );
 
-    record_receiver t_receiver( &t_server, &t_buffer, &t_buffer_condition );
+    record_receiver t_receiver( t_server, &t_buffer, &t_buffer_condition );
     t_receiver.set_data_chunk_size( t_data_chunk_size );
 
     file_writer t_writer( &t_buffer, &t_buffer_condition );
@@ -142,6 +173,10 @@ int main( int argc, char** argv )
         delete t_request_client;
         return -1;
     }
+    /****************************************************************/
+    /****************************************************************/
+    /****************************************************************/
+
 
     cout << "[mantis_client] transmitting status: ready" << endl;
 
@@ -154,7 +189,6 @@ int main( int argc, char** argv )
         cerr << "[mantis_client] error sending client status" << endl;
         return -1;
     }
-
 
     // =0 -> in progress
     // <0 -> unsuccessful
@@ -202,11 +236,23 @@ int main( int argc, char** argv )
         }
     }
 
+
+
+    /****************************************************************/
+    /************************ move this *****************************/
+    /****************************************************************/
     cout << "[mantis_client] waiting for record reception to end..." << endl;
 
     t_worker_thread.join();
 
+    delete t_server;
+
     cout << "[mantis_client] shutting down record receiver" << endl;
+    /****************************************************************/
+    /****************************************************************/
+    /****************************************************************/
+
+
 
     if( t_run_success > 0 )
     {

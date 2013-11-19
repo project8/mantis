@@ -32,7 +32,16 @@ namespace mantis
         f_record_dist = new record_dist();
         f_record_dist->set_data_chunk_size( f_data_chunk_size );
 
-        f_client = new client( a_request->write_host(), a_request->write_port() );
+        try
+        {
+            f_client = new client( a_request->write_host(), a_request->write_port() );
+        }
+        catch( exception& e )
+        {
+            cerr << "[network_writer] unable to create record-sending client: " << e.what() << endl;
+            delete f_record_dist;
+            exit( -1 );
+        }
         f_record_dist->set_connection( f_client );
 
         return;
