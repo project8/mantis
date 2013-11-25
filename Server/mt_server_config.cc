@@ -28,6 +28,9 @@ namespace mantis
 
         rapidjson::Value record_size( 4194304 );
         AddMember( "record-size", record_size, GetAllocator() );
+
+	rapidjson::Value data_chunk_size( 1024 );
+        AddMember( "data-chunk-size", data_chunk_size, GetAllocator() );
     }
 
     server_config::~server_config()
