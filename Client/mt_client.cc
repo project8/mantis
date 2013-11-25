@@ -26,7 +26,7 @@ namespace mantis
         hostent* t_host = gethostbyname( a_host.c_str() );
         if( t_host == NULL )
         {
-            throw exception() << "[client] could not find host <" << a_host << ">";
+            throw exception() << "[client] could not find host <" << a_host << ">\n";
             return;
         }
 
@@ -48,7 +48,7 @@ namespace mantis
         f_socket = ::socket( AF_INET, SOCK_SEQPACKET, 0 );
         if( f_socket < 0 )
         {
-            throw exception() << "[client] could not create socket";
+            throw exception() << "[client] could not create socket\n";
             return;
         }
 
@@ -57,7 +57,7 @@ namespace mantis
         //connect socket
         if( ::connect( f_socket, (sockaddr*) (f_address), t_address_length ) < 0 )
         {
-            throw exception() << "could not create connection";
+            throw exception() << "could not create connection\n";
         }
 
         //cout << "[client] socket connected..." << endl;

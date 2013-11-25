@@ -39,7 +39,7 @@ namespace mantis
         f_socket = ::socket( AF_INET, SOCK_SEQPACKET, 0 );
         if( f_socket < 0 )
         {
-            throw exception() << "could not create socket";
+            throw exception() << "could not create socket\n";
             return;
         }
 
@@ -48,7 +48,7 @@ namespace mantis
         //bind socket
         if( ::bind( f_socket, (const sockaddr*) (f_address), t_socket_length ) < 0 )
         {
-            throw exception() << "[server] could not bind socket";
+            throw exception() << "[server] could not bind socket\n";
             return;
         }
 
@@ -86,7 +86,7 @@ namespace mantis
         t_socket = ::accept( f_socket, (sockaddr*) (t_address), &t_address_length );
         if( t_socket < 0 )
         {
-            throw exception() << "could not accept connection";
+            throw exception() << "could not accept connection\n";
         }
 
         //cout << "[server] connection accepted..." << endl;
