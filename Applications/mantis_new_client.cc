@@ -127,7 +127,6 @@ int main( int argc, char** argv )
     cout << "[mantis_client] creating run objects..." << endl;
 
     // get buffer size and record size from the request
-    t_connection_to_server->pull_status();
     size_t t_buffer_size = t_connection_to_server->get_status()->buffer_size();
     size_t t_record_size = t_connection_to_server->get_status()->record_size();
     size_t t_data_chunk_size = t_connection_to_server->get_status()->data_chunk_size();
