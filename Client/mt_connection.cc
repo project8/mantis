@@ -31,7 +31,7 @@ namespace mantis
 
     ssize_t connection::send( const char* a_message, size_t a_size, int flags )
     {
-        send( (char*)&a_size, sizeof( size_t ) );
+        ::send( f_socket, (char*)&a_size, sizeof( size_t ), flags );
         ssize_t t_written_size = ::send( f_socket, a_message, a_size, flags );
         if( t_written_size != a_size )
         {

@@ -56,7 +56,7 @@ int main( int argc, char** argv )
     server* t_server;
     try
     {
-        server t_server( t_config.get_int_required( "port" ) );
+        t_server = new server( t_config.get_int_required( "port" ) );
     }
     catch( exception& e )
     {

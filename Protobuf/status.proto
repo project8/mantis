@@ -17,13 +17,13 @@ message status
 	required state_t state = 1;
 	   
     //buffer size
-    required uint32 buffer_size = 2;
+    optional uint32 buffer_size = 2;
     
     //record size
-    required uint32 record_size = 3;
+    optional uint32 record_size = 3;
     
     //record chunk size
-    required uint32 data_chunk_size = 4;
+    optional uint32 data_chunk_size = 4;
 	
 
 }
