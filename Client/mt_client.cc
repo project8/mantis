@@ -45,7 +45,7 @@ namespace mantis
         //cout << "[client] address prepared..." << endl;
 
         //open socket
-        f_socket = ::socket( AF_INET, SOCK_SEQPACKET, 0 );
+        f_socket = ::socket( AF_INET, SOCK_STREAM, 0 );
         if( f_socket < 0 )
         {
             throw exception() << "[client] could not create socket";
