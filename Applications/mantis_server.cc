@@ -32,12 +32,12 @@
 #include "mt_server_config.hh"
 #include "mt_server.hh"
 #include "mt_condition.hh"
-#include "mt_run_queue.hh"
+#include "mt_request_queue.hh"
 #include "mt_buffer.hh"
-#include "mt_receiver.hh"
-#include "mt_worker.hh"
+#include "mt_request_receiver.hh"
+#include "mt_server_worker.hh"
 #include "mt_digitizer.hh"
-#include "mt_writer.hh"
+#include "mt_file_writer.hh"
 #include "mt_thread.hh"
 using namespace mantis;
 
@@ -62,17 +62,17 @@ int main( int argc, char** argv )
     digitizer* t_digitizer = t_dig_factory->create( t_config.get_string_required( "digitizer" ) );
     t_digitizer->allocate( &t_buffer, &t_buffer_condition );
 
-    writer t_writer( &t_buffer, &t_buffer_condition );
+    file_writer t_writer( &t_buffer, &t_buffer_condition );
 
     condition t_queue_condition;
-    run_queue t_run_queue;
+    request_queue t_request_queue;
 
-    receiver t_receiver( &t_server, &t_run_queue, &t_queue_condition );
-    worker t_worker( t_digitizer, &t_writer, &t_run_queue, &t_queue_condition, &t_buffer_condition );
+    request_receiver t_receiver( &t_server, &t_request_queue, &t_queue_condition );
+    server_worker t_worker( t_digitizer, &t_writer, &t_request_queue, &t_queue_condition, &t_buffer_condition );
 
     cout << "[mantis_server] starting threads..." << endl;
 
-    thread t_queue_thread( &t_run_queue );
+    thread t_queue_thread( &t_request_queue );
     thread t_receiver_thread( &t_receiver );
     thread t_worker_thread( &t_worker );
 
