@@ -177,6 +177,7 @@ if( Mantis_BUILD_SERVER )
     )
     
     set( MANTIS_SERVER_SOURCEFILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_digitizer.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_network_writer.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_request_queue.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_request_receiver.cc
@@ -209,6 +210,10 @@ if( Mantis_BUILD_SERVER )
     #add_executable( mantis_server ${CMAKE_CURRENT_SOURCE_DIR}/Applications/mantis_server.cc )
     #target_link_libraries( mantis_server MantisClient MantisServer ${EXTERNAL_LIBRARIES} )
     #pbuilder_install_executables( mantis_server )
+
+    add_executable( mantis_new_server ${CMAKE_CURRENT_SOURCE_DIR}/Applications/mantis_new_server.cc )
+    target_link_libraries( mantis_new_server MantisClient MantisServer ${EXTERNAL_LIBRARIES} )
+    pbuilder_install_executables( mantis_new_server )
 
     if( Mantis_INCLUDE_PX1500_SERVER )
         #add_executable( mantis_px1500_standalone ${CMAKE_CURRENT_SOURCE_DIR}/Applications/mantis_px1500_standalone.cc )
