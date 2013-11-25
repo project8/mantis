@@ -25,6 +25,13 @@ namespace mantis
         host.SetString( "localhost", 9 );
         AddMember( "host", host, GetAllocator() );
 
+        rapidjson::Value client_port( 98343 );
+        AddMember( "client-port", client_port, GetAllocator() );
+
+        rapidjson::Value client_host;
+        client_host.SetString( "localhost", 9 );
+        AddMember( "client-host", client_host, GetAllocator() );
+
         rapidjson::Value filename;
         filename.SetString( "mantis_client_out.egg", 21 );
         AddMember( "file", filename, GetAllocator() );
