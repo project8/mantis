@@ -52,7 +52,7 @@ int main( int argc, char** argv )
     int t_request_port = t_config.get_int_required( "port" );
 
     string t_write_host = t_config.get_string_required( "client-host" );
-    int t_write_port = t_request_port + 1;
+    int t_write_port = t_config.get_int_optional( "client-host", t_request_port + 1 );
 
     double t_duration = t_config.get_double_required( "duration" );
     useconds_t t_wait_during_run = ( useconds_t )( t_duration / 10. );
