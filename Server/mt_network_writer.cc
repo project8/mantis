@@ -1,6 +1,8 @@
 #include "mt_network_writer.hh"
 
+#include "mt_configurator.hh"
 #include "mt_exception.hh"
+#include "mt_factory.hh"
 
 #include <cstring> // for memcpy()
 #include <iostream>
@@ -12,8 +14,10 @@ using std::stringstream;
 
 namespace mantis
 {
-    network_writer::network_writer( buffer* a_buffer, condition* a_condition ) :
-            writer( a_buffer, a_condition ),
+    static registrar< writer, network_writer > s_network_writer_registrar("network");
+
+    network_writer::network_writer() :
+            writer(),
             f_record_dist( NULL ),
             f_client( NULL ),
             f_data_chunk_size( 1024 )
@@ -23,6 +27,12 @@ namespace mantis
     {
         delete f_client;
         delete f_record_dist;
+    }
+
+    void network_writer::configure( configurator* a_config )
+    {
+        set_data_chunk_size( a_config->get_int_required( "data-chunk-size" ));
+        return;
     }
 
     void network_writer::initialize( request* a_request )

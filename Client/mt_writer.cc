@@ -11,9 +11,9 @@ using std::stringstream;
 
 namespace mantis
 {
-    writer::writer( buffer* a_buffer, condition* a_condition ) :
-            f_buffer( a_buffer ),
-            f_condition( a_condition ),
+    writer::writer() :
+            f_buffer( NULL ),
+            f_condition( NULL ),
             f_record_count( 0 ),
             f_acquisition_count( 0 ),
             f_live_time( 0 )
@@ -105,6 +105,13 @@ namespace mantis
         a_response->set_writer_megabytes( (double) (4 * f_record_count) );
         a_response->set_writer_rate( a_response->writer_megabytes() / a_response->writer_live_time() );
 
+        return;
+    }
+
+    void writer::set_buffer( buffer* a_buffer, condition* a_condition )
+    {
+        f_buffer = a_buffer;
+        f_condition = a_condition;
         return;
     }
 }

@@ -11,13 +11,18 @@
 
 namespace mantis
 {
+    class configurator;
 
     class writer :
         public callable
     {
         public:
-            writer( buffer* a_buffer, condition* a_condition );
+            writer();
             virtual ~writer();
+
+            void set_buffer( buffer* a_buffer, condition* a_condition );
+
+            virtual void configure( configurator* config ) = 0;
 
             virtual void initialize( request* a_response );
             void execute();
@@ -33,7 +38,6 @@ namespace mantis
 
             virtual bool write( block* a_block ) = 0;
     };
-
 }
 
 #endif

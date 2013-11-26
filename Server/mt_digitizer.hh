@@ -3,13 +3,15 @@
 
 #include "mt_callable.hh"
 
+#include "request.pb.h"
+#include "mt_write_flags.hh"
+
 #include <cstddef>
 
 namespace mantis
 {
     class buffer;
     class condition;
-    class request;
     class response;
 
     class digitizer :
@@ -23,8 +25,9 @@ namespace mantis
             virtual void initialize( request* a_request ) = 0;
             virtual void finalize( response* a_response ) = 0;
 
-    };
+            virtual bool write_mode_check( request_file_write_mode_t mode ) = 0;
 
+    };
 }
 
 #endif

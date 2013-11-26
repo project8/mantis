@@ -22,6 +22,8 @@ namespace mantis
             void execute();
             void finalize( response* a_response );
 
+            bool write_mode_check( request_file_write_mode_t mode );
+
         private:
             HPX4 f_handle;
             bool f_allocated;
@@ -39,7 +41,6 @@ namespace mantis
             bool acquire( block* a_block, timespec& a_time_stamp );
             bool stop();
     };
-
 }
 
 #endif

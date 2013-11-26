@@ -1,5 +1,7 @@
 #include "mt_file_writer.hh"
 
+#include "mt_factory.hh"
+
 #include <cstring> // for memcpy()
 #include <iostream>
 #include <sstream>
@@ -9,8 +11,10 @@ using std::stringstream;
 
 namespace mantis
 {
-    file_writer::file_writer( buffer* a_buffer, condition* a_condition ) :
-            writer( a_buffer, a_condition ),
+    static registrar< writer, file_writer > s_file_writer_registrar( "file" );
+
+    file_writer::file_writer() :
+            writer(),
             f_monarch( NULL ),
             f_header( NULL ),
             f_record( NULL )
@@ -18,6 +22,11 @@ namespace mantis
     }
     file_writer::~file_writer()
     {
+    }
+
+    void file_writer::configure( configurator* )
+    {
+        return;
     }
 
     void file_writer::initialize( request* a_request )

@@ -1,17 +1,27 @@
 #include "mt_server_worker.hh"
 
+#include "mt_buffer.hh"
+#include "mt_condition.hh"
+#include "mt_configurator.hh"
+#include "mt_digitizer.hh"
+#include "mt_factory.hh"
+#include "mt_request_queue.hh"
 #include "mt_thread.hh"
+#include "mt_writer.hh"
 
 #include <iostream>
+using std::cerr;
 using std::cout;
 using std::endl;
 
 namespace mantis
 {
 
-    server_worker::server_worker( digitizer* a_digitizer, writer* a_writer, request_queue* a_request_queue, condition* a_queue_condition, condition* a_buffer_condition ) :
+    server_worker::server_worker( configurator* a_config, digitizer* a_digitizer, buffer* a_buffer, request_queue* a_request_queue, condition* a_queue_condition, condition* a_buffer_condition ) :
+            f_config( a_config ),
             f_digitizer( a_digitizer ),
-            f_writer( a_writer ),
+            f_writer( NULL ),
+            f_buffer( a_buffer ),
             f_request_queue( a_request_queue ),
             f_queue_condition( a_queue_condition ),
             f_buffer_condition( a_buffer_condition )
@@ -42,6 +52,31 @@ namespace mantis
             cout << "[server_worker] initializing..." << endl;
 
             f_digitizer->initialize( t_request_dist->get_request() );
+
+            cout << "[server_worker] creating writer..." << endl;
+
+            if(! f_digitizer->write_mode_check( t_request_dist->get_request()->file_write_mode() ) )
+            {
+                cerr << "[server_worker] unable to operate in write mode " << t_request_dist->get_request()->file_write_mode() << endl;
+                cerr << "                run request ignored" << endl;
+                t_request_dist->get_status()->set_state( status_state_t_error );
+                t_request_dist->push_status();
+                delete t_request_dist->get_connection();
+                delete t_request_dist;
+                continue;
+            }
+
+            factory< writer >* t_writer_factory = factory< writer >::get_instance();
+            if( t_request_dist->get_request()->file_write_mode() == request_file_write_mode_t_local )
+            {
+                f_writer = t_writer_factory->create( "file" );
+            }
+            else
+            {
+                f_writer = t_writer_factory->create( "network" );
+            }
+            f_writer->set_buffer( f_buffer, f_buffer_condition );
+            f_writer->configure( f_config );
             f_writer->initialize( t_request_dist->get_request() );
 
             cout << "[server_worker] running..." << endl;
@@ -85,6 +120,11 @@ namespace mantis
         }
 
         return;
+    }
+
+    void server_worker::set_writer( writer* a_writer )
+    {
+        f_writer = a_writer;
     }
 
 }

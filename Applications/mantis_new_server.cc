@@ -53,6 +53,12 @@ int main( int argc, char** argv )
 
     cout << "[mantis_server] creating objects..." << endl;
 
+    size_t t_buffer_size = t_config.get_int_required( "buffer-size" );
+    size_t t_record_size = t_config.get_int_required( "record-size" );
+    size_t t_data_chunk_size = t_config.get_int_required( "data-chunk-size" );
+
+    // set up the server and request receiver
+
     server* t_server;
     try
     {
@@ -64,20 +70,6 @@ int main( int argc, char** argv )
         return -1;
     }
 
-    size_t t_buffer_size = t_config.get_int_required( "buffer-size" );
-    size_t t_record_size = t_config.get_int_required( "record-size" );
-    size_t t_data_chunk_size = t_config.get_int_required( "data-chunk-size" );
-
-    condition t_buffer_condition;
-    buffer t_buffer( t_buffer_size, t_record_size );
-
-    factory< digitizer >* t_dig_factory = factory< digitizer >::get_instance();
-    digitizer* t_digitizer = t_dig_factory->create( t_config.get_string_required( "digitizer" ) );
-    t_digitizer->allocate( &t_buffer, &t_buffer_condition );
-
-    network_writer t_writer( &t_buffer, &t_buffer_condition );
-    t_writer.set_data_chunk_size( t_data_chunk_size );
-
     condition t_queue_condition;
     request_queue t_request_queue;
 
@@ -86,7 +78,16 @@ int main( int argc, char** argv )
     t_receiver.set_record_size( t_record_size );
     t_receiver.set_data_chunk_size( t_data_chunk_size );
 
-    server_worker t_worker( t_digitizer, &t_writer, &t_request_queue, &t_queue_condition, &t_buffer_condition );
+    // set up the digitizer
+
+    condition t_buffer_condition;
+    buffer t_buffer( t_buffer_size, t_record_size );
+
+    factory< digitizer >* t_dig_factory = factory< digitizer >::get_instance();
+    digitizer* t_digitizer = t_dig_factory->create( t_config.get_string_required( "digitizer" ) );
+    t_digitizer->allocate( &t_buffer, &t_buffer_condition );
+
+    server_worker t_worker( t_digitizer, &t_buffer, &t_request_queue, &t_queue_condition, &t_buffer_condition );
 
     cout << "[mantis_server] starting threads..." << endl;
 

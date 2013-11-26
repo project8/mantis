@@ -5,7 +5,6 @@
 #include "mt_factory.hh"
 #include "mt_iterator.hh"
 
-#include "request.pb.h"
 #include "response.pb.h"
 
 #include <cstdlib> // for exit()
@@ -17,6 +16,9 @@ using std::endl;
 namespace mantis
 {
     static registrar< digitizer, digitizer_px1500 > s_px1500_registrar("px1500");
+
+    const struct can_write_to< digitizer_px1500 > f_flags( "11" );
+
 
     digitizer_px1500::digitizer_px1500() :
             f_buffer( NULL ),
@@ -320,6 +322,11 @@ namespace mantis
             return false;
         }
         ++f_acquisition_count;
+        return true;
+    }
+
+    bool digitizer_px1500::write_mode_check( request_file_write_mode_t mode )
+    {
         return true;
     }
 

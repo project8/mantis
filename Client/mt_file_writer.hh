@@ -7,6 +7,8 @@
 #include "MonarchHeader.hpp"
 #include "MonarchRecord.hpp"
 
+#include <string>
+
 namespace mantis
 {
 
@@ -14,8 +16,10 @@ namespace mantis
         public writer
     {
         public:
-            file_writer( buffer* a_buffer, condition* a_condition );
+            file_writer();
             virtual ~file_writer();
+
+            void configure( configurator* );
 
             void initialize( request* a_response );
 
@@ -26,7 +30,6 @@ namespace mantis
 
             bool write( block* a_block );
     };
-
 }
 
 #endif

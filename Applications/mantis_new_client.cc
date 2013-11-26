@@ -153,7 +153,8 @@ int main( int argc, char** argv )
     record_receiver t_receiver( t_server, &t_buffer, &t_buffer_condition );
     t_receiver.set_data_chunk_size( t_data_chunk_size );
 
-    file_writer t_writer( &t_buffer, &t_buffer_condition );
+    file_writer t_writer;
+    t_writer.set_buffer( &t_buffer, &t_buffer_condition );
 
     client_worker t_worker( t_connection_to_server->get_request(), &t_receiver, &t_writer, &t_buffer_condition );
 

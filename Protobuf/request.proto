@@ -31,4 +31,12 @@ message request
 	
 	//acquisition duration
 	required double duration = 8;
+	
+	//file writing
+	enum file_write_mode_t
+	{
+	   local = 0;
+	   remote = 1;
+	}
+	required file_write_mode_t file_write_mode = 9;
 }

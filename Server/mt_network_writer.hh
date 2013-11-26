@@ -13,8 +13,10 @@ namespace mantis
         public writer
     {
         public:
-            network_writer( buffer* a_buffer, condition* a_condition );
+            network_writer();
             virtual ~network_writer();
+
+            void configure( configurator* a_config );
 
             void initialize( request* a_request );
             void finalize( response* a_response );
@@ -30,7 +32,6 @@ namespace mantis
 
             bool write( block* a_block );
     };
-
 }
 
 #endif
