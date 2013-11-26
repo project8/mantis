@@ -32,7 +32,7 @@
 #include "mt_server_config.hh"
 #include "mt_server.hh"
 #include "mt_condition.hh"
-#include "mt_request_queue.hh"
+#include "mt_run_queue.hh"
 #include "mt_buffer.hh"
 #include "mt_request_receiver.hh"
 #include "mt_server_worker.hh"
@@ -71,9 +71,9 @@ int main( int argc, char** argv )
     }
 
     condition t_queue_condition;
-    request_queue t_request_queue;
+    run_queue t_run_queue;
 
-    request_receiver t_receiver( t_server, &t_request_queue, &t_queue_condition );
+    request_receiver t_receiver( t_server, &t_run_queue, &t_queue_condition );
     t_receiver.set_buffer_size( t_buffer_size );
     t_receiver.set_record_size( t_record_size );
     t_receiver.set_data_chunk_size( t_data_chunk_size );
@@ -87,11 +87,11 @@ int main( int argc, char** argv )
     digitizer* t_digitizer = t_dig_factory->create( t_config.get_string_required( "digitizer" ) );
     t_digitizer->allocate( &t_buffer, &t_buffer_condition );
 
-    server_worker t_worker( &t_config, t_digitizer, &t_buffer, &t_request_queue, &t_queue_condition, &t_buffer_condition );
+    server_worker t_worker( &t_config, t_digitizer, &t_buffer, &t_run_queue, &t_queue_condition, &t_buffer_condition );
 
     cout << "[mantis_server] starting threads..." << endl;
 
-    thread t_queue_thread( &t_request_queue );
+    thread t_queue_thread( &t_run_queue );
     thread t_receiver_thread( &t_receiver );
     thread t_worker_thread( &t_worker );
 

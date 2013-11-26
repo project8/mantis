@@ -5,7 +5,7 @@
 #include "mt_configurator.hh"
 #include "mt_digitizer.hh"
 #include "mt_factory.hh"
-#include "mt_request_queue.hh"
+#include "mt_run_queue.hh"
 #include "mt_thread.hh"
 #include "mt_writer.hh"
 
@@ -17,12 +17,12 @@ using std::endl;
 namespace mantis
 {
 
-    server_worker::server_worker( configurator* a_config, digitizer* a_digitizer, buffer* a_buffer, request_queue* a_request_queue, condition* a_queue_condition, condition* a_buffer_condition ) :
+    server_worker::server_worker( configurator* a_config, digitizer* a_digitizer, buffer* a_buffer, run_queue* a_run_queue, condition* a_queue_condition, condition* a_buffer_condition ) :
             f_config( a_config ),
             f_digitizer( a_digitizer ),
             f_writer( NULL ),
             f_buffer( a_buffer ),
-            f_request_queue( a_request_queue ),
+            f_run_queue( a_run_queue ),
             f_queue_condition( a_queue_condition ),
             f_buffer_condition( a_buffer_condition )
     {
@@ -38,14 +38,14 @@ namespace mantis
 
         while( true )
         {
-            if( f_request_queue->empty() == true )
+            if( f_run_queue->empty() == true )
             {
                 f_queue_condition->wait();
             }
 
             cout << "[server_worker] sending server status <started>..." << endl;
 
-            t_run_context = f_request_queue->from_front();
+            t_run_context = f_run_queue->from_front();
             t_run_context->get_status()->set_state( status_state_t_started );
             t_run_context->push_status();
 
@@ -94,7 +94,7 @@ namespace mantis
             t_writer_thread->start();
 
             t_run_context->get_status()->set_state( status_state_t_running );
-            f_request_queue->to_front( t_run_context );
+            f_run_queue->to_front( t_run_context );
             t_run_context = NULL;
 
             t_digitizer_thread->join();
@@ -105,7 +105,7 @@ namespace mantis
 
             cout << "[server_worker] sending server status <stopped>..." << endl;
 
-            t_run_context = f_request_queue->from_front();
+            t_run_context = f_run_queue->from_front();
             t_run_context->get_status()->set_state( status_state_t_stopped );
             t_run_context->push_status();
 

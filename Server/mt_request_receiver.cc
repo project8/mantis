@@ -12,9 +12,9 @@ using std::endl;
 namespace mantis
 {
 
-    request_receiver::request_receiver( server* a_server, request_queue* a_request_queue, condition* a_condition ) :
+    request_receiver::request_receiver( server* a_server, run_queue* a_run_queue, condition* a_condition ) :
             f_server( a_server ),
-            f_request_queue( a_request_queue ),
+            f_run_queue( a_run_queue ),
             f_condition( a_condition ),
             f_buffer_size( 512 ),
             f_record_size( 419304 ),
@@ -83,7 +83,7 @@ namespace mantis
             cout << "[request_receiver] queuing request..." << endl;
 
             t_run_context->get_status()->set_state( status_state_t_waiting );
-            f_request_queue->to_back( t_run_context );
+            f_run_queue->to_back( t_run_context );
 
 
             // if the queue condition is waiting, release it
