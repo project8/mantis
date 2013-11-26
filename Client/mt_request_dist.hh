@@ -1,5 +1,5 @@
-#ifndef MT_REQUEST_DIST_HH_
-#define MT_REQUEST_DIST_HH_
+#ifndef MT_RUN_CONTEXT_DIST_HH_
+#define MT_RUN_CONTEXT_DIST_HH_
 
 #include "mt_distribution.hh"
 #include "request.pb.h"
@@ -10,11 +10,11 @@
 namespace mantis
 {
 
-    class request_dist : public distribution
+    class run_context_dist : public distribution
     {
         public:
-            request_dist();
-            virtual ~request_dist();
+            run_context_dist();
+            virtual ~run_context_dist();
 
             request* get_request();
             bool push_request( int flags = 0 );

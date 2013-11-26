@@ -25,7 +25,7 @@ using std::endl;
 namespace mantis
 {
 
-    client_file_writing::client_file_writing( request_dist* a_connection_to_server, int a_write_port ) :
+    client_file_writing::client_file_writing( request_dist* a_run_context, int a_write_port ) :
             f_server( NULL ),
             f_receiver( NULL ),
             f_worker( NULL ),
@@ -41,21 +41,21 @@ namespace mantis
         }
         catch( exception& e)
         {
-            a_connection_to_server->get_client_status()->set_state( client_status_state_t_error );
-            a_connection_to_server->push_client_status();
+            a_run_context->get_client_status()->set_state( client_status_state_t_error );
+            a_run_context->push_client_status();
             throw exception() << "unable to create record-receiver server: " << e.what();
         }
 
         f_buffer_condition = new condition();
-        f_buffer = new buffer( a_connection_to_server->get_status()->buffer_size(), a_connection_to_server->get_status()->record_size() );
+        f_buffer = new buffer( a_run_context->get_status()->buffer_size(), a_run_context->get_status()->record_size() );
 
         f_receiver = new record_receiver( f_server, f_buffer, f_buffer_condition );
-        f_receiver->set_data_chunk_size( a_connection_to_server->get_status()->data_chunk_size() );
+        f_receiver->set_data_chunk_size( a_run_context->get_status()->data_chunk_size() );
 
         f_writer = new file_writer();
         f_writer->set_buffer( f_buffer, f_buffer_condition );
 
-        f_worker = new client_worker( a_connection_to_server->get_request(), f_receiver, f_writer, f_buffer_condition );
+        f_worker = new client_worker( a_run_context->get_request(), f_receiver, f_writer, f_buffer_condition );
 
         f_thread = new thread( f_worker );
 

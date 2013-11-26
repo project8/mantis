@@ -1,4 +1,4 @@
-#include "mt_request_dist.hh"
+#include "mt_run_context_dist.hh"
 
 #include "mt_exception.hh"
 
@@ -15,18 +15,18 @@ using std::endl;
 namespace mantis
 {
 
-    request_dist::request_dist() :
+    run_context_dist::run_context_dist() :
                     f_request(),
                     f_status(),
                     f_client_status(),
                     f_response()
     {
     }
-    request_dist::~request_dist()
+    run_context_dist::~run_context_dist()
     {
     }
 
-    bool request_dist::push_request( int flags )
+    bool run_context_dist::push_request( int flags )
     {
         size_t t_request_size = reset_buffer( f_request.ByteSize() );
         if( ! f_request.SerializeToArray( f_buffer, t_request_size ) )
@@ -42,7 +42,7 @@ namespace mantis
         }
         return true;
     }
-    bool request_dist::pull_request( int flags )
+    bool run_context_dist::pull_request( int flags )
     {
         size_t t_request_size = f_buffer_size;
         try
@@ -63,12 +63,12 @@ namespace mantis
         }
         return f_request.ParseFromArray( f_buffer, t_request_size );
     }
-    request* request_dist::get_request()
+    request* run_context_dist::get_request()
     {
         return &f_request;
     }
 
-    bool request_dist::push_status( int flags )
+    bool run_context_dist::push_status( int flags )
     {
         size_t t_status_size = reset_buffer( f_status.ByteSize() );
         if( ! f_status.SerializeToArray( f_buffer, t_status_size ) )
@@ -84,7 +84,7 @@ namespace mantis
         }
         return true;
     }
-    bool request_dist::pull_status( int flags )
+    bool run_context_dist::pull_status( int flags )
     {
         size_t t_status_size = f_buffer_size;
         try
@@ -102,12 +102,12 @@ namespace mantis
         }
         return f_status.ParseFromArray( f_buffer, t_status_size );
     }
-    status* request_dist::get_status()
+    status* run_context_dist::get_status()
     {
         return &f_status;
     }
 
-    bool request_dist::push_client_status( int flags )
+    bool run_context_dist::push_client_status( int flags )
     {
         size_t t_client_status_size = reset_buffer( f_client_status.ByteSize() );
         if( ! f_client_status.SerializeToArray( f_buffer, t_client_status_size ) )
@@ -123,7 +123,7 @@ namespace mantis
         }
         return true;
     }
-    bool request_dist::pull_client_status( int flags )
+    bool run_context_dist::pull_client_status( int flags )
     {
         size_t t_client_status_size = f_buffer_size;
         try
@@ -141,12 +141,12 @@ namespace mantis
         }
         return f_client_status.ParseFromArray( f_buffer, t_client_status_size );
     }
-    client_status* request_dist::get_client_status()
+    client_status* run_context_dist::get_client_status()
     {
         return &f_client_status;
     }
 
-    bool request_dist::push_response( int flags )
+    bool run_context_dist::push_response( int flags )
     {
         size_t t_response_size = reset_buffer( f_response.ByteSize() );
         if( ! f_response.SerializeToArray( f_buffer, t_response_size ) )
@@ -162,7 +162,7 @@ namespace mantis
         }
         return true;
     }
-    bool request_dist::pull_response( int flags )
+    bool run_context_dist::pull_response( int flags )
     {
         size_t t_response_size = f_buffer_size;
         try
@@ -180,7 +180,7 @@ namespace mantis
         }
         return f_response.ParseFromArray( f_buffer, t_response_size );
     }
-    response* request_dist::get_response()
+    response* run_context_dist::get_response()
     {
         return &f_response;
     }
