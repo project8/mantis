@@ -29,7 +29,6 @@ namespace mantis
     bool request_dist::push_request( int flags )
     {
         size_t t_request_size = reset_buffer( f_request.ByteSize() );
-        cout << "request size to write: " << t_request_size << endl;
         if( ! f_request.SerializeToArray( f_buffer, t_request_size ) )
             return false;
         try

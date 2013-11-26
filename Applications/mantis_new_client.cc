@@ -205,7 +205,7 @@ int main( int argc, char** argv )
 
         if( t_connection_to_server->get_status()->state() == status_state_t_stopped )
         {
-            cout << "[mantis_client] run status: stopped; run should be complete\n" << endl;
+            cout << "[mantis_client] run status: stopped; data acquisition has finished\n" << endl;
             t_run_success = 1;
             break;
         }

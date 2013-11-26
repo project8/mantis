@@ -71,7 +71,6 @@ namespace mantis
     bool record_dist::push_header( const block_header* a_block_header, int flags )
     {
         size_t t_header_size = reset_buffer( a_block_header->ByteSize() );
-        cout << "request size to write: " << t_header_size << endl;
         if( ! a_block_header->SerializeToArray( f_buffer, t_header_size ) )
             return false;
         try
