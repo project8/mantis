@@ -34,7 +34,7 @@ namespace mantis
 
     void server_worker::execute()
     {
-        request_dist* t_request_dist;
+        request_dist* t_run_context;
 
         while( true )
         {
@@ -45,29 +45,29 @@ namespace mantis
 
             cout << "[server_worker] sending server status <started>..." << endl;
 
-            t_request_dist = f_request_queue->from_front();
-            t_request_dist->get_status()->set_state( status_state_t_started );
-            t_request_dist->push_status();
+            t_run_context = f_request_queue->from_front();
+            t_run_context->get_status()->set_state( status_state_t_started );
+            t_run_context->push_status();
 
             cout << "[server_worker] initializing..." << endl;
 
-            f_digitizer->initialize( t_request_dist->get_request() );
+            f_digitizer->initialize( t_run_context->get_request() );
 
             cout << "[server_worker] creating writer..." << endl;
 
-            if(! f_digitizer->write_mode_check( t_request_dist->get_request()->file_write_mode() ) )
+            if(! f_digitizer->write_mode_check( t_run_context->get_request()->file_write_mode() ) )
             {
-                cerr << "[server_worker] unable to operate in write mode " << t_request_dist->get_request()->file_write_mode() << endl;
+                cerr << "[server_worker] unable to operate in write mode " << t_run_context->get_request()->file_write_mode() << endl;
                 cerr << "                run request ignored" << endl;
-                t_request_dist->get_status()->set_state( status_state_t_error );
-                t_request_dist->push_status();
-                delete t_request_dist->get_connection();
-                delete t_request_dist;
+                t_run_context->get_status()->set_state( status_state_t_error );
+                t_run_context->push_status();
+                delete t_run_context->get_connection();
+                delete t_run_context;
                 continue;
             }
 
             factory< writer >* t_writer_factory = factory< writer >::get_instance();
-            if( t_request_dist->get_request()->file_write_mode() == request_file_write_mode_t_local )
+            if( t_run_context->get_request()->file_write_mode() == request_file_write_mode_t_local )
             {
                 f_writer = t_writer_factory->create( "file" );
             }
@@ -77,7 +77,7 @@ namespace mantis
             }
             f_writer->set_buffer( f_buffer, f_buffer_condition );
             f_writer->configure( f_config );
-            f_writer->initialize( t_request_dist->get_request() );
+            f_writer->initialize( t_run_context->get_request() );
 
             cout << "[server_worker] running..." << endl;
 
@@ -93,9 +93,9 @@ namespace mantis
 
             t_writer_thread->start();
 
-            t_request_dist->get_status()->set_state( status_state_t_running );
-            f_request_queue->to_front( t_request_dist );
-            t_request_dist = NULL;
+            t_run_context->get_status()->set_state( status_state_t_running );
+            f_request_queue->to_front( t_run_context );
+            t_run_context = NULL;
 
             t_digitizer_thread->join();
             t_writer_thread->join();
@@ -105,18 +105,18 @@ namespace mantis
 
             cout << "[server_worker] sending server status <stopped>..." << endl;
 
-            t_request_dist = f_request_queue->from_front();
-            t_request_dist->get_status()->set_state( status_state_t_stopped );
-            t_request_dist->push_status();
+            t_run_context = f_request_queue->from_front();
+            t_run_context->get_status()->set_state( status_state_t_stopped );
+            t_run_context->push_status();
 
             cout << "[server_worker] finalizing..." << endl;
 
-            f_digitizer->finalize( t_request_dist->get_response() );
-            f_writer->finalize( t_request_dist->get_response() );
-            t_request_dist->push_response();
+            f_digitizer->finalize( t_run_context->get_response() );
+            f_writer->finalize( t_run_context->get_response() );
+            t_run_context->push_response();
 
-            delete t_request_dist->get_connection();
-            delete t_request_dist;
+            delete t_run_context->get_connection();
+            delete t_run_context;
         }
 
         return;

@@ -13,7 +13,7 @@
 #include "mt_exception.hh"
 #include "mt_file_writer.hh"
 #include "mt_record_receiver.hh"
-#include "mt_request_dist.hh"
+#include "mt_run_context_dist.hh"
 #include "mt_server.hh"
 #include "mt_thread.hh"
 

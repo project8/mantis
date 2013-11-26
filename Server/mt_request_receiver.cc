@@ -28,62 +28,62 @@ namespace mantis
 
     void request_receiver::execute()
     {
-        request_dist* t_request_dist;
+        request_dist* t_run_context;
 
         while( true )
         {
-            t_request_dist = new request_dist();
+            t_run_context = new request_dist();
             cout << "[request_receiver] waiting for incoming connections" << endl;
             // thread is blocked by the accept call in server::get_connection 
             // until an incoming connection is received
-            t_request_dist->set_connection( f_server->get_connection() );
+            t_run_context->set_connection( f_server->get_connection() );
 
             cout << "[request_receiver] receiving request..." << endl;
 
             // use blocking option for pull request
-            if( ! t_request_dist->pull_request( MSG_WAITALL ) )
+            if( ! t_run_context->pull_request( MSG_WAITALL ) )
             {
                 cerr << "[request_receiver] unable to pull run request; sending server status <error>" << endl;
-                t_request_dist->get_status()->set_state( status_state_t_error );
-                t_request_dist->push_status();
-                delete t_request_dist->get_connection();
-                delete t_request_dist;
+                t_run_context->get_status()->set_state( status_state_t_error );
+                t_run_context->push_status();
+                delete t_run_context->get_connection();
+                delete t_run_context;
                 continue;
             }
 
             cout << "[request_receiver] sending server status <acknowledged>..." << endl;
 
-            t_request_dist->get_status()->set_state( status_state_t_acknowledged );
-            t_request_dist->get_status()->set_buffer_size( f_buffer_size );
-            t_request_dist->get_status()->set_record_size( f_record_size );
-            t_request_dist->get_status()->set_data_chunk_size( f_data_chunk_size );
-            t_request_dist->push_status();
+            t_run_context->get_status()->set_state( status_state_t_acknowledged );
+            t_run_context->get_status()->set_buffer_size( f_buffer_size );
+            t_run_context->get_status()->set_record_size( f_record_size );
+            t_run_context->get_status()->set_data_chunk_size( f_data_chunk_size );
+            t_run_context->push_status();
 
             cout << "[request_receiver] waiting for client readiness..." << endl;
 
-            if( ! t_request_dist->pull_client_status( MSG_WAITALL ) )
+            if( ! t_run_context->pull_client_status( MSG_WAITALL ) )
             {
                 cerr << "[request_receiver] unable to pull client status; sending server status <error>" << endl;
-                t_request_dist->get_status()->set_state( status_state_t_error );
-                t_request_dist->push_status();
-                delete t_request_dist->get_connection();
-                delete t_request_dist;
+                t_run_context->get_status()->set_state( status_state_t_error );
+                t_run_context->push_status();
+                delete t_run_context->get_connection();
+                delete t_run_context;
                 continue;
             }
-            if( ! t_request_dist->get_client_status()->state() == client_status_state_t_ready )
+            if( ! t_run_context->get_client_status()->state() == client_status_state_t_ready )
             {
                 cerr << "[request_receiver] client did not get ready; sending server status <error>" << endl;
-                t_request_dist->get_status()->set_state( status_state_t_error );
-                t_request_dist->push_status();
-                delete t_request_dist->get_connection();
-                delete t_request_dist;
+                t_run_context->get_status()->set_state( status_state_t_error );
+                t_run_context->push_status();
+                delete t_run_context->get_connection();
+                delete t_run_context;
                 continue;
             }
 
             cout << "[request_receiver] queuing request..." << endl;
 
-            t_request_dist->get_status()->set_state( status_state_t_waiting );
-            f_request_queue->to_back( t_request_dist );
+            t_run_context->get_status()->set_state( status_state_t_waiting );
+            f_request_queue->to_back( t_run_context );
 
 
             // if the queue condition is waiting, release it
