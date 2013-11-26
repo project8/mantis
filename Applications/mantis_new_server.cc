@@ -87,7 +87,7 @@ int main( int argc, char** argv )
     digitizer* t_digitizer = t_dig_factory->create( t_config.get_string_required( "digitizer" ) );
     t_digitizer->allocate( &t_buffer, &t_buffer_condition );
 
-    server_worker t_worker( t_digitizer, &t_buffer, &t_request_queue, &t_queue_condition, &t_buffer_condition );
+    server_worker t_worker( &t_config, t_digitizer, &t_buffer, &t_request_queue, &t_queue_condition, &t_buffer_condition );
 
     cout << "[mantis_server] starting threads..." << endl;
 

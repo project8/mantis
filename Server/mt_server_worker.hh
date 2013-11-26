@@ -9,8 +9,8 @@ namespace mantis
     class digitizer;
     class buffer;
     class request_queue;
-    class queue_condition;
-    class buffer_condition;
+    class condition;
+    class writer;
 
     class server_worker :
         public callable

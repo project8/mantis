@@ -62,7 +62,8 @@ int main( int argc, char** argv )
     digitizer* t_digitizer = t_dig_factory->create( t_config.get_string_required( "digitizer" ) );
     t_digitizer->allocate( &t_buffer, &t_buffer_condition );
 
-    file_writer t_writer( &t_buffer, &t_buffer_condition );
+    file_writer t_writer;
+    t_writer.set_buffer( &t_buffer, &t_buffer_condition );
 
     condition t_queue_condition;
     request_queue t_request_queue;
@@ -72,7 +73,7 @@ int main( int argc, char** argv )
     t_receiver.set_record_size( t_config.get_int_required( "record-size" ) );
     t_receiver.set_data_chunk_size( 0 );
 
-    server_worker t_worker( t_digitizer, &t_writer, &t_request_queue, &t_queue_condition, &t_buffer_condition );
+    server_worker t_worker( &t_config, t_digitizer, &t_buffer, &t_request_queue, &t_queue_condition, &t_buffer_condition );
 
     cout << "[mantis_server] starting threads..." << endl;
 

@@ -4,7 +4,6 @@
 #include "mt_callable.hh"
 
 #include "request.pb.h"
-#include "mt_write_flags.hh"
 
 #include <cstddef>
 

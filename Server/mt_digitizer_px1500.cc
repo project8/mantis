@@ -17,9 +17,6 @@ namespace mantis
 {
     static registrar< digitizer, digitizer_px1500 > s_px1500_registrar("px1500");
 
-    const struct can_write_to< digitizer_px1500 > f_flags( "11" );
-
-
     digitizer_px1500::digitizer_px1500() :
             f_buffer( NULL ),
             f_condition( NULL ),
