@@ -143,9 +143,9 @@ target_link_libraries( MantisClient ${EXTERNAL_LIBRARIES} )
 pbuilder_install_headers( ${MANTIS_CLIENT_HEADERFILES} )
 pbuilder_install_libraries( MantisClient )
 
-#add_executable( test_mantis_client ${CMAKE_CURRENT_SOURCE_DIR}/Applications/test_mantis_client.cc )
-#target_link_libraries( test_mantis_client MantisClient ${EXTERNAL_LIBRARIES} )
-#pbuilder_install_executables( test_mantis_client )
+add_executable( test_mantis_client ${CMAKE_CURRENT_SOURCE_DIR}/Applications/test_mantis_client.cc )
+target_link_libraries( test_mantis_client MantisClient ${EXTERNAL_LIBRARIES} )
+pbuilder_install_executables( test_mantis_client )
 
 add_executable( test_mantis_config ${CMAKE_CURRENT_SOURCE_DIR}/Applications/test_mantis_config.cc )
 target_link_libraries( test_mantis_config MantisClient ${EXTERNAL_LIBRARIES} )
