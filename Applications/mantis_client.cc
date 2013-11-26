@@ -78,6 +78,11 @@ int main( int argc, char** argv )
     t_connection_to_server->get_request()->set_mode( (request_mode_t)t_config.get_int_required( "mode" ) );
     t_connection_to_server->get_request()->set_rate( t_config.get_double_required( "rate" ) );
     t_connection_to_server->get_request()->set_duration( t_duration );
+    t_connection_to_server->get_request()->set_file_write_mode( request_file_write_mode_t_local );
+    if( t_client_writes_file )
+    {
+        t_connection_to_server->get_request()->set_file_write_mode( request_file_write_mode_t_remote );
+    }
 
     // start the client for sending the request
     cout << "[mantis_client] connecting with the server..." << endl;
