@@ -1,14 +1,14 @@
-#include "mt_request_queue.hh"
+#include "mt_run_queue.hh"
 
 namespace mantis
 {
 
-    request_queue::request_queue() :
+    run_queue::run_queue() :
             f_mutex(),
             f_runs()
     {
     }
-    request_queue::~request_queue()
+    run_queue::~run_queue()
     {
         f_mutex.lock();
         std::list< run_context_dist* >::iterator t_it;
@@ -20,7 +20,7 @@ namespace mantis
         return;
     }
 
-    bool request_queue::empty()
+    bool run_queue::empty()
     {
         bool t_empty;
         f_mutex.lock();
@@ -29,14 +29,14 @@ namespace mantis
         return t_empty;
     }
 
-    void request_queue::to_front( run_context_dist* a_run )
+    void run_queue::to_front( run_context_dist* a_run )
     {
         f_mutex.lock();
         f_runs.push_front( a_run );
         f_mutex.unlock();
         return;
     }
-    run_context_dist* request_queue::from_front()
+    run_context_dist* run_queue::from_front()
     {
         run_context_dist* t_front = NULL;
         f_mutex.lock();
@@ -49,14 +49,14 @@ namespace mantis
         return t_front;
     }
 
-    void request_queue::to_back( run_context_dist* a_run )
+    void run_queue::to_back( run_context_dist* a_run )
     {
         f_mutex.lock();
         f_runs.push_back( a_run );
         f_mutex.unlock();
         return;
     }
-    run_context_dist* request_queue::from_back()
+    run_context_dist* run_queue::from_back()
     {
         run_context_dist* t_back = NULL;
         f_mutex.lock();
@@ -69,7 +69,7 @@ namespace mantis
         return t_back;
     }
 
-    void request_queue::execute()
+    void run_queue::execute()
     {
         while( true )
         {

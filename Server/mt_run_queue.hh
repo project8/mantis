@@ -1,5 +1,5 @@
-#ifndef MT_QUEUE_HH_
-#define MT_QUEUE_HH_
+#ifndef MT_RUN_QUEUE_HH_
+#define MT_RUN_QUEUE_HH_
 
 #include "mt_callable.hh"
 
@@ -11,12 +11,12 @@
 namespace mantis
 {
 
-    class request_queue :
+    class run_queue :
         public callable
     {
         public:
-            request_queue();
-            virtual ~request_queue();
+            run_queue();
+            virtual ~run_queue();
 
             bool empty();
 
