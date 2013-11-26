@@ -25,7 +25,7 @@ using std::endl;
 namespace mantis
 {
 
-    client_file_writing::client_file_writing( request_dist* a_run_context, int a_write_port ) :
+    client_file_writing::client_file_writing( run_context_dist* a_run_context, int a_write_port ) :
             f_server( NULL ),
             f_receiver( NULL ),
             f_worker( NULL ),

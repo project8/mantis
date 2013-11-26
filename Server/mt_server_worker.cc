@@ -34,7 +34,7 @@ namespace mantis
 
     void server_worker::execute()
     {
-        request_dist* t_run_context;
+        run_context_dist* t_run_context;
 
         while( true )
         {

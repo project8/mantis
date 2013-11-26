@@ -15,14 +15,14 @@ namespace mantis
     class condition;
     class file_writer;
     class record_receiver;
-    class request_dist;
+    class run_context_dist;
     class server;
     class thread;
 
     class client_file_writing
     {
         public:
-            client_file_writing( request_dist* a_run_context, int a_write_port );
+            client_file_writing( run_context_dist* a_run_context, int a_write_port );
             virtual ~client_file_writing();
 
             void wait_for_finish();

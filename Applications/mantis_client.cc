@@ -26,7 +26,7 @@
 #include "mt_client.hh"
 #include "mt_exception.hh"
 #include "mt_file_writer.hh"
-#include "mt_request_dist.hh"
+#include "mt_run_context_dist.hh"
 #include "mt_thread.hh"
 #include "thorax.hh"
 using namespace mantis;
@@ -69,7 +69,7 @@ int main( int argc, char** argv )
     double t_duration = t_config.get_double_required( "duration" );
     useconds_t t_wait_during_run = ( useconds_t )( t_duration / 10. );
 
-    request_dist* t_run_context = new request_dist();
+    run_context_dist* t_run_context = new run_context_dist();
     t_run_context->get_request()->set_write_host( t_write_host );
     t_run_context->get_request()->set_write_port( t_write_port );
     t_run_context->get_request()->set_file( t_config.get_string_required( "file" ) );

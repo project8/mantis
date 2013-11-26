@@ -28,11 +28,11 @@ namespace mantis
 
     void request_receiver::execute()
     {
-        request_dist* t_run_context;
+        run_context_dist* t_run_context;
 
         while( true )
         {
-            t_run_context = new request_dist();
+            t_run_context = new run_context_dist();
             cout << "[request_receiver] waiting for incoming connections" << endl;
             // thread is blocked by the accept call in server::get_connection 
             // until an incoming connection is received

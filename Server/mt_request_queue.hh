@@ -20,17 +20,17 @@ namespace mantis
 
             bool empty();
 
-            void to_front( request_dist* a_run );
-            request_dist* from_front();
+            void to_front( run_context_dist* a_run );
+            run_context_dist* from_front();
 
-            void to_back( request_dist* a_run );
-            request_dist* from_back();
+            void to_back( run_context_dist* a_run );
+            run_context_dist* from_back();
 
             void execute();
 
         private:
             mutex f_mutex;
-            std::list< request_dist* > f_runs;
+            std::list< run_context_dist* > f_runs;
     };
 
 }
