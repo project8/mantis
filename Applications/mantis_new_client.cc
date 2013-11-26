@@ -21,6 +21,7 @@
 
 #include "mt_configurator.hh"
 #include "mt_client_config.hh"
+#include "mt_client_file_writing.hh"
 #include "mt_client_worker.hh"
 #include "mt_client.hh"
 #include "mt_exception.hh"
@@ -48,11 +49,22 @@ int main( int argc, char** argv )
 
     cout << "[mantis_client] creating request objects..." << endl;
 
+    bool t_client_writes_file = true;
+    if( t_config.get_string_required( "file-writer" ) == std::string( "server" ) )
+    {
+        t_client_writes_file = false;
+    }
+
     string t_request_host = t_config.get_string_required( "host" );
     int t_request_port = t_config.get_int_required( "port" );
 
-    string t_write_host = t_config.get_string_required( "client-host" );
-    int t_write_port = t_config.get_int_optional( "client-port", t_request_port + 1 );
+    string t_write_host;
+    int t_write_port = -1;
+    if( t_client_writes_file )
+    {
+        t_write_host = t_config.get_string_required( "client-host" );
+        t_write_port = t_config.get_int_optional( "client-port", t_request_port + 1 );
+    }
 
     double t_duration = t_config.get_double_required( "duration" );
     useconds_t t_wait_during_run = ( useconds_t )( t_duration / 10. );
@@ -110,9 +122,9 @@ int main( int argc, char** argv )
 
         if( t_connection_to_server->get_status()->state() == status_state_t_error )
         {
+            cerr << "[mantis_client] error reported; run was not acknowledged\n" << endl;
             delete t_connection_to_server;
             delete t_request_client;
-            cerr << "[mantis_client] error reported; run was not acknowledged\n" << endl;
             return -1;
         }
 
@@ -121,57 +133,26 @@ int main( int argc, char** argv )
 
     // Server is now waiting for a client status update
 
+
     /****************************************************************/
-    /************************ move this *****************************/
+    /*********************** file writing ***************************/
     /****************************************************************/
-    cout << "[mantis_client] creating run objects..." << endl;
-
-    // get buffer size and record size from the request
-    size_t t_buffer_size = t_connection_to_server->get_status()->buffer_size();
-    size_t t_record_size = t_connection_to_server->get_status()->record_size();
-    size_t t_data_chunk_size = t_connection_to_server->get_status()->data_chunk_size();
-
-    // objects for receiving and writing data
-    server* t_server;
-    try
+    client_file_writing* t_file_writing = NULL;
+    if( t_client_writes_file )
     {
-        t_server = new server( t_write_port );
-    }
-    catch( exception& e)
-    {
-        cerr << "[mantis_client] unable to create record-receiver server: " << e.what() << endl;
-        t_connection_to_server->get_client_status()->set_state( client_status_state_t_error );
-        t_connection_to_server->push_client_status();
-        delete t_connection_to_server;
-        delete t_request_client;
-        return -1;
-    }
+        cout << "[mantis_client] creating file-writing objects..." << endl;
 
-    condition t_buffer_condition;
-    buffer t_buffer( t_buffer_size, t_record_size );
-
-    record_receiver t_receiver( t_server, &t_buffer, &t_buffer_condition );
-    t_receiver.set_data_chunk_size( t_data_chunk_size );
-
-    file_writer t_writer;
-    t_writer.set_buffer( &t_buffer, &t_buffer_condition );
-
-    client_worker t_worker( t_connection_to_server->get_request(), &t_receiver, &t_writer, &t_buffer_condition );
-
-    thread t_worker_thread( &t_worker );
-
-    cout << "[mantis_client] starting record receiver" << endl;
-
-    try
-    {
-        t_worker_thread.start();
-    }
-    catch( exception& e )
-    {
-        cerr << "[mantis_client] unable to start record-receiving server" << endl;
-        delete t_connection_to_server;
-        delete t_request_client;
-        return -1;
+        try
+        {
+            t_file_writing = new client_file_writing( t_connection_to_server, t_write_port );
+        }
+        catch( exception& e )
+        {
+            cerr << "[mantis_client] error setting up file writing: " << e.what() << endl;
+            delete t_connection_to_server;
+            delete t_request_client;
+            return -1;
+        }
     }
     /****************************************************************/
     /****************************************************************/
@@ -184,9 +165,10 @@ int main( int argc, char** argv )
 
     if( ! t_connection_to_server->push_client_status() )
     {
+        cerr << "[mantis_client] error sending client status" << endl;
+        delete t_file_writing;
         delete t_connection_to_server;
         delete t_request_client;
-        cerr << "[mantis_client] error sending client status" << endl;
         return -1;
     }
 
@@ -239,15 +221,19 @@ int main( int argc, char** argv )
 
 
     /****************************************************************/
-    /************************ move this *****************************/
+    /*********************** file writing ***************************/
     /****************************************************************/
-    cout << "[mantis_client] waiting for record reception to end..." << endl;
+    if( t_client_writes_file )
+    {
+        cout << "[mantis_client] waiting for record reception to end..." << endl;
 
-    t_worker_thread.join();
+        t_file_writing->wait_for_finish();
 
-    delete t_server;
+        cout << "[mantis_client] shutting down record receiver" << endl;
 
-    cout << "[mantis_client] shutting down record receiver" << endl;
+        delete t_file_writing;
+        t_file_writing = NULL;
+    }
     /****************************************************************/
     /****************************************************************/
     /****************************************************************/
