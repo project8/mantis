@@ -23,24 +23,29 @@ int main( int argc, char** argv )
     server* t_server = new server( t_configurator.get_int_required( "port" ) );
     run_context_dist* t_run_context = new run_context_dist();
 
-    cout << "[test_mantis_server] waiting for connection..." << endl;
+    while( true )
+    {
 
-    t_run_context->set_connection( t_server->get_connection() );
+        cout << "[test_mantis_server] waiting for connection..." << endl;
 
-    t_run_context->pull_request();
+        t_run_context->set_connection( t_server->get_connection() );
 
-    cout << "[test_mantis_server] received request <" << t_run_context->get_request()->DebugString() << ">" << endl;
+        t_run_context->pull_request();
 
-    t_run_context->get_status()->set_state( status_state_t_acknowledged );
-    t_run_context->push_status();
+        cout << "[test_mantis_server] received request:\n" << t_run_context->get_request()->DebugString() << endl;
 
-    t_run_context->get_status()->set_state( status_state_t_started );
-    t_run_context->push_status();
+        t_run_context->get_status()->set_state( status_state_t_acknowledged );
+        t_run_context->push_status();
 
-    t_run_context->get_status()->set_state( status_state_t_stopped );
-    t_run_context->push_status();
+        t_run_context->get_status()->set_state( status_state_t_started );
+        t_run_context->push_status();
 
-    cout << "[test_mantis_server] done" << endl;
+        t_run_context->get_status()->set_state( status_state_t_stopped );
+        t_run_context->push_status();
+
+        cout << "[test_mantis_server] done" << endl;
+
+    }
 
     delete t_run_context->get_connection();
     delete t_run_context;
