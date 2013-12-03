@@ -95,6 +95,7 @@ set( MANTIS_CLIENT_HEADERFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_record_receiver.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_run_context_dist.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_server.hh    
+    ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_signal_handler.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_thread.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_writer.hh
 
@@ -127,6 +128,7 @@ set( MANTIS_CLIENT_SOURCEFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_record_receiver.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_run_context_dist.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_server.cc    
+    ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_signal_handler.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_thread.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_writer.cc
 
@@ -165,6 +167,7 @@ if( Mantis_BUILD_SERVER )
     set( MANTIS_SERVER_HEADERFILES
         ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_destroyer.hh
         ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_digitizer.hh
+        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_digitizer_test.hh
         ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_factory.hh
         ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_network_writer.hh
         ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_run_queue.hh
@@ -176,6 +179,7 @@ if( Mantis_BUILD_SERVER )
     
     set( MANTIS_SERVER_SOURCEFILES
         ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_digitizer.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_digitizer_test.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_network_writer.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_run_queue.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_request_receiver.cc
