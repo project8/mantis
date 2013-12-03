@@ -19,6 +19,7 @@ namespace mantis
             virtual ~client_worker();
 
             void execute();
+            void cancel();
 
         private:
             record_receiver* f_receiver;

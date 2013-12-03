@@ -152,6 +152,11 @@ namespace mantis
         return;
     }
 
+    void record_receiver::cancel()
+    {
+        return;
+    }
+
     void record_receiver::finalize( response* a_response )
     {
         cout << "[digitizer] calculating statistics..." << endl;

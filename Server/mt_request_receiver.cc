@@ -99,6 +99,11 @@ namespace mantis
         return;
     }
 
+    void request_receiver::cancel()
+    {
+        return;
+    }
+
     size_t request_receiver::get_buffer_size() const
     {
         return f_buffer_size;

@@ -70,4 +70,9 @@ namespace mantis
          return;
     }
 
+    void client_worker::cancel()
+    {
+        return;
+    }
+
 }

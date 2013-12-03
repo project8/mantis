@@ -20,6 +20,7 @@ namespace mantis
             virtual ~server_worker();
 
             void execute();
+            void cancel();
 
             void set_writer( writer* a_writer );
 

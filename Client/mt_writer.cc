@@ -95,6 +95,10 @@ namespace mantis
 
         return;
     }
+    void writer::cancel()
+    {
+        return;
+    }
     void writer::finalize( response* a_response )
     {
         cout << "[writer] calculating statistics..." << endl;

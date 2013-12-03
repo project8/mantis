@@ -266,6 +266,10 @@ namespace mantis
 
         return;
     }
+    void digitizer_px1500::cancel()
+    {
+        return;
+    }
     void digitizer_px1500::finalize( response* a_response )
     {
         cout << "[digitizer] calculating statistics..." << endl;

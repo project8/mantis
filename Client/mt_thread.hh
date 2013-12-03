@@ -25,14 +25,13 @@ namespace mantis
             const state& get_state();
 
         private:
-            static void* ThreadActionFunction( void* voidthread );
-            static void ThreadCleanupFunction( void* voidstate );
+            static void* thread_setup_and_execute( void* voidthread );
+            static void thread_cleanup( void* voidthread );
 
             pthread_t f_thread;
             state f_state;
             callable* f_object;
     };
-
 }
 
 #endif

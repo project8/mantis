@@ -26,6 +26,7 @@ namespace mantis
 
             virtual void initialize( request* a_response );
             void execute();
+            void cancel();
             virtual void finalize( response* a_response );
 
         protected:

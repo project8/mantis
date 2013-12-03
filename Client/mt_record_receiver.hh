@@ -20,6 +20,7 @@ namespace mantis
             virtual ~record_receiver();
 
             void execute();
+            void cancel();
             void finalize( response* a_response );
 
             size_t get_data_chunk_size();

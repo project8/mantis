@@ -1,5 +1,7 @@
 #include "mt_run_queue.hh"
 
+#include <iostream>
+
 namespace mantis
 {
 
@@ -84,6 +86,11 @@ namespace mantis
             f_mutex.unlock();
 
         }
+    }
+
+    void run_queue::cancel()
+    {
+        return;
     }
 
 }

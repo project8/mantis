@@ -27,6 +27,7 @@ namespace mantis
             run_context_dist* from_back();
 
             void execute();
+            void cancel();
 
         private:
             mutex f_mutex;

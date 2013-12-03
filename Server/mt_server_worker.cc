@@ -122,6 +122,11 @@ namespace mantis
         return;
     }
 
+    void server_worker::cancel()
+    {
+        return;
+    }
+
     void server_worker::set_writer( writer* a_writer )
     {
         f_writer = a_writer;

@@ -19,6 +19,7 @@ namespace mantis
             virtual ~request_receiver();
 
             void execute();
+            void cancel();
 
             size_t get_buffer_size() const;
             void set_buffer_size( size_t size );
