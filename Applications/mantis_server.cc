@@ -26,18 +26,18 @@
  *    e.g.:   port/i=8235
  */
 
+#include "mt_buffer.hh"
+#include "mt_condition.hh"
+#include "mt_configurator.hh"
+#include "mt_digitizer.hh"
 #include "mt_exception.hh"
 #include "mt_factory.hh"
-#include "mt_configurator.hh"
-#include "mt_server_config.hh"
-#include "mt_server.hh"
-#include "mt_condition.hh"
-#include "mt_run_queue.hh"
-#include "mt_buffer.hh"
 #include "mt_request_receiver.hh"
-#include "mt_server_worker.hh"
-#include "mt_digitizer.hh"
 #include "mt_network_writer.hh"
+#include "mt_run_queue.hh"
+#include "mt_server.hh"
+#include "mt_server_config.hh"
+#include "mt_server_worker.hh"
 #include "mt_thread.hh"
 using namespace mantis;
 
