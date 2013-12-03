@@ -8,6 +8,7 @@
 #ifndef MT_SIGNAL_HANDLER_HH_
 #define MT_SIGNAL_HANDLER_HH_
 
+#include "mt_mutex.hh"
 #include "mt_thread.hh"
 
 #include <set>
@@ -31,6 +32,7 @@ namespace mantis
             static void handle_sig_int( int _ignored );
 
         private:
+            static mutex f_mutex;
             static thread_set f_threads;
 
             static bool f_got_exit_signal;

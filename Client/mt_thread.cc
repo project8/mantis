@@ -1,9 +1,14 @@
 #include "mt_thread.hh"
 
+#include <iostream>
+using std::cout;
+using std::endl;
+
 namespace mantis
 {
 
     thread::thread( callable* an_object ) :
+            f_mutex(),
             f_thread(),
             f_state( e_ready ),
             f_object( an_object )
@@ -12,7 +17,7 @@ namespace mantis
 
     thread::~thread()
     {
-        if( f_state == e_running )
+        if( get_state() == e_running )
         {
             cancel();
         }
@@ -21,17 +26,17 @@ namespace mantis
     void thread::start()
     {
         //cout << "in thread::start; state is: " << f_state << endl;
-        if( f_state == e_ready )
+        if( get_state() == e_ready )
         {
             pthread_create( &f_thread, 0, &thread::thread_setup_and_execute, this );
-            f_state = e_running;
+            set_state( e_running );
             //cout << "thread::start changed state to: " << f_state << endl;
         }
         return;
     }
     void thread::join()
     {
-        if( f_state == e_running )
+        if( get_state() == e_running )
         {
             pthread_join( f_thread, 0 );
         }
@@ -40,28 +45,40 @@ namespace mantis
     void thread::cancel()
     {
         //cout << "in thread::cancel; state is: " << f_state << endl;
-        if( f_state == e_running )
+        if( get_state() == e_running )
         {
             //cout << "thread::cancel is calling pthread_cancel" << endl;
             pthread_cancel( f_thread );
-            f_state = e_cancelled;
+            set_state( e_cancelled );
             //cout << "thread::cancel changed state to: " << f_state << endl;
         }
         return;
     }
     void thread::reset()
     {
-        if( f_state == e_running )
+        if( get_state() == e_running )
         {
             cancel();
         }
-        f_state = e_ready;
+        set_state( e_ready );
         return;
     }
 
-    const thread::state& thread::get_state()
+    thread::state thread::get_state()
     {
-        return f_state;
+        thread::state t_state;
+        f_mutex.lock();
+        t_state = f_state;
+        f_mutex.unlock();
+        return t_state;
+    }
+
+    void thread::set_state( thread::state a_state )
+    {
+        f_mutex.lock();
+        f_state = a_state;
+        f_mutex.unlock();
+        return;
     }
 
     void* thread::thread_setup_and_execute( void* voidthread )
@@ -72,7 +89,7 @@ namespace mantis
         callable* object = t_thread->f_object;
         object->execute();
         //cout << "completing thread" << endl;
-        t_thread->f_state = e_complete;
+        t_thread->set_state( e_complete );
         pthread_cleanup_pop( 0 );
         return 0;
     }
@@ -83,7 +100,7 @@ namespace mantis
         thread* t_thread = (::mantis::thread*) (voidthread);
         //cout << "executing cleanup function" << endl;
         t_thread->f_object->cancel();
-        t_thread->f_state = e_cancelled;
+        t_thread->set_state( e_cancelled );
         return;
     }
 

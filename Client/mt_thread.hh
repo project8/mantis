@@ -2,6 +2,7 @@
 #define MT_THREAD_HH_
 
 #include "mt_callable.hh"
+#include "mt_mutex.hh"
 
 #include <pthread.h>
 
@@ -22,12 +23,16 @@ namespace mantis
             void cancel();
             void reset();
 
-            const state& get_state();
+            // thread-safe getter
+            state get_state();
+            // thread-safe setter
+            void set_state( thread::state a_state );
 
         private:
             static void* thread_setup_and_execute( void* voidthread );
             static void thread_cleanup( void* voidthread );
 
+            mutex f_mutex;
             pthread_t f_thread;
             state f_state;
             callable* f_object;
