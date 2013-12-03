@@ -98,9 +98,9 @@ int main( int argc, char** argv )
         thread t_worker_thread( &t_worker );
 
         signal_handler t_sig_hand;
-        t_sig_hand.add_thread( &t_queue_thread );
-        t_sig_hand.add_thread( &t_receiver_thread );
-        t_sig_hand.add_thread( &t_worker_thread );
+        t_sig_hand.push_thread( &t_queue_thread );
+        t_sig_hand.push_thread( &t_receiver_thread );
+        t_sig_hand.push_thread( &t_worker_thread );
 
         t_queue_thread.start();
         t_receiver_thread.start();

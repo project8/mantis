@@ -11,7 +11,7 @@
 #include "mt_mutex.hh"
 #include "mt_thread.hh"
 
-#include <set>
+#include <stack>
 
 namespace mantis
 {
@@ -19,21 +19,24 @@ namespace mantis
     class signal_handler
     {
         public:
-            typedef std::set< thread* > thread_set;
+            typedef std::stack< thread* > threads;
 
         public:
             signal_handler();
             virtual ~signal_handler();
 
-            void add_thread( thread* );
+            void push_thread( thread* );
+            void pop_thread();
 
             void reset();
+
+            static bool got_exit_signal();
 
             static void handle_sig_int( int _ignored );
 
         private:
             static mutex f_mutex;
-            static thread_set f_threads;
+            static threads f_threads;
 
             static bool f_got_exit_signal;
 
