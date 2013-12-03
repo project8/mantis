@@ -3,6 +3,8 @@
 
 #include "mt_digitizer.hh"
 
+#include "mt_mutex.hh"
+
 #include "thorax.hh"
 
 namespace mantis
@@ -35,6 +37,14 @@ namespace mantis
             acquisition_id_type f_acquisition_count;
             time_nsec_type f_live_time;
             time_nsec_type f_dead_time;
+
+            // thread-safe getter
+            bool get_canceled();
+            // thread-safe setter
+            void set_canceled( bool a_flag );
+
+            mutex f_canceled_mutex;
+            bool f_canceled;
 
             bool start();
             bool acquire( block* a_block, timespec& a_time_stamp );

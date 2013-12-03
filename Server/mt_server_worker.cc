@@ -6,6 +6,7 @@
 #include "mt_digitizer.hh"
 #include "mt_factory.hh"
 #include "mt_run_queue.hh"
+#include "mt_signal_handler.hh"
 #include "mt_thread.hh"
 #include "mt_writer.hh"
 
@@ -36,7 +37,7 @@ namespace mantis
     {
         run_context_dist* t_run_context;
 
-        while( true )
+        while( ! signal_handler::got_exit_signal() )
         {
             if( f_run_queue->empty() == true )
             {
@@ -84,6 +85,10 @@ namespace mantis
             thread* t_digitizer_thread = new thread( f_digitizer );
             thread* t_writer_thread = new thread( f_writer );
 
+            signal_handler t_sig_hand;
+            t_sig_hand.push_thread( t_writer_thread );
+            t_sig_hand.push_thread( t_digitizer_thread );
+
             t_digitizer_thread->start();
 
             while( f_buffer_condition->is_waiting() == false )
@@ -99,6 +104,9 @@ namespace mantis
 
             t_digitizer_thread->join();
             t_writer_thread->join();
+
+            t_sig_hand.pop_thread(); // digitizer thread
+            t_sig_hand.pop_thread(); // writer thread
 
             delete t_digitizer_thread;
             delete t_writer_thread;
@@ -124,6 +132,7 @@ namespace mantis
 
     void server_worker::cancel()
     {
+        std::cout << "CANCELLING SERVER WORKER" << std::endl;
         return;
     }
 

@@ -101,6 +101,7 @@ namespace mantis
 
     void request_receiver::cancel()
     {
+        std::cout << "CANCELLING REQUEST RECEIVER" << std::endl;
         return;
     }
 

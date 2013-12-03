@@ -90,6 +90,7 @@ namespace mantis
 
     void run_queue::cancel()
     {
+        std::cout << "CANCELLING RUN QUEUE" << std::endl;
         return;
     }
 

@@ -26,7 +26,9 @@ namespace mantis
             f_record_count( 0 ),
             f_acquisition_count( 0 ),
             f_live_time( 0 ),
-            f_dead_time( 0 )
+            f_dead_time( 0 ),
+            f_canceled_mutex(),
+            f_canceled( false )
     {
     }
 
@@ -196,6 +198,8 @@ namespace mantis
     }
     void digitizer_test::cancel()
     {
+        cout << "CANCELLING DIGITIZER TEST" << endl;
+        set_canceled( true );
         return;
     }
     void digitizer_test::finalize( response* a_response )
@@ -240,4 +244,20 @@ namespace mantis
         return true;
     }
 
+    bool digitizer_test::get_canceled()
+    {
+        bool t_value;
+        f_canceled_mutex.lock();
+        t_value = f_canceled;
+        f_canceled_mutex.unlock();
+        return t_value;
+    }
+
+    void digitizer_test::set_canceled( bool a_flag )
+    {
+        f_canceled_mutex.lock();
+        f_canceled = a_flag;
+        f_canceled_mutex.unlock();
+        return;
+    }
 }

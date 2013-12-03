@@ -33,6 +33,14 @@ namespace mantis
             buffer* f_buffer;
             condition* f_condition;
 
+            // thread-safe getter
+            bool get_canceled();
+            // thread-safe setter
+            void set_canceled( bool a_flag );
+
+            mutex f_canceled_mutex;
+            bool f_canceled;
+
             record_id_type f_record_count;
             acquisition_id_type f_acquisition_count;
             time_nsec_type f_live_time;
