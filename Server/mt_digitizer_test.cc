@@ -48,7 +48,7 @@ namespace mantis
         f_allocated = true;
         return;
     }
-    digitizer_px1500::~digitizer_px1500()
+    digitizer_test::~digitizer_test()
     {
         if( f_allocated )
         {
@@ -63,7 +63,7 @@ namespace mantis
         }
     }
 
-    void digitizer_px1500::initialize( request* a_request )
+    void digitizer_test::initialize( request* a_request )
     {
         int t_result;
 
@@ -77,7 +77,7 @@ namespace mantis
 
         return;
     }
-    void digitizer_px1500::execute()
+    void digitizer_test::execute()
     {
         iterator t_it( f_buffer );
 
@@ -194,11 +194,11 @@ namespace mantis
 
         return;
     }
-    void digitizer_px1500::cancel()
+    void digitizer_test::cancel()
     {
         return;
     }
-    void digitizer_px1500::finalize( response* a_response )
+    void digitizer_test::finalize( response* a_response )
     {
         cout << "[digitizer] calculating statistics..." << endl;
 
@@ -212,11 +212,11 @@ namespace mantis
         return;
     }
 
-    bool digitizer_px1500::start()
+    bool digitizer_test::start()
     {
         return true;
     }
-    bool digitizer_px1500::acquire( block* a_block, timespec& a_stamp_time )
+    bool digitizer_test::acquire( block* a_block, timespec& a_stamp_time )
     {
         a_block->set_record_id( f_record_count );
         a_block->set_acquisition_id( f_acquisition_count );
@@ -229,13 +229,13 @@ namespace mantis
 
         return true;
     }
-    bool digitizer_px1500::stop()
+    bool digitizer_test::stop()
     {
         ++f_acquisition_count;
         return true;
     }
 
-    bool digitizer_px1500::write_mode_check( request_file_write_mode_t mode )
+    bool digitizer_test::write_mode_check( request_file_write_mode_t mode )
     {
         return true;
     }

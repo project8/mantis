@@ -18,6 +18,9 @@ namespace mantis
     class signal_handler
     {
         public:
+            typedef std::set< thread* > thread_set;
+
+        public:
             signal_handler();
             virtual ~signal_handler();
 
@@ -28,9 +31,11 @@ namespace mantis
             static void handle_sig_int( int _ignored );
 
         private:
-            static std::set< thread* > f_threads;
+            static thread_set f_threads;
 
             static bool f_got_exit_signal;
+
+            static bool f_handling_sig_int;
 
     };
 

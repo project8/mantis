@@ -33,11 +33,11 @@
 #include "mt_exception.hh"
 #include "mt_factory.hh"
 #include "mt_request_receiver.hh"
-#include "mt_network_writer.hh"
 #include "mt_run_queue.hh"
 #include "mt_server.hh"
 #include "mt_server_config.hh"
 #include "mt_server_worker.hh"
+#include "mt_signal_handler.hh"
 #include "mt_thread.hh"
 using namespace mantis;
 
@@ -91,12 +91,17 @@ int main( int argc, char** argv )
 
     cout << "[mantis_server] starting threads..." << endl;
 
-    thread t_queue_thread( &t_run_queue );
-    thread t_receiver_thread( &t_receiver );
-    thread t_worker_thread( &t_worker );
-
     try
     {
+        thread t_queue_thread( &t_run_queue );
+        thread t_receiver_thread( &t_receiver );
+        thread t_worker_thread( &t_worker );
+
+        signal_handler t_sig_hand;
+        t_sig_hand.add_thread( &t_queue_thread );
+        t_sig_hand.add_thread( &t_receiver_thread );
+        t_sig_hand.add_thread( &t_worker_thread );
+
         t_queue_thread.start();
         t_receiver_thread.start();
         t_worker_thread.start();
@@ -109,11 +114,14 @@ int main( int argc, char** argv )
     }
     catch( exception& e)
     {
-        cerr << "exception caught during server running" << endl;
+        cerr << "exception caught during server running: \n\t" << e.what() << endl;
         return -1;
     }
 
     cout << "[mantis_server] shutting down..." << endl;
+
+    // ensure that all threads have cancelled
+    sleep( 1 );
 
     delete t_server;
 

@@ -16,12 +16,19 @@ namespace mantis
 
     bool signal_handler::f_got_exit_signal = false;
 
-    signal_handler::signal_handler() :
-            f_threads()
+    bool signal_handler::f_handling_sig_int = false;
+
+    signal_handler::thread_set signal_handler::f_threads;
+
+    signal_handler::signal_handler()
     {
-        if( signal( SIGINT, signal_handler::handle_sig_int ) == SIG_ERR )
+        if( ! f_handling_sig_int && signal( SIGINT, signal_handler::handle_sig_int ) == SIG_ERR )
         {
-            throw exception << "Unable to handle SIGINT";
+            throw exception() << "Unable to handle SIGINT\n";
+        }
+        else
+        {
+            f_handling_sig_int = true;
         }
     }
 
@@ -38,6 +45,7 @@ namespace mantis
     void signal_handler::reset()
     {
         f_got_exit_signal = false;
+        f_handling_sig_int = false;
         f_threads.clear();
         return;
     }
