@@ -5,6 +5,7 @@
 #include "mt_configurator.hh"
 #include "mt_digitizer.hh"
 #include "mt_factory.hh"
+#include "mt_run_context_dist.hh"
 #include "mt_run_queue.hh"
 #include "mt_signal_handler.hh"
 #include "mt_thread.hh"

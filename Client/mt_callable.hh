@@ -11,6 +11,7 @@ namespace mantis
             virtual ~callable();
 
             virtual void execute() = 0;
+
             virtual void cancel() = 0;
     };
 

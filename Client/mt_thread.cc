@@ -91,7 +91,7 @@ namespace mantis
         //cout << "completing thread" << endl;
         t_thread->set_state( e_complete );
         pthread_cleanup_pop( 0 );
-        return 0;
+        pthread_exit( 0 );
     }
 
     void thread::thread_cleanup( void* voidthread )

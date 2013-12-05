@@ -127,7 +127,7 @@ int main( int argc, char** argv )
 
     cout << "[mantis_server] shutting down..." << endl;
 
-    // ensure that all threads have cancelled
+    // ensure that all threads have canceled
     sleep( 1 );
 
     delete t_server;

@@ -3,16 +3,16 @@
 
 #include "mt_callable.hh"
 
-#include "mt_server.hh"
-#include "mt_run_queue.hh"
-#include "mt_condition.hh"
+#include <cstddef>
 
 namespace mantis
 {
     class buffer;
+    class condition;
+    class run_queue;
+    class server;
 
-    class request_receiver :
-        public callable
+    class request_receiver : public callable
     {
         public:
             request_receiver( server* a_server, run_queue* a_run_queue, condition* a_condition );
