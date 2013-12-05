@@ -77,6 +77,7 @@ namespace mantis
     {
         while( true )
         {
+            pthread_testcancel();
             sleep( 1 );
 
             f_mutex.lock();
@@ -88,6 +89,7 @@ namespace mantis
                     // can still communicate with the client
                     if( (*t_it)->pull_client_status() )
                     {
+                        /*
                         // there's an update to the client status
                         if( (*t_it)->get_client_status()->state() != client_status_state_t_ready )
                         {
@@ -101,6 +103,7 @@ namespace mantis
                             continue;
                         }
                         // client is still ready
+                         */
                     }
                     // continue with the next run in the queue
                     ++t_it;

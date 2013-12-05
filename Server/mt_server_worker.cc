@@ -26,7 +26,10 @@ namespace mantis
             f_buffer( a_buffer ),
             f_run_queue( a_run_queue ),
             f_queue_condition( a_queue_condition ),
-            f_buffer_condition( a_buffer_condition )
+            f_buffer_condition( a_buffer_condition ),
+            f_canceled( false ),
+            f_digitizer_state( k_inactive ),
+            f_writer_state( k_inactive )
     {
     }
 
@@ -36,18 +39,17 @@ namespace mantis
 
     void server_worker::execute()
     {
-        run_context_dist* t_run_context;
-
         while( ! signal_handler::got_exit_signal() )
         {
             if( f_run_queue->empty() == true )
             {
+                // thread cancellation point via call to pthread_cond_wait in queue_condition::wait
                 f_queue_condition->wait();
             }
 
             cout << "[server_worker] sending server status <started>..." << endl;
 
-            t_run_context = f_run_queue->from_front();
+            run_context_dist* t_run_context = f_run_queue->from_front();
             t_run_context->get_status()->set_state( status_state_t_started );
             t_run_context->push_status();
 
@@ -86,11 +88,12 @@ namespace mantis
             thread* t_digitizer_thread = new thread( f_digitizer );
             thread* t_writer_thread = new thread( f_writer );
 
-            signal_handler t_sig_hand;
-            t_sig_hand.push_thread( t_writer_thread );
-            t_sig_hand.push_thread( t_digitizer_thread );
+            //signal_handler t_sig_hand;
+            //t_sig_hand.push_thread( t_writer_thread );
+            //t_sig_hand.push_thread( t_digitizer_thread );
 
             t_digitizer_thread->start();
+            f_digitizer_state = k_running;
 
             while( f_buffer_condition->is_waiting() == false )
             {
@@ -98,26 +101,42 @@ namespace mantis
             }
 
             t_writer_thread->start();
+            f_writer_state = k_running;
 
             t_run_context->get_status()->set_state( status_state_t_running );
-            f_run_queue->to_front( t_run_context );
-            t_run_context = NULL;
+            //f_run_queue->to_front( f_current_run_context );
+            //f_current_run_context = NULL;
 
+            // cancellation point (I think) via calls to pthread_join
+            cout << " calling digitizer join" << endl;
             t_digitizer_thread->join();
+            f_digitizer_state = k_inactive;
+            cout << " calling writer join" << endl;
             t_writer_thread->join();
+            f_writer_state = k_inactive;
 
             cout << "### after thread join ###" << endl;
 
-            //t_sig_hand.pop_thread(); // digitizer thread
-            //t_sig_hand.pop_thread(); // writer thread
+            //if( ! t_sig_hand.got_exit_signal() )
+            //{
+                //t_sig_hand.pop_thread(); // digitizer thread
+                //t_sig_hand.pop_thread(); // writer thread
+            //}
 
             delete t_digitizer_thread;
             delete t_writer_thread;
 
             cout << "[server_worker] sending server status <stopped>..." << endl;
 
-            t_run_context = f_run_queue->from_front();
-            t_run_context->get_status()->set_state( status_state_t_stopped );
+            //t_run_context = f_run_queue->from_front();
+            if( ! f_canceled.load() )
+            {
+                t_run_context->get_status()->set_state( status_state_t_stopped );
+            }
+            else
+            {
+                t_run_context->get_status()->set_state( status_state_t_canceled );
+            }
             t_run_context->push_status();
 
             cout << "[server_worker] finalizing..." << endl;
@@ -136,10 +155,15 @@ namespace mantis
     void server_worker::cancel()
     {
         std::cout << "CANCELLING SERVER WORKER" << std::endl;
-        //t_run_context->get_status()->set_state( status_state_t_error );
-        //t_run_context->push_status();
-        //delete t_run_context->get_connection();
-        //delete t_run_context;
+        f_canceled.store( true );
+        if( f_digitizer_state == k_running )
+        {
+            f_digitizer->cancel();
+        }
+        if( f_writer_state == k_running )
+        {
+            f_writer->cancel();
+        }
         return;
     }
 

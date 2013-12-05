@@ -12,7 +12,9 @@ namespace mantis
     client_worker::client_worker( request* a_request, record_receiver* a_receiver, writer* a_writer, condition* a_buffer_condition ) :
             f_receiver( a_receiver ),
             f_writer( a_writer ),
-            f_buffer_condition( a_buffer_condition )
+            f_buffer_condition( a_buffer_condition ),
+            f_receiver_state( k_inactive ),
+            f_writer_state( k_running )
     {
         f_writer->initialize( a_request );
     }
@@ -27,6 +29,7 @@ namespace mantis
         thread* t_writer_thread = new thread( f_writer );
 
         t_receiver_thread->start();
+        f_receiver_state = k_running;
 
         while( f_buffer_condition->is_waiting() == false )
         {
@@ -34,11 +37,14 @@ namespace mantis
         }
 
         t_writer_thread->start();
+        f_writer_state = k_running;
 
         cout << "[client_worker] running..." << endl;
 
         t_receiver_thread->join();
+        f_receiver_state = k_inactive;
         t_writer_thread->join();
+        f_writer_state = k_inactive;
 
         delete t_receiver_thread;
         delete t_writer_thread;
@@ -72,6 +78,15 @@ namespace mantis
 
     void client_worker::cancel()
     {
+        cout << "CLIENT_WORKER CANCELED" << endl;
+        if( f_receiver_state == k_running )
+        {
+            f_receiver->cancel();
+        }
+        if( f_writer_state == k_running )
+        {
+            f_writer->cancel();
+        }
         return;
     }
 

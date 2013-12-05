@@ -3,14 +3,17 @@
 
 #include "mt_callable.hh"
 
-#include "mt_server.hh"
-#include "mt_buffer.hh"
-#include "mt_condition.hh"
+#include "mt_atomic.hh"
+#include "thorax.hh"
 
 namespace mantis
 {
+    class block;
+    class buffer;
+    class condition;
     class record_dist;
     class response;
+    class server;
 
     class record_receiver :
         public callable
@@ -36,6 +39,8 @@ namespace mantis
             time_nsec_type f_dead_time;
 
             size_t f_data_chunk_size;
+
+            atomic_bool f_canceled;
 
             bool receive( block* a_block, record_dist* a_dist );
 

@@ -88,4 +88,10 @@ namespace mantis
         return;
     }
 
+    void client_file_writing::cancel()
+    {
+        f_worker->cancel();
+        return;
+    }
+
 } /* namespace mantis */

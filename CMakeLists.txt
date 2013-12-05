@@ -86,6 +86,7 @@ pbuilder_add_ext_libraries( boost_atomic )
 #################
 
 set( MANTIS_CLIENT_HEADERFILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_atomic.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_block.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_buffer.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_callable.hh

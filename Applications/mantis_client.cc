@@ -42,6 +42,11 @@ using std::endl;
 
 #include <google/protobuf/text_format.h>
 
+#define RETURN_SUCCESS 1
+#define RETURN_ERROR -1
+#define RETURN_CANCELED -2
+#define RETURN_REVOKED -3
+
 int main( int argc, char** argv )
 {
     client_config t_cc;
@@ -95,7 +100,7 @@ int main( int argc, char** argv )
     catch( exception& e )
     {
         cerr << "[mantis_client] unable to start client: " << e.what() << endl;
-        return -1;
+        return RETURN_ERROR;
     }
 
     t_run_context->set_connection( t_request_client );
@@ -108,7 +113,7 @@ int main( int argc, char** argv )
         delete t_run_context;
         delete t_request_client;
         cerr << "[mantis_client] error sending request" << endl;
-        return -1;
+        return RETURN_ERROR;
     }
 
     useconds_t t_sleep_time = 100;  // in usec
@@ -130,7 +135,7 @@ int main( int argc, char** argv )
             cerr << "[mantis_client] error reported; run was not acknowledged\n" << endl;
             delete t_run_context;
             delete t_request_client;
-            return -1;
+            return RETURN_ERROR;
         }
 
         cerr << "[mantis_client] server reported unusual status: " << t_run_context->get_status()->state() << endl;
@@ -156,7 +161,15 @@ int main( int argc, char** argv )
             cerr << "[mantis_client] error setting up file writing: " << e.what() << endl;
             delete t_run_context;
             delete t_request_client;
-            return -1;
+            return RETURN_ERROR;
+        }
+
+        if( t_run_context->get_status()->state() == status_state_t_revoked )
+        {
+            cout << "[mantis_client] request revoked; run did not take place\n" << endl;
+            delete t_run_context;
+            delete t_request_client;
+            return RETURN_ERROR;
         }
     }
     /****************************************************************/
@@ -174,7 +187,7 @@ int main( int argc, char** argv )
         delete t_file_writing;
         delete t_run_context;
         delete t_request_client;
-        return -1;
+        return RETURN_ERROR;
     }
 
     // =0 -> in progress
@@ -211,14 +224,28 @@ int main( int argc, char** argv )
         if( t_run_context->get_status()->state() == status_state_t_stopped )
         {
             cout << "[mantis_client] run status: stopped; data acquisition has finished\n" << endl;
-            t_run_success = 1;
+            t_run_success = RETURN_SUCCESS;
             break;
         }
 
         if( t_run_context->get_status()->state() == status_state_t_error )
         {
             cout << "[mantis_client] error reported; run did not complete\n" << endl;
-            t_run_success = -1;
+            t_run_success = RETURN_ERROR;
+            break;
+        }
+
+        if( t_run_context->get_status()->state() == status_state_t_canceled )
+        {
+            cout << "[mantis_client] cancellation reported; some data may have been written\n" << endl;
+            t_run_success = RETURN_CANCELED;
+            break;
+        }
+
+        if( t_run_context->get_status()->state() == status_state_t_revoked )
+        {
+            cout << "[mantis_client] request revoked; run did not take place\n" << endl;
+            t_run_success = RETURN_REVOKED;
             break;
         }
     }
@@ -230,6 +257,11 @@ int main( int argc, char** argv )
     /****************************************************************/
     if( t_client_writes_file )
     {
+        if( t_run_success < 0 )
+        {
+            t_file_writing->cancel();
+        }
+
         cout << "[mantis_client] waiting for record reception to end..." << endl;
 
         t_file_writing->wait_for_finish();
@@ -245,7 +277,7 @@ int main( int argc, char** argv )
 
 
 
-    if( t_run_success > 0 )
+    if( t_run_success > 0 || t_run_success == RETURN_CANCELED )
     {
         cout << "[mantis_client] receiving response..." << endl;
 

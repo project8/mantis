@@ -25,6 +25,12 @@ namespace mantis
             record_receiver* f_receiver;
             writer* f_writer;
             condition* f_buffer_condition;
+
+            enum thread_state
+            {
+                k_inactive,
+                k_running
+            } f_receiver_state, f_writer_state;
     };
 
 }

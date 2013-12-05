@@ -27,7 +27,6 @@ namespace mantis
             f_acquisition_count( 0 ),
             f_live_time( 0 ),
             f_dead_time( 0 ),
-            f_canceled_mutex(),
             f_canceled( false )
     {
     }
@@ -95,6 +94,9 @@ namespace mantis
 
         cout << "[digitizer_test] loose at <" << t_it.index() << ">" << endl;
 
+        int t_old_cancel_state;
+        pthread_setcancelstate( PTHREAD_CANCEL_DISABLE, &t_old_cancel_state );
+
         //start acquisition
         if( start() == false )
         {
@@ -108,7 +110,7 @@ namespace mantis
         while( true )
         {
             //check if we've written enough
-            if( f_record_count == f_record_last )
+            if( f_record_count == f_record_last || f_canceled.load() )
             {
                 //mark the block as written
                 t_it->set_written();
@@ -246,18 +248,12 @@ namespace mantis
 
     bool digitizer_test::get_canceled()
     {
-        bool t_value;
-        f_canceled_mutex.lock();
-        t_value = f_canceled;
-        f_canceled_mutex.unlock();
-        return t_value;
+        return f_canceled.load();
     }
 
     void digitizer_test::set_canceled( bool a_flag )
     {
-        f_canceled_mutex.lock();
-        f_canceled = a_flag;
-        f_canceled_mutex.unlock();
+        f_canceled.store( a_flag );
         return;
     }
 }

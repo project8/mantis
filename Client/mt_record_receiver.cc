@@ -1,7 +1,10 @@
 #include "mt_record_receiver.hh"
 
+#include "mt_buffer.hh"
+#include "mt_condition.hh"
 #include "mt_iterator.hh"
 #include "mt_record_dist.hh"
+#include "mt_server.hh"
 #include "response.pb.h"
 
 #include <cstddef>
@@ -21,7 +24,8 @@ namespace mantis
             f_record_count( 0 ),
             f_live_time( 0 ),
             f_dead_time( 0 ),
-            f_data_chunk_size( 1024 )
+            f_data_chunk_size( 1024 ),
+            f_canceled( false )
     {
         cout << "[record_receiver] allocating buffer..." << endl;
 
@@ -74,6 +78,9 @@ namespace mantis
         //start timing
         get_time_monotonic( &t_live_start_time );
 
+        int t_old_cancel_state;
+        pthread_setcancelstate( PTHREAD_CANCEL_DISABLE, &t_old_cancel_state );
+
         //go go go go
         while( true )
         {
@@ -95,7 +102,7 @@ namespace mantis
             ++f_record_count;
 
             //a zero-length data array indicates the end of the data
-            if( t_it.object()->get_data_size() == 0 )
+            if( t_it.object()->get_data_size() == 0 || f_canceled.load() )
             {
                 //mark the block as written
                 t_it->set_written();
@@ -154,6 +161,8 @@ namespace mantis
 
     void record_receiver::cancel()
     {
+        cout << "RECORD_RECEIVER CANCELED" << endl;
+        f_canceled.store( true );
         return;
     }
 

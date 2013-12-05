@@ -40,6 +40,7 @@ namespace mantis
         {
             pthread_join( f_thread, 0 );
         }
+        cout << "returning from join" << endl;
         return;
     }
     void thread::cancel()

@@ -14,7 +14,6 @@ namespace mantis
     writer::writer() :
             f_buffer( NULL ),
             f_condition( NULL ),
-            f_canceled_mutex(),
             f_canceled( false ),
             f_record_count( 0 ),
             f_acquisition_count( 0 ),
@@ -65,7 +64,7 @@ namespace mantis
             }
 
             //if the block we're on is already written, the run is done
-            if( t_it->is_written() == true || get_canceled() )
+            if( t_it->is_written() == true )
             {
                 //stop live timing
                 get_time_monotonic( &t_stop_time );
@@ -127,18 +126,12 @@ namespace mantis
 
     bool writer::get_canceled()
     {
-        bool t_value;
-        f_canceled_mutex.lock();
-        t_value = f_canceled;
-        f_canceled_mutex.unlock();
-        return t_value;
+        return f_canceled.load();
     }
 
     void writer::set_canceled( bool a_flag )
     {
-        f_canceled_mutex.lock();
-        f_canceled = a_flag;
-        f_canceled_mutex.unlock();
+        f_canceled.store( a_flag );
         return;
     }
 }

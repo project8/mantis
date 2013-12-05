@@ -27,6 +27,8 @@ namespace mantis
 
             void wait_for_finish();
 
+            void cancel();
+
         private:
             server* f_server;
             condition *f_buffer_condition;
