@@ -85,7 +85,24 @@ namespace mantis
             {
                 if( (*t_it)->push_status() )
                 {
-                    // okay so far
+                    // can still communicate with the client
+                    if( (*t_it)->pull_client_status() )
+                    {
+                        // there's an update to the client status
+                        if( (*t_it)->get_client_status()->state() != client_status_state_t_ready )
+                        {
+                            // something went wrong with the client
+                            run_context_dist* t_run_context = *t_it;
+                            t_run_context->get_status()->set_state( status_state_t_revoked );
+                            t_run_context->push_status();
+                            delete t_run_context->get_connection();
+                            delete t_run_context;
+                            t_it = f_runs.erase( t_it );
+                            continue;
+                        }
+                        // client is still ready
+                    }
+                    // continue with the next run in the queue
                     ++t_it;
                     continue;
                 }
