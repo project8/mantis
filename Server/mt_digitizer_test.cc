@@ -27,7 +27,8 @@ namespace mantis
             f_acquisition_count( 0 ),
             f_live_time( 0 ),
             f_dead_time( 0 ),
-            f_canceled( false )
+            f_canceled( false ),
+            f_cancel_condition()
     {
     }
 
@@ -106,6 +107,8 @@ namespace mantis
         //start timing
         get_time_monotonic( &t_live_start_time );
 
+        cout << "[digitizer_test] planning on " << f_record_last << " records" << endl;
+
         //go go go go
         while( true )
         {
@@ -124,7 +127,15 @@ namespace mantis
                 stop();
 
                 //GET OUT
-                cout << "[digitizer_test] finished normally" << endl;
+                if( f_canceled.load() )
+                {
+                    cout << "[digitizer_test] was canceled mid-run" << endl;
+                    f_cancel_condition.release();
+                }
+                else
+                {
+                    cout << "[digitizer_test] finished normally" << endl;
+                }
                 return;
             }
 
@@ -141,8 +152,15 @@ namespace mantis
                 //halt the pci acquisition
                 stop();
 
+                // to make sure we don't deadlock anything
+                if( f_cancel_condition.is_waiting() )
+                {
+                    f_cancel_condition.release();
+                }
+
                 //GET OUT
                 cout << "[digitizer_test] finished abnormally because acquisition failed" << endl;
+
                 return;
             }
 
@@ -181,6 +199,12 @@ namespace mantis
                 //start acquisition
                 if( start() == false )
                 {
+                    // to make sure we don't deadlock anything
+                    if( f_cancel_condition.is_waiting() )
+                    {
+                        f_cancel_condition.release();
+                    }
+
                     //GET OUT
                     cout << "[digitizer_test] finished abnormally because starting streaming failed" << endl;
                     return;
@@ -194,6 +218,7 @@ namespace mantis
 
                 cout << "[digitizer_test] loose at <" << t_it.index() << ">" << endl;
             }
+            cout << "[digitizer_test] record count: " << f_record_count << endl;
         }
 
         return;
@@ -201,7 +226,12 @@ namespace mantis
     void digitizer_test::cancel()
     {
         cout << "CANCELLING DIGITIZER TEST" << endl;
-        set_canceled( true );
+        if( ! f_canceled.load() )
+        {
+            f_canceled.store( true );
+            f_cancel_condition.wait();
+        }
+        cout << "  digitizer_test is done canceling" << endl;
         return;
     }
     void digitizer_test::finalize( response* a_response )

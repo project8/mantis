@@ -15,6 +15,7 @@ namespace mantis
             f_buffer( NULL ),
             f_condition( NULL ),
             f_canceled( false ),
+            f_cancel_condition(),
             f_record_count( 0 ),
             f_acquisition_count( 0 ),
             f_live_time( 0 )
@@ -73,7 +74,16 @@ namespace mantis
                 f_live_time = time_to_nsec( t_stop_time ) - time_to_nsec( t_start_time );
 
                 //GET OUT
-                cout << "[writer] finished normally" << endl;
+                // to make sure we don't deadlock anything
+                if( f_cancel_condition.is_waiting() )
+                {
+                    cout << "[writer] was canceled mid-run" << endl;
+                    f_cancel_condition.release();
+                }
+                else
+                {
+                    cout << "[writer] finished normally" << endl;
+                }
                 return;
             }
 
@@ -81,6 +91,12 @@ namespace mantis
             t_it->set_writing();
             if( write( t_it.object() ) == false )
             {
+                // to make sure we don't deadlock anything
+                if( f_cancel_condition.is_waiting() )
+                {
+                    f_cancel_condition.release();
+                }
+
                 //GET OUT
                 cout << "[writer] finished abnormally because writing failed" << endl;
                 return;
@@ -100,8 +116,13 @@ namespace mantis
     }
     void writer::cancel()
     {
-        cout << "CANCELLING WRITER" << endl;
-        set_canceled( true );
+        cout << "CANCELING WRITER" << endl;
+        if( ! f_canceled.load() )
+        {
+            f_canceled.store( true );
+            f_cancel_condition.wait();
+        }
+        cout << "  writer has finished canceling" << endl;
         return;
     }
     void writer::finalize( response* a_response )

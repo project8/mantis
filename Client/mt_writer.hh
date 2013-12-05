@@ -40,6 +40,7 @@ namespace mantis
             condition* f_condition;
 
             atomic_bool f_canceled;
+            condition f_cancel_condition;
 
             record_id_type f_record_count;
             acquisition_id_type f_acquisition_count;

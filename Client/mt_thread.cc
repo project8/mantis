@@ -49,6 +49,7 @@ namespace mantis
         if( get_state() == e_running )
         {
             //cout << "thread::cancel is calling pthread_cancel" << endl;
+            f_object->cancel();
             pthread_cancel( f_thread );
             set_state( e_cancelled );
             //cout << "thread::cancel changed state to: " << f_state << endl;
@@ -98,10 +99,10 @@ namespace mantis
     void thread::thread_cleanup( void* voidthread )
     {
         //cout << "in thread_cleanup" << endl;
-        thread* t_thread = (::mantis::thread*) (voidthread);
+        //thread* t_thread = (::mantis::thread*) (voidthread);
         //cout << "executing cleanup function" << endl;
-        t_thread->f_object->cancel();
-        t_thread->set_state( e_cancelled );
+        //t_thread->f_object->cancel();
+        //t_thread->set_state( e_cancelled );
         return;
     }
 

@@ -4,6 +4,7 @@
 #include "mt_digitizer.hh"
 
 #include "mt_atomic.hh"
+#include "mt_condition.hh"
 #include "mt_mutex.hh"
 
 #include "thorax.hh"
@@ -45,6 +46,7 @@ namespace mantis
             time_nsec_type f_dead_time;
 
             atomic_bool f_canceled;
+            condition f_cancel_condition;
 
             bool start();
             bool acquire( block* a_block, timespec& a_time_stamp );

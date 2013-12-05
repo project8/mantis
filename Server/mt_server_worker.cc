@@ -87,11 +87,11 @@ namespace mantis
 
             thread* t_digitizer_thread = new thread( f_digitizer );
             thread* t_writer_thread = new thread( f_writer );
-
-            //signal_handler t_sig_hand;
-            //t_sig_hand.push_thread( t_writer_thread );
-            //t_sig_hand.push_thread( t_digitizer_thread );
-
+/*
+            signal_handler t_sig_hand;
+            t_sig_hand.push_thread( t_writer_thread );
+            t_sig_hand.push_thread( t_digitizer_thread );
+*/
             t_digitizer_thread->start();
             f_digitizer_state = k_running;
 
@@ -104,6 +104,7 @@ namespace mantis
             f_writer_state = k_running;
 
             t_run_context->get_status()->set_state( status_state_t_running );
+            t_run_context->push_status();
             //f_run_queue->to_front( f_current_run_context );
             //f_current_run_context = NULL;
 
@@ -116,25 +117,26 @@ namespace mantis
             f_writer_state = k_inactive;
 
             cout << "### after thread join ###" << endl;
-
-            //if( ! t_sig_hand.got_exit_signal() )
-            //{
-                //t_sig_hand.pop_thread(); // digitizer thread
-                //t_sig_hand.pop_thread(); // writer thread
-            //}
-
+/*
+            if( ! t_sig_hand.got_exit_signal() )
+            {
+                t_sig_hand.pop_thread(); // digitizer thread
+                t_sig_hand.pop_thread(); // writer thread
+            }
+*/
             delete t_digitizer_thread;
             delete t_writer_thread;
 
-            cout << "[server_worker] sending server status <stopped>..." << endl;
 
             //t_run_context = f_run_queue->from_front();
             if( ! f_canceled.load() )
             {
+                cout << "[server_worker] sending server status <stopped>..." << endl;
                 t_run_context->get_status()->set_state( status_state_t_stopped );
             }
             else
             {
+                cout << "[server_worker] sending server status <canceled>..." << endl;
                 t_run_context->get_status()->set_state( status_state_t_canceled );
             }
             t_run_context->push_status();
@@ -156,6 +158,7 @@ namespace mantis
     {
         std::cout << "CANCELLING SERVER WORKER" << std::endl;
         f_canceled.store( true );
+
         if( f_digitizer_state == k_running )
         {
             f_digitizer->cancel();
@@ -164,6 +167,7 @@ namespace mantis
         {
             f_writer->cancel();
         }
+
         return;
     }
 
