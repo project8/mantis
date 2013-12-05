@@ -69,6 +69,18 @@ protobuf_generate_cpp( Mantis_PB_Block_Header_Source Mantis_PB_Block_Header_Head
 include_directories( ${CMAKE_CURRENT_BINARY_DIR} )
 
 
+# Boost as included with mantis
+
+include_directories (
+    ${PROJECT_SOURCE_DIR}
+)
+
+add_subdirectory (boost)
+
+pbuilder_add_ext_libraries( boost_atomic )
+
+
+
 #################
 # mantis client #
 #################

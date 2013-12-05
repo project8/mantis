@@ -9,6 +9,8 @@
 
 #include "mt_exception.hh"
 
+#include <signal.h>
+
 namespace mantis
 {
 
