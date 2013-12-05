@@ -4,15 +4,14 @@
 #include "mt_callable.hh"
 
 #include "mt_mutex.hh"
-#include "mt_run_context_dist.hh"
 
 #include <list>
 
 namespace mantis
 {
+    class run_context_dist;
 
-    class run_queue :
-        public callable
+    class run_queue : public callable
     {
         public:
             run_queue();

@@ -1,5 +1,7 @@
 #include "mt_run_queue.hh"
 
+#include "mt_run_context_dist.hh"
+
 #include <iostream>
 
 namespace mantis
@@ -78,19 +80,39 @@ namespace mantis
             sleep( 1 );
 
             f_mutex.lock();
-            std::list< run_context_dist* >::iterator t_it;
-            for( t_it = f_runs.begin(); t_it != f_runs.end(); t_it++ )
+            std::list< run_context_dist* >::iterator t_it = f_runs.begin();
+            while( t_it != f_runs.end() )
             {
-                (*t_it)->push_status();
+                if( (*t_it)->push_status() )
+                {
+                    // okay so far
+                    ++t_it;
+                    continue;
+                }
+                // push was unsuccessful, indicating that the communication with the client is broken
+                t_it = f_runs.erase( t_it );
             }
             f_mutex.unlock();
 
         }
+        return;
     }
 
     void run_queue::cancel()
     {
         std::cout << "CANCELLING RUN QUEUE" << std::endl;
+        f_mutex.lock();
+        while( ! f_runs.empty() )
+        {
+            run_context_dist* t_run_context = f_runs.front();
+            status* t_status = t_run_context->get_status();
+            t_status->set_state( status_state_t_revoked );
+            t_run_context->push_status();
+            delete t_run_context->get_connection();
+            delete t_run_context;
+            f_runs.pop_front();
+        }
+        f_mutex.unlock();
         return;
     }
 
