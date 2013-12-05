@@ -105,8 +105,10 @@ namespace mantis
             t_digitizer_thread->join();
             t_writer_thread->join();
 
-            t_sig_hand.pop_thread(); // digitizer thread
-            t_sig_hand.pop_thread(); // writer thread
+            cout << "### after thread join ###" << endl;
+
+            //t_sig_hand.pop_thread(); // digitizer thread
+            //t_sig_hand.pop_thread(); // writer thread
 
             delete t_digitizer_thread;
             delete t_writer_thread;
@@ -133,6 +135,10 @@ namespace mantis
     void server_worker::cancel()
     {
         std::cout << "CANCELLING SERVER WORKER" << std::endl;
+        //t_run_context->get_status()->set_state( status_state_t_error );
+        //t_run_context->push_status();
+        //delete t_run_context->get_connection();
+        //delete t_run_context;
         return;
     }
 

@@ -10,8 +10,10 @@ message status
 		waiting = 2;
 		started = 3;
 		running = 4;
-		stopped = 5;
+		stopped = 5; // run completed normally
 		error = 6;
+		canceled = 7; // run was started and stopped abnormally
+		revoked = 8; // request will not be run
 	}
 	
 	required state_t state = 1;

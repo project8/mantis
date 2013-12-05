@@ -77,6 +77,7 @@ namespace mantis
         {
             f_threads.top()->cancel();
             f_threads.pop();
+            usleep( 100 );
         }
         f_mutex.unlock();
         return;

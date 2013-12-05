@@ -111,6 +111,13 @@ int main( int argc, char** argv )
         t_queue_thread.join();
         t_receiver_thread.join();
         t_worker_thread.join();
+
+        if( ! t_sig_hand.got_exit_signal() )
+        {
+            t_sig_hand.pop_thread(); // worker thread
+            t_sig_hand.pop_thread(); // receiver thread
+            t_sig_hand.pop_thread(); // queue thread
+        }
     }
     catch( exception& e)
     {

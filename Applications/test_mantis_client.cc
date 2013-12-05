@@ -49,6 +49,18 @@ int analyze_status( run_context_dist* t_run_context )
             cout.flush();
             cout << endl;
             return -1;
+
+        case status_state_t_canceled :
+            cout << "[test_mantis_client] canceled..." << '\r';
+            cout.flush();
+            cout << endl;
+            return -1;
+
+        case status_state_t_revoked :
+            cout << "[test_mantis_client] revoked..." << '\r';
+            cout.flush();
+            cout << endl;
+            return -1;
     }
 }
 
