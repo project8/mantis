@@ -29,6 +29,8 @@ namespace mantis
 
             void cancel();
 
+            bool is_done();
+
         private:
             server* f_server;
             condition *f_buffer_condition;

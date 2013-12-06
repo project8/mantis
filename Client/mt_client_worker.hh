@@ -3,6 +3,7 @@
 
 #include "mt_callable.hh"
 
+#include "mt_atomic.hh"
 #include "mt_condition.hh"
 #include "request.pb.h"
 #include "mt_record_receiver.hh"
@@ -21,10 +22,14 @@ namespace mantis
             void execute();
             void cancel();
 
+            bool is_done();
+
         private:
             record_receiver* f_receiver;
             writer* f_writer;
             condition* f_buffer_condition;
+
+            atomic_bool f_is_done;
 
             enum thread_state
             {

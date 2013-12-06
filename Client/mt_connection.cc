@@ -1,7 +1,5 @@
 #include "mt_connection.hh"
 
-#include "mt_exception.hh"
-
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -36,11 +34,11 @@ namespace mantis
     ssize_t connection::send( const char* a_message, size_t a_size, int flags )
     {
         //cout << "sending message of size: " << a_size << endl;
-        ::send( f_socket, (void*)&a_size, sizeof( size_t ), flags );
+        send_type( a_size, flags );
         ssize_t t_written_size = ::send( f_socket, (void*)a_message, a_size, flags );
         if( t_written_size != a_size )
         {
-            throw exception() << "could not write to socket (" << strerror(errno) << ")";
+            throw exception() << "could not write to socket (" << strerror(errno) << ")\n";
             return t_written_size;
         }
 
@@ -52,20 +50,25 @@ namespace mantis
         ssize_t t_read_size = ::recv( f_socket, (void*)a_message, a_size, flags );
         if( t_read_size < 0 )
         {
-            throw exception() << "could not read from socket (" << strerror(errno) << ")";
+            throw exception() << "could not read from socket (" << strerror(errno) << ")\n";
             return t_read_size;
         }
 
         return t_read_size;
     }
 
+    /*
     size_t connection::recv_size( int flags )
     {
         size_t t_size = 0;
         ssize_t t_recv_size = ::recv( f_socket, (void*)&t_size, sizeof( size_t ), flags );
+        if( t_recv_size < 0 )
+        {
+            t_size = 0;
+        }
         //cout << "receiving something of size " << t_size << "; size read: " << t_recv_size << endl;
         return t_size;
     }
-
+    */
 
 }

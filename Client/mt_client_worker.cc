@@ -10,11 +10,12 @@ namespace mantis
 {
 
     client_worker::client_worker( request* a_request, record_receiver* a_receiver, writer* a_writer, condition* a_buffer_condition ) :
-            f_receiver( a_receiver ),
-            f_writer( a_writer ),
-            f_buffer_condition( a_buffer_condition ),
-            f_receiver_state( k_inactive ),
-            f_writer_state( k_running )
+                    f_receiver( a_receiver ),
+                    f_writer( a_writer ),
+                    f_buffer_condition( a_buffer_condition ),
+                    f_is_done( true ),
+                    f_receiver_state( k_inactive ),
+                    f_writer_state( k_running )
     {
         f_writer->initialize( a_request );
     }
@@ -25,6 +26,8 @@ namespace mantis
 
     void client_worker::execute()
     {
+        f_is_done.store( false );
+
         thread* t_receiver_thread = new thread( f_receiver );
         thread* t_writer_thread = new thread( f_writer );
 
@@ -73,7 +76,9 @@ namespace mantis
 
         cout << endl;
 
-         return;
+        f_is_done.store( true );
+
+        return;
     }
 
     void client_worker::cancel()
@@ -88,6 +93,11 @@ namespace mantis
             f_writer->cancel();
         }
         return;
+    }
+
+    bool client_worker::is_done()
+    {
+        return f_is_done.load();
     }
 
 }

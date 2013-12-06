@@ -31,6 +31,7 @@
 #include "thorax.hh"
 using namespace mantis;
 
+#include <algorithm> // for min
 #include <string>
 #include <unistd.h>
 using std::string;
@@ -72,7 +73,7 @@ int main( int argc, char** argv )
     }
 
     double t_duration = t_config.get_double_required( "duration" );
-    useconds_t t_wait_during_run = ( useconds_t )( t_duration / 10. );
+    useconds_t t_wait_during_run = std::min( ( useconds_t )1000, ( useconds_t )( t_duration / 10. ) );
 
     run_context_dist* t_run_context = new run_context_dist();
     t_run_context->get_request()->set_write_host( t_write_host );
@@ -246,6 +247,14 @@ int main( int argc, char** argv )
         {
             cout << "[mantis_client] request revoked; run did not take place\n" << endl;
             t_run_success = RETURN_REVOKED;
+            break;
+        }
+
+        if( t_client_writes_file && t_file_writing->is_done() )
+        {
+            cout << "[mantis_client] file writing is done, but run status still does not indicate run is complete" << endl;
+            cout << "                exiting run now!" << endl;
+            t_run_success = RETURN_CANCELED;
             break;
         }
     }

@@ -123,7 +123,7 @@ namespace mantis
         size_t t_header_size = f_buffer_size;
         try
         {
-            t_header_size = f_connection->recv_size( flags );
+            t_header_size = f_connection->recv_type< size_t >( flags );
             if( t_header_size == 0 ) return false;
             reset_buffer( t_header_size );
             if( f_connection->recv( f_buffer, t_header_size, flags ) == 0 )
@@ -147,7 +147,7 @@ namespace mantis
         {
             try
             {
-                f_connection->recv_size( flags );
+                f_connection->recv_type< size_t >( flags );
                 if( f_connection->recv( (char*)( t_offset_data ), f_data_chunk_size, flags ) == 0 )
                     return false;
             }
@@ -163,7 +163,7 @@ namespace mantis
         {
             try
             {
-                f_connection->recv_size( flags );
+                f_connection->recv_type< size_t >( flags );
                 if( f_connection->recv( (char*)( t_offset_data ), f_last_data_chunk_size, flags ) == 0 )
                     return false;
             }

@@ -51,7 +51,13 @@ namespace mantis
 
             run_context_dist* t_run_context = f_run_queue->from_front();
             t_run_context->get_status()->set_state( status_state_t_started );
-            t_run_context->push_status();
+            if( ! t_run_context->push_status() )
+            {
+                cerr << "[server_wroker] unable to send status <started> to the client; aborting" << endl;
+                delete t_run_context->get_connection();
+                delete t_run_context;
+                continue;
+            }
 
             cout << "[server_worker] initializing..." << endl;
 
@@ -104,7 +110,11 @@ namespace mantis
             f_writer_state = k_running;
 
             t_run_context->get_status()->set_state( status_state_t_running );
-            t_run_context->push_status();
+            if( ! t_run_context->push_status() )
+            {
+                cerr << "[server_wroker] unable to send status <running> to the client; canceling run" << endl;
+                cancel();
+            }
             //f_run_queue->to_front( f_current_run_context );
             //f_current_run_context = NULL;
 

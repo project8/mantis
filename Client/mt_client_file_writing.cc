@@ -94,4 +94,9 @@ namespace mantis
         return;
     }
 
+    bool client_file_writing::is_done()
+    {
+        return f_worker->is_done();
+    }
+
 } /* namespace mantis */

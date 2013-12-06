@@ -91,6 +91,9 @@ namespace mantis
                 //mark the block as written
                 t_it->set_written();
 
+                //get the time and update the number of live nanoseconds
+                get_time_monotonic( &t_live_stop_time );
+
                 //get the time and update the number of live microseconds
                 f_live_time += time_to_nsec( t_live_stop_time ) - time_to_nsec( t_live_start_time );
 
@@ -147,8 +150,10 @@ namespace mantis
                 //start live timer
                 get_time_monotonic( &t_live_start_time );;
 
-                cout << "[digitizer] loose at <" << t_it.index() << ">" << endl;
+                cout << "[record_receiver] loose at <" << t_it.index() << ">" << endl;
             }
+
+            cout << "[record_receiver] records received: " << f_record_count << endl;
         }
 
         cout << "[record_receiver] finished processing records" << endl;
@@ -168,7 +173,7 @@ namespace mantis
 
     void record_receiver::finalize( response* a_response )
     {
-        cout << "[digitizer] calculating statistics..." << endl;
+        cout << "[record_receiver] calculating statistics..." << endl;
 
         a_response->set_digitizer_records( f_record_count );
         a_response->set_digitizer_live_time( (double) f_live_time * SEC_PER_NSEC );
