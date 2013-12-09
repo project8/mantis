@@ -32,7 +32,7 @@ namespace mantis
 
             static bool got_exit_signal();
 
-            static void handle_sig_int( int _ignored );
+            static void handler_cancel_threads( int _ignored );
 
         private:
             static mutex f_mutex;
@@ -40,6 +40,7 @@ namespace mantis
 
             static bool f_got_exit_signal;
 
+            static bool f_handling_sig_quit;
             static bool f_handling_sig_int;
 
     };

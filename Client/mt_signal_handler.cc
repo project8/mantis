@@ -17,19 +17,29 @@ namespace mantis
     bool signal_handler::f_got_exit_signal = false;
 
     bool signal_handler::f_handling_sig_int = false;
+    bool signal_handler::f_handling_sig_quit = false;
 
     mutex signal_handler::f_mutex;
     signal_handler::threads signal_handler::f_threads;
 
     signal_handler::signal_handler()
     {
-        if( ! f_handling_sig_int && signal( SIGINT, signal_handler::handle_sig_int ) == SIG_ERR )
+        if( ! f_handling_sig_int && signal( SIGINT, signal_handler::handler_cancel_threads ) == SIG_ERR )
         {
             throw exception() << "Unable to handle SIGINT\n";
         }
         else
         {
             f_handling_sig_int = true;
+        }
+
+        if( ! f_handling_sig_quit && signal( SIGQUIT, signal_handler::handler_cancel_threads ) == SIG_ERR )
+        {
+            throw exception() << "Unable to handle SIGQUIT\n";
+        }
+        else
+        {
+            f_handling_sig_quit = true;
         }
 
         if( signal(SIGPIPE, SIG_IGN) == SIG_ERR )
@@ -63,6 +73,7 @@ namespace mantis
         f_mutex.lock();
         f_got_exit_signal = false;
         f_handling_sig_int = false;
+        f_handling_sig_quit = false;
         while( ! f_threads.empty() )
         {
             f_threads.pop();
@@ -76,7 +87,7 @@ namespace mantis
         return f_got_exit_signal;
     }
 
-    void signal_handler::handle_sig_int( int _ignored )
+    void signal_handler::handler_cancel_threads( int _ignored )
     {
         f_mutex.lock();
         f_got_exit_signal = true;
