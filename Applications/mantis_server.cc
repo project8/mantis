@@ -85,6 +85,12 @@ int main( int argc, char** argv )
 
     factory< digitizer >* t_dig_factory = factory< digitizer >::get_instance();
     digitizer* t_digitizer = t_dig_factory->create( t_config.get_string_required( "digitizer" ) );
+    if( t_digitizer == NULL )
+    {
+        cerr << "[mantis_server] could not create digitizer <" << t_config.get_string_required( "digitizer" ) << ">; aborting" << endl;
+        delete t_server;
+        return -1;
+    }
     t_digitizer->allocate( &t_buffer, &t_buffer_condition );
 
     server_worker t_worker( &t_config, t_digitizer, &t_buffer, &t_run_queue, &t_queue_condition, &t_buffer_condition );
