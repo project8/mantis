@@ -32,16 +32,18 @@ int main( int argc, char** argv )
 
         t_run_context->pull_request();
 
-        cout << "[test_mantis_server] received request:\n" << t_run_context->get_request()->DebugString() << endl;
+        cout << "[test_mantis_server] received request:\n" << t_run_context->lock_request_in()->DebugString() << endl;
 
-        t_run_context->get_status()->set_state( status_state_t_acknowledged );
+        status* t_status = t_run_context->lock_status_out();
+        t_status->set_state( status_state_t_acknowledged );
         t_run_context->push_status();
 
-        t_run_context->get_status()->set_state( status_state_t_started );
+        t_status->set_state( status_state_t_started );
         t_run_context->push_status();
 
-        t_run_context->get_status()->set_state( status_state_t_stopped );
+        t_status->set_state( status_state_t_stopped );
         t_run_context->push_status();
+        t_run_context->unlock_outbound();
 
         cout << "[test_mantis_server] done" << endl;
 

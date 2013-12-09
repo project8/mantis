@@ -50,34 +50,40 @@ namespace mantis
             cout << "[server_worker] sending server status <started>..." << endl;
 
             run_context_dist* t_run_context = f_run_queue->from_front();
-            t_run_context->get_status()->set_state( status_state_t_started );
-            if( ! t_run_context->push_status() )
+            t_run_context->lock_status_out()->set_state( status_state_t_started );
+            if( ! t_run_context->push_status_no_mutex() )
             {
+                t_run_context->unlock_outbound();
                 cerr << "[server_wroker] unable to send status <started> to the client; aborting" << endl;
                 delete t_run_context->get_connection();
                 delete t_run_context;
                 continue;
             }
+            t_run_context->unlock_outbound();
 
             cout << "[server_worker] initializing..." << endl;
 
-            f_digitizer->initialize( t_run_context->get_request() );
+            request* t_request = t_run_context->lock_request_in();
+            f_digitizer->initialize( t_request );
 
             cout << "[server_worker] creating writer..." << endl;
 
-            if(! f_digitizer->write_mode_check( t_run_context->get_request()->file_write_mode() ) )
+            if(! f_digitizer->write_mode_check( t_request->file_write_mode() ) )
             {
-                cerr << "[server_worker] unable to operate in write mode " << t_run_context->get_request()->file_write_mode() << endl;
+                cerr << "[server_worker] unable to operate in write mode " << t_request->file_write_mode() << endl;
                 cerr << "                run request ignored" << endl;
-                t_run_context->get_status()->set_state( status_state_t_error );
-                t_run_context->push_status();
+                t_run_context->unlock_inbound();
+
+                t_run_context->lock_status_out()->set_state( status_state_t_error );
+                t_run_context->push_status_no_mutex();
+                t_run_context->unlock_outbound();
                 delete t_run_context->get_connection();
                 delete t_run_context;
                 continue;
             }
 
             factory< writer >* t_writer_factory = factory< writer >::get_instance();
-            if( t_run_context->get_request()->file_write_mode() == request_file_write_mode_t_local )
+            if( t_request->file_write_mode() == request_file_write_mode_t_local )
             {
                 f_writer = t_writer_factory->create( "file" );
             }
@@ -87,7 +93,9 @@ namespace mantis
             }
             f_writer->set_buffer( f_buffer, f_buffer_condition );
             f_writer->configure( f_config );
-            f_writer->initialize( t_run_context->get_request() );
+            f_writer->initialize( t_request );
+
+            t_run_context->unlock_inbound();
 
             cout << "[server_worker] running..." << endl;
 
@@ -109,8 +117,10 @@ namespace mantis
             t_writer_thread->start();
             f_writer_state = k_running;
 
-            t_run_context->get_status()->set_state( status_state_t_running );
-            if( ! t_run_context->push_status() )
+            t_run_context->lock_status_out()->set_state( status_state_t_running );
+            bool t_push_result = t_run_context->push_status_no_mutex();
+            t_run_context->unlock_outbound();
+            if( ! t_push_result )
             {
                 cerr << "[server_wroker] unable to send status <running> to the client; canceling run" << endl;
                 cancel();
@@ -139,23 +149,27 @@ namespace mantis
 
 
             //t_run_context = f_run_queue->from_front();
+            status* t_status = t_run_context->lock_status_out();
             if( ! f_canceled.load() )
             {
                 cout << "[server_worker] sending server status <stopped>..." << endl;
-                t_run_context->get_status()->set_state( status_state_t_stopped );
+                t_status->set_state( status_state_t_stopped );
             }
             else
             {
                 cout << "[server_worker] sending server status <canceled>..." << endl;
-                t_run_context->get_status()->set_state( status_state_t_canceled );
+                t_status->set_state( status_state_t_canceled );
             }
-            t_run_context->push_status();
+            t_run_context->push_status_no_mutex();
+            t_run_context->unlock_outbound();
 
             cout << "[server_worker] finalizing..." << endl;
 
-            f_digitizer->finalize( t_run_context->get_response() );
-            f_writer->finalize( t_run_context->get_response() );
-            t_run_context->push_response();
+            response* t_response = t_run_context->lock_response_out();
+            f_digitizer->finalize( t_response );
+            f_writer->finalize( t_response );
+            t_run_context->push_response_no_mutex();
+            t_run_context->unlock_outbound();
 
             delete t_run_context->get_connection();
             delete t_run_context;

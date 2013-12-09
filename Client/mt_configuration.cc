@@ -32,7 +32,7 @@ namespace mantis
     {
         for( MemberIterator rhs_it = rhs.MemberBegin(); rhs_it != rhs.MemberEnd(); ++rhs_it )
         {
-            std::cout << "(configuration operator+=) adding: " << rhs_it->name.GetString() << std::endl;
+            //std::cout << "(configuration operator+=) adding: " << rhs_it->name.GetString() << std::endl;
             this->RemoveMember( rhs_it->name.GetString() );
             this->AddMember( rhs_it->name, rhs_it->value, GetAllocator() );
         }

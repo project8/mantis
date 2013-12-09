@@ -5,6 +5,7 @@
 #include <iostream>
 #include <cstdio>
 #include <cstdlib>
+#include <signal.h>
 
 using std::cerr;
 using std::cout;
@@ -14,6 +15,7 @@ using std::endl;
 
 namespace mantis
 {
+    const run_context_dist::message_id_type run_context_dist::f_unknown_id = 0;
     const run_context_dist::message_id_type run_context_dist::f_request_id = 1;
     const run_context_dist::message_id_type run_context_dist::f_status_id = 2;
     const run_context_dist::message_id_type run_context_dist::f_client_status_id = 3;
@@ -21,21 +23,59 @@ namespace mantis
 
 
     run_context_dist::run_context_dist() :
-                    f_request(),
-                    f_status(),
-                    f_client_status(),
-                    f_response()
+                    f_request_out(),
+                    f_request_in(),
+                    f_status_out(),
+                    f_status_in(),
+                    f_client_status_out(),
+                    f_client_status_in(),
+                    f_response_out(),
+                    f_response_in(),
+                    f_outbound_mutex(),
+                    f_inbound_mutex_read(),
+                    f_inbound_mutex_write(),
+                    f_is_active( false ),
+                    f_is_canceled( false )
     {
+        f_status_out.set_state( status_state_t_created );
     }
     run_context_dist::~run_context_dist()
     {
+    }
+
+    void run_context_dist::execute()
+    {
+        f_is_active.store( true );
+        f_is_canceled.store( false );
+
+        while( ! f_is_canceled.load() )
+        {
+            //usleep( 500 );
+
+            if(! pull_next_message( MSG_WAITALL ) )
+            {
+                cerr << "unable to communicate with the server; aborting" << endl;
+                kill( 0, SIGINT );
+            }
+        }
+
+        f_is_active.store( false );
+        return;
+    }
+
+    void run_context_dist::cancel()
+    {
+        f_is_canceled.store( true );
+        return;
     }
 
     bool run_context_dist::pull_next_message( int flags )
     {
         try
         {
+            f_inbound_mutex_write.lock();
             message_id_type t_type = f_connection->recv_type< message_id_type >( flags | MSG_PEEK );
+            f_inbound_mutex_write.unlock();
             switch( t_type )
             {
                 case f_request_id:
@@ -68,13 +108,26 @@ namespace mantis
 
     bool run_context_dist::push_request( int flags )
     {
-        size_t t_request_size = reset_buffer( f_request.ByteSize() );
-        if( ! f_request.SerializeToArray( f_buffer, t_request_size ) )
+        bool t_return = false;
+        f_outbound_mutex.lock();
+        t_return = push_request_no_mutex( flags );
+        f_outbound_mutex.unlock();
+        return t_return;
+    }
+    bool run_context_dist::push_request_no_mutex( int flags )
+    {
+        size_t t_request_size = reset_buffer_out( f_request_out.ByteSize() );
+        if( ! f_request_out.SerializeToArray( f_buffer_out, t_request_size ) )
+        {
             return false;
+        }
         try
         {
+            //cout << "attempting to send type " << f_request_id << " for request" << endl;
             f_connection->send_type( f_request_id, flags );
-            f_connection->send( f_buffer, t_request_size, flags );
+            //cout << "sending request" << endl;
+            f_connection->send( f_buffer_out, t_request_size, flags );
+            //cout << "request sent" << endl;
         }
         catch( exception& e )
         {
@@ -85,45 +138,83 @@ namespace mantis
     }
     bool run_context_dist::pull_request( int flags )
     {
-        size_t t_request_size = f_buffer_size;
+        bool t_return = false;
+        f_inbound_mutex_read.lock();
+        t_return = pull_request_no_mutex( flags );
+        f_inbound_mutex_read.unlock();
+        return t_return;
+    }
+    bool run_context_dist::pull_request_no_mutex( int flags )
+    {
+        f_inbound_mutex_write.lock();
+        size_t t_request_size = f_buffer_in_size;
         try
         {
-            if( ! verify_message_type( f_request_id, flags ) )
+            message_id_type t_msg_type = f_unknown_id;
+            if( ! verify_message_type( f_request_id, t_msg_type, flags ) )
             {
-                cerr << "[run_context_dist] message type is not request" << endl;
+                cerr << "[run_context_dist] message type <" << t_msg_type << "> is not request (" << f_request_id << ")" << endl;
+                f_inbound_mutex_write.unlock();
                 return false;
             }
             t_request_size = f_connection->recv_type< size_t >( flags );
-            if( t_request_size == 0 ) return false;
-            reset_buffer( t_request_size );
-            ssize_t recv_ret = f_connection->recv( f_buffer, t_request_size, flags );
+            if( t_request_size == 0 )
+            {
+                f_inbound_mutex_write.unlock();
+                return false;
+            }
+            reset_buffer_in( t_request_size );
+            ssize_t recv_ret = f_connection->recv( f_buffer_in, t_request_size, flags );
             if( recv_ret <= 0 )
             {
                 cout << "[run_context_dist] (request) connection read length was: " << recv_ret << endl;
+                f_inbound_mutex_write.unlock();
                 return false;
             }
         }
         catch( exception& e )
         {
             cerr << "[run_context_dist] a read error occurred while pulling a request: " << e.what() << endl;
+            f_inbound_mutex_write.unlock();
             return false;
         }
-        return f_request.ParseFromArray( f_buffer, t_request_size );
+        bool t_return = f_request_in.ParseFromArray( f_buffer_in, t_request_size );
+        f_inbound_mutex_write.unlock();
+        return t_return;
     }
-    request* run_context_dist::get_request()
+    request* run_context_dist::lock_request_out()
     {
-        return &f_request;
+        f_outbound_mutex.lock();
+        return &f_request_out;
     }
+    request* run_context_dist::lock_request_in()
+    {
+        f_inbound_mutex_read.lock();
+        return &f_request_in;
+    }
+
 
     bool run_context_dist::push_status( int flags )
     {
-        size_t t_status_size = reset_buffer( f_status.ByteSize() );
-        if( ! f_status.SerializeToArray( f_buffer, t_status_size ) )
+        bool t_return = false;
+        f_outbound_mutex.lock();
+        t_return = push_status_no_mutex( flags );
+        f_outbound_mutex.unlock();
+        return t_return;
+    }
+    bool run_context_dist::push_status_no_mutex( int flags )
+    {
+        size_t t_status_size = reset_buffer_out( f_status_out.ByteSize() );
+        if( ! f_status_out.SerializeToArray( f_buffer_out, t_status_size ) )
+        {
             return false;
+        }
         try
         {
+            //cout << "attempting to send type " << f_status_id << " for status" << endl;
             f_connection->send_type( f_status_id, flags );
-            f_connection->send( f_buffer, t_status_size, flags );
+            //cout << "sending status" << endl;
+            f_connection->send( f_buffer_out, t_status_size, flags );
         }
         catch( exception& e )
         {
@@ -134,45 +225,82 @@ namespace mantis
     }
     bool run_context_dist::pull_status( int flags )
     {
-        size_t t_status_size = f_buffer_size;
+        bool t_return = false;
+        f_inbound_mutex_read.lock();
+        t_return = pull_status_no_mutex( flags );
+        f_inbound_mutex_read.unlock();
+        return t_return;
+    }
+    bool run_context_dist::pull_status_no_mutex( int flags )
+    {
+        f_inbound_mutex_write.lock();
+        size_t t_status_size = f_buffer_in_size;
         try
         {
-            if( ! verify_message_type( f_status_id, flags ) )
+            message_id_type t_msg_type = f_unknown_id;
+            if( ! verify_message_type( f_status_id, t_msg_type, flags ) )
             {
-                cerr << "[run_context_dist] message type is not status" << endl;
+                cerr << "[run_context_dist] message type <" << t_msg_type << "> is not status (" << f_status_id << ")" << endl;
+                f_inbound_mutex_write.unlock();
                 return false;
             }
             t_status_size = f_connection->recv_type< size_t >( flags );
-            if( t_status_size == 0 ) return false;
-            reset_buffer( t_status_size );
-            ssize_t recv_ret = f_connection->recv( f_buffer, t_status_size, flags );
+            if( t_status_size == 0 )
+            {
+                f_inbound_mutex_write.unlock();
+                return false;
+            }
+            reset_buffer_in( t_status_size );
+            ssize_t recv_ret = f_connection->recv( f_buffer_in, t_status_size, flags );
             if( recv_ret <= 0 )
             {
                 cerr << "[run_context_dist] (status) the connection read length was: " << recv_ret << endl;
+                f_inbound_mutex_write.unlock();
                 return false;
             }
         }
         catch( exception& e )
         {
             cerr << "[run_context_dist] a read error occurred while pulling a status: " << e.what() << endl;
+            f_inbound_mutex_write.unlock();
             return false;
         }
-        return f_status.ParseFromArray( f_buffer, t_status_size );
+        bool t_return = f_status_in.ParseFromArray( f_buffer_in, t_status_size );
+        f_inbound_mutex_write.unlock();
+        return t_return;
     }
-    status* run_context_dist::get_status()
+    status* run_context_dist::lock_status_out()
     {
-        return &f_status;
+        f_outbound_mutex.lock();
+        return &f_status_out;
+    }
+    status* run_context_dist::lock_status_in()
+    {
+        f_inbound_mutex_read.lock();
+        return &f_status_in;
     }
 
     bool run_context_dist::push_client_status( int flags )
     {
-        size_t t_client_status_size = reset_buffer( f_client_status.ByteSize() );
-        if( ! f_client_status.SerializeToArray( f_buffer, t_client_status_size ) )
+        bool t_return = false;
+        f_outbound_mutex.lock();
+        t_return = push_client_status_no_mutex( flags );
+        f_outbound_mutex.unlock();
+        return t_return;
+    }
+    bool run_context_dist::push_client_status_no_mutex( int flags )
+    {
+        size_t t_client_status_size = reset_buffer_out( f_client_status_out.ByteSize() );
+        if( ! f_client_status_out.SerializeToArray( f_buffer_out, t_client_status_size ) )
+        {
             return false;
+        }
         try
         {
+            //cout << "attempting to send type " << f_client_status_id << " for client_status" << endl;
             f_connection->send_type( f_client_status_id, flags );
-            f_connection->send( f_buffer, t_client_status_size, flags );
+            //cout << "sending client_status" << endl;
+            f_connection->send( f_buffer_out, t_client_status_size, flags );
         }
         catch( exception& e )
         {
@@ -183,45 +311,82 @@ namespace mantis
     }
     bool run_context_dist::pull_client_status( int flags )
     {
-        size_t t_client_status_size = f_buffer_size;
+        bool t_return = false;
+        f_inbound_mutex_read.lock();
+        t_return = pull_client_status_no_mutex( flags );
+        f_inbound_mutex_read.unlock();
+        return t_return;
+    }
+    bool run_context_dist::pull_client_status_no_mutex( int flags )
+    {
+        f_inbound_mutex_write.lock();
+        size_t t_client_status_size = f_buffer_in_size;
         try
         {
-            if( ! verify_message_type( f_client_status_id, flags ) )
+            message_id_type t_msg_type = f_unknown_id;
+            if( ! verify_message_type( f_client_status_id, t_msg_type, flags ) )
             {
-                cerr << "[run_context_dist] message type is not client_status" << endl;
+                cerr << "[run_context_dist] message type <" << t_msg_type << "> is not client_status (" << f_client_status_id << ")" << endl;
+                f_inbound_mutex_write.unlock();
                 return false;
             }
             t_client_status_size = f_connection->recv_type< size_t >( flags );
-            if( t_client_status_size == 0 ) return false;
-            reset_buffer( t_client_status_size );
-            ssize_t recv_ret = f_connection->recv( f_buffer, t_client_status_size, flags );
+            if( t_client_status_size == 0 )
+            {
+                f_inbound_mutex_write.unlock();
+                return false;
+            }
+            reset_buffer_in( t_client_status_size );
+            ssize_t recv_ret = f_connection->recv( f_buffer_in, t_client_status_size, flags );
             if( recv_ret <= 0 )
             {
                 cerr << "[run_context_dist] (client_status) the connection read length was: " << recv_ret << endl;
+                f_inbound_mutex_write.unlock();
                 return false;
             }
         }
         catch( exception& e )
         {
             cerr << "[run_context_dist] a read error occurred while pulling a client_status: " << e.what() << endl;
+            f_inbound_mutex_write.unlock();
             return false;
         }
-        return f_client_status.ParseFromArray( f_buffer, t_client_status_size );
+        bool t_return = f_client_status_in.ParseFromArray( f_buffer_in, t_client_status_size );
+        f_inbound_mutex_write.unlock();
+        return t_return;
     }
-    client_status* run_context_dist::get_client_status()
+    client_status* run_context_dist::lock_client_status_out()
     {
-        return &f_client_status;
+        f_outbound_mutex.lock();
+        return &f_client_status_out;
+    }
+    client_status* run_context_dist::lock_client_status_in()
+    {
+        f_inbound_mutex_read.lock();
+        return &f_client_status_in;
     }
 
     bool run_context_dist::push_response( int flags )
     {
-        size_t t_response_size = reset_buffer( f_response.ByteSize() );
-        if( ! f_response.SerializeToArray( f_buffer, t_response_size ) )
+        bool t_return = false;
+        f_outbound_mutex.lock();
+        t_return = push_response_no_mutex( flags );
+        f_outbound_mutex.unlock();
+        return t_return;
+    }
+    bool run_context_dist::push_response_no_mutex( int flags )
+    {
+        size_t t_response_size = reset_buffer_out( f_response_out.ByteSize() );
+        if( ! f_response_out.SerializeToArray( f_buffer_out, t_response_size ) )
+        {
             return false;
+        }
         try
         {
+            //cout << "attempting to send type " << f_response_id << " for response" << endl;
             f_connection->send_type( f_response_id, flags );
-            f_connection->send( f_buffer, t_response_size, flags );
+            //cout << "sending response" << endl;
+            f_connection->send( f_buffer_out, t_response_size, flags );
         }
         catch( exception& e )
         {
@@ -232,40 +397,68 @@ namespace mantis
     }
     bool run_context_dist::pull_response( int flags )
     {
-        size_t t_response_size = f_buffer_size;
+        bool t_return = false;
+        f_inbound_mutex_read.lock();
+        t_return = pull_response_no_mutex( flags );
+        f_inbound_mutex_read.unlock();
+        return t_return;
+    }
+    bool run_context_dist::pull_response_no_mutex( int flags )
+    {
+        f_inbound_mutex_write.lock();
+        size_t t_response_size = f_buffer_in_size;
         try
         {
-            if( ! verify_message_type( f_response_id, flags ) )
+            message_id_type t_msg_type = f_unknown_id;
+            if( ! verify_message_type( f_response_id, t_msg_type, flags ) )
             {
-                cerr << "[run_context_dist] message type is not response" << endl;
+                cerr << "[run_context_dist] message type <" << t_msg_type << "> is not response (" << f_response_id << ")" << endl;
+                f_inbound_mutex_write.unlock();
                 return false;
             }
             t_response_size = f_connection->recv_type< size_t >( flags );
-            if( t_response_size == 0 ) return false;
-            reset_buffer( t_response_size );
-            ssize_t recv_ret = f_connection->recv( f_buffer, t_response_size, flags );
+            if( t_response_size == 0 )
+            {
+                f_inbound_mutex_write.unlock();
+                return false;
+            }
+            reset_buffer_in( t_response_size );
+            ssize_t recv_ret = f_connection->recv( f_buffer_in, t_response_size, flags );
             if( recv_ret <= 0 )
             {
                 cerr << "[run_context_dist] (response) the connection read length was: " << recv_ret << endl;
+                f_inbound_mutex_write.unlock();
                 return false;
             }
         }
         catch( exception& e )
         {
             cerr << "[run_context_dist] a read error occurred while pulling a response: " << e.what() << endl;
+            f_inbound_mutex_write.unlock();
             return false;
         }
-        return f_response.ParseFromArray( f_buffer, t_response_size );
+        bool t_return = f_response_in.ParseFromArray( f_buffer_in, t_response_size );
+        f_inbound_mutex_write.unlock();
+        return t_return;
     }
-    response* run_context_dist::get_response()
+    response* run_context_dist::lock_response_out()
     {
-        return &f_response;
+        f_outbound_mutex.lock();
+        return &f_response_out;
+    }
+    response* run_context_dist::lock_response_in()
+    {
+        f_inbound_mutex_read.lock();
+        return &f_response_in;
     }
 
-    bool run_context_dist::verify_message_type( run_context_dist::message_id_type a_type, int flags )
+    bool run_context_dist::verify_message_type( run_context_dist::message_id_type a_type_wanted, run_context_dist::message_id_type& a_type_found, int flags )
     {
+        // private function; appropriate mutexes should already be set
+
         // peek at the message type, without marking that data as read
-        if( f_connection->recv_type< message_id_type >( flags | MSG_PEEK ) != a_type )
+        a_type_found = f_connection->recv_type< message_id_type >( flags | MSG_PEEK );
+        if( a_type_found != a_type_wanted )
         {
             return false;
         }
@@ -273,5 +466,22 @@ namespace mantis
         f_connection->recv_type< message_id_type >( flags );
         return true;
     }
+
+    void run_context_dist::unlock_outbound()
+    {
+        f_outbound_mutex.unlock();
+        return;
+    }
+    void run_context_dist::unlock_inbound()
+    {
+        f_inbound_mutex_read.unlock();
+        return;
+    }
+
+    bool run_context_dist::is_active()
+    {
+        return f_is_active.load();
+    }
+
 
 }

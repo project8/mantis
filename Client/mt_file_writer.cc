@@ -1,10 +1,14 @@
 #include "mt_file_writer.hh"
 
+#include "mt_exception.hh"
 #include "mt_factory.hh"
+
+#include "MonarchException.hpp"
 
 #include <cstring> // for memcpy()
 #include <iostream>
 #include <sstream>
+using std::cerr;
 using std::cout;
 using std::endl;
 using std::stringstream;
@@ -29,13 +33,19 @@ namespace mantis
         return;
     }
 
-    void file_writer::initialize( request* a_request )
+    bool file_writer::initialize_derived( request* a_request )
     {
-        writer::initialize( a_request );
-
         cout << "[file_writer] opening file..." << endl;
 
-        f_monarch = Monarch::OpenForWriting( a_request->file() );
+        try
+        {
+            f_monarch = Monarch::OpenForWriting( a_request->file() );
+        }
+        catch( MonarchException& e )
+        {
+            cerr << "[file_writer] error opening file: " << e.what() << endl;
+            return false;
+        }
         f_header = f_monarch->GetHeader();
 
         //required fields
@@ -72,7 +82,7 @@ namespace mantis
         f_monarch->SetInterface( sInterfaceInterleaved );
         f_record = f_monarch->GetRecordInterleaved();
 
-        return;
+        return true;
     }
     bool file_writer::write( block* a_block )
     {

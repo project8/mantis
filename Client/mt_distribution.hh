@@ -16,12 +16,16 @@ namespace mantis
             connection* get_connection();
 
         protected:
-            size_t reset_buffer( size_t a_size );
+            size_t reset_buffer_in( size_t a_size );
+            size_t reset_buffer_out( size_t a_size );
 
             connection* f_connection;
 
-            size_t f_buffer_size;
-            char* f_buffer;
+            size_t f_buffer_in_size;
+            char* f_buffer_in;
+
+            size_t f_buffer_out_size;
+            char* f_buffer_out;
     };
 
 }

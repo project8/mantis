@@ -48,8 +48,9 @@ namespace mantis
             if( ! t_run_context->pull_request( MSG_WAITALL ) )
             {
                 cerr << "[request_receiver] unable to pull run request; sending server status <error>" << endl;
-                t_run_context->get_status()->set_state( status_state_t_error );
-                t_run_context->push_status();
+                t_run_context->lock_status_out()->set_state( status_state_t_error );
+                t_run_context->push_status_no_mutex();
+                t_run_context->unlock_outbound();
                 delete t_run_context->get_connection();
                 delete t_run_context;
                 continue;
@@ -57,28 +58,34 @@ namespace mantis
 
             cout << "[request_receiver] sending server status <acknowledged>..." << endl;
 
-            t_run_context->get_status()->set_state( status_state_t_acknowledged );
-            t_run_context->get_status()->set_buffer_size( f_buffer_size );
-            t_run_context->get_status()->set_record_size( f_record_size );
-            t_run_context->get_status()->set_data_chunk_size( f_data_chunk_size );
-            t_run_context->push_status();
+            status* t_status = t_run_context->lock_status_out();
+            t_status->set_state( status_state_t_acknowledged );
+            t_status->set_buffer_size( f_buffer_size );
+            t_status->set_record_size( f_record_size );
+            t_status->set_data_chunk_size( f_data_chunk_size );
+            t_run_context->push_status_no_mutex();
+            t_run_context->unlock_outbound();
 
             cout << "[request_receiver] waiting for client readiness..." << endl;
 
             if( ! t_run_context->pull_client_status( MSG_WAITALL ) )
             {
                 cerr << "[request_receiver] unable to pull client status; sending server status <error>" << endl;
-                t_run_context->get_status()->set_state( status_state_t_error );
-                t_run_context->push_status();
+                t_run_context->lock_status_out()->set_state( status_state_t_error );
+                t_run_context->push_status_no_mutex();
+                t_run_context->unlock_outbound();
                 delete t_run_context->get_connection();
                 delete t_run_context;
                 continue;
             }
-            if( ! t_run_context->get_client_status()->state() == client_status_state_t_ready )
+            client_status_state_t t_client_state = t_run_context->lock_client_status_in()->state();
+            t_run_context->unlock_inbound();
+            if( ! t_client_state == client_status_state_t_ready )
             {
                 cerr << "[request_receiver] client did not get ready; sending server status <error>" << endl;
-                t_run_context->get_status()->set_state( status_state_t_error );
-                t_run_context->push_status();
+                t_run_context->lock_status_out()->set_state( status_state_t_error );
+                t_run_context->push_status_no_mutex();
+                t_run_context->unlock_outbound();
                 delete t_run_context->get_connection();
                 delete t_run_context;
                 continue;
@@ -86,7 +93,8 @@ namespace mantis
 
             cout << "[request_receiver] queuing request..." << endl;
 
-            t_run_context->get_status()->set_state( status_state_t_waiting );
+            t_run_context->lock_status_out()->set_state( status_state_t_waiting );
+            t_run_context->unlock_outbound();
             f_run_queue->to_back( t_run_context );
 
 

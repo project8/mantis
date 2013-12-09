@@ -16,8 +16,15 @@ using std::endl;
 
 int analyze_status( run_context_dist* t_run_context )
 {
-    switch( t_run_context->get_status()->state() )
+    status_state_t t_state = t_run_context->lock_status_in()->state();
+    t_run_context->unlock_inbound();
+    switch( t_state )
     {
+        case status_state_t_created :
+            cout << "[test_mantis_client] created..." << '\r';
+            cout.flush();
+            return 0;
+
         case status_state_t_acknowledged :
             cout << "[test_mantis_client] acknowledged..." << '\r';
             cout.flush();
@@ -72,20 +79,23 @@ int main( int argc, char** argv )
     run_context_dist* t_run_context = new run_context_dist();
     t_run_context->set_connection( t_client );
 
-    t_run_context->get_request()->set_write_host( "" );
-    t_run_context->get_request()->set_write_port( -1 );
-    t_run_context->get_request()->set_file( "/data/ohgod.egg" );
-    t_run_context->get_request()->set_description( "junk" );
-    t_run_context->get_request()->set_date( get_absolute_time_string() );
-    t_run_context->get_request()->set_mode( request_mode_t_single );
-    t_run_context->get_request()->set_rate( 800.0 );
-    t_run_context->get_request()->set_duration( 2000.0 );
-    t_run_context->get_request()->set_file_write_mode( request_file_write_mode_t_local );
+    request* t_request = t_run_context->lock_request_out();
+    t_request->set_write_host( "" );
+    t_request->set_write_port( -1 );
+    t_request->set_file( "/data/ohgod.egg" );
+    t_request->set_description( "junk" );
+    t_request->set_date( get_absolute_time_string() );
+    t_request->set_mode( request_mode_t_single );
+    t_request->set_rate( 800.0 );
+    t_request->set_duration( 2000.0 );
+    t_request->set_file_write_mode( request_file_write_mode_t_local );
 
     cout << "[test_mantis_client] sending request..." << endl;
-    cout << t_run_context->get_request()->DebugString() << endl;
+    cout << t_request->DebugString() << endl;
 
-    t_run_context->push_request();
+    t_run_context->push_request_no_mutex();
+
+    t_run_context->unlock_outbound();
 
     t_run_context->pull_status();
     analyze_status( t_run_context );

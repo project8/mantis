@@ -25,7 +25,8 @@ namespace mantis
 
             virtual void configure( configurator* config ) = 0;
 
-            virtual void initialize( request* a_response );
+            bool initialize( request* a_response );
+            virtual bool initialize_derived( request* a_response ) = 0;
             void execute();
             void cancel();
             virtual void finalize( response* a_response );

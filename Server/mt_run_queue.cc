@@ -78,6 +78,8 @@ namespace mantis
         while( true )
         {
             pthread_testcancel();
+
+            // timing delay for updating status
             sleep( 1 );
 
             f_mutex.lock();
@@ -125,9 +127,10 @@ namespace mantis
         while( ! f_runs.empty() )
         {
             run_context_dist* t_run_context = f_runs.front();
-            status* t_status = t_run_context->get_status();
+            status* t_status = t_run_context->lock_status_out();
             t_status->set_state( status_state_t_revoked );
-            t_run_context->push_status();
+            t_run_context->push_status_no_mutex();
+            t_run_context->unlock_outbound();
             delete t_run_context->get_connection();
             delete t_run_context;
             f_runs.pop_front();

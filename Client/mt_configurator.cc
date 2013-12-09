@@ -15,6 +15,8 @@
 using std::string;
 
 #include <iostream>
+using std::cout;
+using std::endl;
 
 namespace mantis
 {
@@ -33,9 +35,9 @@ namespace mantis
             f_master_config += *a_default;
         }
 
-        std::cout << "first configuration complete" << std::endl;
-        f_master_config.print();
-        t_parser.print();
+        //std::cout << "first configuration complete" << std::endl;
+        //f_master_config.print();
+        //t_parser.print();
 
         string t_name_config("config");
         string t_name_json("json");
@@ -65,9 +67,9 @@ namespace mantis
             f_master_config += t_second_config;
         }
 
-        std::cout << "second configuration complete" << std::endl;
-        f_master_config.print();
-        t_parser.print();
+        //std::cout << "second configuration complete" << std::endl;
+        //f_master_config.print();
+        //t_parser.print();
 
         // third configuration: command line json
         rapidjson::Value& t_config_json = t_parser[t_name_json.c_str()];
@@ -85,18 +87,19 @@ namespace mantis
             f_master_config += t_third_config;
         }
 
-        std::cout << "third configuration complete" << std::endl;
-        f_master_config.print();
-        t_parser.print();
+        //std::cout << "third configuration complete" << std::endl;
+        //f_master_config.print();
+        //t_parser.print();
 
         // fourth configuration: command line arguments
         t_parser.RemoveMember( t_name_config.c_str() );
         t_parser.RemoveMember( t_name_json.c_str() );
-        std::cout << "removed config and json from parsed options" << std::endl;
-        t_parser.print();
+        //std::cout << "removed config and json from parsed options" << std::endl;
+        //t_parser.print();
         f_master_config += t_parser;
 
-        std::cout << "fourth configuration complete" << std::endl;
+        //std::cout << "fourth configuration complete" << std::endl;
+        cout << "[configurator] final configuration:" << endl;
         f_master_config.print();
 
     }

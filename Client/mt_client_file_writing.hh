@@ -22,7 +22,7 @@ namespace mantis
     class client_file_writing
     {
         public:
-            client_file_writing( run_context_dist* a_run_context, int a_write_port );
+            client_file_writing( run_context_dist* a_run_context_dist, int a_write_port );
             virtual ~client_file_writing();
 
             void wait_for_finish();

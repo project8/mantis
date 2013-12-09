@@ -70,12 +70,12 @@ namespace mantis
 
     bool record_dist::push_header( const block_header* a_block_header, int flags )
     {
-        size_t t_header_size = reset_buffer( a_block_header->ByteSize() );
-        if( ! a_block_header->SerializeToArray( f_buffer, t_header_size ) )
+        size_t t_header_size = reset_buffer_out( a_block_header->ByteSize() );
+        if( ! a_block_header->SerializeToArray( f_buffer_out, t_header_size ) )
             return false;
         try
         {
-            f_connection->send( f_buffer, t_header_size, flags );
+            f_connection->send( f_buffer_out, t_header_size, flags );
         }
         catch( exception& e )
         {
@@ -120,13 +120,13 @@ namespace mantis
 
     bool record_dist::pull_header( block_header* a_block_header, int flags )
     {
-        size_t t_header_size = f_buffer_size;
+        size_t t_header_size = f_buffer_in_size;
         try
         {
             t_header_size = f_connection->recv_type< size_t >( flags );
             if( t_header_size == 0 ) return false;
-            reset_buffer( t_header_size );
-            if( f_connection->recv( f_buffer, t_header_size, flags ) == 0 )
+            reset_buffer_in( t_header_size );
+            if( f_connection->recv( f_buffer_in, t_header_size, flags ) == 0 )
             {
                 cout << "connection read length was 0" << endl;
                 return false;
@@ -137,7 +137,7 @@ namespace mantis
             cerr << "a read error occurred while pulling a request: " << e.what() << endl;
             return false;
         }
-        return a_block_header->ParseFromArray( f_buffer, t_header_size );
+        return a_block_header->ParseFromArray( f_buffer_in, t_header_size );
     }
 
     bool record_dist::pull_data( data_type* a_block_data, int flags )

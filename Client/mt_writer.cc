@@ -25,7 +25,7 @@ namespace mantis
     {
     }
 
-    void writer::initialize( request* a_request )
+    bool writer::initialize( request* a_request )
     {
         f_canceled = false;
 
@@ -35,7 +35,7 @@ namespace mantis
         f_acquisition_count = 0;
         f_live_time = 0;
 
-        return;
+        return initialize_derived( a_request );
     }
     void writer::execute()
     {

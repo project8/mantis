@@ -1,7 +1,7 @@
 #include "mt_network_writer.hh"
 
 #include "mt_configurator.hh"
-#include "mt_exception.hh"
+#include "MonarchException.hpp"
 #include "mt_factory.hh"
 
 #include <cstring> // for memcpy()
@@ -35,14 +35,9 @@ namespace mantis
         return;
     }
 
-    void network_writer::initialize( request* a_request )
+    bool network_writer::initialize_derived( request* a_request )
     {
-        writer::initialize( a_request );
-
         cout << "[network_writer] opening write connection..." << endl;
-
-        f_record_dist = new record_dist();
-        f_record_dist->set_data_chunk_size( f_data_chunk_size );
 
         try
         {
@@ -51,12 +46,15 @@ namespace mantis
         catch( exception& e )
         {
             cerr << "[network_writer] unable to create record-sending client: " << e.what() << endl;
-            delete f_record_dist;
-            exit( -1 );
+            return false;
         }
+
+        f_record_dist = new record_dist();
+        f_record_dist->set_data_chunk_size( f_data_chunk_size );
+
         f_record_dist->set_connection( f_client );
 
-        return;
+        return true;
     }
 
     void network_writer::finalize( response* a_response )

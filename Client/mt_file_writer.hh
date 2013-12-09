@@ -21,7 +21,7 @@ namespace mantis
 
             void configure( configurator* );
 
-            void initialize( request* a_response );
+            bool initialize_derived( request* a_response );
 
         private:
             Monarch* f_monarch;

@@ -18,7 +18,7 @@ namespace mantis
 
             void configure( configurator* a_config );
 
-            void initialize( request* a_request );
+            bool initialize_derived( request* a_request );
             void finalize( response* a_response );
 
             size_t get_data_chunk_size() const;

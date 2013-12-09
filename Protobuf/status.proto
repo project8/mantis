@@ -6,6 +6,7 @@ message status
 	//state of request
 	enum state_t
 	{
+	    created = 0;
 		acknowledged = 1;
 		waiting = 2;
 		started = 3;

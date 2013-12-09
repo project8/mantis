@@ -8,9 +8,11 @@ namespace mantis
 {
 
     distribution::distribution() :
-                    f_connection(),
-                    f_buffer_size(0),
-                    f_buffer(NULL)
+            f_connection( NULL ),
+            f_buffer_in_size( 0 ),
+            f_buffer_in( NULL ),
+            f_buffer_out_size( 0 ),
+            f_buffer_out( NULL )
     {
     }
     distribution::~distribution()
@@ -27,15 +29,28 @@ namespace mantis
         return f_connection;
     }
 
-    size_t distribution::reset_buffer( size_t a_size )
+    size_t distribution::reset_buffer_in( size_t a_size )
     {
-        if( a_size > f_buffer_size )
+        if( a_size > f_buffer_in_size )
         {
-            delete [] f_buffer;
-            f_buffer_size = a_size;
-            f_buffer = new char[ f_buffer_size ];
+            delete [] f_buffer_in;
+            f_buffer_in_size = a_size;
+            f_buffer_in = new char[ f_buffer_in_size ];
         }
-        ::memset( f_buffer, 0, f_buffer_size );
+        ::memset( f_buffer_in, 0, f_buffer_in_size );
+        // return the requested size
+        return a_size;
+    }
+
+    size_t distribution::reset_buffer_out( size_t a_size )
+    {
+        if( a_size > f_buffer_out_size )
+        {
+            delete [] f_buffer_out;
+            f_buffer_out_size = a_size;
+            f_buffer_out = new char[ f_buffer_out_size ];
+        }
+        ::memset( f_buffer_out, 0, f_buffer_out_size );
         // return the requested size
         return a_size;
     }

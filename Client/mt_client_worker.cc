@@ -1,5 +1,6 @@
 #include "mt_client_worker.hh"
 
+#include "mt_exception.hh"
 #include "mt_thread.hh"
 
 #include <iostream>
@@ -17,7 +18,10 @@ namespace mantis
                     f_receiver_state( k_inactive ),
                     f_writer_state( k_running )
     {
-        f_writer->initialize( a_request );
+        if(! f_writer->initialize( a_request ) )
+        {
+            throw exception() << "writer could not be initialized\n";
+        }
     }
 
     client_worker::~client_worker()

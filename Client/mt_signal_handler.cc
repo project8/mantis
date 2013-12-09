@@ -31,6 +31,11 @@ namespace mantis
         {
             f_handling_sig_int = true;
         }
+
+        if( signal(SIGPIPE, SIG_IGN) == SIG_ERR )
+        {
+            throw exception() << "Unable to ignore SIGPIPE\n";
+        }
     }
 
     signal_handler::~signal_handler()

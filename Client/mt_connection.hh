@@ -3,9 +3,12 @@
 
 #include "mt_exception.hh"
 
+#include <errno.h>
 #include <netinet/in.h>
 #include <string>
 #include <sys/types.h>
+
+#include <iostream>
 
 namespace mantis
 {
@@ -34,6 +37,7 @@ namespace mantis
     template< typename T >
     ssize_t connection::send_type( T a_value, int flags )
     {
+        //std::cout << "send_type is sending value " << a_value << std::endl;
         ssize_t t_written_size = ::send( f_socket, (void*)&a_value, sizeof( T ), flags );
         if( t_written_size != sizeof( T ) )
         {
@@ -47,7 +51,12 @@ namespace mantis
     T connection::recv_type( int flags )
     {
         T t_value = T();
+        errno = 0;
         ssize_t t_recv_size = ::recv( f_socket, (void*)&t_value, sizeof( T ), flags );
+        if( errno != EWOULDBLOCK && errno != EAGAIN )
+        {
+            throw exception() << "recv_type is unable to receive; connection has been closed\n";
+        }
         //cout << "receiving something of size " << t_size << "; size read: " << t_recv_size << endl;
         return t_value;
     }
