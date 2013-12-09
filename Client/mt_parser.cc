@@ -32,7 +32,7 @@ namespace mantis
                     t_type = t_name[ t_type_pos + 1 ];
                     t_name.assign( t_name.substr( 0, t_type_pos ) );
                 }
-                std::cout << "(parser) adding < " << t_name << "<" << t_type << "> > = <" << t_value << ">" << std::endl;
+                //std::cout << "(parser) adding < " << t_name << "<" << t_type << "> > = <" << t_value << ">" << std::endl;
 
                 rapidjson::Value t_new_value;
                 std::stringstream t_converter;
@@ -65,7 +65,7 @@ namespace mantis
                 }
                 RemoveMember( t_name.c_str() );
                 AddMember( t_name.c_str(), GetAllocator(), t_new_value, GetAllocator() );
-                print();
+                //print();
 
                 continue;
             }

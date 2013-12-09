@@ -26,8 +26,8 @@ namespace mantis
             f_string_buffer()
     {
         parser t_parser( an_argc, an_argv );
-        std::cout << "options parsed" << std::endl;
-        t_parser.print();
+        //std::cout << "options parsed" << std::endl;
+        //t_parser.print();
 
         // first configuration: defaults
         if ( a_default != NULL )
