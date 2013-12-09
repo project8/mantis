@@ -9,6 +9,7 @@
 
 #include "mt_exception.hh"
 
+#include <iostream>
 #include <signal.h>
 
 namespace mantis
@@ -89,6 +90,8 @@ namespace mantis
 
     void signal_handler::handler_cancel_threads( int _ignored )
     {
+        print_message();
+
         f_mutex.lock();
         f_got_exit_signal = true;
         while( ! f_threads.empty() )
@@ -98,6 +101,13 @@ namespace mantis
             usleep( 100 );
         }
         f_mutex.unlock();
+        return;
+    }
+
+    void signal_handler::print_message()
+    {
+        std::cout << "Hello!  Your signal is being handled by signal_handler.\n";
+        std::cout << "Have a nice day!" << std::endl;
         return;
     }
 

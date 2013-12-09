@@ -105,6 +105,7 @@ namespace mantis
             ++f_record_count;
 
             //a zero-length data array indicates the end of the data
+            cout << "### " << t_it.object()->get_data_size() << "  " << t_it.object()->get_state() << endl;
             if( t_it.object()->get_data_size() == 0 || f_canceled.load() )
             {
                 //mark the block as written

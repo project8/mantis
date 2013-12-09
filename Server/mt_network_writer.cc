@@ -61,6 +61,8 @@ namespace mantis
     {
         // push empty block to indicate end of run
         block t_block;
+        t_block.set_state( block_header_state_t_dummy );
+        t_block.set_data_size( 0 );
         if(! f_record_dist->push_record( &t_block ) )
         {
             cerr << "[network_writer] there was an error pushing the end-of-run block" << endl;

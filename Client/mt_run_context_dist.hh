@@ -3,6 +3,7 @@
 
 #include "mt_atomic.hh"
 #include "mt_callable.hh"
+#include "mt_condition.hh"
 #include "mt_distribution.hh"
 #include "mt_mutex.hh"
 #include "request.pb.h"
@@ -26,7 +27,11 @@ namespace mantis
 
             void cancel();
 
-            bool pull_next_message( int flags = 0 );
+            /// return values:
+            ///  1 = success
+            ///  0 = closed connection
+            /// -1 = error
+            int pull_next_message( int flags = 0 );
 
             request* lock_request_out();
             bool push_request( int flags = 0 );
@@ -61,6 +66,8 @@ namespace mantis
 
             bool is_active();
 
+            void wait_for_status();
+
         private:
             bool verify_message_type( message_id_type a_type_wanted, message_id_type& a_type_found, int flags = 0 );
 
@@ -85,6 +92,11 @@ namespace mantis
 
             atomic_bool f_is_active;
             atomic_bool f_is_canceled;
+
+            condition f_request_condition;
+            condition f_status_condition;
+            condition f_client_status_condition;
+            condition f_response_condition;
     };
 
 }

@@ -38,23 +38,30 @@ namespace mantis
         ssize_t t_written_size = ::send( f_socket, (void*)a_message, a_size, flags );
         if( t_written_size != a_size )
         {
-            throw exception() << "could not write to socket (" << strerror(errno) << ")\n";
+            int errnum = errno;
+            throw exception() << "could not write to socket (" << strerror( errnum ) << ")\n";
             return t_written_size;
         }
-
         return t_written_size;
     }
 
     ssize_t connection::recv( char* a_message, size_t a_size, int flags )
     {
-        ssize_t t_read_size = ::recv( f_socket, (void*)a_message, a_size, flags );
-        if( t_read_size < 0 )
+        ssize_t t_recv_size = ::recv( f_socket, (void*)a_message, a_size, flags );
+        if( t_recv_size > 0 )
         {
-            throw exception() << "could not read from socket (" << strerror(errno) << ")\n";
-            return t_read_size;
+            return t_recv_size;
         }
-
-        return t_read_size;
+        else if( t_recv_size == 0 && errno != EWOULDBLOCK && errno != EAGAIN )
+        {
+            throw closed_connection() << "connection::recv";
+        }
+        else if( t_recv_size < 0 )
+        {
+            int errnum = errno;
+            throw exception() << "recv is unable to receive; error message: " << strerror( errnum ) << "\n";
+        }
+        return t_recv_size;
     }
 
     /*
@@ -70,5 +77,26 @@ namespace mantis
         return t_size;
     }
     */
+
+    closed_connection::closed_connection() :
+            std::exception(),
+            f_exception( "" )
+    {
+    }
+    closed_connection::closed_connection( const closed_connection& an_exception ) :
+            std::exception(),
+            f_exception( an_exception.f_exception.str() )
+    {
+    }
+
+    closed_connection::~closed_connection() throw ()
+    {
+    }
+
+    const char* closed_connection::what() const throw ()
+    {
+        return f_exception.str().c_str();
+    }
+
 
 }

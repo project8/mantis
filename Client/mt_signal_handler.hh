@@ -35,6 +35,8 @@ namespace mantis
             static void handler_cancel_threads( int _ignored );
 
         private:
+            static void print_message();
+
             static mutex f_mutex;
             static threads f_threads;
 

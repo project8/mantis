@@ -16,6 +16,7 @@
 #include "mt_record_receiver.hh"
 #include "mt_run_context_dist.hh"
 #include "mt_server.hh"
+#include "mt_signal_handler.hh"
 #include "mt_thread.hh"
 
 #include <iostream>
@@ -81,6 +82,9 @@ namespace mantis
 
         try
         {
+            signal_handler t_sig_hand;
+            t_sig_hand.push_thread( f_thread );
+
             f_thread->start();
         }
         catch( exception& e )
@@ -103,6 +107,8 @@ namespace mantis
     void client_file_writing::wait_for_finish()
     {
         f_thread->join();
+        signal_handler t_sig_hand;
+        t_sig_hand.pop_thread();
         return;
     }
 

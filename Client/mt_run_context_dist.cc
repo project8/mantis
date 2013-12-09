@@ -52,10 +52,17 @@ namespace mantis
         {
             //usleep( 500 );
 
-            if(! pull_next_message( MSG_WAITALL ) )
+            int t_pull_result = pull_next_message( MSG_WAITALL );
+            if( t_pull_result < 0 )
             {
-                cerr << "unable to communicate with the server; aborting" << endl;
+                cerr << "error in pulling message; aborting" << endl;
+                cancel();
                 kill( 0, SIGINT );
+            }
+            else if( t_pull_result == 0 )
+            {
+                cout << "[run_context_dist] client/server connection has closed" << endl;
+                break;
             }
         }
 
@@ -69,7 +76,7 @@ namespace mantis
         return;
     }
 
-    bool run_context_dist::pull_next_message( int flags )
+    int run_context_dist::pull_next_message( int flags )
     {
         try
         {
@@ -79,27 +86,36 @@ namespace mantis
             switch( t_type )
             {
                 case f_request_id:
-                    return pull_request( flags );
-                    break;
+                    if( pull_request( flags ) ) return 1;
+                    else return -1;
+                     break;
                 case f_status_id:
-                    return pull_status( flags );
+                    if( pull_status( flags ) ) return 1;
+                    else return -1;
                     break;
                 case f_client_status_id:
-                    return pull_client_status( flags );
+                    if( pull_client_status( flags ) ) return 1;
+                    else return -1;
                     break;
                 case f_response_id:
-                    return pull_response( flags );
+                    if( pull_response( flags ) ) return 1;
+                    else return -1;
                     break;
                 default:
                     cerr << "[run_context_dist] unknown message id: <" << t_type << ">" << endl;
-                    return false;
+                    return -1;
                     break;
             }
+        }
+        catch( closed_connection& cc )
+        {
+            cout << "[run_context_dist] connection closed; detected in <" << cc.what() << ">" << endl;
+            return 0;
         }
         catch( exception& e )
         {
             cerr << "[run_context_dist] unable to check message type: " << e.what() << endl;
-            return false;
+            return -1;
         }
         // should not reach here
         return false;
@@ -267,6 +283,7 @@ namespace mantis
         }
         bool t_return = f_status_in.ParseFromArray( f_buffer_in, t_status_size );
         f_inbound_mutex_write.unlock();
+        f_status_condition.release();
         return t_return;
     }
     status* run_context_dist::lock_status_out()
@@ -483,5 +500,10 @@ namespace mantis
         return f_is_active.load();
     }
 
+    void run_context_dist::wait_for_status()
+    {
+        f_status_condition.wait();
+        return;
+    }
 
 }

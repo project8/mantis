@@ -12,6 +12,27 @@
 
 namespace mantis
 {
+    class closed_connection :
+        public std::exception
+    {
+        public:
+            closed_connection();
+            closed_connection( const closed_connection& );
+            ~closed_connection() throw ();
+
+            template< class x_streamable >
+            closed_connection& operator<<( const x_streamable& a_fragment )
+            {
+                f_exception << a_fragment;
+                return *this;
+            }
+
+            virtual const char* what() const throw();
+
+        private:
+            std::stringstream f_exception;
+    };
+
 
     class connection
     {
@@ -53,11 +74,20 @@ namespace mantis
         T t_value = T();
         errno = 0;
         ssize_t t_recv_size = ::recv( f_socket, (void*)&t_value, sizeof( T ), flags );
-        if( errno != EWOULDBLOCK && errno != EAGAIN )
+        if( t_recv_size > 0 )
         {
-            throw exception() << "recv_type is unable to receive; connection has been closed\n";
+            //std::cout << "receiving something of size " << sizeof( T ) << "; size read: " << t_recv_size << "; value: " << t_value << std::endl;
+            return t_value;
         }
-        //cout << "receiving something of size " << t_size << "; size read: " << t_recv_size << endl;
+        else if( t_recv_size == 0 && errno != EWOULDBLOCK && errno != EAGAIN )
+        {
+            throw closed_connection() << "connection::recv_type";
+        }
+        else if( t_recv_size < 0 )
+        {
+            int errnum = errno;
+            throw exception() << "recv_type is unable to receive; error message: " << strerror( errnum );
+        }
         return t_value;
     }
 

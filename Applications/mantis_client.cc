@@ -25,8 +25,8 @@
 #include "mt_client_worker.hh"
 #include "mt_client.hh"
 #include "mt_exception.hh"
-#include "mt_file_writer.hh"
 #include "mt_run_context_dist.hh"
+#include "mt_signal_handler.hh"
 #include "mt_thread.hh"
 #include "thorax.hh"
 using namespace mantis;
@@ -113,7 +113,20 @@ int main( int argc, char** argv )
     cout << "[mantis_client] starting communicator" << endl;
 
     thread t_comm_thread( &t_run_context );
-    t_comm_thread.start();
+
+    signal_handler t_sig_hand;
+
+    try
+    {
+        t_sig_hand.push_thread( &t_comm_thread );
+
+        t_comm_thread.start();
+    }
+    catch( exception& e )
+    {
+        cerr << "[mantis_client] an error occurred while running the communication thread" << endl;
+        return RETURN_ERROR;
+    }
 
 
     cout << "[mantis_client] sending request..." << endl;
@@ -128,7 +141,7 @@ int main( int argc, char** argv )
 
     useconds_t t_sleep_time = 100;  // in usec
 
-    while( true )
+    while( ! signal_handler::got_exit_signal() )
     {
         usleep( t_sleep_time );
 
@@ -165,6 +178,12 @@ int main( int argc, char** argv )
             t_comm_thread.cancel();
             return RETURN_ERROR;
         }
+    }
+
+    if( signal_handler::got_exit_signal() )
+    {
+        cout << "[mantis_client] exiting due to cancellation after acknowledgment loop" << endl;
+        return RETURN_ERROR;
     }
 
     // Server is now waiting for a client status update
@@ -215,9 +234,10 @@ int main( int argc, char** argv )
     // <0 -> unsuccessful
     // >0 -> successful
     int t_run_success = 0;
-    while( true )
+    while( ! signal_handler::got_exit_signal() )
     {
-        usleep( t_sleep_time );
+        //usleep( t_sleep_time );
+        t_run_context.wait_for_status();
 
         //t_run_context->pull_status( MSG_WAITALL );
         status_state_t t_state = t_run_context.lock_status_in()->state();
@@ -281,6 +301,12 @@ int main( int argc, char** argv )
         }
     }
 
+    if( signal_handler::got_exit_signal() )
+    {
+        cout << "[mantis_client] exiting due to cancellation after run loop" << endl;
+        return RETURN_ERROR;
+    }
+
 
 
     /****************************************************************/
@@ -310,15 +336,7 @@ int main( int argc, char** argv )
 
     if( t_run_success > 0 || t_run_success == RETURN_CANCELED )
     {
-        cout << "[mantis_client] receiving response..." << endl;
-
-        if( ! t_run_context.pull_response() )
-        {
-            cerr << "error receiving response" << endl;
-            t_run_context.cancel();
-            t_comm_thread.cancel();
-            return RETURN_ERROR;
-        }
+        cout << "[mantis_client] printing response from server..." << endl;
 
         response* t_response = t_run_context.lock_response_in();
         cout << "[mantis_client] digitizer summary:\n";

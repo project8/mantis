@@ -10,6 +10,7 @@ message block_header
         acquired = 1;
         writing = 2;
         written = 3;
+        dummy = 4;
 	}
 	
 	required state_t state = 1;
