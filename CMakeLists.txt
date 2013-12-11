@@ -94,7 +94,6 @@ set( MANTIS_CLIENT_HEADERFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_client_file_writing.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_client_worker.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_client.hh
-    ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_communicator.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_condition.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_configuration.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_configurator.hh    
@@ -128,7 +127,6 @@ set( MANTIS_CLIENT_SOURCEFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_client_file_writing.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_client_worker.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_client.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_communicator.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_condition.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_configuration.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_configurator.cc    

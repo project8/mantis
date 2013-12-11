@@ -9,7 +9,6 @@
 
 #include "mt_buffer.hh"
 #include "mt_client_worker.hh"
-#include "mt_communicator.hh"
 #include "mt_condition.hh"
 #include "mt_exception.hh"
 #include "mt_file_writer.hh"
