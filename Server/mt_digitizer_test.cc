@@ -2,23 +2,27 @@
 
 #include "mt_buffer.hh"
 #include "mt_condition.hh"
+#include "mt_exception.hh"
 #include "mt_factory.hh"
 #include "mt_iterator.hh"
 
 #include "response.pb.h"
 
-#include <cstdlib> // for exit()
 #include <cmath> // for ceil()
+#include <cstdlib> // for exit()
+#include <cstring> // for memset()
+#include <errno.h>
 #include <iostream>
+using std::cerr;
 using std::cout;
 using std::endl;
-#include <string.h> // for memset()
 
 namespace mantis
 {
     static registrar< digitizer, digitizer_test > s_digtest_registrar("test");
 
     digitizer_test::digitizer_test() :
+            f_semaphore( NULL ),
             f_allocated( false ),
             f_buffer( NULL ),
             f_condition( NULL ),
@@ -30,6 +34,38 @@ namespace mantis
             f_canceled( false ),
             f_cancel_condition()
     {
+        errno = 0;
+        f_semaphore = sem_open( "digitizer_test", O_CREAT | O_EXCL );
+        if( f_semaphore == SEM_FAILED )
+        {
+            if( errno == EEXIST )
+            {
+                throw exception() << "digitizer_test is already in use";
+            }
+            else
+            {
+                throw exception() << "semaphore error: " << strerror( errno );
+            }
+        }
+    }
+
+    digitizer_test::~digitizer_test()
+    {
+        if( f_allocated )
+        {
+            cout << "[digitzer_test] deallocating buffer..." << endl;
+
+            iterator t_it( f_buffer );
+            for( unsigned int index = 0; index < f_buffer->size(); index++ )
+            {
+                delete [] t_it->data();
+                ++t_it;
+            }
+        }
+        if( f_semaphore != SEM_FAILED )
+        {
+            sem_close( f_semaphore );
+        }
     }
 
     void digitizer_test::allocate( buffer* a_buffer, condition* a_condition )
@@ -49,20 +85,6 @@ namespace mantis
 
         f_allocated = true;
         return;
-    }
-    digitizer_test::~digitizer_test()
-    {
-        if( f_allocated )
-        {
-            cout << "[digitzer_test] deallocating buffer..." << endl;
-
-            iterator t_it( f_buffer );
-            for( unsigned int index = 0; index < f_buffer->size(); index++ )
-            {
-                delete [] t_it->data();
-                ++t_it;
-            }
-        }
     }
 
     void digitizer_test::initialize( request* a_request )

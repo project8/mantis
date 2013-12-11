@@ -6,6 +6,8 @@
 #include "px1500.h"
 #include "thorax.hh"
 
+#include <semaphore.h>
+
 namespace mantis
 {
     class block;
@@ -26,6 +28,8 @@ namespace mantis
             bool write_mode_check( request_file_write_mode_t mode );
 
         private:
+            sem_t* f_semaphore;
+
             HPX4 f_handle;
             bool f_allocated;
 

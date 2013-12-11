@@ -2,13 +2,16 @@
 
 #include "mt_buffer.hh"
 #include "mt_condition.hh"
+#include "mt_exception.hh"
 #include "mt_factory.hh"
 #include "mt_iterator.hh"
 
 #include "response.pb.h"
 
-#include <cstdlib> // for exit()
 #include <cmath> // for ceil()
+#include <cstdlib> // for exit()
+#include <cstring>
+#include <errno.h>
 #include <iostream>
 using std::cout;
 using std::endl;
@@ -18,6 +21,7 @@ namespace mantis
     static registrar< digitizer, digitizer_px1500 > s_px1500_registrar("px1500");
 
     digitizer_px1500::digitizer_px1500() :
+            f_semaphore( NULL ),
             f_buffer( NULL ),
             f_condition( NULL ),
             f_allocated( false ),
@@ -28,6 +32,54 @@ namespace mantis
             f_live_time( 0 ),
             f_dead_time( 0 )
     {
+        errno = 0;
+        f_semaphore = sem_open( "digitizer_test", O_CREAT | O_EXCL );
+        if( f_semaphore == SEM_FAILED )
+        {
+            if( errno == EEXIST )
+            {
+                throw exception() << "digitizer_test is already in use";
+            }
+            else
+            {
+                throw exception() << "semaphore error: " << strerror( errno );
+            }
+        }
+    }
+
+    digitizer_px1500::~digitizer_px1500()
+    {
+        if( f_allocated )
+        {
+            int t_result;
+
+            cout << "[digitizer_px1500] deallocating dma buffer..." << endl;
+
+            iterator t_it( f_buffer );
+            for( size_t Index = 0; Index < f_buffer->size(); Index++ )
+            {
+                t_result = FreeDmaBufferPX4( f_handle, t_it->data() );
+                if( t_result != SIG_SUCCESS )
+                {
+                    DumpLibErrorPX4( t_result, "failed to deallocate dma memory: " );
+                    exit( -1 );
+                }
+                ++t_it;
+            }
+
+            cout << "[digitizer_px1500] disconnecting from digitizer card..." << endl;
+
+            t_result = DisconnectFromDevicePX4( f_handle );
+            if( t_result != SIG_SUCCESS )
+            {
+                DumpLibErrorPX4( t_result, "failed to disconnect from digitizer card: " );
+                exit( -1 );
+            }
+        }
+        if( f_semaphore != SEM_FAILED )
+        {
+            sem_close( f_semaphore );
+        }
     }
 
     void digitizer_px1500::allocate( buffer* a_buffer, condition* a_condition )
@@ -73,37 +125,6 @@ namespace mantis
         f_allocated = true;
         return;
     }
-    digitizer_px1500::~digitizer_px1500()
-    {
-        if( f_allocated )
-        {
-            int t_result;
-
-            cout << "[digitizer_px1500] deallocating dma buffer..." << endl;
-
-            iterator t_it( f_buffer );
-            for( size_t Index = 0; Index < f_buffer->size(); Index++ )
-            {
-                t_result = FreeDmaBufferPX4( f_handle, t_it->data() );
-                if( t_result != SIG_SUCCESS )
-                {
-                    DumpLibErrorPX4( t_result, "failed to deallocate dma memory: " );
-                    exit( -1 );
-                }
-                ++t_it;
-            }
-
-            cout << "[digitizer_px1500] disconnecting from digitizer card..." << endl;
-
-            t_result = DisconnectFromDevicePX4( f_handle );
-            if( t_result != SIG_SUCCESS )
-            {
-                DumpLibErrorPX4( t_result, "failed to disconnect from digitizer card: " );
-                exit( -1 );
-            }
-        }
-    }
-
     void digitizer_px1500::initialize( request* a_request )
     {
         int t_result;

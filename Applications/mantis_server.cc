@@ -98,7 +98,7 @@ int main( int argc, char** argv )
     }
     catch( exception& e )
     {
-        cerr << "[mantis_server] exception caught while creating digitizer: " << e.what();
+        cerr << "[mantis_server] exception caught while creating digitizer: " << e.what() << endl;;
         delete t_server;
         return -1;
     }
