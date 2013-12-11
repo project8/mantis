@@ -3,6 +3,7 @@
 
 #include "mt_exception.hh"
 
+#include <cstring>
 #include <errno.h>
 #include <netinet/in.h>
 #include <string>

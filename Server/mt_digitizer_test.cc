@@ -12,6 +12,7 @@
 #include <cstdlib> // for exit()
 #include <cstring> // for memset()
 #include <errno.h>
+#include <fcntl.h> // for O_CREAT and O_EXCL
 #include <iostream>
 using std::cerr;
 using std::cout;
