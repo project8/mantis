@@ -14,7 +14,7 @@ namespace mantis
                     f_receiver( a_receiver ),
                     f_writer( a_writer ),
                     f_buffer_condition( a_buffer_condition ),
-                    f_is_done( true ),
+                    f_is_done( false ),
                     f_receiver_state( k_inactive ),
                     f_writer_state( k_running )
     {
