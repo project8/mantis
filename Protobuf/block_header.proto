@@ -6,11 +6,11 @@ message block_header
 	//state of block
 	enum state_t
 	{
-        acquiring = 0;
-        acquired = 1;
-        writing = 2;
-        written = 3;
-        dummy = 4;
+        unused = 0;
+        acquiring = 1;
+        acquired = 2;
+        writing = 3;
+        written = 4;
 	}
 	
 	required state_t state = 1;

@@ -28,7 +28,7 @@ namespace mantis
     {
         if( ! push_header( a_block->header(), flags ) )
         {
-            cerr << "[record_dist] a write error occurred while pushing a block's header" << endl;
+            cerr << "[record_dist] unable to push the block header" << endl;
             return false;
         }
 
@@ -39,7 +39,7 @@ namespace mantis
 
             if( ! push_data( a_block->data(), flags ) )
             {
-                cerr << "[record_dist] a write error occurred while pushing a block's data" << endl;
+                cerr << "[record_dist] unable to push the block data" << endl;
                 return false;
             }
         }
@@ -50,10 +50,11 @@ namespace mantis
     {
         if( ! pull_header( a_block->header(), flags ) )
         {
-            cerr << "[record_dist] a read error occurred while pulling a block's header" << endl;
+            cerr << "[record_dist] unable to pull the block header" << endl;
             return false;
         }
 
+        // data_size == 0 is allowed, but pull_data would return false, so don't even try if that's what's expected
         if( a_block->header()->data_size() > 0 )
         {
             f_n_full_chunks = a_block->header()->data_size() / f_data_chunk_size;
@@ -61,7 +62,7 @@ namespace mantis
 
             if( ! pull_data( a_block->data(), flags ) )
             {
-                cerr << "[record_dist] a read error occurred while pulling a block's data" << endl;
+                cerr << "[record_dist] unable to pull the block data" << endl;
                 return false;
             }
         }
@@ -77,9 +78,14 @@ namespace mantis
         {
             f_connection->send( f_buffer_out, t_header_size, flags );
         }
+        catch( closed_connection& cc )
+        {
+            cout << "[record_dist] closed connection caught by: " << cc.what() << endl;
+            return false;
+        }
         catch( exception& e )
         {
-            cerr << "a write error occurred while pushing a request: " << e.what() << endl;
+            cerr << "[record_dist] an error occurred while pushing a block header: " << e.what() << endl;
             return false;
         }
         return true;
@@ -88,18 +94,25 @@ namespace mantis
     bool record_dist::push_data( const data_type* a_block_data, int flags )
     {
         const data_type* t_offset_data = a_block_data;
-        for( unsigned i_chunk = 0; i_chunk < f_n_full_chunks; ++i_chunk )
+        unsigned i_chunk = 0;
+        try
         {
-            try
+            for( ; i_chunk < f_n_full_chunks; ++i_chunk )
             {
                 f_connection->send( (char*)( t_offset_data ), f_data_chunk_size, flags );
+                t_offset_data += f_data_chunk_size;
             }
-            catch( exception& e )
-            {
-                cerr << "a write error occurred while pulling chunk " << i_chunk << " of the data from a record: " << e.what() << endl;
-                return false;
-            }
-            t_offset_data += f_data_chunk_size;
+        }
+        catch( closed_connection& cc )
+        {
+            cout << "[record_dist] the connection was closed while pushing chunk " << i_chunk << " of the data from a record;\n"
+                    << "detected in <" << cc.what() << ">" << endl;
+            return false;
+        }
+        catch( exception& e )
+        {
+            cerr << "[record_dist] an error occurred while pushing chunk " << i_chunk << " of the data from a record: " << e.what() << endl;
+            return false;
         }
 
         if( f_last_data_chunk_size > 0 )
@@ -108,9 +121,15 @@ namespace mantis
             {
                 f_connection->send( (char*)( t_offset_data ), f_last_data_chunk_size, flags );
             }
+            catch( closed_connection& cc )
+            {
+                cout << "[record_dist] the connection was closed while pushing the last chunk of the data from a record;\n"
+                        << "detected in <" << cc.what() << ">" << endl;
+                return false;
+            }
             catch( exception& e )
             {
-                cerr << "a write error occurred while pulling the last chunk of the data from a record: " << e.what() << endl;
+                cerr << "[record_dist] an error occurred while pushing the last chunk of the data from a record: " << e.what() << endl;
                 return false;
             }
         }
@@ -124,39 +143,58 @@ namespace mantis
         try
         {
             t_header_size = f_connection->recv_type< size_t >( flags );
-            if( t_header_size == 0 ) return false;
-            reset_buffer_in( t_header_size );
-            if( f_connection->recv( f_buffer_in, t_header_size, flags ) == 0 )
+            if( t_header_size == 0 )
             {
-                cout << "connection read length was 0" << endl;
+                cerr << "[record_dist] block_header size was 0" << endl;
                 return false;
             }
+            reset_buffer_in( t_header_size );
+            ssize_t recv_ret = f_connection->recv( f_buffer_in, t_header_size, flags );
+            if( recv_ret == t_header_size )
+            {
+                return a_block_header->ParseFromArray( f_buffer_in, t_header_size );
+            }
+            cerr << "[record_dist] (block_header) received size: " << recv_ret << "; expected size: " << t_header_size << endl;
+            return false;
+        }
+        catch( closed_connection& cc )
+        {
+            cout << "[record_dist] connection closed (block_header); detected in <" << cc.what() << ">" << endl;
+            return false;
         }
         catch( exception& e )
         {
-            cerr << "a read error occurred while pulling a request: " << e.what() << endl;
+            cerr << "[record_dist] an error occurred while pulling a block header: " << e.what() << endl;
             return false;
         }
-        return a_block_header->ParseFromArray( f_buffer_in, t_header_size );
+        // should not reach here
+        return false;
     }
 
     bool record_dist::pull_data( data_type* a_block_data, int flags )
     {
         data_type* t_offset_data = a_block_data;
-        for( unsigned i_chunk = 0; i_chunk < f_n_full_chunks; ++i_chunk )
+        unsigned i_chunk = 0;
+        try
         {
-            try
+            for( ; i_chunk < f_n_full_chunks; ++i_chunk )
             {
                 f_connection->recv_type< size_t >( flags );
                 if( f_connection->recv( (char*)( t_offset_data ), f_data_chunk_size, flags ) == 0 )
                     return false;
+                t_offset_data += f_data_chunk_size;
             }
-            catch( exception& e )
-            {
-                cerr << "a read error occurred while pulling chunk " << i_chunk << " of the data from a record: " << e.what() << endl;
-                return false;
-            }
-            t_offset_data += f_data_chunk_size;
+        }
+        catch( closed_connection& cc )
+        {
+            cout << "[record_dist] the connection was closed while pulling chunk " << i_chunk << " of the data from a record;\n"
+                    << "detected in <" << cc.what() << ">" << endl;
+            return false;
+        }
+        catch( exception& e )
+        {
+            cerr << "an error occurred while pulling chunk " << i_chunk << " of the data from a record: " << e.what() << endl;
+            return false;
         }
 
         if( f_last_data_chunk_size > 0 )
@@ -167,9 +205,15 @@ namespace mantis
                 if( f_connection->recv( (char*)( t_offset_data ), f_last_data_chunk_size, flags ) == 0 )
                     return false;
             }
+            catch( closed_connection& cc )
+            {
+                cout << "[record_dist] the connection was closed while pulling the last chunk of the data from a record;\n"
+                        << "detected in <" << cc.what() << ">" << endl;
+                return false;
+            }
             catch( exception& e )
             {
-                cerr << "a read error occurred while pulling the last chunk of the data from a record: " << e.what() << endl;
+                cerr << "an error occurred while pulling the last chunk of the data from a record: " << e.what() << endl;
                 return false;
             }
         }

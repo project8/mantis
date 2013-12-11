@@ -110,7 +110,7 @@ namespace mantis
 
             t_it->set_written();
 
-            cout << "[writer] records written: " << f_record_count << endl;
+            //cout << "[writer] records written: " << f_record_count << endl;
 
         }
 
@@ -118,7 +118,7 @@ namespace mantis
     }
     void writer::cancel()
     {
-        cout << "CANCELING WRITER" << endl;
+        //cout << "CANCELING WRITER" << endl;
         if( ! f_canceled.load() )
         {
             f_canceled.store( true );

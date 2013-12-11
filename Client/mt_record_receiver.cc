@@ -105,7 +105,6 @@ namespace mantis
             ++f_record_count;
 
             //a zero-length data array indicates the end of the data
-            cout << "### " << t_it.object()->get_data_size() << "  " << t_it.object()->get_state() << endl;
             if( t_it.object()->get_data_size() == 0 || f_canceled.load() )
             {
                 //mark the block as written
@@ -157,7 +156,7 @@ namespace mantis
             cout << "[record_receiver] records received: " << f_record_count << endl;
         }
 
-        cout << "[record_receiver] finished processing records" << endl;
+        //cout << "[record_receiver] finished processing records" << endl;
 
         delete t_record_dist->get_connection();
         delete t_record_dist;
@@ -167,7 +166,7 @@ namespace mantis
 
     void record_receiver::cancel()
     {
-        cout << "RECORD_RECEIVER CANCELED" << endl;
+        //cout << "RECORD_RECEIVER CANCELED" << endl;
         f_canceled.store( true );
         return;
     }

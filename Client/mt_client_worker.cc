@@ -61,6 +61,7 @@ namespace mantis
         response t_response;
         f_receiver->finalize( &t_response );
         f_writer->finalize( &t_response );
+        t_response.set_state( response_state_t_complete );
         cout << "[client_worker] record_receiver summary:\n";
         cout << "  record count: " << t_response.digitizer_records() << " [#]\n";
         cout << "  acquisition count: " << t_response.digitizer_acquisitions() << " [#]\n";
@@ -87,7 +88,7 @@ namespace mantis
 
     void client_worker::cancel()
     {
-        cout << "CLIENT_WORKER CANCELED" << endl;
+        //cout << "CLIENT_WORKER CANCELED" << endl;
         if( f_receiver_state == k_running )
         {
             f_receiver->cancel();

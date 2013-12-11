@@ -53,18 +53,33 @@ namespace mantis
         protected:
             int f_socket;
             sockaddr_in* f_address;
+
+        private:
+            int f_temp_errno;
     };
 
     template< typename T >
     ssize_t connection::send_type( T a_value, int flags )
     {
         //std::cout << "send_type is sending value " << a_value << std::endl;
+        errno = 0;
         ssize_t t_written_size = ::send( f_socket, (void*)&a_value, sizeof( T ), flags );
-        if( t_written_size != sizeof( T ) )
+        if( t_written_size == sizeof( T ) )
         {
-            throw exception() << "send_type is unable to write <" << a_value << ">\n";
             return t_written_size;
         }
+        f_temp_errno = errno;
+        if( t_written_size < 0 )
+        {
+            if( f_temp_errno == EPIPE )
+            {
+                throw closed_connection() << "connection::send_type";
+                return -1;
+            }
+            throw exception() << "send_type is unable to send; error message: " << strerror( f_temp_errno );
+            return -1;
+        }
+        throw exception() << "send_type is unable to write <" << a_value << ">; write size was different than value size\n";
         return t_written_size;
     }
 
@@ -79,14 +94,14 @@ namespace mantis
             //std::cout << "receiving something of size " << sizeof( T ) << "; size read: " << t_recv_size << "; value: " << t_value << std::endl;
             return t_value;
         }
-        else if( t_recv_size == 0 && errno != EWOULDBLOCK && errno != EAGAIN )
+        f_temp_errno = errno;
+        if( t_recv_size == 0 && errno != EWOULDBLOCK && errno != EAGAIN )
         {
             throw closed_connection() << "connection::recv_type";
         }
         else if( t_recv_size < 0 )
         {
-            int errnum = errno;
-            throw exception() << "recv_type is unable to receive; error message: " << strerror( errnum );
+            throw exception() << "recv_type is unable to receive; error message: " << strerror( f_temp_errno );
         }
         return t_value;
     }

@@ -23,19 +23,23 @@ namespace mantis
 
 
     run_context_dist::run_context_dist() :
-                    f_request_out(),
-                    f_request_in(),
-                    f_status_out(),
-                    f_status_in(),
-                    f_client_status_out(),
-                    f_client_status_in(),
-                    f_response_out(),
-                    f_response_in(),
-                    f_outbound_mutex(),
-                    f_inbound_mutex_read(),
-                    f_inbound_mutex_write(),
-                    f_is_active( false ),
-                    f_is_canceled( false )
+            f_request_out(),
+            f_request_in(),
+            f_status_out(),
+            f_status_in(),
+            f_client_status_out(),
+            f_client_status_in(),
+            f_response_out(),
+            f_response_in(),
+            f_outbound_mutex(),
+            f_inbound_mutex_read(),
+            f_inbound_mutex_write(),
+            f_is_active( false ),
+            f_is_canceled( false ),
+            f_request_condition(),
+            f_status_condition(),
+            f_client_status_condition(),
+            f_response_condition()
     {
         f_status_out.set_state( status_state_t_created );
     }
@@ -50,8 +54,6 @@ namespace mantis
 
         while( ! f_is_canceled.load() )
         {
-            //usleep( 500 );
-
             int t_pull_result = pull_next_message( MSG_WAITALL );
             if( t_pull_result < 0 )
             {
@@ -62,6 +64,14 @@ namespace mantis
             else if( t_pull_result == 0 )
             {
                 cout << "[run_context_dist] client/server connection has closed" << endl;
+                // set f_is_active to false here, before releasing any conditions
+                // so that anything waiting on those conditions, when they're release and (presumably) wait again,
+                // will get a false from the wait_for_[message type] function
+                f_is_active.store( false );
+                f_request_condition.release();
+                f_status_condition.release();
+                f_client_status_condition.release();
+                f_response_condition.release();
                 break;
             }
         }
@@ -88,7 +98,7 @@ namespace mantis
                 case f_request_id:
                     if( pull_request( flags ) ) return 1;
                     else return -1;
-                     break;
+                    break;
                 case f_status_id:
                     if( pull_status( flags ) ) return 1;
                     else return -1;
@@ -135,6 +145,7 @@ namespace mantis
         size_t t_request_size = reset_buffer_out( f_request_out.ByteSize() );
         if( ! f_request_out.SerializeToArray( f_buffer_out, t_request_size ) )
         {
+            cerr << "[run_context_dist] unable to serialize request message" << endl;
             return false;
         }
         try
@@ -144,6 +155,12 @@ namespace mantis
             //cout << "sending request" << endl;
             f_connection->send( f_buffer_out, t_request_size, flags );
             //cout << "request sent" << endl;
+        }
+        catch( closed_connection& cc )
+        {
+            cout << "[run_context_dist] connection closed (request); detected in <" << cc.what() << ">" << endl;
+            throw cc;
+            return false;
         }
         catch( exception& e )
         {
@@ -176,6 +193,7 @@ namespace mantis
             t_request_size = f_connection->recv_type< size_t >( flags );
             if( t_request_size == 0 )
             {
+                cerr << "[run_context_dist] request message size was 0" << endl;
                 f_inbound_mutex_write.unlock();
                 return false;
             }
@@ -183,10 +201,17 @@ namespace mantis
             ssize_t recv_ret = f_connection->recv( f_buffer_in, t_request_size, flags );
             if( recv_ret <= 0 )
             {
-                cout << "[run_context_dist] (request) connection read length was: " << recv_ret << endl;
+                cerr << "[run_context_dist] (request) connection read length was: " << recv_ret << endl;
                 f_inbound_mutex_write.unlock();
                 return false;
             }
+        }
+        catch( closed_connection& cc )
+        {
+            cout << "[run_context_dist] connection closed (request); detected in <" << cc.what() << ">" << endl;
+            f_inbound_mutex_write.unlock();
+            throw cc;
+            return false;
         }
         catch( exception& e )
         {
@@ -196,6 +221,7 @@ namespace mantis
         }
         bool t_return = f_request_in.ParseFromArray( f_buffer_in, t_request_size );
         f_inbound_mutex_write.unlock();
+        f_request_condition.release();
         return t_return;
     }
     request* run_context_dist::lock_request_out()
@@ -223,6 +249,7 @@ namespace mantis
         size_t t_status_size = reset_buffer_out( f_status_out.ByteSize() );
         if( ! f_status_out.SerializeToArray( f_buffer_out, t_status_size ) )
         {
+            cerr << "[run_context_dist] unable to serialize status message" << endl;
             return false;
         }
         try
@@ -231,6 +258,12 @@ namespace mantis
             f_connection->send_type( f_status_id, flags );
             //cout << "sending status" << endl;
             f_connection->send( f_buffer_out, t_status_size, flags );
+        }
+        catch( closed_connection& cc )
+        {
+            cout << "[run_context_dist] connection closed (status); detected in <" << cc.what() << ">" << endl;
+            throw cc;
+            return false;
         }
         catch( exception& e )
         {
@@ -263,6 +296,7 @@ namespace mantis
             t_status_size = f_connection->recv_type< size_t >( flags );
             if( t_status_size == 0 )
             {
+                cerr << "[run_context_dist] status message size was 0" << endl;
                 f_inbound_mutex_write.unlock();
                 return false;
             }
@@ -274,6 +308,13 @@ namespace mantis
                 f_inbound_mutex_write.unlock();
                 return false;
             }
+        }
+        catch( closed_connection& cc )
+        {
+            cout << "[run_context_dist] connection closed (status); detected in <" << cc.what() << ">" << endl;
+            f_inbound_mutex_write.unlock();
+            throw cc;
+            return false;
         }
         catch( exception& e )
         {
@@ -310,6 +351,7 @@ namespace mantis
         size_t t_client_status_size = reset_buffer_out( f_client_status_out.ByteSize() );
         if( ! f_client_status_out.SerializeToArray( f_buffer_out, t_client_status_size ) )
         {
+            cerr << "[run_context_dist] unable to serialize client_status message" << endl;
             return false;
         }
         try
@@ -318,6 +360,12 @@ namespace mantis
             f_connection->send_type( f_client_status_id, flags );
             //cout << "sending client_status" << endl;
             f_connection->send( f_buffer_out, t_client_status_size, flags );
+        }
+        catch( closed_connection& cc )
+        {
+            cout << "[run_context_dist] connection closed (client_status); detected in <" << cc.what() << ">" << endl;
+            throw cc;
+            return false;
         }
         catch( exception& e )
         {
@@ -350,6 +398,7 @@ namespace mantis
             t_client_status_size = f_connection->recv_type< size_t >( flags );
             if( t_client_status_size == 0 )
             {
+                cerr << "[run_context_dist] client_status message size was 0" << endl;
                 f_inbound_mutex_write.unlock();
                 return false;
             }
@@ -362,6 +411,13 @@ namespace mantis
                 return false;
             }
         }
+        catch( closed_connection& cc )
+        {
+            cout << "[run_context_dist] connection closed (client_status); detected in <" << cc.what() << ">" << endl;
+            f_inbound_mutex_write.unlock();
+            throw cc;
+            return false;
+        }
         catch( exception& e )
         {
             cerr << "[run_context_dist] a read error occurred while pulling a client_status: " << e.what() << endl;
@@ -370,6 +426,7 @@ namespace mantis
         }
         bool t_return = f_client_status_in.ParseFromArray( f_buffer_in, t_client_status_size );
         f_inbound_mutex_write.unlock();
+        f_client_status_condition.release();
         return t_return;
     }
     client_status* run_context_dist::lock_client_status_out()
@@ -396,6 +453,7 @@ namespace mantis
         size_t t_response_size = reset_buffer_out( f_response_out.ByteSize() );
         if( ! f_response_out.SerializeToArray( f_buffer_out, t_response_size ) )
         {
+            cerr << "[run_context_dist] unable to serialize response message" << endl;
             return false;
         }
         try
@@ -404,6 +462,12 @@ namespace mantis
             f_connection->send_type( f_response_id, flags );
             //cout << "sending response" << endl;
             f_connection->send( f_buffer_out, t_response_size, flags );
+        }
+        catch( closed_connection& cc )
+        {
+            cout << "[run_context_dist] connection closed (response); detected in <" << cc.what() << ">" << endl;
+            throw cc;
+            return false;
         }
         catch( exception& e )
         {
@@ -436,6 +500,7 @@ namespace mantis
             t_response_size = f_connection->recv_type< size_t >( flags );
             if( t_response_size == 0 )
             {
+                cerr << "[run_context_dist] response message size was 0" << endl;
                 f_inbound_mutex_write.unlock();
                 return false;
             }
@@ -448,6 +513,13 @@ namespace mantis
                 return false;
             }
         }
+        catch( closed_connection& cc )
+        {
+            cout << "[run_context_dist] connection closed (response); detected in <" << cc.what() << ">" << endl;
+            f_inbound_mutex_write.unlock();
+            throw cc;
+            return false;
+        }
         catch( exception& e )
         {
             cerr << "[run_context_dist] a read error occurred while pulling a response: " << e.what() << endl;
@@ -456,6 +528,7 @@ namespace mantis
         }
         bool t_return = f_response_in.ParseFromArray( f_buffer_in, t_response_size );
         f_inbound_mutex_write.unlock();
+        f_response_condition.release();
         return t_return;
     }
     response* run_context_dist::lock_response_out()
@@ -500,10 +573,33 @@ namespace mantis
         return f_is_active.load();
     }
 
-    void run_context_dist::wait_for_status()
+    bool run_context_dist::wait_for_request()
     {
+        if( ! f_is_active.load() )
+            return false;
+        f_request_condition.wait();
+        return true;
+    }
+    bool run_context_dist::wait_for_status()
+    {
+        if( ! f_is_active.load() )
+            return false;
         f_status_condition.wait();
-        return;
+        return true;
+    }
+    bool run_context_dist::wait_for_client_status()
+    {
+        if( ! f_is_active.load() )
+            return false;
+        f_client_status_condition.wait();
+        return true;
+    }
+    bool run_context_dist::wait_for_response()
+    {
+        if( ! f_is_active.load() )
+            return false;
+        f_response_condition.wait();
+        return true;
     }
 
 }

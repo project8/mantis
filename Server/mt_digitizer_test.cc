@@ -218,20 +218,23 @@ namespace mantis
 
                 cout << "[digitizer_test] loose at <" << t_it.index() << ">" << endl;
             }
-            cout << "[digitizer_test] record count: " << f_record_count << endl;
+            //cout << "[digitizer_test] record count: " << f_record_count << endl;
+
+            // slow things down a bit, since this is for testing purposes, after all
+            usleep( 100 );
         }
 
         return;
     }
     void digitizer_test::cancel()
     {
-        cout << "CANCELLING DIGITIZER TEST" << endl;
+        //cout << "CANCELLING DIGITIZER TEST" << endl;
         if( ! f_canceled.load() )
         {
             f_canceled.store( true );
             f_cancel_condition.wait();
         }
-        cout << "  digitizer_test is done canceling" << endl;
+        //cout << "  digitizer_test is done canceling" << endl;
         return;
     }
     void digitizer_test::finalize( response* a_response )

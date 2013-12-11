@@ -3,6 +3,9 @@
 #include "mt_run_context_dist.hh"
 
 #include <iostream>
+using std::cerr;
+using std::cout;
+using std::endl;
 
 namespace mantis
 {
@@ -86,32 +89,22 @@ namespace mantis
             std::list< run_context_dist* >::iterator t_it = f_runs.begin();
             while( t_it != f_runs.end() )
             {
-                if( (*t_it)->push_status() )
+                try
                 {
-                    // can still communicate with the client
-                    if( (*t_it)->pull_client_status() )
+                    if( (*t_it)->push_status() )
                     {
-                        /*
-                        // there's an update to the client status
-                        if( (*t_it)->get_client_status()->state() != client_status_state_t_ready )
-                        {
-                            // something went wrong with the client
-                            run_context_dist* t_run_context = *t_it;
-                            t_run_context->get_status()->set_state( status_state_t_revoked );
-                            t_run_context->push_status();
-                            delete t_run_context->get_connection();
-                            delete t_run_context;
-                            t_it = f_runs.erase( t_it );
-                            continue;
-                        }
-                        // client is still ready
-                         */
+                        // we can still communicate with the client!
+                        // continue with the next run in the queue
+                        ++t_it;
+                        continue;
                     }
-                    // continue with the next run in the queue
-                    ++t_it;
-                    continue;
                 }
-                // push was unsuccessful, indicating that the communication with the client is broken
+                catch( closed_connection& cc )
+                {
+                    cout << "[request_receiver] connection closed; detected in <" << cc.what() << ">" << endl;
+                }
+                // push was unsuccessful, indicating that the communication with the client is broken for some reason
+                cerr << "[run_queue] communication with client failed; aborting run request" << endl;
                 t_it = f_runs.erase( t_it );
             }
             f_mutex.unlock();
@@ -122,7 +115,7 @@ namespace mantis
 
     void run_queue::cancel()
     {
-        std::cout << "CANCELLING RUN QUEUE" << std::endl;
+        //std::cout << "CANCELLING RUN QUEUE" << std::endl;
         f_mutex.lock();
         while( ! f_runs.empty() )
         {

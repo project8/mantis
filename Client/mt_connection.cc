@@ -18,7 +18,8 @@ namespace mantis
 
     connection::connection( int a_socket, sockaddr_in* an_address ) :
             f_socket( a_socket ),
-            f_address( an_address )
+            f_address( an_address ),
+            f_temp_errno( 0 )
     {
     }
 
@@ -34,14 +35,25 @@ namespace mantis
     ssize_t connection::send( const char* a_message, size_t a_size, int flags )
     {
         //cout << "sending message of size: " << a_size << endl;
+        errno = 0;
         send_type( a_size, flags );
         ssize_t t_written_size = ::send( f_socket, (void*)a_message, a_size, flags );
-        if( t_written_size != a_size )
+        if( t_written_size == a_size )
         {
-            int errnum = errno;
-            throw exception() << "could not write to socket (" << strerror( errnum ) << ")\n";
             return t_written_size;
         }
+        f_temp_errno = errno;
+        if( t_written_size < 0 )
+        {
+            if( f_temp_errno == EPIPE )
+            {
+                throw closed_connection() << "connection::send";
+                return -1;
+            }
+            throw exception() << "send is unable to send message; error message: " << strerror( f_temp_errno );
+            return -1;
+        }
+        throw exception() << "send did not send message correctly; write size was different than value size\n";
         return t_written_size;
     }
 
@@ -52,15 +64,17 @@ namespace mantis
         {
             return t_recv_size;
         }
-        else if( t_recv_size == 0 && errno != EWOULDBLOCK && errno != EAGAIN )
+        f_temp_errno = errno;
+        if( t_recv_size == 0 && f_temp_errno != EWOULDBLOCK && f_temp_errno != EAGAIN )
         {
             throw closed_connection() << "connection::recv";
         }
         else if( t_recv_size < 0 )
         {
-            int errnum = errno;
-            throw exception() << "recv is unable to receive; error message: " << strerror( errnum ) << "\n";
+            throw exception() << "recv is unable to receive; error message: " << strerror( f_temp_errno ) << "\n";
         }
+        // at this point t_recv_size must be 0, and errno is either EWOULDBLOCK or EAGAIN,
+        // which means that there was no data available to receive, but nothing seems to be wrong with the connection
         return t_recv_size;
     }
 

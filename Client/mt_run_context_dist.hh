@@ -27,6 +27,13 @@ namespace mantis
 
             void cancel();
 
+            bool is_active();
+
+            bool wait_for_request();
+            bool wait_for_status();
+            bool wait_for_client_status();
+            bool wait_for_response();
+
             /// return values:
             ///  1 = success
             ///  0 = closed connection
@@ -63,10 +70,6 @@ namespace mantis
 
             void unlock_outbound();
             void unlock_inbound();
-
-            bool is_active();
-
-            void wait_for_status();
 
         private:
             bool verify_message_type( message_id_type a_type_wanted, message_id_type& a_type_found, int flags = 0 );

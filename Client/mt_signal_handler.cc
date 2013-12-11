@@ -106,8 +106,8 @@ namespace mantis
 
     void signal_handler::print_message()
     {
-        std::cout << "Hello!  Your signal is being handled by signal_handler.\n";
-        std::cout << "Have a nice day!" << std::endl;
+        std::cout << "\n\nHello!  Your signal is being handled by signal_handler.\n";
+        std::cout << "Have a nice day!\n" << std::endl;
         return;
     }
 

@@ -41,12 +41,48 @@ using std::cerr;
 using std::cout;
 using std::endl;
 
-#include <google/protobuf/text_format.h>
-
 #define RETURN_SUCCESS 1
 #define RETURN_ERROR -1
 #define RETURN_CANCELED -2
 #define RETURN_REVOKED -3
+
+namespace mantis
+{
+    class setup_loop : public callable
+    {
+        public:
+        setup_loop( run_context_dist* a_run_context );
+        virtual ~setup_loop();
+
+        void execute();
+        void cancel();
+
+        int get_return();
+
+        private:
+        run_context_dist* f_run_context;
+        atomic_bool f_canceled;
+        int f_return;
+    };
+
+    class run_loop : public callable
+    {
+        public:
+            run_loop( run_context_dist* a_run_context, client_file_writing* a_file_writing = NULL );
+            virtual ~run_loop();
+
+            void execute();
+            void cancel();
+
+            int get_return();
+
+        private:
+            run_context_dist* f_run_context;
+            client_file_writing* f_file_writing;
+            atomic_bool f_canceled;
+            int f_return;
+    };
+}
 
 int main( int argc, char** argv )
 {
@@ -125,6 +161,7 @@ int main( int argc, char** argv )
     catch( exception& e )
     {
         cerr << "[mantis_client] an error occurred while running the communication thread" << endl;
+        delete t_request_client;
         return RETURN_ERROR;
     }
 
@@ -135,59 +172,31 @@ int main( int argc, char** argv )
     {
         t_run_context.cancel();
         t_comm_thread.cancel();
+        delete t_request_client;
         cerr << "[mantis_client] error sending request" << endl;
         return RETURN_ERROR;
     }
 
-    useconds_t t_sleep_time = 100;  // in usec
 
-    while( ! signal_handler::got_exit_signal() )
+    setup_loop t_setup_loop( &t_run_context );
+    thread t_setup_loop_thread( &t_setup_loop );
+    t_sig_hand.push_thread( & t_setup_loop_thread );
+    t_setup_loop_thread.start();
+    t_setup_loop_thread.join();
+    if( ! t_sig_hand.got_exit_signal() )
     {
-        usleep( t_sleep_time );
-
-        //t_run_context->pull_status( MSG_WAITALL );
-        status_state_t t_state = t_run_context.lock_status_in()->state();
-        t_run_context.unlock_inbound();
-
-        if( t_state == status_state_t_acknowledged )
-        {
-            cout << "[mantis_client] run request acknowledged...\n" << endl;
-            break;
-        }
-
-        if( t_state == status_state_t_error )
-        {
-            cerr << "[mantis_client] error reported; run was not acknowledged\n" << endl;
-            t_run_context.cancel();
-            t_comm_thread.cancel();
-            return RETURN_ERROR;
-        }
-
-        if( t_state == status_state_t_revoked )
-        {
-            cout << "[mantis_client] request revoked; run did not take place\n" << endl;
-            t_run_context.cancel();
-            t_comm_thread.cancel();
-            return RETURN_ERROR;
-        }
-
-        if( t_state != status_state_t_created )
-        {
-            cerr << "[mantis_client] server reported unusual status: " << t_state << endl;
-            t_run_context.cancel();
-            t_comm_thread.cancel();
-            return RETURN_ERROR;
-        }
+        t_sig_hand.pop_thread();
     }
-
-    if( signal_handler::got_exit_signal() )
+    if( t_setup_loop.get_return() == RETURN_ERROR )
     {
-        cout << "[mantis_client] exiting due to cancellation after acknowledgment loop" << endl;
+        cerr << "[mantis_client] exiting due to error during setup loop" << endl;
+        t_run_context.cancel();
+        t_comm_thread.cancel();
+        delete t_request_client;
         return RETURN_ERROR;
     }
 
     // Server is now waiting for a client status update
-
 
     /****************************************************************/
     /*********************** file writing ***************************/
@@ -206,6 +215,7 @@ int main( int argc, char** argv )
             cerr << "[mantis_client] error setting up file writing: " << e.what() << endl;
             t_run_context.cancel();
             t_comm_thread.cancel();
+            delete t_request_client;
             return RETURN_ERROR;
         }
 
@@ -227,87 +237,28 @@ int main( int argc, char** argv )
         delete t_file_writing;
         t_run_context.cancel();
         t_comm_thread.cancel();
+        delete t_request_client;
         return RETURN_ERROR;
     }
 
-    // =0 -> in progress
-    // <0 -> unsuccessful
-    // >0 -> successful
-    int t_run_success = 0;
-    while( ! signal_handler::got_exit_signal() )
+    run_loop t_run_loop( &t_run_context, t_file_writing );
+    thread t_run_loop_thread( &t_run_loop );
+    t_sig_hand.push_thread( & t_run_loop_thread );
+    t_run_loop_thread.start();
+    t_run_loop_thread.join();
+    if( ! t_sig_hand.got_exit_signal() )
     {
-        //usleep( t_sleep_time );
-        t_run_context.wait_for_status();
-
-        //t_run_context->pull_status( MSG_WAITALL );
-        status_state_t t_state = t_run_context.lock_status_in()->state();
-        t_run_context.unlock_inbound();
-
-        if( t_state == status_state_t_waiting )
-        {
-            cout << "[mantis_client] waiting for run...\n" << endl;
-            t_sleep_time = 100;
-            continue;
-        }
-
-        if( t_state == status_state_t_started )
-        {
-            cout << "[mantis_client] run has started...\n" << endl;
-            t_sleep_time = t_wait_during_run;
-            continue;
-        }
-
-        if( t_state == status_state_t_running )
-        {
-            cout << "[mantis_client] run is in progress...\n" << endl;
-            t_sleep_time = t_wait_during_run;
-            continue;
-        }
-
-        if( t_state == status_state_t_stopped )
-        {
-            cout << "[mantis_client] run status: stopped; data acquisition has finished\n" << endl;
-            t_run_success = RETURN_SUCCESS;
-            break;
-        }
-
-        if( t_state == status_state_t_error )
-        {
-            cout << "[mantis_client] error reported; run did not complete\n" << endl;
-            t_run_success = RETURN_ERROR;
-            break;
-        }
-
-        if( t_state == status_state_t_canceled )
-        {
-            cout << "[mantis_client] cancellation reported; some data may have been written\n" << endl;
-            t_run_success = RETURN_CANCELED;
-            break;
-        }
-
-        if( t_state == status_state_t_revoked )
-        {
-            cout << "[mantis_client] request revoked; run did not take place\n" << endl;
-            t_run_success = RETURN_REVOKED;
-            break;
-        }
-
-        if( t_client_writes_file && t_file_writing->is_done() )
-        {
-            cout << "[mantis_client] file writing is done, but run status still does not indicate run is complete" << endl;
-            cout << "                exiting run now!" << endl;
-            t_run_success = RETURN_CANCELED;
-            break;
-        }
+        t_sig_hand.pop_thread();
     }
-
-    if( signal_handler::got_exit_signal() )
+    int t_run_success = t_run_loop.get_return();
+    if( t_run_success == RETURN_ERROR )
     {
-        cout << "[mantis_client] exiting due to cancellation after run loop" << endl;
+        cerr << "[mantis_client] exiting due to error during run loop" << endl;
+        t_run_context.cancel();
+        t_comm_thread.cancel();
+        delete t_request_client;
         return RETURN_ERROR;
     }
-
-
 
     /****************************************************************/
     /*********************** file writing ***************************/
@@ -336,33 +287,211 @@ int main( int argc, char** argv )
 
     if( t_run_success > 0 || t_run_success == RETURN_CANCELED )
     {
-        cout << "[mantis_client] printing response from server..." << endl;
+        response* t_response;
+        // wait for a completed response from the server
+        bool t_can_get_response = true;
+        while( t_can_get_response )
+        {
+            t_response = t_run_context.lock_response_in();
+            if( t_response->state() == response_state_t_complete ) break;
+            t_run_context.unlock_inbound();
 
-        response* t_response = t_run_context.lock_response_in();
-        cout << "[mantis_client] digitizer summary:\n";
-        cout << "  record count: " << t_response->digitizer_records() << " [#]\n";
-        cout << "  acquisition count: " << t_response->digitizer_acquisitions() << " [#]\n";
-        cout << "  live time: " << t_response->digitizer_live_time() << " [sec]\n";
-        cout << "  dead time: " << t_response->digitizer_dead_time() << " [sec]\n";
-        cout << "  megabytes: " << t_response->digitizer_megabytes() << " [Mb]\n";
-        cout << "  rate: " << t_response->digitizer_rate() << " [Mb/sec]\n";
+            t_can_get_response = t_run_context.wait_for_response();
+        }
 
-        cout << endl;
+        if( t_can_get_response )
+        {
+            cout << "[mantis_client] printing response from server..." << endl;
 
-        cout << "[mantis_client] writer summary:\n";
-        cout << "  record count: " << t_response->writer_records() << " [#]\n";
-        cout << "  acquisition count: " << t_response->writer_acquisitions() << " [#]\n";
-        cout << "  live time: " << t_response->writer_live_time() << " [sec]\n";
-        cout << "  megabytes: " << t_response->writer_megabytes() << "[Mb]\n";
-        cout << "  rate: " << t_response->writer_rate() << " [Mb/sec]\n";
+            cout << "[mantis_client] digitizer summary:\n";
+            cout << "  record count: " << t_response->digitizer_records() << " [#]\n";
+            cout << "  acquisition count: " << t_response->digitizer_acquisitions() << " [#]\n";
+            cout << "  live time: " << t_response->digitizer_live_time() << " [sec]\n";
+            cout << "  dead time: " << t_response->digitizer_dead_time() << " [sec]\n";
+            cout << "  megabytes: " << t_response->digitizer_megabytes() << " [Mb]\n";
+            cout << "  rate: " << t_response->digitizer_rate() << " [Mb/sec]\n";
 
-        cout << endl;
+            cout << endl;
+
+            cout << "[mantis_client] writer summary:\n";
+            cout << "  record count: " << t_response->writer_records() << " [#]\n";
+            cout << "  acquisition count: " << t_response->writer_acquisitions() << " [#]\n";
+            cout << "  live time: " << t_response->writer_live_time() << " [sec]\n";
+            cout << "  megabytes: " << t_response->writer_megabytes() << "[Mb]\n";
+            cout << "  rate: " << t_response->writer_rate() << " [Mb/sec]\n";
+
+            cout << endl;
+        }
 
         t_run_context.unlock_inbound();
     }
 
     t_run_context.cancel();
     t_comm_thread.cancel();
+    delete t_request_client;
 
     return t_run_success;
 }
+
+
+namespace mantis
+{
+    setup_loop::setup_loop( run_context_dist* a_run_context ) :
+                    f_run_context( a_run_context ),
+                    f_canceled( false ),
+                    f_return( 0 )
+    {}
+    setup_loop::~setup_loop()
+    {}
+
+    void setup_loop::execute()
+    {
+        while( ! f_canceled.load() )
+        {
+            status_state_t t_state = f_run_context->lock_status_in()->state();
+            f_run_context->unlock_inbound();
+
+            if( t_state == status_state_t_acknowledged )
+            {
+                cout << "[mantis_client] run request acknowledged...\n" << endl;
+                f_return = RETURN_SUCCESS;
+                break;
+            }
+            else
+            if( t_state == status_state_t_error )
+            {
+                cerr << "[mantis_client] error reported; run was not acknowledged\n" << endl;
+                f_return = RETURN_ERROR;
+                break;
+            }
+            else
+            if( t_state == status_state_t_revoked )
+            {
+                cout << "[mantis_client] request revoked; run did not take place\n" << endl;
+                f_return = RETURN_ERROR;
+                break;
+            }
+            else
+            if( t_state != status_state_t_created )
+            {
+                cerr << "[mantis_client] server reported unusual status: " << t_state << endl;
+                f_return = RETURN_ERROR;
+                break;
+            }
+
+            bool t_can_get_status = f_run_context->wait_for_status();
+            if(! t_can_get_status )
+            {
+                cerr << "[mantis_client] unable to communicate with server" << endl;
+                f_return = RETURN_ERROR;
+                break;
+            }
+        }
+        return;
+    }
+
+    void setup_loop::cancel()
+    {
+        f_canceled.store( true );
+        return;
+    }
+
+    int setup_loop::get_return()
+    {
+        return f_return;
+    }
+
+
+    run_loop::run_loop( run_context_dist* a_run_context, client_file_writing* a_file_writing ) :
+                    f_run_context( a_run_context ),
+                    f_file_writing( a_file_writing ),
+                    f_canceled( false ),
+                    f_return( 0 )
+    {}
+    run_loop::~run_loop()
+    {}
+
+    void run_loop::execute()
+    {
+        while( ! f_canceled )
+        {
+            status_state_t t_state = f_run_context->lock_status_in()->state();
+            f_run_context->unlock_inbound();
+
+            if( t_state == status_state_t_waiting )
+            {
+                cout << "[mantis_client] waiting for run...\n" << endl;
+                //continue;
+            }
+            else
+            if( t_state == status_state_t_started )
+            {
+                cout << "[mantis_client] run has started...\n" << endl;
+                //continue;
+            }
+            else
+            if( t_state == status_state_t_running )
+            {
+                cout << "[mantis_client] run is in progress...\n" << endl;
+                //continue;
+            }
+            else
+            if( t_state == status_state_t_stopped )
+            {
+                cout << "[mantis_client] run status: stopped; data acquisition has finished\n" << endl;
+                f_return = RETURN_SUCCESS;
+                break;
+            }
+            else
+            if( t_state == status_state_t_error )
+            {
+                cout << "[mantis_client] error reported; run did not complete\n" << endl;
+                f_return = RETURN_ERROR;
+                break;
+            }
+            else
+            if( t_state == status_state_t_canceled )
+            {
+                cout << "[mantis_client] cancellation reported; some data may have been written\n" << endl;
+                f_return = RETURN_CANCELED;
+                break;
+            }
+            else
+            if( t_state == status_state_t_revoked )
+            {
+                cout << "[mantis_client] request revoked; run did not take place\n" << endl;
+                f_return = RETURN_REVOKED;
+                break;
+            }
+            else
+            if( f_file_writing != NULL && f_file_writing->is_done() )
+            {
+                cout << "[mantis_client] file writing is done, but run status still does not indicate run is complete" << endl;
+                cout << "                exiting run now!" << endl;
+                f_return = RETURN_CANCELED;
+                break;
+            }
+
+            bool t_can_get_status = f_run_context->wait_for_status();
+            if( ! t_can_get_status )
+            {
+                cerr << "[mantis_client] cannot communicate with server" << endl;
+                f_return = RETURN_ERROR;
+                break;
+            }
+        }
+    }
+
+    void run_loop::cancel()
+    {
+        f_canceled.store( true );
+        return;
+    }
+    int run_loop::get_return()
+    {
+        return f_return;
+    }
+
+}
+
+

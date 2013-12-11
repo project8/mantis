@@ -39,7 +39,7 @@ namespace mantis
 
     void server_worker::execute()
     {
-        while( ! signal_handler::got_exit_signal() )
+        while( ! f_canceled.load() )
         {
             if( f_run_queue->empty() == true )
             {
@@ -47,19 +47,33 @@ namespace mantis
                 f_queue_condition->wait();
             }
 
+            bool t_communication_fail = false;
+
             cout << "[server_worker] sending server status <started>..." << endl;
 
             run_context_dist* t_run_context = f_run_queue->from_front();
             t_run_context->lock_status_out()->set_state( status_state_t_started );
-            if( ! t_run_context->push_status_no_mutex() )
+            try
             {
-                t_run_context->unlock_outbound();
-                cerr << "[server_wroker] unable to send status <started> to the client; aborting" << endl;
+                if( ! t_run_context->push_status_no_mutex() )
+                {
+                    cerr << "[server_wroker] unable to send status <started> to the client; aborting" << endl;
+                    t_communication_fail = true;
+                }
+            }
+            catch( closed_connection& cc )
+            {
+                cerr << "[server_worker] closed connection detected by: " << cc.what() << endl;
+                t_communication_fail = true;
+            }
+            t_run_context->unlock_outbound();
+
+            if( t_communication_fail )
+            {
                 delete t_run_context->get_connection();
                 delete t_run_context;
                 continue;
             }
-            t_run_context->unlock_outbound();
 
             cout << "[server_worker] initializing..." << endl;
 
@@ -75,7 +89,12 @@ namespace mantis
                 t_run_context->unlock_inbound();
 
                 t_run_context->lock_status_out()->set_state( status_state_t_error );
-                t_run_context->push_status_no_mutex();
+                try
+                {
+                    t_run_context->push_status_no_mutex();
+                }
+                catch( closed_connection& cc )
+                {}
                 t_run_context->unlock_outbound();
                 delete t_run_context->get_connection();
                 delete t_run_context;
@@ -101,11 +120,7 @@ namespace mantis
 
             thread* t_digitizer_thread = new thread( f_digitizer );
             thread* t_writer_thread = new thread( f_writer );
-/*
-            signal_handler t_sig_hand;
-            t_sig_hand.push_thread( t_writer_thread );
-            t_sig_hand.push_thread( t_digitizer_thread );
-*/
+
             t_digitizer_thread->start();
             f_digitizer_state = k_running;
 
@@ -118,34 +133,44 @@ namespace mantis
             f_writer_state = k_running;
 
             t_run_context->lock_status_out()->set_state( status_state_t_running );
-            bool t_push_result = t_run_context->push_status_no_mutex();
-            t_run_context->unlock_outbound();
-            if( ! t_push_result )
+            try
             {
-                cerr << "[server_wroker] unable to send status <running> to the client; canceling run" << endl;
-                cancel();
+                if( ! t_run_context->push_status_no_mutex() )
+                {
+                    cerr << "[server_worker] unable to send status <running> to the client" << endl;
+                    t_communication_fail = true;
+                }
             }
-            //f_run_queue->to_front( f_current_run_context );
-            //f_current_run_context = NULL;
+            catch( closed_connection& cc )
+            {
+                cout << "[server_worker] closed connection detected by: " << cc.what();
+                t_communication_fail = true;
+            }
+            t_run_context->unlock_outbound();
+            if( t_communication_fail )
+            {
+                cerr << "[server_wroker] ; canceling run" << endl;
+                f_digitizer->cancel();
+                f_writer->cancel();
+            }
 
             // cancellation point (I think) via calls to pthread_join
-            cout << " calling digitizer join" << endl;
             t_digitizer_thread->join();
             f_digitizer_state = k_inactive;
-            cout << " calling writer join" << endl;
             t_writer_thread->join();
             f_writer_state = k_inactive;
 
-            cout << "### after thread join ###" << endl;
-/*
-            if( ! t_sig_hand.got_exit_signal() )
-            {
-                t_sig_hand.pop_thread(); // digitizer thread
-                t_sig_hand.pop_thread(); // writer thread
-            }
-*/
             delete t_digitizer_thread;
             delete t_writer_thread;
+
+            if( t_communication_fail )
+            {
+                delete f_writer;
+                f_writer = NULL;
+                delete t_run_context->get_connection();
+                delete t_run_context;
+                continue;
+            }
 
 
             //t_run_context = f_run_queue->from_front();
@@ -160,17 +185,48 @@ namespace mantis
                 cout << "[server_worker] sending server status <canceled>..." << endl;
                 t_status->set_state( status_state_t_canceled );
             }
-            t_run_context->push_status_no_mutex();
+            try
+            {
+                if( ! t_run_context->push_status_no_mutex() )
+                {
+                    cerr << "[server_worker] unable to send status <stopped>/<canceled> to client" << endl;
+                    t_communication_fail = true;
+                }
+            }
+            catch( closed_connection& cc )
+            {
+                cout << "[server_worker] closed connection detected by: " << cc.what();
+                t_communication_fail = true;
+            }
             t_run_context->unlock_outbound();
+
+            if( t_communication_fail )
+            {
+                delete f_writer;
+                f_writer = NULL;
+                delete t_run_context->get_connection();
+                delete t_run_context;
+                continue;
+            }
 
             cout << "[server_worker] finalizing..." << endl;
 
             response* t_response = t_run_context->lock_response_out();
             f_digitizer->finalize( t_response );
             f_writer->finalize( t_response );
-            t_run_context->push_response_no_mutex();
+            t_response->set_state( response_state_t_complete );
+            try
+            {
+                t_run_context->push_response_no_mutex();
+            }
+            catch( closed_connection& cc )
+            {
+                cout << "[server_worker] closed connection detected by: " << cc.what();
+            }
             t_run_context->unlock_outbound();
 
+            delete f_writer;
+            f_writer = NULL;
             delete t_run_context->get_connection();
             delete t_run_context;
         }
@@ -180,7 +236,7 @@ namespace mantis
 
     void server_worker::cancel()
     {
-        std::cout << "CANCELLING SERVER WORKER" << std::endl;
+        //std::cout << "CANCELLING SERVER WORKER" << std::endl;
         f_canceled.store( true );
 
         if( f_digitizer_state == k_running )

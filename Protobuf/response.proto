@@ -2,6 +2,13 @@ package mantis;
 
 message response
 {
+    enum state_t
+    {
+        unused = 0;
+        complete = 1;
+    }
+    
+    required state_t state = 1;
 
 	//reader statistics
 	optional uint64 digitizer_records = 2;

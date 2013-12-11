@@ -6,6 +6,7 @@
 #include "mt_atomic.hh"
 #include "mt_condition.hh"
 #include "mt_mutex.hh"
+#include "request.pb.h"
 
 #include "thorax.hh"
 
