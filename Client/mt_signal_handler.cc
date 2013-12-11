@@ -88,7 +88,7 @@ namespace mantis
         return f_got_exit_signal;
     }
 
-    void signal_handler::handler_cancel_threads( int _ignored )
+    void signal_handler::handler_cancel_threads( int )
     {
         print_message();
 

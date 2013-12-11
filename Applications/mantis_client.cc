@@ -109,7 +109,6 @@ int main( int argc, char** argv )
     }
 
     double t_duration = t_config.get_double_required( "duration" );
-    useconds_t t_wait_during_run = std::min( ( useconds_t )1000, ( useconds_t )( t_duration / 10. ) );
 
     run_context_dist t_run_context;
 
@@ -346,7 +345,6 @@ namespace mantis
 
     void setup_loop::execute()
     {
-        bool t_can_get_status = true;
         while( ! f_canceled.load() )
         {
             status_state_t t_state = f_run_context->lock_status_in()->state();
@@ -414,7 +412,6 @@ namespace mantis
 
     void run_loop::execute()
     {
-        bool t_can_get_status = true;
         while( ! f_canceled.load() )
         {
             status_state_t t_state = f_run_context->lock_status_in()->state();

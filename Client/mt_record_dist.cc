@@ -150,7 +150,7 @@ namespace mantis
             }
             reset_buffer_in( t_header_size );
             ssize_t recv_ret = f_connection->recv( f_buffer_in, t_header_size, flags );
-            if( recv_ret == t_header_size )
+            if( recv_ret == (ssize_t)t_header_size )
             {
                 return a_block_header->ParseFromArray( f_buffer_in, t_header_size );
             }

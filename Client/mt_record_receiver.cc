@@ -65,7 +65,7 @@ namespace mantis
         timespec t_live_stop_time;
         timespec t_dead_start_time;
         timespec t_dead_stop_time;
-        timespec t_stamp_time;
+        //timespec t_stamp_time;
 
         f_record_count = 0;
 

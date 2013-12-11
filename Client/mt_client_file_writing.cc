@@ -28,12 +28,12 @@ namespace mantis
 
     client_file_writing::client_file_writing( run_context_dist* a_run_context, int a_write_port ) :
             f_server( NULL ),
-            f_receiver( NULL ),
-            f_worker( NULL ),
-            f_thread( NULL ),
             f_buffer_condition( NULL ),
             f_buffer( NULL ),
-            f_writer( NULL )
+            f_receiver( NULL ),
+            f_writer( NULL ),
+            f_worker( NULL ),
+            f_thread( NULL )
     {
         // objects for receiving and writing data
         try

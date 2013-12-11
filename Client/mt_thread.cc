@@ -25,12 +25,10 @@ namespace mantis
 
     void thread::start()
     {
-        //cout << "in thread::start; state is: " << f_state << endl;
         if( get_state() == e_ready )
         {
             pthread_create( &f_thread, 0, &thread::thread_setup_and_execute, this );
             set_state( e_running );
-            //cout << "thread::start changed state to: " << f_state << endl;
         }
         return;
     }
@@ -44,14 +42,11 @@ namespace mantis
     }
     void thread::cancel()
     {
-        //cout << "in thread::cancel; state is: " << f_state << endl;
         if( get_state() == e_running )
         {
-            //cout << "thread::cancel is calling pthread_cancel" << endl;
             f_object->cancel();
             pthread_cancel( f_thread );
             set_state( e_cancelled );
-            //cout << "thread::cancel changed state to: " << f_state << endl;
         }
         return;
     }
@@ -85,23 +80,16 @@ namespace mantis
     void* thread::thread_setup_and_execute( void* voidthread )
     {
         pthread_cleanup_push( &::mantis::thread::thread_cleanup, voidthread );
-        //cout << "in setup and execute" << endl;
         thread* t_thread = (::mantis::thread*) (voidthread);
         callable* object = t_thread->f_object;
         object->execute();
-        //cout << "completing thread" << endl;
         t_thread->set_state( e_complete );
         pthread_cleanup_pop( 0 );
         pthread_exit( 0 );
     }
 
-    void thread::thread_cleanup( void* voidthread )
+    void thread::thread_cleanup( void* /*voidthread*/ )
     {
-        //cout << "in thread_cleanup" << endl;
-        //thread* t_thread = (::mantis::thread*) (voidthread);
-        //cout << "executing cleanup function" << endl;
-        //t_thread->f_object->cancel();
-        //t_thread->set_state( e_cancelled );
         return;
     }
 

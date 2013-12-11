@@ -38,7 +38,7 @@ namespace mantis
         errno = 0;
         send_type( a_size, flags );
         ssize_t t_written_size = ::send( f_socket, (void*)a_message, a_size, flags );
-        if( t_written_size == a_size )
+        if( t_written_size == (ssize_t)a_size )
         {
             return t_written_size;
         }

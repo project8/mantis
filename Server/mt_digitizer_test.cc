@@ -19,9 +19,9 @@ namespace mantis
     static registrar< digitizer, digitizer_test > s_digtest_registrar("test");
 
     digitizer_test::digitizer_test() :
+            f_allocated( false ),
             f_buffer( NULL ),
             f_condition( NULL ),
-            f_allocated( false ),
             f_record_last( 0 ),
             f_record_count( 0 ),
             f_acquisition_count( 0 ),
@@ -67,8 +67,6 @@ namespace mantis
 
     void digitizer_test::initialize( request* a_request )
     {
-        int t_result;
-
         cout << "[digitizer_test] resetting counters..." << endl;
 
         f_record_last = (record_id_type) (ceil( (double) (a_request->rate() * a_request->duration() * 1.e3) / (double) (f_buffer->record_size()) ));
@@ -274,7 +272,7 @@ namespace mantis
         return true;
     }
 
-    bool digitizer_test::write_mode_check( request_file_write_mode_t mode )
+    bool digitizer_test::write_mode_check( request_file_write_mode_t )
     {
         return true;
     }
