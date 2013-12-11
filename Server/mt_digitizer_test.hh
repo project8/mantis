@@ -10,7 +10,7 @@
 
 #include "thorax.hh"
 
-#include <semaphore.h>
+//#include <semaphore.h>
 
 namespace mantis
 {
@@ -37,7 +37,7 @@ namespace mantis
             void set_canceled( bool a_flag );
 
         private:
-            sem_t* f_semaphore;
+            //sem_t* f_semaphore;
 
             bool f_allocated;
 

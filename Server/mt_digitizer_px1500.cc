@@ -12,7 +12,7 @@
 #include <cstdlib> // for exit()
 #include <cstring>
 #include <errno.h>
-#include <fcntl.h> // for O_CREAT and O_EXCL
+//#include <fcntl.h> // for O_CREAT and O_EXCL
 #include <iostream>
 using std::cout;
 using std::endl;
@@ -22,7 +22,7 @@ namespace mantis
     static registrar< digitizer, digitizer_px1500 > s_px1500_registrar("px1500");
 
     digitizer_px1500::digitizer_px1500() :
-            f_semaphore( NULL ),
+            //f_semaphore( NULL ),
             f_buffer( NULL ),
             f_condition( NULL ),
             f_allocated( false ),
@@ -33,19 +33,21 @@ namespace mantis
             f_live_time( 0 ),
             f_dead_time( 0 )
     {
+        /*
         errno = 0;
-        f_semaphore = sem_open( "digitizer_test", O_CREAT | O_EXCL );
+        f_semaphore = sem_open( "/digitizer_px1500", O_CREAT | O_EXCL );
         if( f_semaphore == SEM_FAILED )
         {
             if( errno == EEXIST )
             {
-                throw exception() << "digitizer_test is already in use";
+                throw exception() << "digitizer_px1500 is already in use";
             }
             else
             {
                 throw exception() << "semaphore error: " << strerror( errno );
             }
         }
+        */
     }
 
     digitizer_px1500::~digitizer_px1500()
@@ -77,10 +79,12 @@ namespace mantis
                 exit( -1 );
             }
         }
+        /*
         if( f_semaphore != SEM_FAILED )
         {
             sem_close( f_semaphore );
         }
+        */
     }
 
     void digitizer_px1500::allocate( buffer* a_buffer, condition* a_condition )

@@ -12,7 +12,7 @@
 #include <cstdlib> // for exit()
 #include <cstring> // for memset()
 #include <errno.h>
-#include <fcntl.h> // for O_CREAT and O_EXCL
+//#include <fcntl.h> // for O_CREAT and O_EXCL
 #include <iostream>
 using std::cerr;
 using std::cout;
@@ -23,7 +23,7 @@ namespace mantis
     static registrar< digitizer, digitizer_test > s_digtest_registrar("test");
 
     digitizer_test::digitizer_test() :
-            f_semaphore( NULL ),
+            //f_semaphore( NULL ),
             f_allocated( false ),
             f_buffer( NULL ),
             f_condition( NULL ),
@@ -35,8 +35,9 @@ namespace mantis
             f_canceled( false ),
             f_cancel_condition()
     {
+        /*
         errno = 0;
-        f_semaphore = sem_open( "digitizer_test", O_CREAT | O_EXCL );
+        f_semaphore = sem_open( "/digitizer_test", O_CREAT | O_EXCL );
         if( f_semaphore == SEM_FAILED )
         {
             if( errno == EEXIST )
@@ -48,6 +49,7 @@ namespace mantis
                 throw exception() << "semaphore error: " << strerror( errno );
             }
         }
+        */
     }
 
     digitizer_test::~digitizer_test()
@@ -63,10 +65,12 @@ namespace mantis
                 ++t_it;
             }
         }
+        /*
         if( f_semaphore != SEM_FAILED )
         {
             sem_close( f_semaphore );
         }
+        */
     }
 
     void digitizer_test::allocate( buffer* a_buffer, condition* a_condition )
