@@ -20,12 +20,5 @@ namespace mantis
             virtual ~server_config();
     };
 
-    class standalone_config : public configuration
-    {
-        public:
-            standalone_config();
-            virtual ~standalone_config();
-    };
-
 } /* namespace Katydid */
 #endif /* MT_CLIENT_CONFIG_HH_ */
