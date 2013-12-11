@@ -346,6 +346,7 @@ namespace mantis
 
     void setup_loop::execute()
     {
+        bool t_can_get_status = true;
         while( ! f_canceled.load() )
         {
             status_state_t t_state = f_run_context->lock_status_in()->state();
@@ -413,7 +414,8 @@ namespace mantis
 
     void run_loop::execute()
     {
-        while( ! f_canceled )
+        bool t_can_get_status = true;
+        while( ! f_canceled.load() )
         {
             status_state_t t_state = f_run_context->lock_status_in()->state();
             f_run_context->unlock_inbound();

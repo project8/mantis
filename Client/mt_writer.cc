@@ -124,7 +124,7 @@ namespace mantis
             f_canceled.store( true );
             f_cancel_condition.wait();
         }
-        cout << "  writer has finished canceling" << endl;
+        //cout << "  writer has finished canceling" << endl;
         return;
     }
     void writer::finalize( response* a_response )
