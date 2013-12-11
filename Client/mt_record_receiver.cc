@@ -153,7 +153,7 @@ namespace mantis
                 cout << "[record_receiver] loose at <" << t_it.index() << ">" << endl;
             }
 
-            cout << "[record_receiver] records received: " << f_record_count << endl;
+            //cout << "[record_receiver] records received: " << f_record_count << endl;
         }
 
         //cout << "[record_receiver] finished processing records" << endl;

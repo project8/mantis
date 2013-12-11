@@ -176,6 +176,7 @@ int main( int argc, char** argv )
         return RETURN_ERROR;
     }
 
+    usleep(500);
 
     setup_loop t_setup_loop( &t_run_context );
     thread t_setup_loop_thread( &t_setup_loop );
@@ -378,13 +379,12 @@ namespace mantis
                 break;
             }
 
-            bool t_can_get_status = f_run_context->wait_for_status();
-            if(! t_can_get_status )
-            {
-                cerr << "[mantis_client] unable to communicate with server" << endl;
-                f_return = RETURN_ERROR;
-                break;
-            }
+            if( f_run_context->wait_for_status() )
+                continue;
+
+            cerr << "[mantis_client] (setup loop) unable to communicate with server" << endl;
+            f_return = RETURN_ERROR;
+            break;
         }
         return;
     }
@@ -471,13 +471,12 @@ namespace mantis
                 break;
             }
 
-            bool t_can_get_status = f_run_context->wait_for_status();
-            if( ! t_can_get_status )
-            {
-                cerr << "[mantis_client] cannot communicate with server" << endl;
-                f_return = RETURN_ERROR;
-                break;
-            }
+            if( f_run_context->wait_for_status() )
+                continue;
+
+            cerr << "[mantis_client] (run loop) unable to communicate with server" << endl;
+            f_return = RETURN_ERROR;
+            break;
         }
     }
 
