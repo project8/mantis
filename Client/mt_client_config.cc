@@ -46,7 +46,7 @@ namespace mantis
         AddMember( "mode", mode, GetAllocator() );
 
         rapidjson::Value file_writer;
-        file_writer.SetString( "client" );
+        file_writer.SetString( "server" );
         AddMember( "file-writer", file_writer, GetAllocator() );
     }
 
