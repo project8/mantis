@@ -29,7 +29,7 @@ namespace mantis
     {
         f_canceled = false;
 
-        cout << "[writer] resetting counters..." << endl;
+        //cout << "[writer] resetting counters..." << endl;
 
         f_record_count = 0;
         f_acquisition_count = 0;
@@ -129,7 +129,7 @@ namespace mantis
     }
     void writer::finalize( response* a_response )
     {
-        cout << "[writer] calculating statistics..." << endl;
+        //cout << "[writer] calculating statistics..." << endl;
 
         a_response->set_writer_records( f_record_count );
         a_response->set_writer_acquisitions( f_acquisition_count );

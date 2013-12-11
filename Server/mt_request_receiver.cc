@@ -111,11 +111,11 @@ namespace mantis
             // if the queue condition is waiting, release it
             if( f_condition->is_waiting() == true )
             {
-                cout << "[request_receiver] releasing queue condition" << endl;
+                //cout << "[request_receiver] releasing queue condition" << endl;
                 f_condition->release();
             }
 
-            cout << "[request_receiver] finished processing request" << endl;
+            //cout << "[request_receiver] finished processing request" << endl;
         }
 
         return;

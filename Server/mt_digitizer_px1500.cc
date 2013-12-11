@@ -37,7 +37,7 @@ namespace mantis
 
         int t_result;
 
-        cout << "[digitzer] connecting to digitizer card..." << endl;
+        cout << "[digitizer_px1500] connecting to digitizer card..." << endl;
 
         t_result = ConnectToDevicePX4( &f_handle, 1 );
         if( t_result != SIG_SUCCESS )
@@ -46,7 +46,7 @@ namespace mantis
             exit( -1 );
         }
 
-        cout << "[digitizer] setting power up defaults..." << endl;
+        //cout << "[digitizer_px1500] setting power up defaults..." << endl;
 
         t_result = SetPowerupDefaultsPX4( f_handle );
         if( t_result != SIG_SUCCESS )
@@ -55,7 +55,7 @@ namespace mantis
             exit( -1 );
         }
 
-        cout << "[digitizer] allocating dma buffer..." << endl;
+        cout << "[digitizer_px1500] allocating dma buffer..." << endl;
 
         iterator t_it( f_buffer );
         for( unsigned int index = 0; index < f_buffer->size(); index++ )
@@ -79,7 +79,7 @@ namespace mantis
         {
             int t_result;
 
-            cout << "[digitizer] deallocating dma buffer..." << endl;
+            cout << "[digitizer_px1500] deallocating dma buffer..." << endl;
 
             iterator t_it( f_buffer );
             for( size_t Index = 0; Index < f_buffer->size(); Index++ )
@@ -93,7 +93,7 @@ namespace mantis
                 ++t_it;
             }
 
-            cout << "[digitizer] disconnecting from digitizer card..." << endl;
+            cout << "[digitizer_px1500] disconnecting from digitizer card..." << endl;
 
             t_result = DisconnectFromDevicePX4( f_handle );
             if( t_result != SIG_SUCCESS )
@@ -108,7 +108,7 @@ namespace mantis
     {
         int t_result;
 
-        cout << "[digitizer] resetting counters..." << endl;
+        //cout << "[digitizer_px1500] resetting counters..." << endl;
 
         f_record_last = (record_id_type) (ceil( (double) (a_request->rate() * a_request->duration() * 1.e3) / (double) (f_buffer->record_size()) ));
         f_record_count = 0;
@@ -116,7 +116,7 @@ namespace mantis
         f_live_time = 0;
         f_dead_time = 0;
 
-        cout << "[digitizer] setting run mode..." << endl;
+        //cout << "[digitizer_px1500] setting run mode..." << endl;
 
         if( a_request->mode() == request_mode_t_single )
         {
@@ -138,7 +138,7 @@ namespace mantis
             }
         }
 
-        cout << "[digitizer] setting clock rate..." << endl;
+        //cout << "[digitizer_px1500] setting clock rate..." << endl;
 
         t_result = SetInternalAdcClockRatePX4( f_handle, a_request->rate() );
         if( t_result != SIG_SUCCESS )
@@ -159,11 +159,11 @@ namespace mantis
         timespec t_dead_stop_time;
         timespec t_stamp_time;
 
-        cout << "[digitizer] waiting" << endl;
+        //cout << "[digitizer_px1500] waiting" << endl;
 
         f_condition->wait();
 
-        cout << "[digitizer] loose at <" << t_it.index() << ">" << endl;
+        cout << "[digitizer_px1500] loose at <" << t_it.index() << ">" << endl;
 
         //start acquisition
         if( start() == false )
@@ -192,7 +192,7 @@ namespace mantis
                 stop();
 
                 //GET OUT
-                cout << "[digitizer] finished normally" << endl;
+                cout << "[digitizer_px1500] finished normally" << endl;
                 return;
             }
 
@@ -210,7 +210,7 @@ namespace mantis
                 stop();
 
                 //GET OUT
-                cout << "[digitizer] finished abnormally because acquisition failed" << endl;
+                cout << "[digitizer_px1500] finished abnormally because acquisition failed" << endl;
                 return;
             }
 
@@ -218,7 +218,7 @@ namespace mantis
 
             if( +t_it == false )
             {
-                cout << "[digitizer] blocked at <" << t_it.index() << ">" << endl;
+                cout << "[digitizer_px1500] blocked at <" << t_it.index() << ">" << endl;
 
                 //stop live timer
                 get_time_monotonic( &t_live_stop_time );
@@ -230,7 +230,7 @@ namespace mantis
                 if( stop() == false )
                 {
                     //GET OUT
-                    cout << "[digitizer] finished abnormally because halting streaming failed" << endl;
+                    cout << "[digitizer_px1500] finished abnormally because halting streaming failed" << endl;
                     return;
                 }
 
@@ -250,7 +250,7 @@ namespace mantis
                 if( start() == false )
                 {
                     //GET OUT
-                    cout << "[digitizer] finished abnormally because starting streaming failed" << endl;
+                    cout << "[digitizer_px1500] finished abnormally because starting streaming failed" << endl;
                     return;
                 }
 
@@ -260,7 +260,7 @@ namespace mantis
                 //start live timer
                 get_time_monotonic( &t_live_start_time );;
 
-                cout << "[digitizer] loose at <" << t_it.index() << ">" << endl;
+                cout << "[digitizer_px1500] loose at <" << t_it.index() << ">" << endl;
             }
         }
 
@@ -272,7 +272,7 @@ namespace mantis
     }
     void digitizer_px1500::finalize( response* a_response )
     {
-        cout << "[digitizer] calculating statistics..." << endl;
+        //cout << "[digitizer_px1500] calculating statistics..." << endl;
 
         a_response->set_digitizer_records( f_record_count );
         a_response->set_digitizer_acquisitions( f_acquisition_count );

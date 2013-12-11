@@ -67,7 +67,7 @@ namespace mantis
 
     void digitizer_test::initialize( request* a_request )
     {
-        cout << "[digitizer_test] resetting counters..." << endl;
+        //cout << "[digitizer_test] resetting counters..." << endl;
 
         f_record_last = (record_id_type) (ceil( (double) (a_request->rate() * a_request->duration() * 1.e3) / (double) (f_buffer->record_size()) ));
         f_record_count = 0;
@@ -87,7 +87,7 @@ namespace mantis
         timespec t_dead_stop_time;
         timespec t_stamp_time;
 
-        cout << "[digitizer_test] waiting" << endl;
+        //cout << "[digitizer_test] waiting" << endl;
 
         f_condition->wait();
 
@@ -178,7 +178,7 @@ namespace mantis
                 if( stop() == false )
                 {
                     //GET OUT
-                    cout << "[digitizer] finished abnormally because halting streaming failed" << endl;
+                    cout << "[digitizer_test] finished abnormally because halting streaming failed" << endl;
                     return;
                 }
 
@@ -237,7 +237,7 @@ namespace mantis
     }
     void digitizer_test::finalize( response* a_response )
     {
-        cout << "[digitizer] calculating statistics..." << endl;
+        //cout << "[digitizer_test] calculating statistics..." << endl;
 
         a_response->set_digitizer_records( f_record_count );
         a_response->set_digitizer_acquisitions( f_acquisition_count );

@@ -105,7 +105,7 @@ namespace mantis
             return;
         }
         fMap->insert(std::pair< std::string, const base_registrar< XBaseType >* >(a_class_name, a_registrar));
-        std::cout << "registered a factory for class " << a_class_name << ", factory #" << fMap->size()-1 << std::endl;
+        //std::cout << "registered a factory for class " << a_class_name << ", factory #" << fMap->size()-1 << std::endl;
     }
 
     template< class XBaseType >
