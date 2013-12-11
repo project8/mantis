@@ -156,6 +156,7 @@ int main( int argc, char** argv )
         t_sig_hand.push_thread( &t_comm_thread );
 
         t_comm_thread.start();
+	t_run_context.wait_until_active();
     }
     catch( exception& e )
     {
@@ -176,7 +177,6 @@ int main( int argc, char** argv )
         return RETURN_ERROR;
     }
 
-    usleep(500);
 
     setup_loop t_setup_loop( &t_run_context );
     thread t_setup_loop_thread( &t_setup_loop );

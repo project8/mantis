@@ -28,6 +28,7 @@ namespace mantis
             void cancel();
 
             bool is_active();
+            void wait_until_active();
 
             bool wait_for_request();
             bool wait_for_status();
@@ -95,6 +96,8 @@ namespace mantis
 
             atomic_bool f_is_active;
             atomic_bool f_is_canceled;
+            condition f_is_active_condition;
+            mutex f_is_active_mutex;
 
             condition f_request_condition;
             condition f_status_condition;

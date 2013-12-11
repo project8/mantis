@@ -36,6 +36,8 @@ namespace mantis
             f_inbound_mutex_write(),
             f_is_active( false ),
             f_is_canceled( false ),
+            f_is_active_condition(),
+            f_is_active_mutex(),
             f_request_condition(),
             f_status_condition(),
             f_client_status_condition(),
@@ -49,15 +51,18 @@ namespace mantis
 
     void run_context_dist::execute()
     {
+        f_is_active_mutex.lock();
         f_is_active.store( true );
         f_is_canceled.store( false );
+        f_is_active_condition.release();
+        f_is_active_mutex.unlock();
 
         while( ! f_is_canceled.load() )
         {
             int t_pull_result = pull_next_message( MSG_WAITALL );
             if( t_pull_result < 0 )
             {
-                cerr << "error in pulling message; aborting" << endl;
+                cerr << "[run_context_dist] error in pulling message; aborting" << endl;
                 cancel();
                 kill( 0, SIGINT );
             }
@@ -77,6 +82,19 @@ namespace mantis
         }
 
         f_is_active.store( false );
+        return;
+    }
+
+    void run_context_dist::wait_until_active()
+    {
+        f_is_active_mutex.lock();
+        if( f_is_active.load() )
+        {
+	    f_is_active_mutex.unlock();
+            return;
+        }
+        f_is_active_mutex.unlock();
+        f_is_active_condition.wait();
         return;
     }
 
