@@ -21,6 +21,7 @@ namespace mantis
 
         rapidjson::Value digitizer;
         digitizer.SetString( "px1500", 6 );
+        //digitizer.SetString( "test", 4 );
         AddMember( "digitizer", digitizer, GetAllocator() );
 
         rapidjson::Value buffer_size( 512 );
