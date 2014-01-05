@@ -68,6 +68,11 @@ protobuf_generate_cpp( Mantis_PB_Response_Source Mantis_PB_Response_Header ${CMA
 protobuf_generate_cpp( Mantis_PB_Block_Header_Source Mantis_PB_Block_Header_Header ${CMAKE_CURRENT_SOURCE_DIR}/Protobuf/block_header.proto )
 include_directories( ${CMAKE_CURRENT_BINARY_DIR} )
 
+# Threads
+
+find_package( Threads )
+pbuilder_add_ext_libraries( ${CMAKE_THREAD_LIBS_INIT} )
+
 
 # Boost as included with mantis
 
