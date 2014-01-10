@@ -94,9 +94,12 @@ namespace mantis
         // fourth configuration: command line arguments
         t_parser.RemoveMember( t_name_config.c_str() );
         t_parser.RemoveMember( t_name_json.c_str() );
+
         //std::cout << "removed config and json from parsed options" << std::endl;
         //t_parser.print();
         f_master_config += t_parser;
+        cout << "after += " << endl;
+        f_master_config.print();
 
         //std::cout << "fourth configuration complete" << std::endl;
         cout << "[configurator] final configuration:" << endl;
@@ -188,8 +191,12 @@ namespace mantis
 
     const std::string& configurator::get_string_required( const std::string& a_name )
     {
+        cout << "looking for <" << a_name << ">" << endl;
+        f_master_config.print();
+        cout << "should have it" << endl;
         if( f_master_config.HasMember( a_name.c_str() ) )
         {
+            cout << "got it" << endl;
             return f_string_buffer.assign( f_master_config[ a_name.c_str() ].GetString() );
         }
         throw exception() << "configurator does not have a value for <" << a_name << ">";
@@ -201,6 +208,11 @@ namespace mantis
             return f_string_buffer.assign( f_master_config[ a_name.c_str() ].GetString() );
         }
         return f_string_buffer.assign( a_default );
+    }
+
+    void configurator::show()
+    {
+        f_master_config.print();
     }
 
 
