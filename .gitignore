@@ -6,6 +6,7 @@
 *.hdf5
 *.out
 *.log
+*.swp
 .project
 .cproject
 .DS_Store
