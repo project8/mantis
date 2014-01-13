@@ -39,6 +39,8 @@ namespace mantis
             const std::string& get_string_required( const std::string& a_name );
             const std::string& get_string_optional( const std::string& a_name, const std::string& a_default );
 
+            void show();
+
         private:
             configuration f_master_config;
 

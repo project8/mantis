@@ -16,7 +16,7 @@ include_directories( ${PROJECT_SOURCE_DIR}/Server )
 
 # Option for a non-px1500 build, which includes only the client application
 set( Mantis_BUILD_SERVER FALSE CACHE BOOL "Flag to enable building of the server library and applications" )
-set( Mantis_INCLUDE_PX1500_SERVER TRUE CACHE BOOL "Flat to include the px1500 server; ignored unless the build-server flag is enabled" )
+set( Mantis_INCLUDE_PX1500_SERVER TRUE CACHE BOOL "Flag to include the px1500 server; ignored unless the build-server flag is enabled" )
 
 
 #######################
@@ -67,6 +67,11 @@ protobuf_generate_cpp( Mantis_PB_Client_Status_Source Mantis_PB_Client_Status_He
 protobuf_generate_cpp( Mantis_PB_Response_Source Mantis_PB_Response_Header ${CMAKE_CURRENT_SOURCE_DIR}/Protobuf/response.proto )
 protobuf_generate_cpp( Mantis_PB_Block_Header_Source Mantis_PB_Block_Header_Header ${CMAKE_CURRENT_SOURCE_DIR}/Protobuf/block_header.proto )
 include_directories( ${CMAKE_CURRENT_BINARY_DIR} )
+
+# Threads
+
+find_package( Threads )
+pbuilder_add_ext_libraries( ${CMAKE_THREAD_LIBS_INIT} )
 
 
 # Boost as included with mantis

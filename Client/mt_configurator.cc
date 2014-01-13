@@ -94,6 +94,7 @@ namespace mantis
         // fourth configuration: command line arguments
         t_parser.RemoveMember( t_name_config.c_str() );
         t_parser.RemoveMember( t_name_json.c_str() );
+
         //std::cout << "removed config and json from parsed options" << std::endl;
         //t_parser.print();
         f_master_config += t_parser;
@@ -201,6 +202,11 @@ namespace mantis
             return f_string_buffer.assign( f_master_config[ a_name.c_str() ].GetString() );
         }
         return f_string_buffer.assign( a_default );
+    }
+
+    void configurator::show()
+    {
+        f_master_config.print();
     }
 
 

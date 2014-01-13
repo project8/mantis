@@ -1,11 +1,13 @@
 *.pb.*
 *~
 #*
+*.swp
 *#
 *.h5
 *.hdf5
 *.out
 *.log
+*.swp
 .project
 .cproject
 .DS_Store

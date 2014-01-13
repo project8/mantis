@@ -79,6 +79,7 @@ settings from the previous stages:
     - `filename` (string; required) -- path and name of the data file to be created
     - `rate` (integer; required) -- digitization rate in MHz
     - `duration` (integer; required) -- time length of the data file in ms
+    - `description` (string; required) -- a description string for the egg header
     - `mode` (integer; required) -- digitizer-specific mode of operation
         - `PX1500`
             -  `0` = single channel
