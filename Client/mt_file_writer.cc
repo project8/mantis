@@ -74,11 +74,18 @@ namespace mantis
         f_header->SetDescription( a_request->description() );
         f_header->SetRunType( sRunTypeSignal );
         f_header->SetRunSource( sSourceMantis );
-        f_header->SetFormatMode( sFormatSingle );
 
         cout << "[file_writer] writing header..." << endl;
 
-        f_monarch->WriteHeader();
+        try
+	{ 
+            f_monarch->WriteHeader();
+        }
+        catch( MonarchException& e )
+	{
+            cerr << "[file_writer] error while writing header: " << e.what() << endl;
+            return false;
+	}
         f_monarch->SetInterface( sInterfaceInterleaved );
         f_record = f_monarch->GetRecordInterleaved();
 

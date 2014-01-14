@@ -112,7 +112,13 @@ namespace mantis
             }
             f_writer->set_buffer( f_buffer, f_buffer_condition );
             f_writer->configure( f_config );
-            f_writer->initialize( t_request );
+            if( ! f_writer->initialize( t_request ) )
+	    {
+                t_run_context->unlock_inbound();
+                delete t_run_context->get_connection();
+                delete t_run_context;
+                continue;
+	    }
 
             t_run_context->unlock_inbound();
 
