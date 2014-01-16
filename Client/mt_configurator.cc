@@ -21,8 +21,9 @@ using std::endl;
 namespace mantis
 {
 
-    configurator::configurator( int an_argc, char** an_argv, configuration* a_default ) :
+    configurator::configurator( int an_argc, char** an_argv, config_value_object* a_default ) :
             f_master_config(),
+            f_config_value_buffer( NULL ),
             f_string_buffer()
     {
         parser t_parser( an_argc, an_argv );
@@ -32,7 +33,7 @@ namespace mantis
         // first configuration: defaults
         if ( a_default != NULL )
         {
-            f_master_config += *a_default;
+            f_master_config.merge(a_default);
         }
 
         //std::cout << "first configuration complete" << std::endl;
@@ -44,7 +45,7 @@ namespace mantis
 
         // second configuration: config file
 
-        rapidjson::Value& t_config_filename = t_parser[t_name_config.c_str()];
+        string t_config_filename = t_parser[t_name_config];
         if ( t_config_filename.IsString() )
         {
             FILE* config_file = fopen( t_config_filename.GetString(), "r" );
