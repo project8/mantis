@@ -10,6 +10,8 @@
 
 #include "mt_config_node.hh"
 
+#include "mt_exception.hh"
+
 #include <string>
 
 namespace mantis
@@ -25,27 +27,10 @@ namespace mantis
             const config_value_object& config() const;
 
             template< typename XReturnType >
-            XReturnType get_required_value( const std::string& a_name );
+            XReturnType get( const std::string& a_name );
 
             template< typename XReturnType >
-            XReturnType get_optional_value( const std::string& a_name, XReturnType a_default );
-
-            bool get_bool_required( const std::string& a_name );
-            bool get_bool_optional( const std::string& a_name, bool a_default );
-
-            int get_int_required( const std::string& a_name );
-            int get_int_optional( const std::string& a_name, int a_default );
-
-            unsigned get_uint_required( const std::string& a_name );
-            unsigned get_uint_optional( const std::string& a_name, unsigned a_default );
-
-            double get_double_required( const std::string& a_name );
-            double get_double_optional( const std::string& a_name, double a_default );
-
-            const std::string& get_string_required( const std::string& a_name );
-            const std::string& get_string_optional( const std::string& a_name, const std::string& a_default );
-
-            void show();
+            XReturnType get( const std::string& a_name, XReturnType a_default );
 
         private:
             config_value_object f_master_config;
@@ -56,7 +41,7 @@ namespace mantis
     };
 
     template< typename XReturnType >
-    XReturnType configurator::get_required_value( const std::string& a_name )
+    XReturnType configurator::get( const std::string& a_name )
     {
         f_config_value_buffer = f_master_config.at( a_name );
         if( f_config_value_buffer->is_data() )
@@ -67,10 +52,10 @@ namespace mantis
     }
 
     template< typename XReturnType >
-    XReturnType configurator::get_optional_value( const std::string& a_name, XReturnType a_default )
+    XReturnType configurator::get( const std::string& a_name, XReturnType a_default )
     {
         f_config_value_buffer = f_master_config.at( a_name );
-        if( f_config_value_buffer->is_data() )
+        if( f_config_value_buffer != NULL && f_config_value_buffer->is_data() )
         {
             return static_cast< config_value_data* >( f_config_value_buffer )->value< XReturnType >();
         }

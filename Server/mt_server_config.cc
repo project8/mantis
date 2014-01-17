@@ -15,23 +15,19 @@ namespace mantis
 
     server_config::server_config()
     {
-        // default client configuration
-        rapidjson::Value port( 98342 );
-        AddMember( "port", port, GetAllocator() );
+        // default server configuration
 
-        rapidjson::Value digitizer;
-        digitizer.SetString( "px1500", 6 );
-        //digitizer.SetString( "test", 4 );
-        AddMember( "digitizer", digitizer, GetAllocator() );
+        config_value_data server_config;
 
-        rapidjson::Value buffer_size( 512 );
-        AddMember( "buffer-size", buffer_size, GetAllocator() );
+        add( "port", server_config << 98342 );
 
-        rapidjson::Value record_size( 4194304 );
-        AddMember( "record-size", record_size, GetAllocator() );
+        add( "digitizer", server_config << "px1500" );
 
-        rapidjson::Value data_chunk_size( 1024 );
-        AddMember( "data-chunk-size", data_chunk_size, GetAllocator() );
+        add( "buffer-size", server_config << 512 );
+
+        add( "record-size", server_config << 4194304 );
+
+        add( "data-chunk-size", server_config << 1024 );
     }
 
     server_config::~server_config()

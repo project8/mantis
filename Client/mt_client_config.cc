@@ -18,36 +18,26 @@ namespace mantis
     client_config::client_config()
     {
         // default client configuration
-        rapidjson::Value port( 98342 );
-        AddMember( "port", port, GetAllocator() );
 
-        rapidjson::Value host;
-        host.SetString( "localhost", 9 );
-        AddMember( "host", host, GetAllocator() );
+        config_value_data client_data;
 
-        rapidjson::Value client_port( 98343 );
-        AddMember( "client-port", client_port, GetAllocator() );
+        add( "port", client_data << 98342 );
 
-        rapidjson::Value client_host;
-        client_host.SetString( "localhost", 9 );
-        AddMember( "client-host", client_host, GetAllocator() );
+        add( "host", client_data << "localhost" );
 
-        rapidjson::Value filename;
-        filename.SetString( "mantis_client_out.egg", 21 );
-        AddMember( "file", filename, GetAllocator() );
+        add( "client-port", client_data << 98343 );
 
-        rapidjson::Value rate( 250.0 );
-        AddMember( "rate", rate, GetAllocator() );
+        add( "client-host", client_data << "localhost" );
 
-        rapidjson::Value duration( 1000 );
-        AddMember( "duration", duration, GetAllocator() );
+        add( "file", client_data << "mantis_client_out.egg" );
 
-        rapidjson::Value mode( 0 );
-        AddMember( "mode", mode, GetAllocator() );
+        add( "rate", client_data << 250.0 );
 
-        rapidjson::Value file_writer;
-        file_writer.SetString( "server" );
-        AddMember( "file-writer", file_writer, GetAllocator() );
+        add( "duration", client_data << 1000 );
+
+        add( "mode", client_data << 0 );
+
+        add( "file-writer", client_data << "server" );
     }
 
     client_config::~client_config()

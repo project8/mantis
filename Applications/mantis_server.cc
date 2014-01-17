@@ -45,6 +45,7 @@ using namespace mantis;
 using std::cerr;
 using std::cout;
 using std::endl;
+using std::string;
 
 int main( int argc, char** argv )
 {
@@ -53,16 +54,16 @@ int main( int argc, char** argv )
 
     cout << "[mantis_server] creating objects..." << endl;
 
-    size_t t_buffer_size = t_config.get_int_required( "buffer-size" );
-    size_t t_record_size = t_config.get_int_required( "record-size" );
-    size_t t_data_chunk_size = t_config.get_int_required( "data-chunk-size" );
+    size_t t_buffer_size = t_config.get< int >( "buffer-size" );
+    size_t t_record_size = t_config.get< int >( "record-size" );
+    size_t t_data_chunk_size = t_config.get< int >( "data-chunk-size" );
 
     // set up the server and request receiver
 
     server* t_server;
     try
     {
-        t_server = new server( t_config.get_int_required( "port" ) );
+        t_server = new server( t_config.get< int >( "port" ) );
     }
     catch( exception& e )
     {
@@ -88,10 +89,10 @@ int main( int argc, char** argv )
     try
     {
         t_dig_factory = factory< digitizer >::get_instance();
-        t_digitizer = t_dig_factory->create( t_config.get_string_required( "digitizer" ) );
+        t_digitizer = t_dig_factory->create( t_config.get< string >( "digitizer" ) );
         if( t_digitizer == NULL )
         {
-            cerr << "[mantis_server] could not create digitizer <" << t_config.get_string_required( "digitizer" ) << ">; aborting" << endl;
+            cerr << "[mantis_server] could not create digitizer <" << t_config.get< string >( "digitizer" ) << ">; aborting" << endl;
             delete t_server;
             return -1;
         }

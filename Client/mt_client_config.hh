@@ -8,12 +8,12 @@
 #ifndef MT_CLIENT_CONFIG_HH_
 #define MT_CLIENT_CONFIG_HH_
 
-#include "mt_configuration.hh"
+#include "mt_config_node.hh"
 
 namespace mantis
 {
 
-    class client_config : public configuration
+    class client_config : public config_value_object
     {
         public:
             client_config();

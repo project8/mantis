@@ -31,7 +31,7 @@ namespace mantis
 
     void network_writer::configure( configurator* a_config )
     {
-        set_data_chunk_size( a_config->get_int_required( "data-chunk-size" ));
+        set_data_chunk_size( a_config->get< int >( "data-chunk-size" ));
         return;
     }
 
