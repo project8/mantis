@@ -43,7 +43,7 @@ namespace mantis
         // second configuration: config file
         if( t_parser.has( t_name_config ) )
         {
-            string t_config_filename = t_parser.data_at( t_name_config )->value();
+            string t_config_filename = t_parser.data_at( t_name_config )->get();
             if( ! t_config_filename.empty() )
             {
                 param_node* t_config_from_file = config_maker_json::read_file( t_config_filename );
@@ -63,7 +63,7 @@ namespace mantis
         // third configuration: command line json
         if( t_parser.has( t_name_json ) )
         {
-            string t_config_json = t_parser.data_at( t_name_json )->value();
+            string t_config_json = t_parser.data_at( t_name_json )->get();
             if( ! t_config_json.empty() )
             {
                 param_node* t_config_from_json = config_maker_json::read_string( t_config_json );

@@ -34,19 +34,15 @@ namespace mantis
             virtual bool is_null() const;
             virtual bool is_data() const;
             virtual bool is_array() const;
-            virtual bool is_object() const;
+            virtual bool is_node() const;
 
-            virtual const param& operator/(const std::string&) const;
-
-/*
             param_data& as_data();
             param_array& as_array();
-            param_node& as_object();
+            param_node& as_node();
 
             const param_data& as_data() const;
             const param_array& as_array() const;
-            const param_node& as_object() const;
-*/
+            const param_node& as_node() const;
 
             virtual std::string to_string() const;
 
@@ -64,9 +60,9 @@ namespace mantis
 
             virtual bool is_data() const;
 
-            const std::string& value() const;
+            const std::string& get() const;
             template< typename XValType >
-            XValType value();
+            XValType get();
 
             template< typename XStreamableType >
             param_data& operator<<( const XStreamableType& a_streamable );
@@ -80,7 +76,7 @@ namespace mantis
     };
 
     template< typename XValType >
-    XValType param_data::value()
+    XValType param_data::get()
     {
         XValType t_return;
         f_data_str >> t_return;
@@ -125,9 +121,7 @@ namespace mantis
 
             virtual param* clone() const;
 
-            virtual bool is_object() const;
-
-            virtual const param& operator/(const std::string& a_name) const;
+            virtual bool is_node() const;
 
             bool has( const std::string& a_name ) const;
             unsigned count( const std::string& a_name ) const;
@@ -145,8 +139,8 @@ namespace mantis
             const param_array* array_at( const std::string& a_name ) const;
             param_array* array_at( const std::string& a_name );
 
-            const param_node* object_at( const std::string& a_name ) const;
-            param_node* object_at( const std::string& a_name );
+            const param_node* node_at( const std::string& a_name ) const;
+            param_node* node_at( const std::string& a_name );
 
             /// Returns a reference to the param corresponding to a_name.
             /// Throws an exception if a_name is not present.

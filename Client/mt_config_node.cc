@@ -60,47 +60,46 @@ namespace mantis
         return false;
     }
 
-    bool param::is_object() const
+    bool param::is_node() const
     {
         return false;
     }
 
-    const param& param::operator/(const std::string&) const
-    {
-        return *this;
-    }
-
-/*
     param_data& param::as_data()
     {
-        return static_cast< param_data >( *this );
+        param_data* t_cast_ptr = static_cast< param_data* >( this );
+        return *t_cast_ptr;
     }
 
     param_array& param::as_array()
     {
-        return static_cast< param_array >( *this );
+        param_array* t_cast_ptr = static_cast< param_array* >( this );
+        return *t_cast_ptr;
     }
 
-    param_node& param::as_object()
+    param_node& param::as_node()
     {
-        return static_cast< param_node >( *this );
+        param_node* t_cast_ptr = static_cast< param_node* >( this );
+        return *t_cast_ptr;
     }
 
     const param_data& param::as_data() const
     {
-        return static_cast< param_data >( *this );
+        const param_data* t_cast_ptr = static_cast< const param_data* >( this );
+        return *t_cast_ptr;
     }
 
     const param_array& param::as_array() const
     {
-        return static_cast< param_array >( *this );
+        const param_array* t_cast_ptr = static_cast< const param_array* >( this );
+        return *t_cast_ptr;
     }
 
-    const param_node& param::as_object() const
+    const param_node& param::as_node() const
     {
-        return static_cast< param_node >( *this );
+        const param_node* t_cast_ptr = static_cast< const param_node* >( this );
+        return *t_cast_ptr;
     }
-*/
 
     std::string param::to_string() const
     {
@@ -138,7 +137,7 @@ namespace mantis
         return true;
     }
 
-    const string& param_data::value() const
+    const string& param_data::get() const
     {
         f_data_buffer = f_data_str.str();
         return f_data_buffer;
@@ -215,14 +214,9 @@ namespace mantis
         return new param_node( *this );
     }
 
-    bool param_node::is_object() const
+    bool param_node::is_node() const
     {
         return true;
-    }
-
-    const param& param_node::operator/(const std::string& a_name) const
-    {
-        return (*this)[a_name];
     }
 
     bool param_node::has( const std::string& a_name ) const
@@ -262,7 +256,7 @@ namespace mantis
         {
             return NULL;
         }
-        return static_cast< const param_data* >(it->second);
+        return it->second->as_data();
     }
 
     param_data* param_node::data_at( const std::string& a_name )
@@ -272,7 +266,7 @@ namespace mantis
         {
             return NULL;
         }
-        return static_cast< param_data* >(it->second);
+        return it->second->as_data();
     }
 
     const param_array* param_node::array_at( const std::string& a_name ) const
@@ -282,7 +276,7 @@ namespace mantis
         {
             return NULL;
         }
-        return static_cast< const param_array* >(it->second);
+        return it->second->as_array();
     }
 
     param_array* param_node::array_at( const std::string& a_name )
@@ -295,24 +289,24 @@ namespace mantis
         return static_cast< param_array* >(it->second);
     }
 
-    const param_node* param_node::object_at( const std::string& a_name ) const
+    const param_node* param_node::node_at( const std::string& a_name ) const
     {
         const_iterator it = f_contents.find( a_name );
         if( it == f_contents.end() )
         {
             return NULL;
         }
-        return static_cast< const param_node* >(it->second);
+        return it->second->as_node();
     }
 
-    param_node* param_node::object_at( const std::string& a_name )
+    param_node* param_node::node_at( const std::string& a_name )
     {
         iterator it = f_contents.find( a_name );
         if( it == f_contents.end() )
         {
             return NULL;
         }
-        return static_cast< param_node* >(it->second);
+        return it->second->as_node();
     }
 
     const param& param_node::operator[]( const std::string& a_name ) const

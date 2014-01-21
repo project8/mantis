@@ -46,7 +46,7 @@ namespace mantis
         f_param_buffer = f_master_config.at( a_name );
         if( f_param_buffer->is_data() )
         {
-            return static_cast< param_data* >( f_param_buffer )->value< XReturnType >();
+            return f_param_buffer->as_data().get< XReturnType >();
         }
         throw exception() << "configurator does not have a value for <" << a_name << ">";
     }
@@ -57,7 +57,7 @@ namespace mantis
         f_param_buffer = f_master_config.at( a_name );
         if( f_param_buffer != NULL && f_param_buffer->is_data() )
         {
-            return static_cast< param_data* >( f_param_buffer )->value< XReturnType >();
+            return f_param_buffer->as_data().get< XReturnType >();
         }
         return a_default;
 
