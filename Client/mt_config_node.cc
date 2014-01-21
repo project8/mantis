@@ -153,17 +153,27 @@ namespace mantis
     //************************************
 
     param_array::param_array() :
-            param()
+            param(),
+            f_contents()
     {
     }
 
     param_array::param_array( const param_array& orig ) :
-            param( orig )
+            param( orig ),
+            f_contents( orig.f_contents.size() )
     {
+        for( unsigned ind = 0; ind < f_contents.size(); ++ind )
+        {
+            this->assign( ind, orig[ ind ].clone() );
+        }
     }
 
     param_array::~param_array()
     {
+        for( unsigned ind = 0; ind < f_contents.size(); ++ind )
+        {
+            delete f_contents[ ind ];
+        }
     }
 
     param* param_array::clone() const
@@ -176,10 +186,203 @@ namespace mantis
         return true;
     }
 
+    unsigned param_array::size() const
+    {
+        return f_contents.size();
+    }
+    bool param_array::empty() const
+    {
+        return f_contents.empty();
+    }
+
+    /// sets the size of the array
+    /// if smaller than the current size, extra elements are deleted
+    void param_array::resize( unsigned a_size )
+    {
+        unsigned curr_size = f_contents.size();
+        for( unsigned ind = a_size; ind < curr_size; ++ind )
+        {
+            delete f_contents[ ind ];
+        }
+        f_contents.resize( a_size );
+        return;
+    }
+
+    /// Returns a pointer to the param corresponding to a_name.
+    /// Returns NULL if a_name is not present.
+    const param* param_array::at( unsigned a_index ) const
+    {
+        if( a_index >= f_contents.size() ) return NULL;
+        return f_contents[ a_index ];
+    }
+    param* param_array::at( unsigned a_index )
+    {
+        if( a_index >= f_contents.size() ) return NULL;
+        return f_contents[ a_index ];
+    }
+
+    const param_value* param_array::value_at( unsigned a_index ) const
+    {
+        if( a_index >= f_contents.size() ) return NULL;
+        return &f_contents[ a_index ]->as_value();
+    }
+    param_value* param_array::value_at( unsigned a_index )
+    {
+        if( a_index >= f_contents.size() ) return NULL;
+        return &f_contents[ a_index ]->as_value();
+    }
+
+    const param_array* param_array::array_at( unsigned a_index ) const
+    {
+        if( a_index >= f_contents.size() ) return NULL;
+        return &f_contents[ a_index ]->as_array();
+    }
+    param_array* param_array::array_at( unsigned a_index )
+    {
+        if( a_index >= f_contents.size() ) return NULL;
+        return &f_contents[ a_index ]->as_array();
+    }
+
+    const param_node* param_array::node_at( unsigned a_index ) const
+    {
+        if( a_index >= f_contents.size() ) return NULL;
+        return &f_contents[ a_index ]->as_node();
+    }
+    param_node* param_array::node_at( unsigned a_index )
+    {
+        if( a_index >= f_contents.size() ) return NULL;
+        return &f_contents[ a_index ]->as_node();
+    }
+
+    const param& param_array::operator[]( unsigned a_index ) const
+    {
+        return *f_contents[ a_index ];
+    }
+    param& param_array::operator[]( unsigned a_index )
+    {
+        return *f_contents[ a_index ];
+    }
+
+    const param* param_array::front() const
+    {
+        return f_contents.front();
+    }
+    param* param_array::front()
+    {
+        return f_contents.front();
+    }
+
+    const param* param_array::back() const
+    {
+        return f_contents.back();
+    }
+    param* param_array::back()
+    {
+        return f_contents.back();
+    }
+
+    // assign a copy of a_value to the array at a_index
+    void param_array::assign( unsigned a_index, const param& a_value )
+    {
+        erase( a_index );
+        f_contents[ a_index ] = a_value.clone();
+        return;
+    }
+    // directly assign a_value_ptr to the array at a_index
+    void param_array::assign( unsigned a_index, param* a_value_ptr )
+    {
+        erase( a_index );
+        f_contents[ a_index ] = a_value_ptr;
+        return;
+    }
+
+    void param_array::push_back( const param& a_value )
+    {
+        f_contents.push_back( a_value.clone() );
+        return;
+    }
+    void param_array::push_back( param* a_value_ptr )
+    {
+        f_contents.push_back( a_value_ptr );
+        return;
+    }
+
+    void param_array::push_front( const param& a_value )
+    {
+        f_contents.push_front( a_value.clone() );
+        return;
+    }
+    void param_array::push_front( param* a_value_ptr )
+    {
+        f_contents.push_front( a_value_ptr );
+        return;
+    }
+
+    void param_array::erase( unsigned a_index )
+    {
+        delete f_contents[ a_index ];
+        return;
+    }
+    param* param_array::remove( unsigned a_index )
+    {
+        param* t_current = f_contents[ a_index ];
+        f_contents[ a_index ] = NULL;
+        return t_current;
+    }
+
+    param_array::iterator param_array::begin()
+    {
+        return f_contents.begin();
+    }
+    param_array::const_iterator param_array::begin() const
+    {
+        return f_contents.begin();
+    }
+
+    param_array::iterator param_array::end()
+    {
+        return f_contents.end();
+    }
+    param_array::const_iterator param_array::end() const
+    {
+        return f_contents.end();
+    }
+
+    param_array::reverse_iterator param_array::rbegin()
+    {
+        return f_contents.rbegin();
+    }
+    param_array::const_reverse_iterator param_array::rbegin() const
+    {
+        return f_contents.rbegin();
+    }
+
+    param_array::reverse_iterator param_array::rend()
+    {
+        return f_contents.rend();
+    }
+    param_array::const_reverse_iterator param_array::rend() const
+    {
+        return f_contents.rend();
+    }
+
     std::string param_array::to_string() const
     {
-        return string("array printing is not yet implemented");
+        stringstream out;
+        string indentation;
+        for ( unsigned i=0; i<param::s_indent_level; ++i )
+            indentation += "    ";
+        out << '\n' << indentation << "[\n";
+        param::s_indent_level++;
+        for( const_iterator it = begin(); it != end(); ++it )
+        {
+            out << indentation << "    " << **it << '\n';
+        }
+        param::s_indent_level--;
+        out << indentation << "]\n";
+        return out.str();
     }
+
 
     //************************************
     //***********  OBJECT  ***************
@@ -452,20 +655,6 @@ namespace mantis
     std::ostream& operator<<(std::ostream& out, const param_node& a_value)
     {
         return out << a_value.to_string();
-        /*
-        string indentation;
-        for (unsigned i=0; i<param::s_indent_level; ++i)
-            indentation += "    ";
-        out << '\n' << indentation << "{\n";
-        param::s_indent_level++;
-        for( param_node::const_iterator it = a_value.begin(); it != a_value.end(); ++it )
-        {
-            out << indentation << '\t' << it->first << " : " << it->second << '\n';
-        }
-        param::s_indent_level--;
-        out << '\n' << indentation << "}\n";
-        return out;
-        */
     }
 
 
@@ -544,7 +733,12 @@ namespace mantis
         if( a_value.IsArray() )
         {
             param_array* t_config_array = new param_array();
-            // TODO: implement array reading!
+            for( rapidjson::Value::ConstValueIterator jsonIt = a_value.Begin();
+                    jsonIt != a_value.End();
+                    ++jsonIt)
+            {
+                t_config_array->push_back( param_input_json::read_value( *jsonIt ) );
+            }
             return t_config_array;
         }
         if( a_value.IsString() )

@@ -10,6 +10,7 @@
 
 #include "document.h"
 
+#include <deque>
 #include <map>
 #include <sstream>
 #include <string>
@@ -95,6 +96,14 @@ namespace mantis
     class param_array : public param
     {
         public:
+            typedef std::deque< param* > contents;
+            typedef contents::iterator iterator;
+            typedef contents::const_iterator const_iterator;
+            typedef contents::reverse_iterator reverse_iterator;
+            typedef contents::const_reverse_iterator const_reverse_iterator;
+            typedef contents::value_type contents_type;
+
+        public:
             param_array();
             param_array( const param_array& orig );
             virtual ~param_array();
@@ -103,8 +112,84 @@ namespace mantis
 
             virtual bool is_array() const;
 
+            unsigned size() const;
+            bool empty() const;
+
+            /// sets the size of the array
+            /// if smaller than the current size, extra elements are deleted
+            void resize( unsigned a_size );
+
+            /// Returns a pointer to the param corresponding to a_name.
+            /// Returns NULL if a_name is not present.
+            const param* at( unsigned a_index ) const;
+            /// Returns a pointer to the param corresponding to a_name.
+            /// Returns NULL if a_name is not present.
+            param* at( unsigned a_index );
+
+            /// Returns a pointer to the param_value (static-ly cast) corresponding to a_name.
+            /// Returns NULL if a_name is not present.
+            const param_value* value_at( unsigned a_index ) const;
+            /// Returns a pointer to the param_value (static-ly cast) corresponding to a_name.
+            /// Returns NULL if a_name is not present.
+            param_value* value_at( unsigned a_index );
+
+            /// Returns a pointer to the param_array (static-ly cast) corresponding to a_name.
+            /// Returns NULL if a_name is not present.
+            const param_array* array_at( unsigned a_index ) const;
+            /// Returns a pointer to the param_array (static-ly cast) corresponding to a_name.
+            /// Returns NULL if a_name is not present.
+            param_array* array_at( unsigned a_index );
+
+            /// Returns a pointer to the param_node (static-ly cast) corresponding to a_name.
+            /// Returns NULL if a_name is not present.
+            const param_node* node_at( unsigned a_index ) const;
+            /// Returns a pointer to the param_node (static-ly cast) corresponding to a_name.
+            /// Returns NULL if a_name is not present.
+            param_node* node_at( unsigned a_index );
+
+            /// Returns a reference to the param at a_index.
+            /// Behavior is undefined if a_index is out-of-range.
+            const param& operator[]( unsigned a_index ) const;
+            /// Returns a reference to the param at a_index.
+            /// Behavior is undefined if a_index is out-of-range.
+            param& operator[]( unsigned a_index );
+
+            const param* front() const;
+            param* front();
+
+            const param* back() const;
+            param* back();
+
+            // assign a copy of a_value to the array at a_index
+            void assign( unsigned a_index, const param& a_value );
+            // directly assign a_value_ptr to the array at a_index
+            void assign( unsigned a_index, param* a_value_ptr );
+
+            void push_back( const param& a_value );
+            void push_back( param* a_value_ptr );
+
+            void push_front( const param& a_value );
+            void push_front( param* a_value_ptr );
+
+            void erase( unsigned a_index );
+            param* remove( unsigned a_index );
+
+            iterator begin();
+            const_iterator begin() const;
+
+            iterator end();
+            const_iterator end() const;
+
+            reverse_iterator rbegin();
+            const_reverse_iterator rbegin() const;
+
+            reverse_iterator rend();
+            const_reverse_iterator rend() const;
+
             virtual std::string to_string() const;
 
+        protected:
+            contents f_contents;
     };
 
     class param_node : public param
