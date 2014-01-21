@@ -256,7 +256,7 @@ namespace mantis
         {
             return NULL;
         }
-        return it->second->as_data();
+        return &it->second->as_data();
     }
 
     param_data* param_node::data_at( const std::string& a_name )
@@ -266,7 +266,7 @@ namespace mantis
         {
             return NULL;
         }
-        return it->second->as_data();
+        return &it->second->as_data();
     }
 
     const param_array* param_node::array_at( const std::string& a_name ) const
@@ -276,7 +276,7 @@ namespace mantis
         {
             return NULL;
         }
-        return it->second->as_array();
+        return &it->second->as_array();
     }
 
     param_array* param_node::array_at( const std::string& a_name )
@@ -286,7 +286,7 @@ namespace mantis
         {
             return NULL;
         }
-        return static_cast< param_array* >(it->second);
+        return &it->second->as_array();
     }
 
     const param_node* param_node::node_at( const std::string& a_name ) const
@@ -296,7 +296,7 @@ namespace mantis
         {
             return NULL;
         }
-        return it->second->as_node();
+        return &it->second->as_node();
     }
 
     param_node* param_node::node_at( const std::string& a_name )
@@ -306,7 +306,7 @@ namespace mantis
         {
             return NULL;
         }
-        return it->second->as_node();
+        return &it->second->as_node();
     }
 
     const param& param_node::operator[]( const std::string& a_name ) const

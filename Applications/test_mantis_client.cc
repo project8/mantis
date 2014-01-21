@@ -75,7 +75,7 @@ int main( int argc, char** argv )
 {
     parser t_parser( argc, argv );
 
-    client* t_client = new client( t_parser.data_at( "host" )->value(), t_parser.data_at( "port" )->value< int >() );
+    client* t_client = new client( t_parser.data_at( "host" )->get(), t_parser.data_at( "port" )->get< int >() );
     run_context_dist* t_run_context = new run_context_dist();
     t_run_context->set_connection( t_client );
 
