@@ -26,12 +26,12 @@ namespace mantis
             {
                 std::string t_name(t_argument.substr( 0, t_val_pos ));
 
-                param_data* new_data = new param_data();
-                *new_data << t_argument.substr( t_val_pos + 1 );
+                param_value* new_value = new param_value();
+                *new_value << t_argument.substr( t_val_pos + 1 );
 
-                //std::cout << "(parser) adding < " << t_name << "<" << t_type << "> > = <" << new_data.value() << ">" << std::endl;
+                //std::cout << "(parser) adding < " << t_name << "<" << t_type << "> > = <" << new_value.value() << ">" << std::endl;
 
-                this->replace( t_name, new_data );
+                this->replace( t_name, new_value );
 
                 continue;
             }

@@ -44,9 +44,9 @@ namespace mantis
     XReturnType configurator::get( const std::string& a_name )
     {
         f_param_buffer = f_master_config.at( a_name );
-        if( f_param_buffer->is_data() )
+        if( f_param_buffer->is_value() )
         {
-            return f_param_buffer->as_data().get< XReturnType >();
+            return f_param_buffer->as_value().get< XReturnType >();
         }
         throw exception() << "configurator does not have a value for <" << a_name << ">";
     }
@@ -55,9 +55,9 @@ namespace mantis
     XReturnType configurator::get( const std::string& a_name, XReturnType a_default )
     {
         f_param_buffer = f_master_config.at( a_name );
-        if( f_param_buffer != NULL && f_param_buffer->is_data() )
+        if( f_param_buffer != NULL && f_param_buffer->is_value() )
         {
-            return f_param_buffer->as_data().get< XReturnType >();
+            return f_param_buffer->as_value().get< XReturnType >();
         }
         return a_default;
 

@@ -75,14 +75,14 @@ int main( int argc, char** argv )
 {
     parser t_parser( argc, argv );
 
-    client* t_client = new client( t_parser.data_at( "host" )->get(), t_parser.data_at( "port" )->get< int >() );
+    client* t_client = new client( t_parser.value_at( "host" )->get(), t_parser.value_at( "port" )->get< int >() );
     run_context_dist* t_run_context = new run_context_dist();
     t_run_context->set_connection( t_client );
 
     request* t_request = t_run_context->lock_request_out();
     t_request->set_write_host( "" );
     t_request->set_write_port( -1 );
-    t_request->set_file( "/data/ohgod.egg" );
+    t_request->set_file( "/value/ohgod.egg" );
     t_request->set_description( "junk" );
     t_request->set_date( get_absolute_time_string() );
     t_request->set_mode( request_mode_t_single );

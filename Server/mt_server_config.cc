@@ -17,7 +17,7 @@ namespace mantis
     {
         // default server configuration
 
-        param_data server_config;
+        param_value server_config;
 
         add( "port", server_config << 98342 );
 
@@ -27,7 +27,7 @@ namespace mantis
 
         add( "record-size", server_config << 4194304 );
 
-        add( "data-chunk-size", server_config << 1024 );
+        add( "value-chunk-size", server_config << 1024 );
     }
 
     server_config::~server_config()

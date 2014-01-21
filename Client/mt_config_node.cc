@@ -50,7 +50,7 @@ namespace mantis
         return true;
     }
 
-    bool param::is_data() const
+    bool param::is_value() const
     {
         return false;
     }
@@ -65,9 +65,9 @@ namespace mantis
         return false;
     }
 
-    param_data& param::as_data()
+    param_value& param::as_value()
     {
-        param_data* t_cast_ptr = static_cast< param_data* >( this );
+        param_value* t_cast_ptr = static_cast< param_value* >( this );
         return *t_cast_ptr;
     }
 
@@ -83,9 +83,9 @@ namespace mantis
         return *t_cast_ptr;
     }
 
-    const param_data& param::as_data() const
+    const param_value& param::as_value() const
     {
-        const param_data* t_cast_ptr = static_cast< const param_data* >( this );
+        const param_value* t_cast_ptr = static_cast< const param_value* >( this );
         return *t_cast_ptr;
     }
 
@@ -110,42 +110,42 @@ namespace mantis
     //***********  DATA  *****************
     //************************************
 
-    param_data::param_data() :
+    param_value::param_value() :
             param(),
-            f_data_str()
+            f_value_str()
     {
     }
 
-    param_data::param_data( const param_data& orig ) :
+    param_value::param_value( const param_value& orig ) :
             param( orig ),
-            f_data_str()
+            f_value_str()
     {
-        f_data_str << orig.f_data_str.str();
+        f_value_str << orig.f_value_str.str();
     }
 
-    param_data::~param_data()
+    param_value::~param_value()
     {
     }
 
-    param* param_data::clone() const
+    param* param_value::clone() const
     {
-        return new param_data( *this );
+        return new param_value( *this );
     }
 
-    bool param_data::is_data() const
+    bool param_value::is_value() const
     {
         return true;
     }
 
-    const string& param_data::get() const
+    const string& param_value::get() const
     {
-        f_data_buffer = f_data_str.str();
-        return f_data_buffer;
+        f_value_buffer = f_value_str.str();
+        return f_value_buffer;
     }
 
-    std::string param_data::to_string() const
+    std::string param_value::to_string() const
     {
-        return string(f_data_str.str());
+        return string(f_value_str.str());
     }
 
     //************************************
@@ -249,24 +249,24 @@ namespace mantis
         return it->second;
     }
 
-    const param_data* param_node::data_at( const std::string& a_name ) const
+    const param_value* param_node::value_at( const std::string& a_name ) const
     {
         const_iterator it = f_contents.find( a_name );
         if( it == f_contents.end() )
         {
             return NULL;
         }
-        return &it->second->as_data();
+        return &it->second->as_value();
     }
 
-    param_data* param_node::data_at( const std::string& a_name )
+    param_value* param_node::value_at( const std::string& a_name )
     {
         iterator it = f_contents.find( a_name );
         if( it == f_contents.end() )
         {
             return NULL;
         }
-        return &it->second->as_data();
+        return &it->second->as_value();
     }
 
     const param_array* param_node::array_at( const std::string& a_name ) const
@@ -437,7 +437,7 @@ namespace mantis
     }
 
 
-    std::ostream& operator<<(std::ostream& out, const param_data& a_value)
+    std::ostream& operator<<(std::ostream& out, const param_value& a_value)
     {
         return out << a_value.to_string();
     }
@@ -472,14 +472,14 @@ namespace mantis
 
 
 
-    config_maker_json::config_maker_json()
+    param_input_json::param_input_json()
     {
     }
-    config_maker_json::~config_maker_json()
+    param_input_json::~param_input_json()
     {
     }
 
-    param_node* config_maker_json::read_file( const std::string& a_filename )
+    param_node* param_input_json::read_file( const std::string& a_filename )
     {
         FILE* t_config_file = fopen( a_filename.c_str(), "r" );
         if( t_config_file == NULL )
@@ -498,10 +498,10 @@ namespace mantis
         }
         fclose( t_config_file );
 
-        return config_maker_json::read_document( t_config_doc );
+        return param_input_json::read_document( t_config_doc );
     }
 
-    param_node* config_maker_json::read_string( const std::string& a_json_string )
+    param_node* param_input_json::read_string( const std::string& a_json_string )
     {
         rapidjson::Document t_config_doc;
         if( t_config_doc.Parse<0>( a_json_string.c_str() ).HasParseError() )
@@ -509,22 +509,22 @@ namespace mantis
             std::cerr << "error parsing string:\n" << t_config_doc.GetParseError() << std::endl;
             return NULL;
         }
-        return config_maker_json::read_document( t_config_doc );
+        return param_input_json::read_document( t_config_doc );
     }
 
-    param_node* config_maker_json::read_document( const rapidjson::Document& a_doc )
+    param_node* param_input_json::read_document( const rapidjson::Document& a_doc )
     {
         param_node* t_config = new param_node();
         for( rapidjson::Value::ConstMemberIterator jsonIt = a_doc.MemberBegin();
                 jsonIt != a_doc.MemberEnd();
                 ++jsonIt)
         {
-            t_config->replace( jsonIt->name.GetString(), config_maker_json::read_value( jsonIt->value ) );
+            t_config->replace( jsonIt->name.GetString(), param_input_json::read_value( jsonIt->value ) );
         }
         return t_config;
     }
 
-    param* config_maker_json::read_value( const rapidjson::Value& a_value )
+    param* param_input_json::read_value( const rapidjson::Value& a_value )
     {
         if( a_value.IsNull() )
         {
@@ -537,7 +537,7 @@ namespace mantis
                     jsonIt != a_value.MemberEnd();
                     ++jsonIt)
             {
-                t_config_object->replace( jsonIt->name.GetString(), config_maker_json::read_value( jsonIt->value ) );
+                t_config_object->replace( jsonIt->name.GetString(), param_input_json::read_value( jsonIt->value ) );
             }
             return t_config_object;
         }
@@ -549,193 +549,48 @@ namespace mantis
         }
         if( a_value.IsString() )
         {
-            param_data* t_config_data = new param_data();
-            (*t_config_data) << a_value.GetString();
-            return t_config_data;
+            param_value* t_config_value = new param_value();
+            (*t_config_value) << a_value.GetString();
+            return t_config_value;
         }
         if( a_value.IsBool() )
         {
-            param_data* t_config_data = new param_data();
-            (*t_config_data) << a_value.GetBool();
-            return t_config_data;
+            param_value* t_config_value = new param_value();
+            (*t_config_value) << a_value.GetBool();
+            return t_config_value;
         }
         if( a_value.IsInt() )
         {
-            param_data* t_config_data = new param_data();
-            (*t_config_data) << a_value.GetInt();
-            return t_config_data;
+            param_value* t_config_value = new param_value();
+            (*t_config_value) << a_value.GetInt();
+            return t_config_value;
         }
         if( a_value.IsUint() )
         {
-            param_data* t_config_data = new param_data();
-            (*t_config_data) << a_value.GetUint();
-            return t_config_data;
+            param_value* t_config_value = new param_value();
+            (*t_config_value) << a_value.GetUint();
+            return t_config_value;
         }
         if( a_value.IsInt64() )
         {
-            param_data* t_config_data = new param_data();
-            (*t_config_data) << a_value.GetInt64();
-            return t_config_data;
+            param_value* t_config_value = new param_value();
+            (*t_config_value) << a_value.GetInt64();
+            return t_config_value;
         }
         if( a_value.IsUint64() )
         {
-            param_data* t_config_data = new param_data();
-            (*t_config_data) << a_value.GetUint64();
-            return t_config_data;
+            param_value* t_config_value = new param_value();
+            (*t_config_value) << a_value.GetUint64();
+            return t_config_value;
         }
         if( a_value.IsDouble() )
         {
-            param_data* t_config_data = new param_data();
-            (*t_config_data) << a_value.GetDouble();
-            return t_config_data;
+            param_value* t_config_value = new param_value();
+            (*t_config_value) << a_value.GetDouble();
+            return t_config_value;
         }
         std::cout << "(config_reader_json) unknown type; returning null value" << std::endl;
         return new param();
     }
-
-/*
-
-
-
-    // private constructor
-    config_node::config_node() :
-            f_name(),
-            f_parent( NULL )
-    {
-    }
-
-    config_node::config_node(const std::string& a_name) :
-            f_name( a_name ),
-            f_parent( NULL )
-    {
-    }
-
-    config_node::config_node(const config_node& orig) :
-            f_name( orig.f_name ),
-            f_parent( NULL )
-    {
-    }
-
-    config_node::~config_node()
-    {
-    }
-
-    const std::string& config_node::name() const
-    {
-        return f_name;
-    }
-
-    void config_node::set_name(const std::string& a_name)
-    {
-        f_name = a_name;
-        return;
-    }
-
-    config_node* config_node::parent() const
-    {
-        return f_parent;
-    }
-
-
-
-    config_node_null::config_node_null() :
-            param(),
-            config_node()
-    {
-    }
-
-    config_node_null::config_node_null(const std::string& a_name) :
-            param(),
-            config_node( a_name )
-    {
-    }
-
-    config_node_null::config_node_null(const config_node_data& orig) :
-            param( orig ),
-            config_node( orig )
-    {
-    }
-
-    config_node_null::~config_node_null()
-    {
-    }
-
-
-
-
-
-    config_node_data::config_node_data() :
-            param_data(),
-            config_node()
-    {
-    }
-
-    config_node_data::config_node_data(const std::string& a_name) :
-            param_data(),
-            config_node( a_name )
-    {
-    }
-
-    config_node_data::config_node_data(const config_node_data& orig) :
-            param_data( orig ),
-            config_node( orig )
-    {
-    }
-
-    config_node_data::~config_node_data()
-    {
-    }
-
-
-
-
-    config_node_array::config_node_array() :
-            param_array(),
-            config_node()
-    {
-    }
-
-    config_node_array::config_node_array(const std::string& a_name) :
-            param_array(),
-            config_node( a_name )
-    {
-    }
-
-    config_node_array::config_node_array(const config_node_array& orig) :
-            param_array( orig ),
-            config_node( orig )
-    {
-    }
-
-    config_node_array::~config_node_array()
-    {
-    }
-
-
-
-
-    config_node_object::config_node_object() :
-            param_node(),
-            config_node()
-    {
-    }
-
-    config_node_object::config_node_object(const std::string& a_name) :
-            param_node(),
-            config_node( a_name )
-    {
-    }
-
-    config_node_object::config_node_object(const config_node_object& orig) :
-            param_node( orig ),
-            config_node( orig )
-    {
-    }
-
-    config_node_object::~config_node_object()
-    {
-    }
-
-*/
 
 } /* namespace Katydid */

@@ -18,7 +18,7 @@
 
 namespace mantis
 {
-    class param_data;
+    class param_value;
     class param_array;
     class param_node;
 
@@ -32,15 +32,15 @@ namespace mantis
             virtual param* clone() const;
 
             virtual bool is_null() const;
-            virtual bool is_data() const;
+            virtual bool is_value() const;
             virtual bool is_array() const;
             virtual bool is_node() const;
 
-            param_data& as_data();
+            param_value& as_value();
             param_array& as_array();
             param_node& as_node();
 
-            const param_data& as_data() const;
+            const param_value& as_value() const;
             const param_array& as_array() const;
             const param_node& as_node() const;
 
@@ -49,45 +49,45 @@ namespace mantis
             static unsigned s_indent_level;
     };
 
-    class param_data : public param
+    class param_value : public param
     {
         public:
-            param_data();
-            param_data(const param_data& orig);
-            virtual ~param_data();
+            param_value();
+            param_value(const param_value& orig);
+            virtual ~param_value();
 
             virtual param* clone() const;
 
-            virtual bool is_data() const;
+            virtual bool is_value() const;
 
             const std::string& get() const;
             template< typename XValType >
             XValType get();
 
             template< typename XStreamableType >
-            param_data& operator<<( const XStreamableType& a_streamable );
+            param_value& operator<<( const XStreamableType& a_streamable );
 
             virtual std::string to_string() const;
 
         protected:
-            std::stringstream f_data_str;
-            mutable std::string f_data_buffer;
+            std::stringstream f_value_str;
+            mutable std::string f_value_buffer;
 
     };
 
     template< typename XValType >
-    XValType param_data::get()
+    XValType param_value::get()
     {
         XValType t_return;
-        f_data_str >> t_return;
+        f_value_str >> t_return;
         return t_return;
     }
 
     template< typename XStreamableType >
-    param_data& param_data::operator<<( const XStreamableType& a_streamable )
+    param_value& param_value::operator<<( const XStreamableType& a_streamable )
     {
-        f_data_str.str("");
-        f_data_str << a_streamable;
+        f_value_str.str("");
+        f_value_str << a_streamable;
         return *this;
     }
 
@@ -133,8 +133,8 @@ namespace mantis
             /// Returns NULL if a_name is not present.
             param* at( const std::string& a_name );
 
-            const param_data* data_at( const std::string& a_name ) const;
-            param_data* data_at( const std::string& a_name );
+            const param_value* value_at( const std::string& a_name ) const;
+            param_value* value_at( const std::string& a_name );
 
             const param_array* array_at( const std::string& a_name ) const;
             param_array* array_at( const std::string& a_name );
@@ -183,98 +183,27 @@ namespace mantis
 
 
     std::ostream& operator<<(std::ostream& out, const param& value);
-    std::ostream& operator<<(std::ostream& out, const param_data& value);
+    std::ostream& operator<<(std::ostream& out, const param_value& value);
     std::ostream& operator<<(std::ostream& out, const param_array& value);
     std::ostream& operator<<(std::ostream& out, const param_node& value);
 
 
 
     //***************************************
-    //************** READER *****************
+    //************** INPUT ******************
     //***************************************
 
-    class config_maker_json
+    class param_input_json
     {
         public:
-            config_maker_json();
-            virtual ~config_maker_json();
+            param_input_json();
+            virtual ~param_input_json();
 
             static param_node* read_file( const std::string& a_filename );
             static param_node* read_string( const std::string& a_json_str );
             static param_node* read_document( const rapidjson::Document& a_document );
             static param* read_value( const rapidjson::Value& a_value );
     };
-
-
-    //***************************************
-    //************** NODE *******************
-    //***************************************
-
-/*
-    class config_node
-    {
-        public:
-            config_node(const std::string& a_name);
-            config_node(const param& orig);
-            virtual ~config_node();
-
-            const std::string& name() const;
-            void set_name(const std::string& a_name);
-
-            config_node* parent() const;
-
-        protected:
-            config_node();
-
-            std::string f_name;
-
-            config_node* f_parent;
-    };
-
-    class config_node_null : public param, public config_node
-    {
-        public:
-            config_node_null(const std::string& a_name);
-            config_node_null(const config_node_data& orig);
-            virtual ~config_node_null();
-
-        protected:
-            config_node_null();
-    };
-
-    class config_node_data : public param_data, public config_node
-    {
-        public:
-            config_node_data(const std::string& a_name);
-            config_node_data(const config_node_data& orig);
-            virtual ~config_node_data();
-
-        protected:
-            config_node_data();
-    };
-
-    class config_node_array : public param_array, public config_node
-    {
-        public:
-            config_node_array(const std::string& a_name);
-            config_node_array(const config_node_array& orig);
-            virtual ~config_node_array();
-
-        protected:
-            config_node_array();
-    };
-
-    class config_node_object : public param_node, public config_node
-    {
-        public:
-            config_node_object(const std::string& a_name);
-            config_node_object(const config_node_object& orig);
-            virtual ~config_node_object();
-
-        protected:
-            config_node_object();
-    };
-    */
 
 } /* namespace Katydid */
 

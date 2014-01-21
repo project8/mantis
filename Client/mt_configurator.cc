@@ -43,10 +43,10 @@ namespace mantis
         // second configuration: config file
         if( t_parser.has( t_name_config ) )
         {
-            string t_config_filename = t_parser.data_at( t_name_config )->get();
+            string t_config_filename = t_parser.value_at( t_name_config )->get();
             if( ! t_config_filename.empty() )
             {
-                param_node* t_config_from_file = config_maker_json::read_file( t_config_filename );
+                param_node* t_config_from_file = param_input_json::read_file( t_config_filename );
                 if( t_config_from_file == NULL )
                 {
                     throw exception() << "[configurator] error parsing config file";
@@ -63,10 +63,10 @@ namespace mantis
         // third configuration: command line json
         if( t_parser.has( t_name_json ) )
         {
-            string t_config_json = t_parser.data_at( t_name_json )->get();
+            string t_config_json = t_parser.value_at( t_name_json )->get();
             if( ! t_config_json.empty() )
             {
-                param_node* t_config_from_json = config_maker_json::read_string( t_config_json );
+                param_node* t_config_from_json = param_input_json::read_string( t_config_json );
                 f_master_config.merge( t_config_from_json );
                 delete t_config_from_json;
             }
