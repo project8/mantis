@@ -17,7 +17,7 @@ namespace mantis
     {
         // default server configuration
 
-        config_value_data server_config;
+        param_data server_config;
 
         add( "port", server_config << 98342 );
 

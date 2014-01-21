@@ -12,7 +12,7 @@
 namespace mantis
 {
 
-    class parser : public config_value_object
+    class parser : public param_node
     {
         public:
             parser( int an_argc, char** an_argv );

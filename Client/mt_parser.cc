@@ -6,7 +6,7 @@ namespace mantis
 {
 
     parser::parser( int an_argc, char** an_argv ) :
-            config_value_object()
+            param_node()
     {
         parse(an_argc, an_argv);
     }
@@ -26,7 +26,7 @@ namespace mantis
             {
                 std::string t_name(t_argument.substr( 0, t_val_pos ));
 
-                config_value_data* new_data = new config_value_data();
+                param_data* new_data = new param_data();
                 *new_data << t_argument.substr( t_val_pos + 1 );
 
                 //std::cout << "(parser) adding < " << t_name << "<" << t_type << "> > = <" << new_data.value() << ">" << std::endl;

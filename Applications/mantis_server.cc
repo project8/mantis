@@ -50,20 +50,29 @@ using std::string;
 int main( int argc, char** argv )
 {
     server_config t_sc;
-    configurator t_config( argc, argv, &t_sc );
+    configurator* t_config = NULL;
+    try
+    {
+        t_config = new configurator( argc, argv, &t_sc );
+    }
+    catch( exception& e )
+    {
+        cerr << "[mantis_server] unable to configure server: " << e.what();
+        return -1;
+    }
 
     cout << "[mantis_server] creating objects..." << endl;
 
-    size_t t_buffer_size = t_config.get< int >( "buffer-size" );
-    size_t t_record_size = t_config.get< int >( "record-size" );
-    size_t t_data_chunk_size = t_config.get< int >( "data-chunk-size" );
+    size_t t_buffer_size = t_config->get< int >( "buffer-size" );
+    size_t t_record_size = t_config->get< int >( "record-size" );
+    size_t t_data_chunk_size = t_config->get< int >( "data-chunk-size" );
 
     // set up the server and request receiver
 
     server* t_server;
     try
     {
-        t_server = new server( t_config.get< int >( "port" ) );
+        t_server = new server( t_config->get< int >( "port" ) );
     }
     catch( exception& e )
     {
@@ -89,24 +98,26 @@ int main( int argc, char** argv )
     try
     {
         t_dig_factory = factory< digitizer >::get_instance();
-        t_digitizer = t_dig_factory->create( t_config.get< string >( "digitizer" ) );
+        t_digitizer = t_dig_factory->create( t_config->get< string >( "digitizer" ) );
         if( t_digitizer == NULL )
         {
-            cerr << "[mantis_server] could not create digitizer <" << t_config.get< string >( "digitizer" ) << ">; aborting" << endl;
+            cerr << "[mantis_server] could not create digitizer <" << t_config->get< string >( "digitizer" ) << ">; aborting" << endl;
             delete t_server;
             return -1;
         }
     }
     catch( exception& e )
     {
-        cerr << "[mantis_server] exception caught while creating digitizer: " << e.what() << endl;;
+        cerr << "[mantis_server] exception caught while creating digitizer: " << e.what() << endl;
         delete t_server;
         return -1;
     }
 
     t_digitizer->allocate( &t_buffer, &t_buffer_condition );
 
-    server_worker t_worker( &t_config, t_digitizer, &t_buffer, &t_run_queue, &t_queue_condition, &t_buffer_condition );
+    server_worker t_worker( t_config, t_digitizer, &t_buffer, &t_run_queue, &t_queue_condition, &t_buffer_condition );
+
+    delete t_config;
 
     cout << "[mantis_server] starting threads..." << endl;
 

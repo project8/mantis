@@ -20,11 +20,11 @@ namespace mantis
     class configurator
     {
         public:
-            configurator( int an_argc, char** an_argv, config_value_object* a_default = NULL );
+            configurator( int an_argc, char** an_argv, param_node* a_default = NULL );
             virtual ~configurator();
 
-            config_value_object& config();
-            const config_value_object& config() const;
+            param_node& config();
+            const param_node& config() const;
 
             template< typename XReturnType >
             XReturnType get( const std::string& a_name );
@@ -33,9 +33,9 @@ namespace mantis
             XReturnType get( const std::string& a_name, XReturnType a_default );
 
         private:
-            config_value_object f_master_config;
+            param_node f_master_config;
 
-            mutable config_value* f_config_value_buffer;
+            mutable param* f_param_buffer;
 
             std::string f_string_buffer;
     };
@@ -43,10 +43,10 @@ namespace mantis
     template< typename XReturnType >
     XReturnType configurator::get( const std::string& a_name )
     {
-        f_config_value_buffer = f_master_config.at( a_name );
-        if( f_config_value_buffer->is_data() )
+        f_param_buffer = f_master_config.at( a_name );
+        if( f_param_buffer->is_data() )
         {
-            return static_cast< config_value_data* >( f_config_value_buffer )->value< XReturnType >();
+            return static_cast< param_data* >( f_param_buffer )->value< XReturnType >();
         }
         throw exception() << "configurator does not have a value for <" << a_name << ">";
     }
@@ -54,10 +54,10 @@ namespace mantis
     template< typename XReturnType >
     XReturnType configurator::get( const std::string& a_name, XReturnType a_default )
     {
-        f_config_value_buffer = f_master_config.at( a_name );
-        if( f_config_value_buffer != NULL && f_config_value_buffer->is_data() )
+        f_param_buffer = f_master_config.at( a_name );
+        if( f_param_buffer != NULL && f_param_buffer->is_data() )
         {
-            return static_cast< config_value_data* >( f_config_value_buffer )->value< XReturnType >();
+            return static_cast< param_data* >( f_param_buffer )->value< XReturnType >();
         }
         return a_default;
 

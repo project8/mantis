@@ -1,5 +1,5 @@
 /*
- * mt_config_value.hh
+ * mt_param.hh
  *
  *  Created on: Jan 14, 2014
  *      Author: nsoblath
@@ -18,33 +18,34 @@
 
 namespace mantis
 {
-    class config_value_data;
-    class config_value_array;
-    class config_value_object;
+    class param_data;
+    class param_array;
+    class param_node;
 
-    class config_value
+    class param
     {
         public:
-            config_value();
-            config_value(const config_value& orig);
-            virtual ~config_value();
+            param();
+            param(const param& orig);
+            virtual ~param();
 
-            virtual config_value* clone() const;
+            virtual param* clone() const;
 
+            virtual bool is_null() const;
             virtual bool is_data() const;
             virtual bool is_array() const;
             virtual bool is_object() const;
 
-            virtual const config_value& operator/(const std::string&) const;
+            virtual const param& operator/(const std::string&) const;
 
 /*
-            config_value_data& as_data();
-            config_value_array& as_array();
-            config_value_object& as_object();
+            param_data& as_data();
+            param_array& as_array();
+            param_node& as_object();
 
-            const config_value_data& as_data() const;
-            const config_value_array& as_array() const;
-            const config_value_object& as_object() const;
+            const param_data& as_data() const;
+            const param_array& as_array() const;
+            const param_node& as_object() const;
 */
 
             virtual std::string to_string() const;
@@ -52,14 +53,14 @@ namespace mantis
             static unsigned s_indent_level;
     };
 
-    class config_value_data : public config_value
+    class param_data : public param
     {
         public:
-            config_value_data();
-            config_value_data(const config_value_data& orig);
-            virtual ~config_value_data();
+            param_data();
+            param_data(const param_data& orig);
+            virtual ~param_data();
 
-            virtual config_value* clone() const;
+            virtual param* clone() const;
 
             virtual bool is_data() const;
 
@@ -68,7 +69,7 @@ namespace mantis
             XValType value();
 
             template< typename XStreamableType >
-            config_value_data& operator<<( const XStreamableType& a_streamable );
+            param_data& operator<<( const XStreamableType& a_streamable );
 
             virtual std::string to_string() const;
 
@@ -79,7 +80,7 @@ namespace mantis
     };
 
     template< typename XValType >
-    XValType config_value_data::value()
+    XValType param_data::value()
     {
         XValType t_return;
         f_data_str >> t_return;
@@ -87,7 +88,7 @@ namespace mantis
     }
 
     template< typename XStreamableType >
-    config_value_data& config_value_data::operator<<( const XStreamableType& a_streamable )
+    param_data& param_data::operator<<( const XStreamableType& a_streamable )
     {
         f_data_str.str("");
         f_data_str << a_streamable;
@@ -95,14 +96,14 @@ namespace mantis
     }
 
 
-    class config_value_array : public config_value
+    class param_array : public param
     {
         public:
-            config_value_array();
-            config_value_array( const config_value_array& orig );
-            virtual ~config_value_array();
+            param_array();
+            param_array( const param_array& orig );
+            virtual ~param_array();
 
-            virtual config_value* clone() const;
+            virtual param* clone() const;
 
             virtual bool is_array() const;
 
@@ -110,67 +111,67 @@ namespace mantis
 
     };
 
-    class config_value_object : public config_value
+    class param_node : public param
     {
         public:
-            typedef std::map< std::string, config_value* > contents;
+            typedef std::map< std::string, param* > contents;
             typedef contents::iterator iterator;
             typedef contents::const_iterator const_iterator;
             typedef contents::value_type contents_type;
 
-            config_value_object();
-            config_value_object( const config_value_object& orig );
-            virtual ~config_value_object();
+            param_node();
+            param_node( const param_node& orig );
+            virtual ~param_node();
 
-            virtual config_value* clone() const;
+            virtual param* clone() const;
 
             virtual bool is_object() const;
 
-            virtual const config_value& operator/(const std::string& a_name) const;
+            virtual const param& operator/(const std::string& a_name) const;
 
             bool has( const std::string& a_name ) const;
             unsigned count( const std::string& a_name ) const;
 
-            /// Returns a pointer to the config_value corresponding to a_name.
+            /// Returns a pointer to the param corresponding to a_name.
             /// Returns NULL if a_name is not present.
-            const config_value* at( const std::string& a_name ) const;
-            /// Returns a pointer to the config_value corresponding to a_name.
+            const param* at( const std::string& a_name ) const;
+            /// Returns a pointer to the param corresponding to a_name.
             /// Returns NULL if a_name is not present.
-            config_value* at( const std::string& a_name );
+            param* at( const std::string& a_name );
 
-            const config_value_data* data_at( const std::string& a_name ) const;
-            config_value_data* data_at( const std::string& a_name );
+            const param_data* data_at( const std::string& a_name ) const;
+            param_data* data_at( const std::string& a_name );
 
-            const config_value_array* array_at( const std::string& a_name ) const;
-            config_value_array* array_at( const std::string& a_name );
+            const param_array* array_at( const std::string& a_name ) const;
+            param_array* array_at( const std::string& a_name );
 
-            const config_value_object* object_at( const std::string& a_name ) const;
-            config_value_object* object_at( const std::string& a_name );
+            const param_node* object_at( const std::string& a_name ) const;
+            param_node* object_at( const std::string& a_name );
 
-            /// Returns a reference to the config_value corresponding to a_name.
+            /// Returns a reference to the param corresponding to a_name.
             /// Throws an exception if a_name is not present.
-            const config_value& operator[]( const std::string& a_name ) const;
-            /// Returns a reference to the config_value corresponding to a_name.
+            const param& operator[]( const std::string& a_name ) const;
+            /// Returns a reference to the param corresponding to a_name.
             /// Adds a new value if a_name is not present.
-            config_value& operator[]( const std::string& a_name );
+            param& operator[]( const std::string& a_name );
 
             /// creates a copy of a_value
-            bool add( const std::string& a_name, const config_value& a_value );
+            bool add( const std::string& a_name, const param& a_value );
             /// directly adds (without copying) a_value_ptr
-            bool add( const std::string& a_name, config_value* a_value_ptr );
+            bool add( const std::string& a_name, param* a_value_ptr );
 
             /// creates a copy of a_value
-            void replace( const std::string& a_name, const config_value& a_value );
+            void replace( const std::string& a_name, const param& a_value );
             /// directly adds (without copying) a_value_ptr
-            void replace( const std::string& a_name, config_value* a_value_ptr );
+            void replace( const std::string& a_name, param* a_value_ptr );
 
             /// Merges the contents of a_object into this object.
             /// If names in the contents of a_object exist in this object,
             /// the values in this object corresponding to the matching names will be replaced.
-            void merge( const config_value_object* a_object );
+            void merge( const param_node* a_object );
 
             void erase( const std::string& a_name );
-            config_value* remove( const std::string& a_name );
+            param* remove( const std::string& a_name );
 
             iterator begin();
             const_iterator begin() const;
@@ -187,10 +188,10 @@ namespace mantis
 
 
 
-    std::ostream& operator<<(std::ostream& out, const config_value& value);
-    std::ostream& operator<<(std::ostream& out, const config_value_data& value);
-    std::ostream& operator<<(std::ostream& out, const config_value_array& value);
-    std::ostream& operator<<(std::ostream& out, const config_value_object& value);
+    std::ostream& operator<<(std::ostream& out, const param& value);
+    std::ostream& operator<<(std::ostream& out, const param_data& value);
+    std::ostream& operator<<(std::ostream& out, const param_array& value);
+    std::ostream& operator<<(std::ostream& out, const param_node& value);
 
 
 
@@ -204,10 +205,10 @@ namespace mantis
             config_maker_json();
             virtual ~config_maker_json();
 
-            static config_value_object* read_file( const std::string& a_filename );
-            static config_value_object* read_string( const std::string& a_json_str );
-            static config_value_object* read_document( const rapidjson::Document& a_document );
-            static config_value* read_value( const rapidjson::Value& a_value );
+            static param_node* read_file( const std::string& a_filename );
+            static param_node* read_string( const std::string& a_json_str );
+            static param_node* read_document( const rapidjson::Document& a_document );
+            static param* read_value( const rapidjson::Value& a_value );
     };
 
 
@@ -220,7 +221,7 @@ namespace mantis
     {
         public:
             config_node(const std::string& a_name);
-            config_node(const config_value& orig);
+            config_node(const param& orig);
             virtual ~config_node();
 
             const std::string& name() const;
@@ -236,7 +237,7 @@ namespace mantis
             config_node* f_parent;
     };
 
-    class config_node_null : public config_value, public config_node
+    class config_node_null : public param, public config_node
     {
         public:
             config_node_null(const std::string& a_name);
@@ -247,7 +248,7 @@ namespace mantis
             config_node_null();
     };
 
-    class config_node_data : public config_value_data, public config_node
+    class config_node_data : public param_data, public config_node
     {
         public:
             config_node_data(const std::string& a_name);
@@ -258,7 +259,7 @@ namespace mantis
             config_node_data();
     };
 
-    class config_node_array : public config_value_array, public config_node
+    class config_node_array : public param_array, public config_node
     {
         public:
             config_node_array(const std::string& a_name);
@@ -269,7 +270,7 @@ namespace mantis
             config_node_array();
     };
 
-    class config_node_object : public config_value_object, public config_node
+    class config_node_object : public param_node, public config_node
     {
         public:
             config_node_object(const std::string& a_name);

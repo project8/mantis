@@ -13,7 +13,7 @@
 namespace mantis
 {
 
-    class client_config : public config_value_object
+    class client_config : public param_node
     {
         public:
             client_config();

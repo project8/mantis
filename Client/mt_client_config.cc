@@ -19,7 +19,7 @@ namespace mantis
     {
         // default client configuration
 
-        config_value_data client_data;
+        param_data client_data;
 
         add( "port", client_data << 98342 );
 
