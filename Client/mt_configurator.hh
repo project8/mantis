@@ -8,7 +8,9 @@
 #ifndef MT_CONFIGURATOR_HH_
 #define MT_CONFIGURATOR_HH_
 
-#include "mt_configuration.hh"
+#include "mt_config_node.hh"
+
+#include "mt_exception.hh"
 
 #include <string>
 
@@ -18,34 +20,49 @@ namespace mantis
     class configurator
     {
         public:
-            configurator( int an_argc, char** an_argv, configuration* a_default = NULL );
+            configurator( int an_argc, char** an_argv, param_node* a_default = NULL );
             virtual ~configurator();
 
-            configuration& config();
-            const configuration& config() const;
+            param_node& config();
+            const param_node& config() const;
 
-            bool get_bool_required( const std::string& a_name );
-            bool get_bool_optional( const std::string& a_name, bool a_default );
+            template< typename XReturnType >
+            XReturnType get( const std::string& a_name );
 
-            int get_int_required( const std::string& a_name );
-            int get_int_optional( const std::string& a_name, int a_default );
-
-            unsigned get_uint_required( const std::string& a_name );
-            unsigned get_uint_optional( const std::string& a_name, unsigned a_default );
-
-            double get_double_required( const std::string& a_name );
-            double get_double_optional( const std::string& a_name, double a_default );
-
-            const std::string& get_string_required( const std::string& a_name );
-            const std::string& get_string_optional( const std::string& a_name, const std::string& a_default );
-
-            void show();
+            template< typename XReturnType >
+            XReturnType get( const std::string& a_name, XReturnType a_default );
 
         private:
-            configuration f_master_config;
+            param_node f_master_config;
+
+            mutable param* f_param_buffer;
 
             std::string f_string_buffer;
     };
+
+    template< typename XReturnType >
+    XReturnType configurator::get( const std::string& a_name )
+    {
+        f_param_buffer = f_master_config.at( a_name );
+        if( f_param_buffer->is_value() )
+        {
+            return f_param_buffer->as_value().get< XReturnType >();
+        }
+        throw exception() << "configurator does not have a value for <" << a_name << ">";
+    }
+
+    template< typename XReturnType >
+    XReturnType configurator::get( const std::string& a_name, XReturnType a_default )
+    {
+        f_param_buffer = f_master_config.at( a_name );
+        if( f_param_buffer != NULL && f_param_buffer->is_value() )
+        {
+            return f_param_buffer->as_value().get< XReturnType >();
+        }
+        return a_default;
+
+    }
+
 
 } /* namespace mantis */
 #endif /* MT_CONFIGURATOR_HH_ */

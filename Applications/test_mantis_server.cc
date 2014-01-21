@@ -20,7 +20,7 @@ int main( int argc, char** argv )
 
     cout << "[test_mantis_server] starting server..." << endl;
 
-    server* t_server = new server( t_configurator.get_int_required( "port" ) );
+    server* t_server = new server( t_configurator.get< int >( "port" ) );
     run_context_dist* t_run_context = new run_context_dist();
 
     while( true )

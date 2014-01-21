@@ -114,12 +114,10 @@ Examples:
 ``` 
 #### Command-line options
 You can use individual command-line options to overwrite specific configuration
-values.  The format for options is: `[name]/[type]=[value]`
+values.  The format for options is: `[name]=[value]`
 For example:
-- `port/i=12345`
-- `file/s="a-different-filename.egg"`
-
-The types are bool (`b`), integer (`i`), double (`d`), and string (`s`).
+- `port=12345`
+- `file="a-different-filename.egg"`
 
 ### Executables
 Both the client and server can be exited nicely using either `ctrl-c` or `ctrl-\`. 

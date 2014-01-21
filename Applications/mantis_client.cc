@@ -87,39 +87,48 @@ namespace mantis
 int main( int argc, char** argv )
 {
     client_config t_cc;
-    configurator t_config( argc, argv, &t_cc );
+    configurator* t_config = NULL;
+    try
+    {
+        t_config = new configurator( argc, argv, &t_cc );
+    }
+    catch( exception& e )
+    {
+        cerr << "[mantis_client] unable to configure client: " << e.what() << endl;
+        return RETURN_ERROR;
+    }
 
     cout << "[mantis_client] creating request objects..." << endl;
 
     bool t_client_writes_file = true;
-    if( t_config.get_string_required( "file-writer" ) == std::string( "server" ) )
+    if( t_config->get< string >( "file-writer" ) == std::string( "server" ) )
     {
         t_client_writes_file = false;
     }
 
-    string t_request_host = t_config.get_string_required( "host" );
-    int t_request_port = t_config.get_int_required( "port" );
+    string t_request_host = t_config->get< string >( "host" );
+    int t_request_port = t_config->get< int >( "port" );
 
     string t_write_host;
     int t_write_port = -1;
     if( t_client_writes_file )
     {
-        t_write_host = t_config.get_string_required( "client-host" );
-        t_write_port = t_config.get_int_optional( "client-port", t_request_port + 1 );
+        t_write_host = t_config->get< string >( "client-host" );
+        t_write_port = t_config->get< int >( "client-port", t_request_port + 1 );
     }
 
-    double t_duration = t_config.get_double_required( "duration" );
+    double t_duration = t_config->get< double >( "duration" );
 
     run_context_dist t_run_context;
 
     request* t_request = t_run_context.lock_request_out();
     t_request->set_write_host( t_write_host );
     t_request->set_write_port( t_write_port );
-    t_request->set_file( t_config.get_string_required( "file" ) );
-    t_request->set_description( t_config.get_string_optional( "description", "default client run" ) );
+    t_request->set_file( t_config->get< string >( "file" ) );
+    t_request->set_description( t_config->get< string >( "description", "default client run" ) );
     t_request->set_date( get_absolute_time_string() );
-    t_request->set_mode( (request_mode_t)t_config.get_int_required( "mode" ) );
-    t_request->set_rate( t_config.get_double_required( "rate" ) );
+    t_request->set_mode( (request_mode_t)t_config->get< int >( "mode" ) );
+    t_request->set_rate( t_config->get< double >( "rate" ) );
     t_request->set_duration( t_duration );
     t_request->set_file_write_mode( request_file_write_mode_t_local );
     if( t_client_writes_file )
@@ -127,6 +136,8 @@ int main( int argc, char** argv )
         t_request->set_file_write_mode( request_file_write_mode_t_remote );
     }
     t_run_context.unlock_outbound();
+
+    delete t_config;
 
     // start the client for sending the request
     cout << "[mantis_client] connecting with the server..." << endl;

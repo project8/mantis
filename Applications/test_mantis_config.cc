@@ -17,7 +17,7 @@ int main( int argc, char** argv )
     client_config cc;
     configurator configurator( argc, argv, &cc );
 
-    configurator.config().print();
+    std::cout << configurator.config() << std::endl;
 
     return 0;
 }

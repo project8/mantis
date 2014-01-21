@@ -8,12 +8,12 @@
 #ifndef MT_SERVER_CONFIG_HH_
 #define MT_SERVER_CONFIG_HH_
 
-#include "mt_configuration.hh"
+#include "mt_config_node.hh"
 
 namespace mantis
 {
 
-    class server_config : public configuration
+    class server_config : public param_node
     {
         public:
             server_config();
