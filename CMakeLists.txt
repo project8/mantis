@@ -5,7 +5,10 @@ cmake_minimum_required( VERSION 2.8 )
 #########
 
 project( Mantis )
-include( ${PROJECT_SOURCE_DIR}/PackageBuilder.cmake )
+
+list( APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR} )
+
+include( PackageBuilder.cmake )
 pbuilder_prepare_project( 2 1 1 )
 include_directories( ${PROJECT_SOURCE_DIR}/Client )
 include_directories( ${PROJECT_SOURCE_DIR}/Server )
@@ -100,7 +103,6 @@ set( MANTIS_CLIENT_HEADERFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_client_worker.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_client.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_condition.hh
-    ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_config_node.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_configurator.hh    
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_connection.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_distribution.hh
@@ -109,6 +111,7 @@ set( MANTIS_CLIENT_HEADERFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_iterator.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_logger.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_mutex.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_param.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_parser.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_record_dist.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_record_receiver.hh
@@ -134,7 +137,6 @@ set( MANTIS_CLIENT_SOURCEFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_client_worker.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_client.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_condition.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_config_node.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_configurator.cc    
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_connection.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_distribution.cc
@@ -143,6 +145,7 @@ set( MANTIS_CLIENT_SOURCEFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_iterator.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_logger.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_mutex.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_param.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_parser.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_record_dist.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_record_receiver.cc
@@ -176,6 +179,7 @@ pbuilder_install_executables( test_mantis_config )
 add_executable( mantis_client ${CMAKE_CURRENT_SOURCE_DIR}/Applications/mantis_client.cc )
 target_link_libraries( mantis_client MantisClient ${EXTERNAL_LIBRARIES} )
 pbuilder_install_executables( mantis_client )
+
 
 
 #################
@@ -234,3 +238,4 @@ if( Mantis_BUILD_SERVER )
     pbuilder_install_executables( mantis_server )
 
 endif( Mantis_BUILD_SERVER )
+

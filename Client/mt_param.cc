@@ -5,7 +5,7 @@
  *      Author: nsoblath
  */
 
-#include "mt_config_node.hh"
+#include "mt_param.hh"
 
 #include "mt_exception.hh"
 #include "mt_logger.hh"

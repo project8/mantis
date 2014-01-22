@@ -5,8 +5,8 @@
  *      Author: nsoblath
  */
 
-#ifndef MT_CONFIG_NODE_HH_
-#define MT_CONFIG_NODE_HH_
+#ifndef MT_PARAM_HH_
+#define MT_PARAM_HH_
 
 #include "document.h"
 
@@ -288,6 +288,6 @@ namespace mantis
             static param* read_value( const rapidjson::Value& a_value );
     };
 
-} /* namespace Katydid */
+} /* namespace mantis */
 
-#endif /* MT_CONFIG_NODE_HH_ */
+#endif /* MT_PARAM_HH_ */
