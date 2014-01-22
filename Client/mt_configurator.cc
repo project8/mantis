@@ -8,15 +8,13 @@
 #include "mt_configurator.hh"
 
 #include "mt_parser.hh"
-
-#include <iostream>
-using std::cout;
-using std::endl;
+#include "mt_logger.hh"
 
 using std::string;
 
 namespace mantis
 {
+    MTLOGGER( mtlog, "configurator" );
 
     configurator::configurator( int an_argc, char** an_argv, param_node* a_default ) :
             f_master_config(),
@@ -25,7 +23,7 @@ namespace mantis
     {
         parser t_parser( an_argc, an_argv );
         //std::cout << "options parsed" << std::endl;
-        //cout << t_parser << endl;
+        //cout << t_parser );
 
         // first configuration: defaults
         if ( a_default != NULL )
@@ -34,8 +32,8 @@ namespace mantis
         }
 
         //std::cout << "first configuration complete" << std::endl;
-        //cout << f_master_config << endl;
-        //cout << t_parser << endl;
+        //cout << f_master_config );
+        //cout << t_parser );
 
         string t_name_config("config");
         string t_name_json("json");
@@ -57,8 +55,8 @@ namespace mantis
         }
 
         //std::cout << "second configuration complete" << std::endl;
-        //cout << f_master_config << endl;
-        //cout << t_parser << endl;
+        //cout << f_master_config );
+        //cout << t_parser );
 
         // third configuration: command line json
         if( t_parser.has( t_name_json ) )
@@ -73,20 +71,19 @@ namespace mantis
         }
 
         //std::cout << "third configuration complete" << std::endl;
-        //cout << f_master_config << endl;
-        //cout << t_parser << endl;
+        //cout << f_master_config );
+        //cout << t_parser );
 
         // fourth configuration: command line arguments
         t_parser.erase( t_name_config );
         t_parser.erase( t_name_json );
 
         //std::cout << "removed config and json from parsed options" << std::endl;
-        //cout << t_parser << endl;
+        //cout << t_parser );
         f_master_config.merge( &t_parser );
 
         //std::cout << "fourth configuration complete" << std::endl;
-        cout << "[configurator] final configuration:" << endl;
-        cout << f_master_config << endl;
+        MTINFO( mtlog, "final configuration:\n" << f_master_config );
 
     }
 

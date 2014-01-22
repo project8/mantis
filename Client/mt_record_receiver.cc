@@ -3,6 +3,7 @@
 #include "mt_buffer.hh"
 #include "mt_condition.hh"
 #include "mt_iterator.hh"
+#include "mt_logger.hh"
 #include "mt_record_dist.hh"
 #include "mt_server.hh"
 #include "response.pb.h"
@@ -16,6 +17,7 @@ using std::endl;
 
 namespace mantis
 {
+    MTLOGGER( mtlog, "record_receiver" );
 
     record_receiver::record_receiver( server* a_server, buffer* a_buffer, condition* a_condition ) :
             f_server( a_server ),
@@ -27,7 +29,7 @@ namespace mantis
             f_data_chunk_size( 1024 ),
             f_canceled( false )
     {
-        cout << "[record_receiver] allocating buffer..." << endl;
+        MTINFO( mtlog, "allocating buffer..." );
 
         iterator t_it( f_buffer );
         for( unsigned int index = 0; index < f_buffer->size(); index++ )
@@ -40,7 +42,7 @@ namespace mantis
 
     record_receiver::~record_receiver()
     {
-        cout << "[record_receiver] deallocating buffer..." << endl;
+        MTINFO( mtlog, "deallocating buffer..." );
 
         iterator t_it( f_buffer );
         for( unsigned int index = 0; index < f_buffer->size(); index++ )
@@ -54,7 +56,7 @@ namespace mantis
     {
         record_dist* t_record_dist = new record_dist();
         t_record_dist->set_data_chunk_size( f_data_chunk_size );
-        cout << "[record_receiver] waiting for incoming record connection" << endl;
+        MTINFO( mtlog, "waiting for incoming record connection" );
         // thread is blocked by the accept call in server::get_connection
         // until an incoming connection is received
         t_record_dist->set_connection( f_server->get_connection() );
@@ -69,11 +71,11 @@ namespace mantis
 
         f_record_count = 0;
 
-        cout << "[record_receiver] waiting" << endl;
+        MTINFO( mtlog, "waiting" );
 
         f_condition->wait();
 
-        cout << "[record_receiver] loose at <" << t_it.index() << ">" << endl;
+        MTINFO( mtlog, "loose at <" << t_it.index() << ">" );
 
         //start timing
         get_time_monotonic( &t_live_start_time );
@@ -98,7 +100,7 @@ namespace mantis
                 f_live_time += time_to_nsec( t_live_stop_time ) - time_to_nsec( t_live_start_time );
 
                 //GET OUT
-                cout << "[record_receiver] finished abnormally because receive failed" << endl;
+                MTINFO( mtlog, "finished abnormally because receive failed" );
                 return;
             }
 
@@ -116,7 +118,7 @@ namespace mantis
                 f_live_time += time_to_nsec( t_live_stop_time ) - time_to_nsec( t_live_start_time );
 
                 //GET OUT
-                cout << "[record_receiver] finished normally" << endl;
+                MTINFO( mtlog, "finished normally" );
                 break;
             }
 
@@ -124,7 +126,7 @@ namespace mantis
 
             if( +t_it == false )
             {
-                cout << "[record_receiver] blocked at <" << t_it.index() << ">" << endl;
+                MTINFO( mtlog, "blocked at <" << t_it.index() << ">" );
 
                 //stop live timer
                 get_time_monotonic( &t_live_stop_time );
@@ -150,13 +152,13 @@ namespace mantis
                 //start live timer
                 get_time_monotonic( &t_live_start_time );;
 
-                cout << "[record_receiver] loose at <" << t_it.index() << ">" << endl;
+                MTINFO( mtlog, "loose at <" << t_it.index() << ">" );
             }
 
-            //cout << "[record_receiver] records received: " << f_record_count << endl;
+            //MTINFO( mtlog, "records received: " << f_record_count );
         }
 
-        //cout << "[record_receiver] finished processing records" << endl;
+        //MTINFO( mtlog, "finished processing records" );
 
         delete t_record_dist->get_connection();
         delete t_record_dist;
@@ -166,14 +168,14 @@ namespace mantis
 
     void record_receiver::cancel()
     {
-        //cout << "RECORD_RECEIVER CANCELED" << endl;
+        //cout << "RECORD_RECEIVER CANCELED" );
         f_canceled.store( true );
         return;
     }
 
     void record_receiver::finalize( response* a_response )
     {
-        cout << "[record_receiver] calculating statistics..." << endl;
+        MTINFO( mtlog, "calculating statistics..." );
 
         a_response->set_digitizer_records( f_record_count );
         a_response->set_digitizer_live_time( (double) f_live_time * SEC_PER_NSEC );

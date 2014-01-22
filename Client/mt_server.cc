@@ -1,6 +1,7 @@
 #include "mt_server.hh"
 
 #include "mt_exception.hh"
+#include "mt_logger.hh"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,18 +11,15 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 
-#include <iostream>
-using std::cout;
-using std::endl;
-
 namespace mantis
 {
+    MTLOGGER( mtlog, "server" );
 
     server::server( const int& a_port ) :
             f_socket( 0 ),
             f_address( NULL )
     {
-        //cout << "[server] opening server socket on port <" << a_port << ">" << endl;
+        //MTINFO( mtlog, "opening server socket on port <" << a_port << ">" );
 
         //initialize address
         socklen_t t_socket_length = sizeof(sockaddr_in);
@@ -33,7 +31,7 @@ namespace mantis
         f_address->sin_addr.s_addr = INADDR_ANY;
         f_address->sin_port = htons( a_port );
 
-        //cout << "[server] address prepared..." << endl;
+        //MTINFO( mtlog, "address prepared..." );
 
         //open socket
         f_socket = ::socket( AF_INET, SOCK_STREAM, 0 );
@@ -43,7 +41,7 @@ namespace mantis
             return;
         }
 
-        //cout << "[server] socket open..." << endl;
+        //MTINFO( mtlog, "socket open..." );
 
         //bind socket
         if( ::bind( f_socket, (const sockaddr*) (f_address), t_socket_length ) < 0 )
@@ -52,12 +50,12 @@ namespace mantis
             return;
         }
 
-        //cout << "[server] socket bound..." << endl;
+        //MTINFO( mtlog, "socket bound..." );
 
         //start listening
         ::listen( f_socket, 10 );
 
-        //cout << "[server] listening..." << endl;
+        //MTINFO( mtlog, "listening..." );
 
         return;
     }
@@ -89,7 +87,7 @@ namespace mantis
             throw exception() << "could not accept connection\n";
         }
 
-        //cout << "[server] connection accepted..." << endl;
+        //MTINFO( mtlog, "connection accepted..." );
 
         //return a new connection
         return new connection( t_socket, t_address );

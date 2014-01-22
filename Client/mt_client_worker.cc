@@ -1,14 +1,12 @@
 #include "mt_client_worker.hh"
 
 #include "mt_exception.hh"
+#include "mt_logger.hh"
 #include "mt_thread.hh"
-
-#include <iostream>
-using std::cout;
-using std::endl;
 
 namespace mantis
 {
+    MTLOGGER( mtlog, "client_worker" );
 
     client_worker::client_worker( request* a_request, record_receiver* a_receiver, writer* a_writer, condition* a_buffer_condition ) :
                     f_receiver( a_receiver ),
@@ -46,7 +44,7 @@ namespace mantis
         t_writer_thread->start();
         f_writer_state = k_running;
 
-        cout << "[client_worker] running..." << endl;
+        MTINFO( mtlog, "running..." );
 
         t_receiver_thread->join();
         f_receiver_state = k_inactive;
@@ -56,30 +54,26 @@ namespace mantis
         delete t_receiver_thread;
         delete t_writer_thread;
 
-        cout << "[client_worker] finalizing..." << endl;
+        MTINFO( mtlog, "finalizing..." );
 
         response t_response;
         f_receiver->finalize( &t_response );
         f_writer->finalize( &t_response );
         t_response.set_state( response_state_t_complete );
-        cout << "[client_worker] record_receiver summary:\n";
-        cout << "  record count: " << t_response.digitizer_records() << " [#]\n";
-        cout << "  acquisition count: " << t_response.digitizer_acquisitions() << " [#]\n";
-        cout << "  live time: " << t_response.digitizer_live_time() << " [sec]\n";
-        cout << "  dead time: " << t_response.digitizer_dead_time() << " [sec]\n";
-        cout << "  megabytes: " << t_response.digitizer_megabytes() << " [Mb]\n";
-        cout << "  rate: " << t_response.digitizer_rate() << " [Mb/sec]\n";
+        MTINFO( mtlog, "record_receiver summary:\n"
+            << "  record count: " << t_response.digitizer_records() << " [#]\n"
+            << "  acquisition count: " << t_response.digitizer_acquisitions() << " [#]\n"
+            << "  live time: " << t_response.digitizer_live_time() << " [sec]\n"
+            << "  dead time: " << t_response.digitizer_dead_time() << " [sec]\n"
+            << "  megabytes: " << t_response.digitizer_megabytes() << " [Mb]\n"
+            << "  rate: " << t_response.digitizer_rate() << " [Mb/sec]\n" );
 
-        cout << endl;
-
-        cout << "[client_worker] file_writer summary:\n";
-        cout << "  record count: " << t_response.writer_records() << " [#]\n";
-        cout << "  acquisition count: " << t_response.writer_acquisitions() << " [#]\n";
-        cout << "  live time: " << t_response.writer_live_time() << " [sec]\n";
-        cout << "  megabytes: " << t_response.writer_megabytes() << "[Mb]\n";
-        cout << "  rate: " << t_response.writer_rate() << " [Mb/sec]\n";
-
-        cout << endl;
+        MTINFO( mtlog, "file_writer summary:\n"
+            << "  record count: " << t_response.writer_records() << " [#]\n"
+            << "  acquisition count: " << t_response.writer_acquisitions() << " [#]\n"
+             << "  live time: " << t_response.writer_live_time() << " [sec]\n"
+            << "  megabytes: " << t_response.writer_megabytes() << "[Mb]\n"
+            << "  rate: " << t_response.writer_rate() << " [Mb/sec]\n"  );
 
         f_is_done.store( true );
 
@@ -88,7 +82,7 @@ namespace mantis
 
     void client_worker::cancel()
     {
-        //cout << "CLIENT_WORKER CANCELED" << endl;
+        //cout << "CLIENT_WORKER CANCELED" );
         if( f_receiver_state == k_running )
         {
             f_receiver->cancel();

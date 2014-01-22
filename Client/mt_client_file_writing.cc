@@ -12,19 +12,16 @@
 #include "mt_condition.hh"
 #include "mt_exception.hh"
 #include "mt_file_writer.hh"
+#include "mt_logger.hh"
 #include "mt_record_receiver.hh"
 #include "mt_run_context_dist.hh"
 #include "mt_server.hh"
 #include "mt_signal_handler.hh"
 #include "mt_thread.hh"
 
-#include <iostream>
-using std::cerr;
-using std::cout;
-using std::endl;
-
 namespace mantis
 {
+    MTLOGGER( mtlog, "client_file_writing" );
 
     client_file_writing::client_file_writing( run_context_dist* a_run_context, int a_write_port ) :
             f_server( NULL ),
@@ -77,7 +74,7 @@ namespace mantis
 
         f_thread = new thread( f_worker );
 
-        cout << "[mantis_client] starting record receiver" << endl;
+        MTINFO( mtlog, "starting record receiver" );
 
         try
         {

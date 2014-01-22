@@ -1,20 +1,18 @@
 #include "mt_run_context_dist.hh"
 
 #include "mt_exception.hh"
+#include "mt_logger.hh"
 
-#include <iostream>
 #include <cstdio>
 #include <cstdlib>
 #include <signal.h>
-
-using std::cerr;
-using std::cout;
-using std::endl;
 
 #include <google/protobuf/text_format.h>
 
 namespace mantis
 {
+    MTLOGGER( mtlog, "run_context_dist" );
+
     const run_context_dist::message_id_type run_context_dist::f_unknown_id = 0;
     const run_context_dist::message_id_type run_context_dist::f_request_id = 1;
     const run_context_dist::message_id_type run_context_dist::f_status_id = 2;
@@ -62,13 +60,13 @@ namespace mantis
             int t_pull_result = pull_next_message( MSG_WAITALL );
             if( t_pull_result < 0 )
             {
-                cerr << "[run_context_dist] error in pulling message; aborting" << endl;
+                MTERROR( mtlog, "error in pulling message; aborting" );
                 cancel();
                 kill( 0, SIGINT );
             }
             else if( t_pull_result == 0 )
             {
-                cout << "[run_context_dist] client/server connection has closed" << endl;
+                MTINFO( mtlog, "client/server connection has closed" );
                 // set f_is_active to false here, before releasing any conditions
                 // so that anything waiting on those conditions, when they're release and (presumably) wait again,
                 // will get a false from the wait_for_[message type] function
@@ -130,19 +128,19 @@ namespace mantis
                     else return -1;
                     break;
                 default:
-                    cerr << "[run_context_dist] unknown message id: <" << t_type << ">" << endl;
+                    MTERROR( mtlog, "unknown message id: <" << t_type << ">" );
                     return -1;
                     break;
             }
         }
         catch( closed_connection& cc )
         {
-            cout << "[run_context_dist] connection closed; detected in <" << cc.what() << ">" << endl;
+            MTINFO( mtlog, "connection closed; detected in <" << cc.what() << ">" );
             return 0;
         }
         catch( exception& e )
         {
-            cerr << "[run_context_dist] unable to check message type: " << e.what() << endl;
+            MTERROR( mtlog, "unable to check message type: " << e.what() );
             return -1;
         }
         // should not reach here
@@ -163,26 +161,26 @@ namespace mantis
         size_t t_request_size = reset_buffer_out( f_request_out.ByteSize() );
         if( ! f_request_out.SerializeToArray( f_buffer_out, t_request_size ) )
         {
-            cerr << "[run_context_dist] unable to serialize request message" << endl;
+            MTERROR( mtlog, "unable to serialize request message" );
             return false;
         }
         try
         {
-            //cout << "attempting to send type " << f_request_id << " for request" << endl;
+            //cout << "attempting to send type " << f_request_id << " for request" );
             f_connection->send_type( f_request_id, flags );
-            //cout << "sending request" << endl;
+            //cout << "sending request" );
             f_connection->send( f_buffer_out, t_request_size, flags );
-            //cout << "request sent" << endl;
+            //cout << "request sent" );
         }
         catch( closed_connection& cc )
         {
-            cout << "[run_context_dist] connection closed (request); detected in <" << cc.what() << ">" << endl;
+            MTINFO( mtlog, "connection closed (request); detected in <" << cc.what() << ">" );
             throw cc;
             return false;
         }
         catch( exception& e )
         {
-            cerr << "[run_context_dist] a write error occurred while pushing a request: " << e.what() << endl;
+            MTERROR( mtlog, "a write error occurred while pushing a request: " << e.what() );
             return false;
         }
         return true;
@@ -204,14 +202,14 @@ namespace mantis
             message_id_type t_msg_type = f_unknown_id;
             if( ! verify_message_type( f_request_id, t_msg_type, flags ) )
             {
-                cerr << "[run_context_dist] message type <" << t_msg_type << "> is not request (" << f_request_id << ")" << endl;
+                MTERROR( mtlog, "message type <" << t_msg_type << "> is not request (" << f_request_id << ")" );
                 f_inbound_mutex_write.unlock();
                 return false;
             }
             t_request_size = f_connection->recv_type< size_t >( flags );
             if( t_request_size == 0 )
             {
-                cerr << "[run_context_dist] request message size was 0" << endl;
+                MTERROR( mtlog, "request message size was 0" );
                 f_inbound_mutex_write.unlock();
                 return false;
             }
@@ -219,21 +217,21 @@ namespace mantis
             ssize_t recv_ret = f_connection->recv( f_buffer_in, t_request_size, flags );
             if( recv_ret <= 0 )
             {
-                cerr << "[run_context_dist] (request) connection read length was: " << recv_ret << endl;
+                MTERROR( mtlog, "(request) connection read length was: " << recv_ret );
                 f_inbound_mutex_write.unlock();
                 return false;
             }
         }
         catch( closed_connection& cc )
         {
-            cout << "[run_context_dist] connection closed (request); detected in <" << cc.what() << ">" << endl;
+            MTINFO( mtlog, "connection closed (request); detected in <" << cc.what() << ">" );
             f_inbound_mutex_write.unlock();
             throw cc;
             return false;
         }
         catch( exception& e )
         {
-            cerr << "[run_context_dist] a read error occurred while pulling a request: " << e.what() << endl;
+            MTERROR( mtlog, "a read error occurred while pulling a request: " << e.what() );
             f_inbound_mutex_write.unlock();
             return false;
         }
@@ -267,25 +265,25 @@ namespace mantis
         size_t t_status_size = reset_buffer_out( f_status_out.ByteSize() );
         if( ! f_status_out.SerializeToArray( f_buffer_out, t_status_size ) )
         {
-            cerr << "[run_context_dist] unable to serialize status message" << endl;
+            MTERROR( mtlog, "unable to serialize status message" );
             return false;
         }
         try
         {
-            //cout << "attempting to send type " << f_status_id << " for status" << endl;
+            //cout << "attempting to send type " << f_status_id << " for status" );
             f_connection->send_type( f_status_id, flags );
-            //cout << "sending status" << endl;
+            //cout << "sending status" );
             f_connection->send( f_buffer_out, t_status_size, flags );
         }
         catch( closed_connection& cc )
         {
-            cout << "[run_context_dist] connection closed (status); detected in <" << cc.what() << ">" << endl;
+            MTINFO( mtlog, "connection closed (status); detected in <" << cc.what() << ">" );
             throw cc;
             return false;
         }
         catch( exception& e )
         {
-            cerr << "[run_context_dist] a write error occurred while pushing a status: " << e.what() << endl;
+            MTERROR( mtlog, "a write error occurred while pushing a status: " << e.what() );
             return false;
         }
         return true;
@@ -307,14 +305,14 @@ namespace mantis
             message_id_type t_msg_type = f_unknown_id;
             if( ! verify_message_type( f_status_id, t_msg_type, flags ) )
             {
-                cerr << "[run_context_dist] message type <" << t_msg_type << "> is not status (" << f_status_id << ")" << endl;
+                MTERROR( mtlog, "message type <" << t_msg_type << "> is not status (" << f_status_id << ")" );
                 f_inbound_mutex_write.unlock();
                 return false;
             }
             t_status_size = f_connection->recv_type< size_t >( flags );
             if( t_status_size == 0 )
             {
-                cerr << "[run_context_dist] status message size was 0" << endl;
+                MTERROR( mtlog, "status message size was 0" );
                 f_inbound_mutex_write.unlock();
                 return false;
             }
@@ -322,21 +320,21 @@ namespace mantis
             ssize_t recv_ret = f_connection->recv( f_buffer_in, t_status_size, flags );
             if( recv_ret <= 0 )
             {
-                cerr << "[run_context_dist] (status) the connection read length was: " << recv_ret << endl;
+                MTERROR( mtlog, "(status) the connection read length was: " << recv_ret );
                 f_inbound_mutex_write.unlock();
                 return false;
             }
         }
         catch( closed_connection& cc )
         {
-            cout << "[run_context_dist] connection closed (status); detected in <" << cc.what() << ">" << endl;
+            MTINFO( mtlog, "connection closed (status); detected in <" << cc.what() << ">" );
             f_inbound_mutex_write.unlock();
             throw cc;
             return false;
         }
         catch( exception& e )
         {
-            cerr << "[run_context_dist] a read error occurred while pulling a status: " << e.what() << endl;
+            MTERROR( mtlog, "a read error occurred while pulling a status: " << e.what() );
             f_inbound_mutex_write.unlock();
             return false;
         }
@@ -369,25 +367,25 @@ namespace mantis
         size_t t_client_status_size = reset_buffer_out( f_client_status_out.ByteSize() );
         if( ! f_client_status_out.SerializeToArray( f_buffer_out, t_client_status_size ) )
         {
-            cerr << "[run_context_dist] unable to serialize client_status message" << endl;
+            MTERROR( mtlog, "unable to serialize client_status message" );
             return false;
         }
         try
         {
-            //cout << "attempting to send type " << f_client_status_id << " for client_status" << endl;
+            //cout << "attempting to send type " << f_client_status_id << " for client_status" );
             f_connection->send_type( f_client_status_id, flags );
-            //cout << "sending client_status" << endl;
+            //cout << "sending client_status" );
             f_connection->send( f_buffer_out, t_client_status_size, flags );
         }
         catch( closed_connection& cc )
         {
-            cout << "[run_context_dist] connection closed (client_status); detected in <" << cc.what() << ">" << endl;
+            MTINFO( mtlog, "connection closed (client_status); detected in <" << cc.what() << ">" );
             throw cc;
             return false;
         }
         catch( exception& e )
         {
-            cerr << "[run_context_dist] a write error occurred while pushing a client_status: " << e.what() << endl;
+            MTERROR( mtlog, "a write error occurred while pushing a client_status: " << e.what() );
             return false;
         }
         return true;
@@ -409,14 +407,14 @@ namespace mantis
             message_id_type t_msg_type = f_unknown_id;
             if( ! verify_message_type( f_client_status_id, t_msg_type, flags ) )
             {
-                cerr << "[run_context_dist] message type <" << t_msg_type << "> is not client_status (" << f_client_status_id << ")" << endl;
+                MTERROR( mtlog, "message type <" << t_msg_type << "> is not client_status (" << f_client_status_id << ")" );
                 f_inbound_mutex_write.unlock();
                 return false;
             }
             t_client_status_size = f_connection->recv_type< size_t >( flags );
             if( t_client_status_size == 0 )
             {
-                cerr << "[run_context_dist] client_status message size was 0" << endl;
+                MTERROR( mtlog, "client_status message size was 0" );
                 f_inbound_mutex_write.unlock();
                 return false;
             }
@@ -424,21 +422,21 @@ namespace mantis
             ssize_t recv_ret = f_connection->recv( f_buffer_in, t_client_status_size, flags );
             if( recv_ret <= 0 )
             {
-                cerr << "[run_context_dist] (client_status) the connection read length was: " << recv_ret << endl;
+                MTERROR( mtlog, "(client_status) the connection read length was: " << recv_ret );
                 f_inbound_mutex_write.unlock();
                 return false;
             }
         }
         catch( closed_connection& cc )
         {
-            cout << "[run_context_dist] connection closed (client_status); detected in <" << cc.what() << ">" << endl;
+            MTINFO( mtlog, "connection closed (client_status); detected in <" << cc.what() << ">" );
             f_inbound_mutex_write.unlock();
             throw cc;
             return false;
         }
         catch( exception& e )
         {
-            cerr << "[run_context_dist] a read error occurred while pulling a client_status: " << e.what() << endl;
+            MTERROR( mtlog, "a read error occurred while pulling a client_status: " << e.what() );
             f_inbound_mutex_write.unlock();
             return false;
         }
@@ -471,25 +469,25 @@ namespace mantis
         size_t t_response_size = reset_buffer_out( f_response_out.ByteSize() );
         if( ! f_response_out.SerializeToArray( f_buffer_out, t_response_size ) )
         {
-            cerr << "[run_context_dist] unable to serialize response message" << endl;
+            MTERROR( mtlog, "unable to serialize response message" );
             return false;
         }
         try
         {
-            //cout << "attempting to send type " << f_response_id << " for response" << endl;
+            //cout << "attempting to send type " << f_response_id << " for response" );
             f_connection->send_type( f_response_id, flags );
-            //cout << "sending response" << endl;
+            //cout << "sending response" );
             f_connection->send( f_buffer_out, t_response_size, flags );
         }
         catch( closed_connection& cc )
         {
-            cout << "[run_context_dist] connection closed (response); detected in <" << cc.what() << ">" << endl;
+            MTINFO( mtlog, "connection closed (response); detected in <" << cc.what() << ">" );
             throw cc;
             return false;
         }
         catch( exception& e )
         {
-            cerr << "[run_context_dist] a write error occurred while pushing a response: " << e.what() << endl;
+            MTERROR( mtlog, "a write error occurred while pushing a response: " << e.what() );
             return false;
         }
         return true;
@@ -511,14 +509,14 @@ namespace mantis
             message_id_type t_msg_type = f_unknown_id;
             if( ! verify_message_type( f_response_id, t_msg_type, flags ) )
             {
-                cerr << "[run_context_dist] message type <" << t_msg_type << "> is not response (" << f_response_id << ")" << endl;
+                MTERROR( mtlog, "message type <" << t_msg_type << "> is not response (" << f_response_id << ")" );
                 f_inbound_mutex_write.unlock();
                 return false;
             }
             t_response_size = f_connection->recv_type< size_t >( flags );
             if( t_response_size == 0 )
             {
-                cerr << "[run_context_dist] response message size was 0" << endl;
+                MTERROR( mtlog, "response message size was 0" );
                 f_inbound_mutex_write.unlock();
                 return false;
             }
@@ -526,21 +524,21 @@ namespace mantis
             ssize_t recv_ret = f_connection->recv( f_buffer_in, t_response_size, flags );
             if( recv_ret <= 0 )
             {
-                cerr << "[run_context_dist] (response) the connection read length was: " << recv_ret << endl;
+                MTERROR( mtlog, "(response) the connection read length was: " << recv_ret );
                 f_inbound_mutex_write.unlock();
                 return false;
             }
         }
         catch( closed_connection& cc )
         {
-            cout << "[run_context_dist] connection closed (response); detected in <" << cc.what() << ">" << endl;
+            MTINFO( mtlog, "connection closed (response); detected in <" << cc.what() << ">" );
             f_inbound_mutex_write.unlock();
             throw cc;
             return false;
         }
         catch( exception& e )
         {
-            cerr << "[run_context_dist] a read error occurred while pulling a response: " << e.what() << endl;
+            MTERROR( mtlog, "a read error occurred while pulling a response: " << e.what() );
             f_inbound_mutex_write.unlock();
             return false;
         }

@@ -1,16 +1,16 @@
 #include "mt_writer.hh"
 
 #include "mt_iterator.hh"
+#include "mt_logger.hh"
 
 #include <cstring> // for memcpy()
 #include <iostream>
-#include <sstream>
-using std::cout;
-using std::endl;
 using std::stringstream;
 
 namespace mantis
 {
+    MTLOGGER( mtlog, "writer" );
+
     writer::writer() :
             f_buffer( NULL ),
             f_condition( NULL ),
@@ -29,7 +29,7 @@ namespace mantis
     {
         f_canceled = false;
 
-        //cout << "[writer] resetting counters..." << endl;
+        //MTINFO( mtlog, "resetting counters..." );
 
         f_record_count = 0;
         f_acquisition_count = 0;
@@ -58,7 +58,7 @@ namespace mantis
             {
                 if( f_condition->is_waiting() == true )
                 {
-                    cout << "[writer] releasing" << endl;
+                    MTINFO( mtlog, "releasing" );
                     f_condition->release();
                 }
                 ++t_it;
@@ -77,12 +77,12 @@ namespace mantis
                 // to make sure we don't deadlock anything
                 if( f_cancel_condition.is_waiting() )
                 {
-                    cout << "[writer] was canceled mid-run" << endl;
+                    MTINFO( mtlog, "was canceled mid-run" );
                     f_cancel_condition.release();
                 }
                 else
                 {
-                    cout << "[writer] finished normally" << endl;
+                    MTINFO( mtlog, "finished normally" );
                 }
                 return;
             }
@@ -98,7 +98,7 @@ namespace mantis
                 }
 
                 //GET OUT
-                cout << "[writer] finished abnormally because writing failed" << endl;
+                MTINFO( mtlog, "finished abnormally because writing failed" );
                 return;
             }
 
@@ -110,7 +110,7 @@ namespace mantis
 
             t_it->set_written();
 
-            //cout << "[writer] records written: " << f_record_count << endl;
+            //MTINFO( mtlog, "records written: " << f_record_count );
 
         }
 
@@ -118,18 +118,18 @@ namespace mantis
     }
     void writer::cancel()
     {
-        //cout << "CANCELING WRITER" << endl;
+        //cout << "CANCELING WRITER" );
         if( ! f_canceled.load() )
         {
             f_canceled.store( true );
             f_cancel_condition.wait();
         }
-        //cout << "  writer has finished canceling" << endl;
+        //cout << "  writer has finished canceling" );
         return;
     }
     void writer::finalize( response* a_response )
     {
-        //cout << "[writer] calculating statistics..." << endl;
+        //MTINFO( mtlog, "calculating statistics..." );
 
         a_response->set_writer_records( f_record_count );
         a_response->set_writer_acquisitions( f_acquisition_count );

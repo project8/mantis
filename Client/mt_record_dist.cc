@@ -1,18 +1,16 @@
 #include "mt_record_dist.hh"
 
 #include "mt_exception.hh"
+#include "mt_logger.hh"
 
 #include <iostream>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring> // for memcpy
 
-using std::cerr;
-using std::cout;
-using std::endl;
-
 namespace mantis
 {
+    MTLOGGER( mtlog, "record_dist" );
 
     record_dist::record_dist() :
             f_data_chunk_size( 1024 ),
@@ -28,7 +26,7 @@ namespace mantis
     {
         if( ! push_header( a_block->header(), flags ) )
         {
-            cerr << "[record_dist] unable to push the block header" << endl;
+            MTERROR( mtlog, "unable to push the block header" );
             return false;
         }
 
@@ -39,7 +37,7 @@ namespace mantis
 
             if( ! push_data( a_block->data(), flags ) )
             {
-                cerr << "[record_dist] unable to push the block data" << endl;
+                MTERROR( mtlog, "unable to push the block data" );
                 return false;
             }
         }
@@ -50,7 +48,7 @@ namespace mantis
     {
         if( ! pull_header( a_block->header(), flags ) )
         {
-            cerr << "[record_dist] unable to pull the block header" << endl;
+            MTERROR( mtlog, "unable to pull the block header" );
             return false;
         }
 
@@ -62,7 +60,7 @@ namespace mantis
 
             if( ! pull_data( a_block->data(), flags ) )
             {
-                cerr << "[record_dist] unable to pull the block data" << endl;
+                MTERROR( mtlog, "unable to pull the block data" );
                 return false;
             }
         }
@@ -80,12 +78,12 @@ namespace mantis
         }
         catch( closed_connection& cc )
         {
-            cout << "[record_dist] closed connection caught by: " << cc.what() << endl;
+            MTINFO( mtlog, "closed connection caught by: " << cc.what() );
             return false;
         }
         catch( exception& e )
         {
-            cerr << "[record_dist] an error occurred while pushing a block header: " << e.what() << endl;
+            MTERROR( mtlog, "an error occurred while pushing a block header: " << e.what() );
             return false;
         }
         return true;
@@ -105,13 +103,13 @@ namespace mantis
         }
         catch( closed_connection& cc )
         {
-            cout << "[record_dist] the connection was closed while pushing chunk " << i_chunk << " of the data from a record;\n"
-                    << "detected in <" << cc.what() << ">" << endl;
+            MTINFO( mtlog, "the connection was closed while pushing chunk " << i_chunk << " of the data from a record;\n"
+                    << "detected in <" << cc.what() << ">" );
             return false;
         }
         catch( exception& e )
         {
-            cerr << "[record_dist] an error occurred while pushing chunk " << i_chunk << " of the data from a record: " << e.what() << endl;
+            MTERROR( mtlog, "an error occurred while pushing chunk " << i_chunk << " of the data from a record: " << e.what() );
             return false;
         }
 
@@ -123,13 +121,13 @@ namespace mantis
             }
             catch( closed_connection& cc )
             {
-                cout << "[record_dist] the connection was closed while pushing the last chunk of the data from a record;\n"
-                        << "detected in <" << cc.what() << ">" << endl;
+                MTINFO( mtlog, "the connection was closed while pushing the last chunk of the data from a record;\n"
+                        << "detected in <" << cc.what() << ">" );
                 return false;
             }
             catch( exception& e )
             {
-                cerr << "[record_dist] an error occurred while pushing the last chunk of the data from a record: " << e.what() << endl;
+                MTERROR( mtlog, "an error occurred while pushing the last chunk of the data from a record: " << e.what() );
                 return false;
             }
         }
@@ -145,7 +143,7 @@ namespace mantis
             t_header_size = f_connection->recv_type< size_t >( flags );
             if( t_header_size == 0 )
             {
-                cerr << "[record_dist] block_header size was 0" << endl;
+                MTERROR( mtlog, "block_header size was 0" );
                 return false;
             }
             reset_buffer_in( t_header_size );
@@ -154,17 +152,17 @@ namespace mantis
             {
                 return a_block_header->ParseFromArray( f_buffer_in, t_header_size );
             }
-            cerr << "[record_dist] (block_header) received size: " << recv_ret << "; expected size: " << t_header_size << endl;
+            MTERROR( mtlog, "(block_header) received size: " << recv_ret << "; expected size: " << t_header_size );
             return false;
         }
         catch( closed_connection& cc )
         {
-            cout << "[record_dist] connection closed (block_header); detected in <" << cc.what() << ">" << endl;
+            MTINFO( mtlog, "connection closed (block_header); detected in <" << cc.what() << ">" );
             return false;
         }
         catch( exception& e )
         {
-            cerr << "[record_dist] an error occurred while pulling a block header: " << e.what() << endl;
+            MTERROR( mtlog, "an error occurred while pulling a block header: " << e.what() );
             return false;
         }
         // should not reach here
@@ -187,13 +185,13 @@ namespace mantis
         }
         catch( closed_connection& cc )
         {
-            cout << "[record_dist] the connection was closed while pulling chunk " << i_chunk << " of the data from a record;\n"
-                    << "detected in <" << cc.what() << ">" << endl;
+            MTINFO( mtlog, "the connection was closed while pulling chunk " << i_chunk << " of the data from a record;\n"
+                    << "detected in <" << cc.what() << ">" );
             return false;
         }
         catch( exception& e )
         {
-            cerr << "an error occurred while pulling chunk " << i_chunk << " of the data from a record: " << e.what() << endl;
+            MTERROR( mtlog, "an error occurred while pulling chunk " << i_chunk << " of the data from a record: " << e.what() );
             return false;
         }
 
@@ -207,13 +205,13 @@ namespace mantis
             }
             catch( closed_connection& cc )
             {
-                cout << "[record_dist] the connection was closed while pulling the last chunk of the data from a record;\n"
-                        << "detected in <" << cc.what() << ">" << endl;
+                MTINFO( mtlog, "the connection was closed while pulling the last chunk of the data from a record;\n"
+                        << "detected in <" << cc.what() << ">" );
                 return false;
             }
             catch( exception& e )
             {
-                cerr << "an error occurred while pulling the last chunk of the data from a record: " << e.what() << endl;
+                MTERROR( mtlog, "an error occurred while pulling the last chunk of the data from a record: " << e.what() );
                 return false;
             }
         }

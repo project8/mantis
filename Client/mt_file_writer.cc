@@ -2,19 +2,18 @@
 
 #include "mt_exception.hh"
 #include "mt_factory.hh"
+#include "mt_logger.hh"
 
 #include "MonarchException.hpp"
 
 #include <cstring> // for memcpy()
 #include <iostream>
-#include <sstream>
-using std::cerr;
-using std::cout;
-using std::endl;
 using std::stringstream;
 
 namespace mantis
 {
+    MTLOGGER( mtlog, "file_writer" );
+
     static registrar< writer, file_writer > s_file_writer_registrar( "file" );
 
     file_writer::file_writer() :
@@ -35,7 +34,7 @@ namespace mantis
 
     bool file_writer::initialize_derived( request* a_request )
     {
-        cout << "[file_writer] opening file..." << endl;
+        MTINFO( mtlog, "opening file..." );
 
         try
         {
@@ -43,7 +42,7 @@ namespace mantis
         }
         catch( MonarchException& e )
         {
-            cerr << "[file_writer] error opening file: " << e.what() << endl;
+            MTERROR( mtlog, "error opening file: " << e.what() );
             return false;
         }
         f_header = f_monarch->GetHeader();
@@ -75,7 +74,7 @@ namespace mantis
         f_header->SetRunType( sRunTypeSignal );
         f_header->SetRunSource( sSourceMantis );
 
-        cout << "[file_writer] writing header..." << endl;
+        MTINFO( mtlog, "writing header..." );
 
         try
 	{ 
@@ -83,7 +82,7 @@ namespace mantis
         }
         catch( MonarchException& e )
 	{
-            cerr << "[file_writer] error while writing header: " << e.what() << endl;
+            MTERROR( mtlog, "error while writing header: " << e.what() );
             return false;
 	}
         f_monarch->SetInterface( sInterfaceInterleaved );

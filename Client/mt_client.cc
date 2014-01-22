@@ -1,6 +1,7 @@
 #include "mt_client.hh"
 
 #include "mt_exception.hh"
+#include "mt_logger.hh"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,17 +11,14 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 
-#include <iostream>
-using std::cout;
-using std::endl;
-
 namespace mantis
 {
+    MTLOGGER( mtlog, "client" );
 
     client::client( const std::string& a_host, const int& a_port ) :
             connection( -1, NULL )
     {
-        //cout << "[client] creating client with host <" << a_host << "> on port <" << a_port << ">" << endl;
+        //MTINFO( mtlog, "creating client with host <" << a_host << "> on port <" << a_port << ">" );
 
         //find host
         hostent* t_host = gethostbyname( a_host.c_str() );
@@ -30,7 +28,7 @@ namespace mantis
             return;
         }
 
-        //cout << "[client] host found..." << endl;
+        //MTINFO( mtlog, "host found..." );
 
         //initialize address
         socklen_t t_address_length = sizeof(sockaddr_in);
@@ -42,7 +40,7 @@ namespace mantis
         ::memcpy( t_host->h_addr_list[ 0 ], &(f_address->sin_addr.s_addr), t_host->h_length );
         f_address->sin_port = htons( a_port );
 
-        //cout << "[client] address prepared..." << endl;
+        //MTINFO( mtlog, "address prepared..." );
 
         //open socket
         f_socket = ::socket( AF_INET, SOCK_STREAM, 0 );
@@ -52,7 +50,7 @@ namespace mantis
             return;
         }
 
-        //cout << "[client] socket opened..." << endl;
+        //MTINFO( mtlog, "socket opened..." );
 
         //connect socket
         if( ::connect( f_socket, (sockaddr*) (f_address), t_address_length ) < 0 )
@@ -60,7 +58,7 @@ namespace mantis
             throw exception() << "could not create connection\n";
         }
 
-        //cout << "[client] socket connected..." << endl;
+        //MTINFO( mtlog, "socket connected..." );
 
         return;
     }
