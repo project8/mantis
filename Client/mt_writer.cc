@@ -4,7 +4,6 @@
 #include "mt_logger.hh"
 
 #include <cstring> // for memcpy()
-#include <iostream>
 using std::stringstream;
 
 namespace mantis

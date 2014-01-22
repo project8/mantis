@@ -8,13 +8,14 @@
 #include "mt_signal_handler.hh"
 
 #include "mt_exception.hh"
+#include "mt_logger.hh"
 
-#include <iostream>
 #include <signal.h>
 #include <unistd.h>
 
 namespace mantis
 {
+    MTLOGGER( mtlog, "signal_handler" );
 
     bool signal_handler::f_got_exit_signal = false;
 
@@ -107,8 +108,8 @@ namespace mantis
 
     void signal_handler::print_message()
     {
-        std::cout << "\n\nHello!  Your signal is being handled by signal_handler.\n";
-        std::cout << "Have a nice day!\n" << std::endl;
+        MTINFO( mtlog, "\n\nHello!  Your signal is being handled by signal_handler.\n"
+             << "Have a nice day!\n" );
         return;
     }
 

@@ -13,8 +13,6 @@
 #include <cstring>
 using std::string;
 
-#include <iostream>
-
 namespace mantis
 {
 

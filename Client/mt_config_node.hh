@@ -15,8 +15,6 @@
 #include <sstream>
 #include <string>
 
-#include <iostream>
-
 namespace mantis
 {
     class param_value;

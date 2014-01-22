@@ -7,7 +7,6 @@
 #include "MonarchException.hpp"
 
 #include <cstring> // for memcpy()
-#include <iostream>
 using std::stringstream;
 
 namespace mantis

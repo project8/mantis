@@ -3,7 +3,6 @@
 #include "mt_exception.hh"
 #include "mt_logger.hh"
 
-#include <iostream>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring> // for memcpy

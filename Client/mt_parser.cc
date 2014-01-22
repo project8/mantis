@@ -1,7 +1,5 @@
 #include "mt_parser.hh"
 
-#include <iostream>
-
 namespace mantis
 {
 

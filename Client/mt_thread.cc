@@ -1,9 +1,5 @@
 #include "mt_thread.hh"
 
-#include <iostream>
-using std::cout;
-using std::endl;
-
 namespace mantis
 {
 

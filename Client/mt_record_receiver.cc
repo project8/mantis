@@ -10,11 +10,6 @@
 
 #include <cstddef>
 
-#include <iostream>
-using std::cout;
-using std::cerr;
-using std::endl;
-
 namespace mantis
 {
     MTLOGGER( mtlog, "record_receiver" );

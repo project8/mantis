@@ -8,8 +8,8 @@
 #include "mt_config_node.hh"
 
 #include "mt_exception.hh"
+#include "mt_logger.hh"
 
-#include <iostream>
 #include <sstream>
 using std::string;
 using std::stringstream;
@@ -25,6 +25,7 @@ using std::string;
 
 namespace mantis
 {
+    MTLOGGER( mtlog, "param" );
 
     unsigned param::s_indent_level = 0;
 
@@ -673,7 +674,7 @@ namespace mantis
         FILE* t_config_file = fopen( a_filename.c_str(), "r" );
         if( t_config_file == NULL )
         {
-            std::cerr << "file <" << a_filename << "> did not open" << std::endl;
+            MTERROR( mtlog, "file <" << a_filename << "> did not open" );
             return NULL;
         }
         rapidjson::FileStream t_file_stream( t_config_file );
@@ -681,7 +682,7 @@ namespace mantis
         rapidjson::Document t_config_doc;
         if( t_config_doc.ParseStream<0>( t_file_stream ).HasParseError() )
         {
-            std::cerr << "error parsing config file:\n" << t_config_doc.GetParseError() << std::endl;
+            MTERROR( "error parsing config file:\n" << t_config_doc.GetParseError() );
             fclose( t_config_file );
             return NULL;
         }
@@ -695,7 +696,7 @@ namespace mantis
         rapidjson::Document t_config_doc;
         if( t_config_doc.Parse<0>( a_json_string.c_str() ).HasParseError() )
         {
-            std::cerr << "error parsing string:\n" << t_config_doc.GetParseError() << std::endl;
+            MTERROR( mtlog, "error parsing string:\n" << t_config_doc.GetParseError() );
             return NULL;
         }
         return param_input_json::read_document( t_config_doc );
@@ -783,8 +784,8 @@ namespace mantis
             (*t_config_value) << a_value.GetDouble();
             return t_config_value;
         }
-        std::cout << "(config_reader_json) unknown type; returning null value" << std::endl;
+        MTWARN( mtlog, "(config_reader_json) unknown type; returning null value" );
         return new param();
     }
 
-} /* namespace Katydid */
+} /* namespace mantis */

@@ -9,8 +9,6 @@
 #include <string>
 #include <sys/types.h>
 
-#include <iostream>
-
 namespace mantis
 {
     class closed_connection :
