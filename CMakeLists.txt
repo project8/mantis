@@ -108,6 +108,7 @@ set( MANTIS_CLIENT_HEADERFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_exception.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_file_writer.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_iterator.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_logger.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_mutex.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_parser.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_record_dist.hh
@@ -142,6 +143,7 @@ set( MANTIS_CLIENT_SOURCEFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_exception.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_file_writer.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_iterator.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_logger.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_mutex.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_parser.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_record_dist.cc
