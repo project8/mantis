@@ -1,4 +1,5 @@
 #include "mt_parser.hh"
+#include "mt_logger.hh"
 #include "mt_client.hh"
 #include "mt_run_context_dist.hh"
 #include "thorax.hh"
@@ -10,9 +11,7 @@ using std::string;
 #include <sstream>
 using std::stringstream;
 
-#include <iostream>
-using std::cout;
-using std::endl;
+MTLOGGER( mtlog, "test_mantis_client" );
 
 int analyze_status( run_context_dist* t_run_context )
 {
@@ -21,52 +20,39 @@ int analyze_status( run_context_dist* t_run_context )
     switch( t_state )
     {
         case status_state_t_created :
-            cout << "[test_mantis_client] created..." << '\r';
-            cout.flush();
+            MTINFO( mtlog, "created..." << '\r');
             return 0;
 
         case status_state_t_acknowledged :
-            cout << "[test_mantis_client] acknowledged..." << '\r';
-            cout.flush();
+            MTINFO( mtlog, "acknowledged..." << '\r' );
             return 0;
 
         case status_state_t_waiting :
-            cout << "[test_mantis_client] waiting..." << '\r';
-            cout.flush();
+            MTINFO( mtlog, "waiting..." << '\r' );
             return 0;
 
         case status_state_t_started :
-            cout << "[test_mantis_client] started..." << '\r';
-            cout.flush();
+            MTINFO( mtlog, "started..." << '\r' );
             return 0;
 
         case status_state_t_running :
-            cout << "[test_mantis_client] running..." << '\r';
-            cout.flush();
+            MTINFO( mtlog, "running..." << '\r' );
             return 0;
 
         case status_state_t_stopped :
-            cout << "[test_mantis_client] stopped..." << '\r';
-            cout.flush();
-            cout << endl;
+            MTINFO( mtlog, "stopped..." << '\r' );
             return 1;
 
         case status_state_t_error :
-            cout << "[test_mantis_client] error..." << '\r';
-            cout.flush();
-            cout << endl;
+            MTINFO( mtlog, "error..." << '\r' );
             return -1;
 
         case status_state_t_canceled :
-            cout << "[test_mantis_client] canceled..." << '\r';
-            cout.flush();
-            cout << endl;
+            MTINFO( mtlog, "canceled..." << '\r' );
             return -1;
 
         case status_state_t_revoked :
-            cout << "[test_mantis_client] revoked..." << '\r';
-            cout.flush();
-            cout << endl;
+            MTINFO( mtlog, "revoked..." << '\r' );
             return -1;
     }
 }
@@ -90,8 +76,7 @@ int main( int argc, char** argv )
     t_request->set_duration( 2000.0 );
     t_request->set_file_write_mode( request_file_write_mode_t_local );
 
-    cout << "[test_mantis_client] sending request..." << endl;
-    cout << t_request->DebugString() << endl;
+    MTINFO( mtlog, "sending request...\n" << t_request->DebugString() );
 
     t_run_context->push_request_no_mutex();
 
@@ -106,7 +91,7 @@ int main( int argc, char** argv )
 //    }
 //    while( analyze_status( t_run_context ) == 0 );
 
-    cout << "[test_mantis_client] done" << endl;
+    MTINFO( mtlog, "done" );
 
     delete t_run_context;
     delete t_client;

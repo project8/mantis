@@ -1,4 +1,5 @@
 #include "mt_configurator.hh"
+#include "mt_logger.hh"
 #include "mt_server.hh"
 #include "mt_run_context_dist.hh"
 #include "mt_connection.hh"
@@ -10,15 +11,13 @@ using std::string;
 #include <sstream>
 using std::stringstream;
 
-#include <iostream>
-using std::cout;
-using std::endl;
+MTLOGGER( mtlog, "test_mantis_server" );
 
 int main( int argc, char** argv )
 {
     configurator t_configurator( argc, argv );
 
-    cout << "[test_mantis_server] starting server..." << endl;
+    MTINFO( mtlog, " starting server..." );
 
     server* t_server = new server( t_configurator.get< int >( "port" ) );
     run_context_dist* t_run_context = new run_context_dist();
@@ -26,13 +25,13 @@ int main( int argc, char** argv )
     while( true )
     {
 
-        cout << "[test_mantis_server] waiting for connection..." << endl;
+        MTINFO( mtlog, " waiting for connection..." );
 
         t_run_context->set_connection( t_server->get_connection() );
 
         t_run_context->pull_request();
 
-        cout << "[test_mantis_server] received request:\n" << t_run_context->lock_request_in()->DebugString() << endl;
+        MTINFO( mtlog, " received request:\n" << t_run_context->lock_request_in()->DebugString() );
 
         status* t_status = t_run_context->lock_status_out();
         t_status->set_state( status_state_t_acknowledged );
@@ -45,7 +44,7 @@ int main( int argc, char** argv )
         t_run_context->push_status();
         t_run_context->unlock_outbound();
 
-        cout << "[test_mantis_server] done" << endl;
+        MTINFO( mtlog, " done" );
 
     }
 

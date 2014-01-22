@@ -32,6 +32,7 @@
 #include "mt_digitizer.hh"
 #include "mt_exception.hh"
 #include "mt_factory.hh"
+#include "mt_logger.hh"
 #include "mt_request_receiver.hh"
 #include "mt_run_queue.hh"
 #include "mt_server.hh"
@@ -41,11 +42,9 @@
 #include "mt_thread.hh"
 using namespace mantis;
 
-#include <iostream>
-using std::cerr;
-using std::cout;
-using std::endl;
 using std::string;
+
+MTLOGGER( mtlog, "mantis_server" );
 
 int main( int argc, char** argv )
 {
@@ -57,11 +56,11 @@ int main( int argc, char** argv )
     }
     catch( exception& e )
     {
-        cerr << "[mantis_server] unable to configure server: " << e.what();
+        MTERROR( mtlog, "unable to configure server: " << e.what() );
         return -1;
     }
 
-    cout << "[mantis_server] creating objects..." << endl;
+    MTINFO( mtlog, " creating objects..." );
 
     size_t t_buffer_size = t_config->get< int >( "buffer-size" );
     size_t t_record_size = t_config->get< int >( "record-size" );
@@ -76,7 +75,7 @@ int main( int argc, char** argv )
     }
     catch( exception& e )
     {
-        cerr << "[mantis_server] unable to start server: " << e.what();
+        MTERROR( mtlog, "unable to start server: " << e.what() );
         return -1;
     }
 
@@ -101,14 +100,14 @@ int main( int argc, char** argv )
         t_digitizer = t_dig_factory->create( t_config->get< string >( "digitizer" ) );
         if( t_digitizer == NULL )
         {
-            cerr << "[mantis_server] could not create digitizer <" << t_config->get< string >( "digitizer" ) << ">; aborting" << endl;
+            MTERROR( mtlog, "could not create digitizer <" << t_config->get< string >( "digitizer" ) << ">; aborting" );
             delete t_server;
             return -1;
         }
     }
     catch( exception& e )
     {
-        cerr << "[mantis_server] exception caught while creating digitizer: " << e.what() << endl;
+        MTERROR( mtlog, "exception caught while creating digitizer: " << e.what() );
         delete t_server;
         return -1;
     }
@@ -119,7 +118,7 @@ int main( int argc, char** argv )
 
     delete t_config;
 
-    cout << "[mantis_server] starting threads..." << endl;
+    MTINFO( mtlog, " starting threads..." );
 
     try
     {
@@ -136,7 +135,7 @@ int main( int argc, char** argv )
         t_receiver_thread.start();
         t_worker_thread.start();
 
-        cout << "[mantis_server] running..." << endl;
+        MTINFO( mtlog, " running..." );
 
         t_queue_thread.join();
         t_receiver_thread.join();
@@ -151,11 +150,11 @@ int main( int argc, char** argv )
     }
     catch( exception& e)
     {
-        cerr << "exception caught during server running: \n\t" << e.what() << endl;
+        MTERROR( mtlog, "exception caught during server running: \n\t" << e.what() );
         return -1;
     }
 
-    cout << "[mantis_server] shutting down..." << endl;
+    MTINFO( mtlog, " shutting down..." );
 
     delete t_server;
 
