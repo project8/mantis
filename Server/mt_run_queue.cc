@@ -1,14 +1,12 @@
 #include "mt_run_queue.hh"
 
+#include "mt_logger.hh"
 #include "mt_run_context_dist.hh"
 
-#include <iostream>
-using std::cerr;
-using std::cout;
-using std::endl;
 
 namespace mantis
 {
+    MTLOGGER( mtlog, "run_queue" );
 
     run_queue::run_queue() :
             f_mutex(),
@@ -101,10 +99,10 @@ namespace mantis
                 }
                 catch( closed_connection& cc )
                 {
-                    cout << "[request_receiver] connection closed; detected in <" << cc.what() << ">" << endl;
+                    MTINFO( mtlog, "connection closed; detected in <" << cc.what() << ">" );
                 }
                 // push was unsuccessful, indicating that the communication with the client is broken for some reason
-                cerr << "[run_queue] communication with client failed; aborting run request" << endl;
+                MTERROR( mtlog, "communication with client failed; aborting run request" );
                 t_it = f_runs.erase( t_it );
             }
             f_mutex.unlock();
@@ -115,7 +113,6 @@ namespace mantis
 
     void run_queue::cancel()
     {
-        //std::cout << "CANCELLING RUN QUEUE" << std::endl;
         f_mutex.lock();
         while( ! f_runs.empty() )
         {

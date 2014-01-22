@@ -3,17 +3,16 @@
 #include "mt_configurator.hh"
 #include "MonarchException.hpp"
 #include "mt_factory.hh"
+#include "mt_logger.hh"
 
 #include <cstring> // for memcpy()
-#include <iostream>
 #include <sstream>
-using std::cout;
-using std::cerr;
-using std::endl;
 using std::stringstream;
 
 namespace mantis
 {
+    MTLOGGER( mtlog, "network_writer" );
+
     static registrar< writer, network_writer > s_network_writer_registrar("network");
 
     network_writer::network_writer() :
@@ -37,7 +36,7 @@ namespace mantis
 
     bool network_writer::initialize_derived( request* a_request )
     {
-        cout << "[network_writer] opening write connection..." << endl;
+        MTINFO( mtlog, "opening write connection..." );
 
         try
         {
@@ -45,7 +44,7 @@ namespace mantis
         }
         catch( exception& e )
         {
-            cerr << "[network_writer] unable to create record-sending client: " << e.what() << endl;
+            MTERROR( mtlog, "unable to create record-sending client: " << e.what() );
             return false;
         }
 
@@ -64,7 +63,7 @@ namespace mantis
         t_block.set_data_size( 0 );
         if(! f_record_dist->push_record( &t_block ) )
         {
-            cerr << "[network_writer] there was an error pushing the end-of-run block" << endl;
+            MTERROR( mtlog, "there was an error pushing the end-of-run block" );
         }
 
         writer::finalize( a_response );

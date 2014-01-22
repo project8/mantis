@@ -5,19 +5,17 @@
 #include "mt_configurator.hh"
 #include "mt_digitizer.hh"
 #include "mt_factory.hh"
+#include "mt_logger.hh"
 #include "mt_run_context_dist.hh"
 #include "mt_run_queue.hh"
 #include "mt_signal_handler.hh"
 #include "mt_thread.hh"
 #include "mt_writer.hh"
 
-#include <iostream>
-using std::cerr;
-using std::cout;
-using std::endl;
 
 namespace mantis
 {
+    MTLOGGER( mtlog, "server_worker" );
 
     server_worker::server_worker( configurator* a_config, digitizer* a_digitizer, buffer* a_buffer, run_queue* a_run_queue, condition* a_queue_condition, condition* a_buffer_condition ) :
             f_config( a_config ),
@@ -49,7 +47,7 @@ namespace mantis
 
             bool t_communication_fail = false;
 
-            cout << "[server_worker] sending server status <started>..." << endl;
+            MTINFO( mtlog, "sending server status <started>..." );
 
             run_context_dist* t_run_context = f_run_queue->from_front();
             t_run_context->lock_status_out()->set_state( status_state_t_started );
@@ -57,13 +55,13 @@ namespace mantis
             {
                 if( ! t_run_context->push_status_no_mutex() )
                 {
-                    cerr << "[server_wroker] unable to send status <started> to the client; aborting" << endl;
+                    MTERROR( mtlog, "unable to send status <started> to the client; aborting" );
                     t_communication_fail = true;
                 }
             }
             catch( closed_connection& cc )
             {
-                cerr << "[server_worker] closed connection detected by: " << cc.what() << endl;
+                MTERROR( mtlog, "closed connection detected by: " << cc.what() );
                 t_communication_fail = true;
             }
             t_run_context->unlock_outbound();
@@ -75,17 +73,17 @@ namespace mantis
                 continue;
             }
 
-            cout << "[server_worker] initializing..." << endl;
+            MTINFO( mtlog, "initializing..." );
 
             request* t_request = t_run_context->lock_request_in();
             f_digitizer->initialize( t_request );
 
-            cout << "[server_worker] creating writer..." << endl;
+            MTINFO( mtlog, "creating writer..." );
 
             if(! f_digitizer->write_mode_check( t_request->file_write_mode() ) )
             {
-                cerr << "[server_worker] unable to operate in write mode " << t_request->file_write_mode() << endl;
-                cerr << "                run request ignored" << endl;
+                MTERROR( mtlog, "unable to operate in write mode " << t_request->file_write_mode() << '\n'
+                     << "                run request ignored" );
                 t_run_context->unlock_inbound();
 
                 t_run_context->lock_status_out()->set_state( status_state_t_error );
@@ -122,7 +120,7 @@ namespace mantis
 
             t_run_context->unlock_inbound();
 
-            cout << "[server_worker] running..." << endl;
+            MTINFO( mtlog, "running..." );
 
             thread* t_digitizer_thread = new thread( f_digitizer );
             thread* t_writer_thread = new thread( f_writer );
@@ -143,19 +141,19 @@ namespace mantis
             {
                 if( ! t_run_context->push_status_no_mutex() )
                 {
-                    cerr << "[server_worker] unable to send status <running> to the client" << endl;
+                    MTERROR( mtlog, "unable to send status <running> to the client" );
                     t_communication_fail = true;
                 }
             }
             catch( closed_connection& cc )
             {
-                cout << "[server_worker] closed connection detected by: " << cc.what();
+                MTINFO( mtlog, "closed connection detected by: " << cc.what() );
                 t_communication_fail = true;
             }
             t_run_context->unlock_outbound();
             if( t_communication_fail )
             {
-                cerr << "[server_wroker] ; canceling run" << endl;
+                MTERROR( mtlog, "; canceling run" );
                 f_digitizer->cancel();
                 f_writer->cancel();
             }
@@ -183,25 +181,25 @@ namespace mantis
             status* t_status = t_run_context->lock_status_out();
             if( ! f_canceled.load() )
             {
-                cout << "[server_worker] sending server status <stopped>..." << endl;
+                MTINFO( mtlog, "sending server status <stopped>..." );
                 t_status->set_state( status_state_t_stopped );
             }
             else
             {
-                cout << "[server_worker] sending server status <canceled>..." << endl;
+                MTINFO( mtlog, "sending server status <canceled>..." );
                 t_status->set_state( status_state_t_canceled );
             }
             try
             {
                 if( ! t_run_context->push_status_no_mutex() )
                 {
-                    cerr << "[server_worker] unable to send status <stopped>/<canceled> to client" << endl;
+                    MTERROR( mtlog, "unable to send status <stopped>/<canceled> to client" );
                     t_communication_fail = true;
                 }
             }
             catch( closed_connection& cc )
             {
-                cout << "[server_worker] closed connection detected by: " << cc.what();
+                MTINFO( mtlog, "closed connection detected by: " << cc.what() );
                 t_communication_fail = true;
             }
             t_run_context->unlock_outbound();
@@ -215,7 +213,7 @@ namespace mantis
                 continue;
             }
 
-            cout << "[server_worker] finalizing..." << endl;
+            MTINFO( mtlog, "finalizing..." );
 
             response* t_response = t_run_context->lock_response_out();
             f_digitizer->finalize( t_response );
@@ -227,7 +225,7 @@ namespace mantis
             }
             catch( closed_connection& cc )
             {
-                cout << "[server_worker] closed connection detected by: " << cc.what();
+                MTINFO( mtlog, "closed connection detected by: " << cc.what() );
             }
             t_run_context->unlock_outbound();
 
@@ -242,7 +240,6 @@ namespace mantis
 
     void server_worker::cancel()
     {
-        //std::cout << "CANCELLING SERVER WORKER" << std::endl;
         f_canceled.store( true );
 
         if( f_digitizer_state == k_running )

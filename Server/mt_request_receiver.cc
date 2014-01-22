@@ -2,19 +2,17 @@
 
 #include "mt_buffer.hh"
 #include "mt_condition.hh"
+#include "mt_logger.hh"
 #include "mt_run_context_dist.hh"
 #include "mt_run_queue.hh"
 #include "mt_server.hh"
 
 #include <cstddef>
 
-#include <iostream>
-using std::cout;
-using std::cerr;
-using std::endl;
 
 namespace mantis
 {
+    MTLOGGER( mtlog, "request_receiver" );
 
     request_receiver::request_receiver( server* a_server, run_queue* a_run_queue, condition* a_condition ) :
             f_server( a_server ),
@@ -37,19 +35,19 @@ namespace mantis
         while( true )
         {
             t_run_context = new run_context_dist();
-            cout << "[request_receiver] waiting for incoming connections" << endl;
+            MTINFO( mtlog, "waiting for incoming connections" );
             // thread is blocked by the accept call in server::get_connection 
             // until an incoming connection is received
             t_run_context->set_connection( f_server->get_connection() );
 
-            cout << "[request_receiver] receiving request..." << endl;
+            MTINFO( mtlog, "receiving request..." );
 
             try
             {
                 // use blocking option for pull request
                 if( ! t_run_context->pull_request( MSG_WAITALL ) )
                 {
-                    cerr << "[request_receiver] unable to pull run request; sending server status <error>" << endl;
+                    MTERROR( mtlog, "unable to pull run request; sending server status <error>" );
                     t_run_context->lock_status_out()->set_state( status_state_t_error );
                     t_run_context->push_status_no_mutex();
                     t_run_context->unlock_outbound();
@@ -58,7 +56,7 @@ namespace mantis
                     continue;
                 }
 
-                cout << "[request_receiver] sending server status <acknowledged>..." << endl;
+                MTINFO( mtlog, "sending server status <acknowledged>..." );
 
                 status* t_status = t_run_context->lock_status_out();
                 t_status->set_state( status_state_t_acknowledged );
@@ -68,11 +66,11 @@ namespace mantis
                 t_run_context->push_status_no_mutex();
                 t_run_context->unlock_outbound();
 
-                cout << "[request_receiver] waiting for client readiness..." << endl;
+                MTINFO( mtlog, "waiting for client readiness..." );
 
                 if( ! t_run_context->pull_client_status( MSG_WAITALL ) )
                 {
-                    cerr << "[request_receiver] unable to pull client status; sending server status <error>" << endl;
+                    MTERROR( mtlog, "unable to pull client status; sending server status <error>" );
                     t_run_context->lock_status_out()->set_state( status_state_t_error );
                     t_run_context->push_status_no_mutex();
                     t_run_context->unlock_outbound();
@@ -84,7 +82,7 @@ namespace mantis
                 t_run_context->unlock_inbound();
                 if( ! t_client_state == client_status_state_t_ready )
                 {
-                    cerr << "[request_receiver] client did not get ready; sending server status <error>" << endl;
+                    MTERROR( mtlog, "client did not get ready; sending server status <error>" );
                     t_run_context->lock_status_out()->set_state( status_state_t_error );
                     t_run_context->push_status_no_mutex();
                     t_run_context->unlock_outbound();
@@ -95,13 +93,13 @@ namespace mantis
             }
             catch( closed_connection& cc )
             {
-                cout << "[request_receiver] connection closed; detected in <" << cc.what() << ">" << endl;
+                MTINFO( mtlog, "connection closed; detected in <" << cc.what() << ">" );
                 delete t_run_context->get_connection();
                 delete t_run_context;
                 continue;
             }
 
-            cout << "[request_receiver] queuing request..." << endl;
+            MTINFO( mtlog, "queuing request..." );
 
             t_run_context->lock_status_out()->set_state( status_state_t_waiting );
             t_run_context->unlock_outbound();
@@ -111,11 +109,11 @@ namespace mantis
             // if the queue condition is waiting, release it
             if( f_condition->is_waiting() == true )
             {
-                //cout << "[request_receiver] releasing queue condition" << endl;
+                //MTINFO( mtlog, "releasing queue condition" );
                 f_condition->release();
             }
 
-            //cout << "[request_receiver] finished processing request" << endl;
+            //MTINFO( mtlog, "finished processing request" );
         }
 
         return;
@@ -123,7 +121,6 @@ namespace mantis
 
     void request_receiver::cancel()
     {
-        //std::cout << "CANCELLING REQUEST RECEIVER" << std::endl;
         return;
     }
 

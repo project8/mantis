@@ -5,6 +5,7 @@
 #include "mt_exception.hh"
 #include "mt_factory.hh"
 #include "mt_iterator.hh"
+#include "mt_logger.hh"
 
 #include "response.pb.h"
 
@@ -13,13 +14,11 @@
 #include <cstring> // for memset()
 #include <errno.h>
 //#include <fcntl.h> // for O_CREAT and O_EXCL
-#include <iostream>
-using std::cerr;
-using std::cout;
-using std::endl;
 
 namespace mantis
 {
+    MTLOGGER( mtlog, "digitizer_test" );
+
     static registrar< digitizer, digitizer_test > s_digtest_registrar("test");
 
     digitizer_test::digitizer_test() :
@@ -56,7 +55,7 @@ namespace mantis
     {
         if( f_allocated )
         {
-            cout << "[digitzer_test] deallocating buffer..." << endl;
+            MTINFO( mtlog, "deallocating buffer..." );
 
             iterator t_it( f_buffer );
             for( unsigned int index = 0; index < f_buffer->size(); index++ )
@@ -78,7 +77,7 @@ namespace mantis
         f_buffer = a_buffer;
         f_condition = a_condition;
 
-        cout << "[digitizer_test] allocating buffer..." << endl;
+        MTINFO( mtlog, "allocating buffer..." );
 
         iterator t_it( f_buffer );
         for( unsigned int index = 0; index < f_buffer->size(); index++ )
@@ -94,7 +93,7 @@ namespace mantis
 
     void digitizer_test::initialize( request* a_request )
     {
-        //cout << "[digitizer_test] resetting counters..." << endl;
+        //MTINFO( mtlog, "resetting counters..." );
 
         f_record_last = (record_id_type) (ceil( (double) (a_request->rate() * a_request->duration() * 1.e3) / (double) (f_buffer->record_size()) ));
         f_record_count = 0;
@@ -114,11 +113,11 @@ namespace mantis
         timespec t_dead_stop_time;
         timespec t_stamp_time;
 
-        //cout << "[digitizer_test] waiting" << endl;
+        //MTINFO( mtlog, "waiting" );
 
         f_condition->wait();
 
-        cout << "[digitizer_test] loose at <" << t_it.index() << ">" << endl;
+        MTINFO( mtlog, "loose at <" << t_it.index() << ">" );
 
         int t_old_cancel_state;
         pthread_setcancelstate( PTHREAD_CANCEL_DISABLE, &t_old_cancel_state );
@@ -132,7 +131,7 @@ namespace mantis
         //start timing
         get_time_monotonic( &t_live_start_time );
 
-        cout << "[digitizer_test] planning on " << f_record_last << " records" << endl;
+        MTINFO( mtlog, "planning on " << f_record_last << " records" );
 
         //go go go go
         while( true )
@@ -154,12 +153,12 @@ namespace mantis
                 //GET OUT
                 if( f_canceled.load() )
                 {
-                    cout << "[digitizer_test] was canceled mid-run" << endl;
+                    MTINFO( mtlog, "was canceled mid-run" );
                     f_cancel_condition.release();
                 }
                 else
                 {
-                    cout << "[digitizer_test] finished normally" << endl;
+                    MTINFO( mtlog, "finished normally" );
                 }
                 return;
             }
@@ -184,7 +183,7 @@ namespace mantis
                 }
 
                 //GET OUT
-                cout << "[digitizer_test] finished abnormally because acquisition failed" << endl;
+                MTINFO( mtlog, "finished abnormally because acquisition failed" );
 
                 return;
             }
@@ -193,7 +192,7 @@ namespace mantis
 
             if( +t_it == false )
             {
-                cout << "[digitizer_test] blocked at <" << t_it.index() << ">" << endl;
+                MTINFO( mtlog, "blocked at <" << t_it.index() << ">" );
 
                 //stop live timer
                 get_time_monotonic( &t_live_stop_time );
@@ -205,7 +204,7 @@ namespace mantis
                 if( stop() == false )
                 {
                     //GET OUT
-                    cout << "[digitizer_test] finished abnormally because halting streaming failed" << endl;
+                    MTINFO( mtlog, "finished abnormally because halting streaming failed" );
                     return;
                 }
 
@@ -231,7 +230,7 @@ namespace mantis
                     }
 
                     //GET OUT
-                    cout << "[digitizer_test] finished abnormally because starting streaming failed" << endl;
+                    MTINFO( mtlog, "finished abnormally because starting streaming failed" );
                     return;
                 }
 
@@ -241,9 +240,9 @@ namespace mantis
                 //start live timer
                 get_time_monotonic( &t_live_start_time );;
 
-                cout << "[digitizer_test] loose at <" << t_it.index() << ">" << endl;
+                MTINFO( mtlog, "loose at <" << t_it.index() << ">" );
             }
-            //cout << "[digitizer_test] record count: " << f_record_count << endl;
+            //MTINFO( mtlog, "record count: " << f_record_count );
 
             // slow things down a bit, since this is for testing purposes, after all
             usleep( 100 );
@@ -253,18 +252,18 @@ namespace mantis
     }
     void digitizer_test::cancel()
     {
-        //cout << "CANCELLING DIGITIZER TEST" << endl;
+        //cout << "CANCELLING DIGITIZER TEST" );
         if( ! f_canceled.load() )
         {
             f_canceled.store( true );
             f_cancel_condition.wait();
         }
-        //cout << "  digitizer_test is done canceling" << endl;
+        //cout << "  digitizer_test is done canceling" );
         return;
     }
     void digitizer_test::finalize( response* a_response )
     {
-        //cout << "[digitizer_test] calculating statistics..." << endl;
+        //MTINFO( mtlog, "calculating statistics..." );
 
         a_response->set_digitizer_records( f_record_count );
         a_response->set_digitizer_acquisitions( f_acquisition_count );

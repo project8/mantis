@@ -10,13 +10,16 @@
 
 #include "mt_singleton.hh"
 
-#include <iostream>
+#include "mt_logger.hh"
+
 #include <map>
 #include <string>
 #include <utility>
 
 namespace mantis
 {
+    MTLOGGER( mtlog_fact, "factory" );
+
     template< class XBaseType >
     class factory;
 
@@ -88,7 +91,7 @@ namespace mantis
         FactoryCIt it = fMap->find(a_class_name);
         if (it == fMap->end())
         {
-            std::cerr << "Did not find factory for <" << a_class_name << ">." << std::endl;
+            MTERROR( mtlog_fact, "Did not find factory for <" << a_class_name << ">." );
             return NULL;
         }
 
@@ -101,7 +104,7 @@ namespace mantis
         FactoryCIt it = fMap->find(a_class_name);
         if (it != fMap->end())
         {
-            std::cerr << "Already have factory register_classed for <" << a_class_name << ">." << std::endl;
+            MTERROR( mtlog_fact, "Already have factory register_classed for <" << a_class_name << ">." );
             return;
         }
         fMap->insert(std::pair< std::string, const base_registrar< XBaseType >* >(a_class_name, a_registrar));
