@@ -60,7 +60,7 @@ int main( int argc, char** argv )
         return -1;
     }
 
-    MTINFO( mtlog, " creating objects..." );
+    MTINFO( mtlog, "creating objects..." );
 
     size_t t_buffer_size = t_config->get< int >( "buffer-size" );
     size_t t_record_size = t_config->get< int >( "record-size" );
@@ -118,7 +118,7 @@ int main( int argc, char** argv )
 
     delete t_config;
 
-    MTINFO( mtlog, " starting threads..." );
+    MTINFO( mtlog, "starting threads..." );
 
     try
     {
@@ -135,7 +135,7 @@ int main( int argc, char** argv )
         t_receiver_thread.start();
         t_worker_thread.start();
 
-        MTINFO( mtlog, " running..." );
+        MTINFO( mtlog, "running..." );
 
         t_queue_thread.join();
         t_receiver_thread.join();
@@ -154,7 +154,7 @@ int main( int argc, char** argv )
         return -1;
     }
 
-    MTINFO( mtlog, " shutting down..." );
+    MTINFO( mtlog, "shutting down..." );
 
     delete t_server;
 

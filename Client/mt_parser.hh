@@ -1,7 +1,7 @@
 #ifndef MT_PARSER_HH_
 #define MT_PARSER_HH_
 
-#include "mt_config_node.hh"
+#include "mt_param.hh"
 
 #include "mt_exception.hh"
 

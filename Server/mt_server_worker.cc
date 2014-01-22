@@ -18,16 +18,16 @@ namespace mantis
     MTLOGGER( mtlog, "server_worker" );
 
     server_worker::server_worker( configurator* a_config, digitizer* a_digitizer, buffer* a_buffer, run_queue* a_run_queue, condition* a_queue_condition, condition* a_buffer_condition ) :
-            f_config( a_config ),
-            f_digitizer( a_digitizer ),
-            f_writer( NULL ),
-            f_buffer( a_buffer ),
-            f_run_queue( a_run_queue ),
-            f_queue_condition( a_queue_condition ),
-            f_buffer_condition( a_buffer_condition ),
-            f_canceled( false ),
-            f_digitizer_state( k_inactive ),
-            f_writer_state( k_inactive )
+                    f_config( a_config ),
+                    f_digitizer( a_digitizer ),
+                    f_writer( NULL ),
+                    f_buffer( a_buffer ),
+                    f_run_queue( a_run_queue ),
+                    f_queue_condition( a_queue_condition ),
+                    f_buffer_condition( a_buffer_condition ),
+                    f_canceled( false ),
+                    f_digitizer_state( k_inactive ),
+                    f_writer_state( k_inactive )
     {
     }
 
@@ -83,7 +83,7 @@ namespace mantis
             if(! f_digitizer->write_mode_check( t_request->file_write_mode() ) )
             {
                 MTERROR( mtlog, "unable to operate in write mode " << t_request->file_write_mode() << '\n'
-                     << "                run request ignored" );
+                        << "                run request ignored" );
                 t_run_context->unlock_inbound();
 
                 t_run_context->lock_status_out()->set_state( status_state_t_error );
@@ -111,12 +111,12 @@ namespace mantis
             f_writer->set_buffer( f_buffer, f_buffer_condition );
             f_writer->configure( f_config );
             if( ! f_writer->initialize( t_request ) )
-	    {
+            {
                 t_run_context->unlock_inbound();
                 delete t_run_context->get_connection();
                 delete t_run_context;
                 continue;
-	    }
+            }
 
             t_run_context->unlock_inbound();
 

@@ -27,7 +27,7 @@ namespace mantis
 
         add( "record-size", server_config << 4194304 );
 
-        add( "value-chunk-size", server_config << 1024 );
+        add( "data-chunk-size", server_config << 1024 );
     }
 
     server_config::~server_config()

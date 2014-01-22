@@ -8,7 +8,7 @@
 #ifndef MT_CLIENT_CONFIG_HH_
 #define MT_CLIENT_CONFIG_HH_
 
-#include "mt_config_node.hh"
+#include "mt_param.hh"
 
 namespace mantis
 {

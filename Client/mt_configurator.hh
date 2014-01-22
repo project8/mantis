@@ -8,7 +8,7 @@
 #ifndef MT_CONFIGURATOR_HH_
 #define MT_CONFIGURATOR_HH_
 
-#include "mt_config_node.hh"
+#include "mt_param.hh"
 
 #include "mt_exception.hh"
 
