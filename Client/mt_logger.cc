@@ -15,6 +15,8 @@
 
 #include "mt_logger.hh"
 
+#include "mt_mutex.hh"
+
 #include <cstdlib>
 #include <cstring>
 
@@ -217,6 +219,8 @@ namespace mantis
 {
     struct logger::Private
     {
+            static mutex sMutex;
+
             const char* fLogger;
             bool fColored;
 
@@ -251,20 +255,26 @@ namespace mantis
 
             void logCout(const char* level, const string& message, const Location& /*loc*/, const string& color = skOtherColor)
             {
+                logger::Private::sMutex.lock();
                 if (fColored)
                     cout << color << __DATE__ " " __TIME__ " [" << setw(5) << level << "] " << setw(16) << fLogger << ": " << message << skEndColor << endl;
                 else
                     cout << __DATE__ " " __TIME__ " [" << setw(5) << level << "] " << setw(16) << fLogger << ": " << message << endl;
+                logger::Private::sMutex.unlock();
             }
 
             void logCerr(const char* level, const string& message, const Location& /*loc*/, const string& color = skOtherColor)
             {
+                logger::Private::sMutex.lock();
                 if (fColored)
                     cerr << color << __DATE__ " " __TIME__ " [" << setw(5) << level << "] " << setw(16) << fLogger << ": " << message << skEndColor << endl;
                 else
                     cerr << __DATE__ " " __TIME__ " [" << setw(5) << level << "] " << setw(16) << fLogger << ": " << message << endl;
+                logger::Private::sMutex.unlock();
             }
     };
+
+    mutex logger::Private::sMutex;
 
     logger::logger(const char* name) : fPrivate(new Private())
     {
