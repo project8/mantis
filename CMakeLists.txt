@@ -35,7 +35,7 @@ list( FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${Monarch_LIBRARY_DIR}" isS
 if( "${isSystemDir}" STREQUAL "-1" )
    list( APPEND CMAKE_INSTALL_RPATH ${Monarch_LIBRARY_DIR} )
 endif( "${isSystemDir}" STREQUAL "-1" )
-include_directories( ${PROJECT_SOURCE_DIR}/Monarch/Include )
+include_directories( ${PROJECT_SOURCE_DIR}/Monarch/Source )
 include_directories( ${PROJECT_SOURCE_DIR}/Monarch/libthorax/cpp )
 include_directories( ${PROJECT_SOURCE_DIR}/Monarch/libthorax )
 

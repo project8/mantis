@@ -4,8 +4,6 @@
 #include "mt_writer.hh"
 
 #include "Monarch.hpp"
-#include "MonarchHeader.hpp"
-#include "MonarchRecord.hpp"
 
 #include <string>
 
@@ -24,9 +22,9 @@ namespace mantis
             bool initialize_derived( request* a_response );
 
         private:
-            Monarch* f_monarch;
-            MonarchHeader* f_header;
-            MonarchRecord* f_record;
+            monarch::Monarch8Bit* f_monarch;
+            monarch::MonarchHeader* f_header;
+            monarch::MonarchRecord8Bit* f_record;
 
             bool write( block* a_block );
     };

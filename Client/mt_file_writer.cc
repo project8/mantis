@@ -37,9 +37,9 @@ namespace mantis
 
         try
         {
-            f_monarch = Monarch::OpenForWriting( a_request->file() );
+            f_monarch = monarch::Monarch8Bit::OpenForWriting( a_request->file() );
         }
-        catch( MonarchException& e )
+        catch( monarch::MonarchException& e )
         {
             MTERROR( mtlog, "error opening file: " << e.what() );
             return false;
@@ -50,18 +50,18 @@ namespace mantis
         f_header->SetFilename( a_request->file() );
         if( a_request->mode() == request_mode_t_single )
         {
-            f_header->SetAcquisitionMode( sOneChannel );
-            f_header->SetFormatMode( sFormatSingle );
+            f_header->SetAcquisitionMode( monarch::sOneChannel );
+            f_header->SetFormatMode( monarch::sFormatSingle );
         }
         if( a_request->mode() == request_mode_t_dual_separate )
         {
-            f_header->SetAcquisitionMode( sTwoChannel );
-            f_header->SetFormatMode( sFormatMultiSeparate );
+            f_header->SetAcquisitionMode( monarch::sTwoChannel );
+            f_header->SetFormatMode( monarch::sFormatMultiSeparate );
         }
         if( a_request->mode() == request_mode_t_dual_interleaved )
         {
-            f_header->SetAcquisitionMode( sTwoChannel );
-            f_header->SetFormatMode( sFormatMultiInterleaved );
+            f_header->SetAcquisitionMode( monarch::sTwoChannel );
+            f_header->SetFormatMode( monarch::sFormatMultiInterleaved );
         }
         f_header->SetAcquisitionRate( a_request->rate() );
         f_header->SetRunDuration( a_request->duration() );
@@ -70,8 +70,8 @@ namespace mantis
         //optional fields
         f_header->SetTimestamp( a_request->date() );
         f_header->SetDescription( a_request->description() );
-        f_header->SetRunType( sRunTypeSignal );
-        f_header->SetRunSource( sSourceMantis );
+        f_header->SetRunType( monarch::sRunTypeSignal );
+        f_header->SetRunSource( monarch::sSourceMantis );
 
         MTINFO( mtlog, "writing header..." );
 
@@ -79,21 +79,21 @@ namespace mantis
 	{ 
             f_monarch->WriteHeader();
         }
-        catch( MonarchException& e )
+        catch( monarch::MonarchException& e )
 	{
             MTERROR( mtlog, "error while writing header: " << e.what() );
             return false;
 	}
-        f_monarch->SetInterface( sInterfaceInterleaved );
+        f_monarch->SetInterface( monarch::sInterfaceInterleaved );
         f_record = f_monarch->GetRecordInterleaved();
 
         return true;
     }
     bool file_writer::write( block* a_block )
     {
-        f_record->fAcquisitionId = (AcquisitionIdType) (a_block->get_acquisition_id());
-        f_record->fRecordId = (RecordIdType) (a_block->get_record_id());
-        f_record->fTime = (TimeType) (a_block->get_timestamp());
+        f_record->fAcquisitionId = (monarch::AcquisitionIdType) (a_block->get_acquisition_id());
+        f_record->fRecordId = (monarch::RecordIdType) (a_block->get_record_id());
+        f_record->fTime = (monarch::TimeType) (a_block->get_timestamp());
         ::memcpy( f_record->fData, a_block->data(), a_block->get_data_size() );
 
         return f_monarch->WriteRecord();
