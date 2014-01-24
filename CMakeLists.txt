@@ -5,6 +5,7 @@ cmake_minimum_required( VERSION 2.8 )
 #########
 
 project( Mantis )
+cmake_policy (SET CMP0011 NEW)
 
 list( APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR} )
 
