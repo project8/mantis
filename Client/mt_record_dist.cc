@@ -12,9 +12,9 @@ namespace mantis
     MTLOGGER( mtlog, "record_dist" );
 
     record_dist::record_dist() :
-            f_data_chunk_size( 1024 ),
+            f_data_chunk_nbytes( 1024 ),
             f_n_full_chunks( 0 ),
-            f_last_data_chunk_size( 0 )
+            f_last_data_chunk_nbytes( 0 )
     {
     }
     record_dist::~record_dist()
@@ -31,10 +31,10 @@ namespace mantis
 
         if( a_block->header()->data_size() > 0 )
         {
-            f_n_full_chunks = a_block->header()->data_size() / f_data_chunk_size;
-            f_last_data_chunk_size = a_block->header()->data_size() - f_data_chunk_size * f_n_full_chunks;
+            f_n_full_chunks = a_block->get_data_nbytes() / f_data_chunk_nbytes;
+            f_last_data_chunk_nbytes = a_block->get_data_nbytes() - f_data_chunk_nbytes * f_n_full_chunks;
 
-            if( ! push_data( a_block->data(), flags ) )
+            if( ! push_data( a_block->data_bytes(), flags ) )
             {
                 MTERROR( mtlog, "unable to push the block data" );
                 return false;
@@ -43,6 +43,7 @@ namespace mantis
 
         return true;
     }
+
     bool record_dist::pull_record( block* a_block, int flags )
     {
         if( ! pull_header( a_block->header(), flags ) )
@@ -54,10 +55,10 @@ namespace mantis
         // data_size == 0 is allowed, but pull_data would return false, so don't even try if that's what's expected
         if( a_block->header()->data_size() > 0 )
         {
-            f_n_full_chunks = a_block->header()->data_size() / f_data_chunk_size;
-            f_last_data_chunk_size = a_block->header()->data_size() - f_data_chunk_size * f_n_full_chunks;
+            f_n_full_chunks = a_block->get_data_nbytes() / f_data_chunk_nbytes;
+            f_last_data_chunk_nbytes = a_block->get_data_nbytes() - f_data_chunk_nbytes * f_n_full_chunks;
 
-            if( ! pull_data( a_block->data(), flags ) )
+            if( ! pull_data( a_block->data_bytes(), flags ) )
             {
                 MTERROR( mtlog, "unable to pull the block data" );
                 return false;
@@ -88,16 +89,16 @@ namespace mantis
         return true;
     }
 
-    bool record_dist::push_data( const data_type* a_block_data, int flags )
+    bool record_dist::push_data( const char* a_block_data, int flags )
     {
-        const data_type* t_offset_data = a_block_data;
+        const char* t_offset_data = a_block_data;
         unsigned i_chunk = 0;
         try
         {
             for( ; i_chunk < f_n_full_chunks; ++i_chunk )
             {
-                f_connection->send( (char*)( t_offset_data ), f_data_chunk_size, flags );
-                t_offset_data += f_data_chunk_size;
+                f_connection->send( t_offset_data, f_data_chunk_nbytes, flags );
+                t_offset_data += f_data_chunk_nbytes;
             }
         }
         catch( closed_connection& cc )
@@ -112,11 +113,11 @@ namespace mantis
             return false;
         }
 
-        if( f_last_data_chunk_size > 0 )
+        if( f_last_data_chunk_nbytes > 0 )
         {
             try
             {
-                f_connection->send( (char*)( t_offset_data ), f_last_data_chunk_size, flags );
+                f_connection->send( t_offset_data, f_last_data_chunk_nbytes, flags );
             }
             catch( closed_connection& cc )
             {
@@ -168,18 +169,28 @@ namespace mantis
         return false;
     }
 
-    bool record_dist::pull_data( data_type* a_block_data, int flags )
+    size_t record_dist::get_data_chunk_nbytes()
     {
-        data_type* t_offset_data = a_block_data;
+        return f_data_chunk_nbytes;
+    }
+    void record_dist::set_data_chunk_nbytes( size_t nbytes )
+    {
+        f_data_chunk_nbytes = nbytes;
+        return;
+    }
+
+    bool record_dist::pull_data( char* a_block_data, int flags )
+    {
+        char* t_offset_data = a_block_data;
         unsigned i_chunk = 0;
         try
         {
             for( ; i_chunk < f_n_full_chunks; ++i_chunk )
             {
                 f_connection->recv_type< size_t >( flags );
-                if( f_connection->recv( (char*)( t_offset_data ), f_data_chunk_size, flags ) == 0 )
+                if( f_connection->recv( t_offset_data, f_data_chunk_nbytes, flags ) == 0 )
                     return false;
-                t_offset_data += f_data_chunk_size;
+                t_offset_data += f_data_chunk_nbytes;
             }
         }
         catch( closed_connection& cc )
@@ -194,12 +205,12 @@ namespace mantis
             return false;
         }
 
-        if( f_last_data_chunk_size > 0 )
+        if( f_last_data_chunk_nbytes > 0 )
         {
             try
             {
                 f_connection->recv_type< size_t >( flags );
-                if( f_connection->recv( (char*)( t_offset_data ), f_last_data_chunk_size, flags ) == 0 )
+                if( f_connection->recv( t_offset_data, f_last_data_chunk_nbytes, flags ) == 0 )
                     return false;
             }
             catch( closed_connection& cc )
@@ -218,13 +229,4 @@ namespace mantis
         return true;
     }
 
-    size_t record_dist::get_data_chunk_size()
-    {
-        return f_data_chunk_size;
-    }
-    void record_dist::set_data_chunk_size( size_t size )
-    {
-        f_data_chunk_size = size;
-        return;
-    }
 }

@@ -19,8 +19,8 @@ namespace mantis
             digitizer_px1500();
             virtual ~digitizer_px1500();
 
-            void allocate( buffer* a_buffer, condition* a_condition );
-            void initialize( request* a_request );
+            bool allocate( buffer* a_buffer, condition* a_condition );
+            bool initialize( request* a_request );
             void execute();
             void cancel();
             void finalize( response* a_response );

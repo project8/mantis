@@ -10,7 +10,6 @@
 #include "response.pb.h"
 
 #include <cmath> // for ceil()
-#include <cstdlib> // for exit()
 #include <cstring>
 #include <errno.h>
 //#include <fcntl.h> // for O_CREAT and O_EXCL
@@ -87,7 +86,7 @@ namespace mantis
         */
     }
 
-    void digitizer_px1500::allocate( buffer* a_buffer, condition* a_condition )
+    bool digitizer_px1500::allocate( buffer* a_buffer, condition* a_condition )
     {
         f_buffer = a_buffer;
         f_condition = a_condition;
@@ -100,7 +99,7 @@ namespace mantis
         if( t_result != SIG_SUCCESS )
         {
             DumpLibErrorPX4( t_result, "failed to connect to digitizer card: " );
-            exit( -1 );
+            return false;
         }
 
         //MTINFO( mtlog, "setting power up defaults..." );
@@ -109,7 +108,7 @@ namespace mantis
         if( t_result != SIG_SUCCESS )
         {
             DumpLibErrorPX4( t_result, "failed to enter default state: " );
-            exit( -1 );
+            return false;
         }
 
         MTINFO( mtlog, "allocating dma buffer..." );
@@ -121,16 +120,16 @@ namespace mantis
             if( t_result != SIG_SUCCESS )
             {
                 DumpLibErrorPX4( t_result, "failed to allocate dma memory: " );
-                exit( -1 );
+                return false;
             }
             t_it->set_data_size( f_buffer->record_size() );
             ++t_it;
         }
 
         f_allocated = true;
-        return;
+        return true;
     }
-    void digitizer_px1500::initialize( request* a_request )
+    bool digitizer_px1500::initialize( request* a_request )
     {
         int t_result;
 
@@ -150,7 +149,7 @@ namespace mantis
             if( t_result != SIG_SUCCESS )
             {
                 DumpLibErrorPX4( t_result, "failed to activate channel 1: " );
-                exit( -1 );
+                return false;
             }
 
         }
@@ -160,7 +159,7 @@ namespace mantis
             if( t_result != SIG_SUCCESS )
             {
                 DumpLibErrorPX4( t_result, "failed to activate channels 1 and 2: " );
-                exit( -1 );
+                return false;
             }
         }
 
@@ -170,10 +169,10 @@ namespace mantis
         if( t_result != SIG_SUCCESS )
         {
             DumpLibErrorPX4( t_result, "failed to set clock rate: " );
-            exit( -1 );
+            return false;
         }
 
-        return;
+        return true;
     }
     void digitizer_px1500::execute()
     {

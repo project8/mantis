@@ -7,11 +7,11 @@
 namespace mantis
 {
 
-    class block
+    class block_base
     {
         public:
-            block();
-            virtual ~block();
+            block_base();
+            virtual ~block_base();
 
             block_header_state_t get_state() const;
             void set_state( block_header_state_t a_state );
@@ -40,19 +40,89 @@ namespace mantis
             size_t get_data_size() const;
             void set_data_size( const size_t& a_size );
 
+            size_t get_data_nbytes() const = 0;
+
             block_header* header();
             const block_header* header() const;
 
-            data_type* data();
-            const data_type* data() const;
+            char* data_bytes() = 0;
+            const char* data_bytes() const = 0;
 
-            data_type** handle();
-
-        private:
+        protected:
             block_header f_header;
-            data_type* f_data;
 
     };
+
+    template< typename DataType >
+    class block : public block_base
+    {
+        public:
+            block();
+            virtual ~block();
+
+            size_t get_data_nbytes() const = 0;
+
+            DataType* data();
+            const DataType* data() const;
+
+            DataType** handle();
+
+            char* data_bytes();
+            const char* data_bytes() const;
+
+        private:
+            DataType* f_data;
+
+    };
+
+    template< typename DataType >
+    block< DataType >::block() :
+            block(),
+            f_data( NULL )
+    {
+    }
+
+    template< typename DataType >
+    block< DataType >::~block()
+    {
+    }
+
+    template< typename DataType >
+    size_t block< DataType >::get_data_nbytes() const
+    {
+        return sizeof( DataType ) * f_header->data_size();
+    }
+
+    template< typename DataType >
+    DataType* block< DataType >::data()
+    {
+        return f_data;
+    }
+
+    template< typename DataType >
+    const DataType* block< DataType >::data() const
+    {
+        return f_data;
+    }
+
+    template< typename DataType >
+    DataType** block< DataType >::handle()
+    {
+        return &f_data;
+    }
+
+    template< typename DataType >
+    char* block< DataType >::data_bytes()
+    {
+        return ( char* )f_data;
+    }
+
+    template< typename DataType >
+    const char* block< DataType >::data_bytes() const
+    {
+        return ( const char* )f_data;
+    }
+
 
 }
 

@@ -20,8 +20,8 @@ namespace mantis
             digitizer();
             virtual ~digitizer();
 
-            virtual void allocate( buffer* a_buffer, condition* a_condition ) = 0;
-            virtual void initialize( request* a_request ) = 0;
+            virtual bool allocate( buffer* a_buffer, condition* a_condition ) = 0;
+            virtual bool initialize( request* a_request ) = 0;
             virtual void finalize( response* a_response ) = 0;
 
             virtual bool write_mode_check( request_file_write_mode_t mode ) = 0;
