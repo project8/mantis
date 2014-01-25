@@ -75,7 +75,7 @@ namespace mantis
         f_record_dist = NULL;
     }
 
-    bool network_writer::write( block* a_block )
+    bool network_writer::write( block_base* a_block )
     {
         return f_record_dist->push_record( a_block );
     }

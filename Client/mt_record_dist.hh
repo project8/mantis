@@ -14,8 +14,8 @@ namespace mantis
             record_dist();
             virtual ~record_dist();
 
-            bool push_record( const block* a_block, int flags = 0 );
-            bool pull_record( block* a_block, int flags = 0 );
+            bool push_record( const block_base* a_block, int flags = 0 );
+            bool pull_record( block_base* a_block, int flags = 0 );
 
             size_t get_data_chunk_nbytes();
             void set_data_chunk_nbytes( size_t nbytes );
