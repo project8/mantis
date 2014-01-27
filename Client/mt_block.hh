@@ -40,13 +40,13 @@ namespace mantis
             size_t get_data_size() const;
             void set_data_size( const size_t& a_size );
 
-            size_t get_data_nbytes() const = 0;
+            virtual size_t get_data_nbytes() const = 0;
 
             block_header* header();
             const block_header* header() const;
 
-            char* data_bytes() = 0;
-            const char* data_bytes() const = 0;
+            virtual char* data_bytes() = 0;
+            virtual const char* data_bytes() const = 0;
 
         protected:
             block_header f_header;
@@ -60,15 +60,15 @@ namespace mantis
             block();
             virtual ~block();
 
-            size_t get_data_nbytes() const = 0;
+            virtual size_t get_data_nbytes() const = 0;
 
             DataType* data();
             const DataType* data() const;
 
             DataType** handle();
 
-            char* data_bytes();
-            const char* data_bytes() const;
+            virtual char* data_bytes();
+            virtual const char* data_bytes() const;
 
         private:
             DataType* f_data;
