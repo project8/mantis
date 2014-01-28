@@ -18,8 +18,11 @@ namespace mantis
             const unsigned int& size() const;
             const unsigned int& record_size() const;
 
+            void set_block( unsigned a_index, block* a_block );
+            void delete_block( unsigned a_index );
+
         private:
-            block* f_blocks;
+            block** f_blocks;
             mutex* f_mutexes;
             unsigned int f_size;
             unsigned int f_record_size;

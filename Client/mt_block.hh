@@ -6,12 +6,17 @@
 
 namespace mantis
 {
+    struct block_cleanup
+    {
+            virtual ~block_cleanup() {};
+            virtual bool delete_data() = 0;
+    };
 
-    class block_base
+    class block
     {
         public:
-            block_base();
-            virtual ~block_base();
+            block();
+            virtual ~block();
 
             block_header_state_t get_state() const;
             void set_state( block_header_state_t a_state );
@@ -48,19 +53,23 @@ namespace mantis
             virtual char* data_bytes() = 0;
             virtual const char* data_bytes() const = 0;
 
+            void set_cleanup( block_cleanup* a_cleanup );
+
         protected:
             block_header f_header;
+
+            block_cleanup* f_cleanup;
 
     };
 
     template< typename DataType >
-    class block : public block_base
+    class typed_block : public block
     {
         public:
-            block();
-            virtual ~block();
+            typed_block();
+            virtual ~typed_block();
 
-            virtual size_t get_data_nbytes() const = 0;
+            virtual size_t get_data_nbytes() const;
 
             DataType* data();
             const DataType* data() const;
@@ -76,49 +85,49 @@ namespace mantis
     };
 
     template< typename DataType >
-    block< DataType >::block() :
-            block(),
+    typed_block< DataType >::typed_block() :
+            typed_block(),
             f_data( NULL )
     {
     }
 
     template< typename DataType >
-    block< DataType >::~block()
+    typed_block< DataType >::~typed_block()
     {
     }
 
     template< typename DataType >
-    size_t block< DataType >::get_data_nbytes() const
+    size_t typed_block< DataType >::get_data_nbytes() const
     {
         return sizeof( DataType ) * f_header->data_size();
     }
 
     template< typename DataType >
-    DataType* block< DataType >::data()
+    DataType* typed_block< DataType >::data()
     {
         return f_data;
     }
 
     template< typename DataType >
-    const DataType* block< DataType >::data() const
+    const DataType* typed_block< DataType >::data() const
     {
         return f_data;
     }
 
     template< typename DataType >
-    DataType** block< DataType >::handle()
+    DataType** typed_block< DataType >::handle()
     {
         return &f_data;
     }
 
     template< typename DataType >
-    char* block< DataType >::data_bytes()
+    char* typed_block< DataType >::data_bytes()
     {
         return ( char* )f_data;
     }
 
     template< typename DataType >
-    const char* block< DataType >::data_bytes() const
+    const char* typed_block< DataType >::data_bytes() const
     {
         return ( const char* )f_data;
     }

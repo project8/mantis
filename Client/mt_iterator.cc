@@ -36,16 +36,16 @@ namespace mantis
     }
     block* iterator::object()
     {
-        return &f_blocks[ f_current_index ];
+        return f_blocks[ f_current_index ];
     }
 
     block* iterator::operator->()
     {
-        return &f_blocks[ f_current_index ];
+        return f_blocks[ f_current_index ];
     }
     block& iterator::operator*()
     {
-        return f_blocks[ f_current_index ];
+        return *f_blocks[ f_current_index ];
     }
 
     bool iterator::operator+()
