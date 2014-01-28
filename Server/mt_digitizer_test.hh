@@ -4,17 +4,29 @@
 #include "mt_digitizer.hh"
 
 #include "mt_atomic.hh"
+#include "mt_block.hh"
 #include "mt_condition.hh"
 #include "mt_mutex.hh"
 #include "request.pb.h"
 
 #include "thorax.hh"
 
+#include <stdint.h>
+
 //#include <semaphore.h>
 
 namespace mantis
 {
-    class block;
+    typedef uint8_t test_data_t ;
+
+    struct block_cleanup_test : block_cleanup
+    {
+        block_cleanup_test( test_data_t* a_data );
+        virtual ~block_cleanup_test();
+        virtual bool delete_data();
+        bool f_triggered;
+        test_data_t* f_data;
+    };
 
     class digitizer_test :
         public digitizer

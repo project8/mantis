@@ -60,12 +60,15 @@ namespace mantis
             iterator t_it( f_buffer );
             for( size_t Index = 0; Index < f_buffer->size(); Index++ )
             {
+                f_buffer->delete_block( t_it.index() );
+                /*
                 t_result = FreeDmaBufferPX4( f_handle, t_it->data() );
                 if( t_result != SIG_SUCCESS )
                 {
                     DumpLibErrorPX4( t_result, "failed to deallocate dma memory: " );
                     exit( -1 );
                 }
+                */
                 ++t_it;
             }
 
@@ -113,9 +116,10 @@ namespace mantis
 
         MTINFO( mtlog, "allocating dma buffer..." );
 
-        iterator t_it( f_buffer );
+        typed_iterator< px1500_data_t > t_it( f_buffer );
         for( unsigned int index = 0; index < f_buffer->size(); index++ )
         {
+            block* t_new_block = new typed_block< px1500_data_t >();
             t_result = AllocateDmaBufferPX4( f_handle, f_buffer->record_size(), t_it->handle() );
             if( t_result != SIG_SUCCESS )
             {
@@ -123,6 +127,9 @@ namespace mantis
                 return false;
             }
             t_it->set_data_size( f_buffer->record_size() );
+            t_new_block->set_cleanup( new block_cleanup_px1500( t_it->handle(), &f_handle ) );
+            f_buffer->set_block( t_it.index(), t_new_block );
+
             ++t_it;
         }
 
@@ -355,5 +362,30 @@ namespace mantis
     {
         return true;
     }
+
+
+    //***********************************
+    // Block Cleanup px1500
+    //***********************************
+
+    block_cleanup_px1500::block_cleanup_px1500( px1500_data_t* a_data, HPX4* a_dig_ptr ) :
+        f_triggered( false ),
+        f_data( a_data ),
+        f_dig_ptr( a_dig_ptr )
+    {}
+    block_cleanup_px1500::~block_cleanup_px1500()
+    {}
+    bool block_cleanup_px1500::delete_data()
+    {
+        if( f_triggered ) return true;
+        int t_result = FreeDmaBufferPX4( *f_dig_ptr, f_data );
+        if( t_result != SIG_SUCCESS )
+        {
+            DumpLibErrorPX4( t_result, "failed to deallocate dma memory: " );
+            return false;
+        }
+        return true;
+    }
+
 
 }

@@ -60,7 +60,8 @@ namespace mantis
             iterator t_it( f_buffer );
             for( unsigned int index = 0; index < f_buffer->size(); index++ )
             {
-                delete [] t_it->data();
+                f_buffer->delete_block( t_it.index() );
+                //delete [] t_it->data();
                 ++t_it;
             }
         }
@@ -79,11 +80,15 @@ namespace mantis
 
         MTINFO( mtlog, "allocating buffer..." );
 
-        iterator t_it( f_buffer );
+        typed_iterator< test_data_t > t_it( f_buffer );
         for( unsigned int index = 0; index < f_buffer->size(); index++ )
         {
+            block* t_new_block = new typed_block< test_data_t >();
             *( t_it->handle() ) = new data_type[ f_buffer->record_size() ];
             t_it->set_data_size( f_buffer->record_size() );
+            t_new_block->set_cleanup( new block_cleanup_test( t_it->handle() ) );
+            f_buffer->set_block( t_it.index(), t_new_block );
+
             ++t_it;
         }
 
@@ -313,4 +318,22 @@ namespace mantis
         f_canceled.store( a_flag );
         return;
     }
+
+    //***********************************
+    // Block Cleanup Test
+    //***********************************
+
+    block_cleanup_test::block_cleanup_test( test_data_t* a_data ) :
+        f_triggered( false ),
+        f_data( a_data )
+    {}
+    block_cleanup_test::~block_cleanup_test()
+    {}
+    bool block_cleanup_test::delete_data()
+    {
+        if( f_triggered ) return true;
+        // delete data here
+        return true;
+    }
+
 }

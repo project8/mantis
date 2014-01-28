@@ -3,6 +3,8 @@
 
 #include "mt_digitizer.hh"
 
+#include "mt_block.hh"
+
 #include "px1500.h"
 #include "thorax.hh"
 
@@ -10,7 +12,17 @@
 
 namespace mantis
 {
-    class block;
+    typedef px4_sample_t px1500_data_t;
+
+    struct block_cleanup_px1500 : block_cleanup
+    {
+        block_cleanup_px1500( px1500_data_t* a_data, HPX4* a_dig_ptr );
+        virtual ~block_cleanup_px1500();
+        virtual bool delete_data();
+        bool f_triggered;
+        px1500_data_t* f_data;
+        HPX4* f_dig_ptr;
+    };
 
     class digitizer_px1500 :
         public digitizer
