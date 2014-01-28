@@ -291,7 +291,7 @@ namespace mantis
         get_time_monotonic( &a_stamp_time );
         a_block->set_timestamp( time_to_nsec( a_stamp_time ) );
 
-        memset( a_block->data(), f_record_count % 256, f_buffer->record_size() );
+        ::memset( a_block->data_bytes(), f_record_count % 256, f_buffer->record_size() );
 
         ++f_record_count;
 
