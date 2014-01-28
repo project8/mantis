@@ -332,7 +332,7 @@ namespace mantis
     bool block_cleanup_test::delete_data()
     {
         if( f_triggered ) return true;
-        // delete data here
+        delete [] f_data;
         return true;
     }
 
