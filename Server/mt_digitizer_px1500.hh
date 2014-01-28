@@ -3,7 +3,9 @@
 
 #include "mt_digitizer.hh"
 
+#include "mt_atomic.hh"
 #include "mt_block.hh"
+#include "mt_condition.hh"
 
 #include "px1500.h"
 #include "thorax.hh"
@@ -39,6 +41,11 @@ namespace mantis
 
             bool write_mode_check( request_file_write_mode_t mode );
 
+            // thread-safe getter
+            bool get_canceled();
+            // thread-safe setter
+            void set_canceled( bool a_flag );
+
         private:
             //sem_t* f_semaphore;
 
@@ -53,6 +60,9 @@ namespace mantis
             acquisition_id_type f_acquisition_count;
             time_nsec_type f_live_time;
             time_nsec_type f_dead_time;
+
+            atomic_bool f_canceled;
+            condition f_cancel_condition;
 
             bool start();
             bool acquire( block* a_block, timespec& a_time_stamp );

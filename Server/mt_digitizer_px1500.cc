@@ -30,7 +30,9 @@ namespace mantis
             f_record_count( 0 ),
             f_acquisition_count( 0 ),
             f_live_time( 0 ),
-            f_dead_time( 0 )
+            f_dead_time( 0 ),
+            f_canceled( false ),
+            f_cancel_condition()
     {
         /*
         errno = 0;
@@ -210,7 +212,7 @@ namespace mantis
         while( true )
         {
             //check if we've written enough
-            if( f_record_count == f_record_last )
+            if( f_record_count == f_record_last || f_canceled.load() )
             {
                 //mark the block as written
                 t_it->set_written();
@@ -224,7 +226,15 @@ namespace mantis
                 stop();
 
                 //GET OUT
-                MTINFO( mtlog, "finished normally" );
+                if( f_canceled.load() )
+                {
+                    MTINFO( mtlog, "was canceled mid-run" );
+                    f_cancel_condition.release();
+                }
+                else
+                {
+                    MTINFO( mtlog, "finished normally" );
+                }
                 return;
             }
 
@@ -300,6 +310,11 @@ namespace mantis
     }
     void digitizer_px1500::cancel()
     {
+        if( ! f_canceled.load() )
+        {
+            f_canceled.store( true );
+            f_cancel_condition.wait();
+        }
         return;
     }
     void digitizer_px1500::finalize( response* a_response )
@@ -361,6 +376,17 @@ namespace mantis
     bool digitizer_px1500::write_mode_check( request_file_write_mode_t mode )
     {
         return true;
+    }
+
+    bool digitizer_px1500::get_canceled()
+    {
+        return f_canceled.load();
+    }
+
+    void digitizer_px1500::set_canceled( bool a_flag )
+    {
+        f_canceled.store( a_flag );
+        return;
     }
 
 
