@@ -49,18 +49,18 @@ namespace mantis
     class setup_loop : public callable
     {
         public:
-        setup_loop( run_context_dist* a_run_context );
-        virtual ~setup_loop();
+            setup_loop( run_context_dist* a_run_context );
+            virtual ~setup_loop();
 
-        void execute();
-        void cancel();
+            void execute();
+            void cancel();
 
-        int get_return();
+            int get_return();
 
         private:
-        run_context_dist* f_run_context;
-        atomic_bool f_canceled;
-        int f_return;
+            run_context_dist* f_run_context;
+            atomic_bool f_canceled;
+            int f_return;
     };
 
     class run_loop : public callable
@@ -147,14 +147,14 @@ int main( int argc, char** argv )
     }
     catch( exception& e )
     {
-        MTERROR( mtlog, "unable to start client: " << e.what() )
+        MTERROR( mtlog, "unable to start client: " << e.what() );
         return RETURN_ERROR;
     }
 
     t_run_context.set_connection( t_request_client );
 
 
-    MTINFO( mtlog, "starting communicator" )
+    MTINFO( mtlog, "starting communicator" );
 
     thread t_comm_thread( &t_run_context );
 
@@ -165,11 +165,11 @@ int main( int argc, char** argv )
         t_sig_hand.push_thread( &t_comm_thread );
 
         t_comm_thread.start();
-	t_run_context.wait_until_active();
+        t_run_context.wait_until_active();
     }
     catch( exception& e )
     {
-        MTERROR( mtlog, "an error occurred while running the communication thread" )
+        MTERROR( mtlog, "an error occurred while running the communication thread" );
         delete t_request_client;
         return RETURN_ERROR;
     }
@@ -182,7 +182,7 @@ int main( int argc, char** argv )
         t_run_context.cancel();
         t_comm_thread.cancel();
         delete t_request_client;
-        MTERROR( mtlog, "error sending request" )
+        MTERROR( mtlog, "error sending request" );
         return RETURN_ERROR;
     }
 
@@ -198,13 +198,15 @@ int main( int argc, char** argv )
     }
     if( t_setup_loop.get_return() == RETURN_ERROR )
     {
-        MTERROR( mtlog, "exiting due to error during setup loop" )
+        MTERROR( mtlog, "exiting due to error during setup loop" );
         t_run_context.cancel();
         t_comm_thread.cancel();
         delete t_request_client;
         return RETURN_ERROR;
     }
 
+    // Client has now received Acknowledged status from the server
+    // Status message should now contain any information the client might need from the server
     // Server is now waiting for a client status update
 
     /****************************************************************/
@@ -213,7 +215,7 @@ int main( int argc, char** argv )
     client_file_writing* t_file_writing = NULL;
     if( t_client_writes_file )
     {
-        MTINFO( mtlog, "creating file-writing objects..." )
+        MTINFO( mtlog, "creating file-writing objects..." );
 
         try
         {
@@ -221,7 +223,7 @@ int main( int argc, char** argv )
         }
         catch( exception& e )
         {
-            MTERROR( mtlog, "error setting up file writing: " << e.what() )
+            MTERROR( mtlog, "error setting up file writing: " << e.what() );
             t_run_context.cancel();
             t_comm_thread.cancel();
             delete t_request_client;
@@ -242,7 +244,7 @@ int main( int argc, char** argv )
     t_run_context.unlock_outbound();
     if( ! t_push_result )
     {
-        MTERROR( mtlog, "error sending client status" )
+        MTERROR( mtlog, "error sending client status" );
         delete t_file_writing;
         t_run_context.cancel();
         t_comm_thread.cancel();
@@ -262,7 +264,7 @@ int main( int argc, char** argv )
     int t_run_success = t_run_loop.get_return();
     if( t_run_success == RETURN_ERROR )
     {
-        MTERROR( mtlog, "exiting due to error during run loop" )
+        MTERROR( mtlog, "exiting due to error during run loop" );
         t_run_context.cancel();
         t_comm_thread.cancel();
         delete t_request_client;
@@ -279,11 +281,11 @@ int main( int argc, char** argv )
             t_file_writing->cancel();
         }
 
-        MTINFO( mtlog, "waiting for record reception to end..." )
+        MTINFO( mtlog, "waiting for record reception to end..." );
 
         t_file_writing->wait_for_finish();
 
-        MTINFO( mtlog, "shutting down record receiver" )
+        MTINFO( mtlog, "shutting down record receiver" );
 
         delete t_file_writing;
         t_file_writing = NULL;
@@ -310,23 +312,23 @@ int main( int argc, char** argv )
 
         if( t_can_get_response )
         {
-            MTINFO( mtlog, "printing response from server..." )
+            MTINFO( mtlog, "printing response from server..." );
 
             MTINFO( mtlog, "digitizer summary:\n"
-            << "  record count: " << t_response->digitizer_records() << " [#]\n"
-            << "  acquisition count: " << t_response->digitizer_acquisitions() << " [#]\n"
-            << "  live time: " << t_response->digitizer_live_time() << " [sec]\n"
-            << "  dead time: " << t_response->digitizer_dead_time() << " [sec]\n"
-            << "  megabytes: " << t_response->digitizer_megabytes() << " [Mb]\n"
-            << "  rate: " << t_response->digitizer_rate() << " [Mb/sec]\n");
+                    << "  record count: " << t_response->digitizer_records() << " [#]\n"
+                    << "  acquisition count: " << t_response->digitizer_acquisitions() << " [#]\n"
+                    << "  live time: " << t_response->digitizer_live_time() << " [sec]\n"
+                    << "  dead time: " << t_response->digitizer_dead_time() << " [sec]\n"
+                    << "  megabytes: " << t_response->digitizer_megabytes() << " [Mb]\n"
+                    << "  rate: " << t_response->digitizer_rate() << " [Mb/sec]\n");
 
 
             MTINFO( mtlog, "writer summary:\n"
-            << "  record count: " << t_response->writer_records() << " [#]\n"
-            << "  acquisition count: " << t_response->writer_acquisitions() << " [#]\n"
-            << "  live time: " << t_response->writer_live_time() << " [sec]\n"
-            << "  megabytes: " << t_response->writer_megabytes() << "[Mb]\n"
-            << "  rate: " << t_response->writer_rate() << " [Mb/sec]\n");
+                    << "  record count: " << t_response->writer_records() << " [#]\n"
+                    << "  acquisition count: " << t_response->writer_acquisitions() << " [#]\n"
+                    << "  live time: " << t_response->writer_live_time() << " [sec]\n"
+                    << "  megabytes: " << t_response->writer_megabytes() << "[Mb]\n"
+                    << "  rate: " << t_response->writer_rate() << " [Mb/sec]\n");
 
         }
 
@@ -344,9 +346,9 @@ int main( int argc, char** argv )
 namespace mantis
 {
     setup_loop::setup_loop( run_context_dist* a_run_context ) :
-                    f_run_context( a_run_context ),
-                    f_canceled( false ),
-                    f_return( 0 )
+            f_run_context( a_run_context ),
+            f_canceled( false ),
+            f_return( 0 )
     {}
     setup_loop::~setup_loop()
     {}
@@ -360,28 +362,25 @@ namespace mantis
 
             if( t_state == status_state_t_acknowledged )
             {
-                MTINFO( mtlog, "run request acknowledged...\n" )
+                MTINFO( mtlog, "run request acknowledged...\n" );
                 f_return = RETURN_SUCCESS;
                 break;
             }
-            else
-            if( t_state == status_state_t_error )
+            else if( t_state == status_state_t_error )
             {
-                MTERROR( mtlog, "error reported; run was not acknowledged\n" )
+                MTERROR( mtlog, "error reported; run was not acknowledged\n" );
                 f_return = RETURN_ERROR;
                 break;
             }
-            else
-            if( t_state == status_state_t_revoked )
+            else if( t_state == status_state_t_revoked )
             {
-                MTINFO( mtlog, "request revoked; run did not take place\n" )
+                MTINFO( mtlog, "request revoked; run did not take place\n" );
                 f_return = RETURN_ERROR;
                 break;
             }
-            else
-            if( t_state != status_state_t_created )
+            else if( t_state != status_state_t_created )
             {
-                MTERROR( mtlog, "server reported unusual status: " << t_state )
+                MTERROR( mtlog, "server reported unusual status: " << t_state );
                 f_return = RETURN_ERROR;
                 break;
             }
@@ -389,7 +388,7 @@ namespace mantis
             if( f_run_context->wait_for_status() )
                 continue;
 
-            MTERROR( mtlog, "(setup loop) unable to communicate with server" )
+            MTERROR( mtlog, "(setup loop) unable to communicate with server" );
             f_return = RETURN_ERROR;
             break;
         }
@@ -409,10 +408,10 @@ namespace mantis
 
 
     run_loop::run_loop( run_context_dist* a_run_context, client_file_writing* a_file_writing ) :
-                    f_run_context( a_run_context ),
-                    f_file_writing( a_file_writing ),
-                    f_canceled( false ),
-                    f_return( 0 )
+            f_run_context( a_run_context ),
+            f_file_writing( a_file_writing ),
+            f_canceled( false ),
+            f_return( 0 )
     {}
     run_loop::~run_loop()
     {}
@@ -426,54 +425,47 @@ namespace mantis
 
             if( t_state == status_state_t_waiting )
             {
-                MTINFO( mtlog, "waiting for run...\n" )
+                MTINFO( mtlog, "waiting for run...\n" );
                 //continue;
             }
-            else
-            if( t_state == status_state_t_started )
+            else if( t_state == status_state_t_started )
             {
-                MTINFO( mtlog, "run has started...\n" )
+                MTINFO( mtlog, "run has started...\n" );
                 //continue;
             }
-            else
-            if( t_state == status_state_t_running )
+            else if( t_state == status_state_t_running )
             {
-                MTINFO( mtlog, "run is in progress...\n" )
+                MTINFO( mtlog, "run is in progress...\n" );
                 //continue;
             }
-            else
-            if( t_state == status_state_t_stopped )
+            else if( t_state == status_state_t_stopped )
             {
-                MTINFO( mtlog, "run status: stopped; data acquisition has finished\n" )
+                MTINFO( mtlog, "run status: stopped; data acquisition has finished\n" );
                 f_return = RETURN_SUCCESS;
                 break;
             }
-            else
-            if( t_state == status_state_t_error )
+            else if( t_state == status_state_t_error )
             {
-                MTINFO( mtlog, "error reported; run did not complete\n" )
+                MTINFO( mtlog, "error reported; run did not complete\n" );
                 f_return = RETURN_ERROR;
                 break;
             }
-            else
-            if( t_state == status_state_t_canceled )
+            else if( t_state == status_state_t_canceled )
             {
-                MTINFO( mtlog, "cancellation reported; some data may have been written\n" )
+                MTINFO( mtlog, "cancellation reported; some data may have been written\n" );
                 f_return = RETURN_CANCELED;
                 break;
             }
-            else
-            if( t_state == status_state_t_revoked )
+            else if( t_state == status_state_t_revoked )
             {
-                MTINFO( mtlog, "request revoked; run did not take place\n" )
+                MTINFO( mtlog, "request revoked; run did not take place\n" );
                 f_return = RETURN_REVOKED;
                 break;
             }
-            else
-            if( f_file_writing != NULL && f_file_writing->is_done() )
+            else if( f_file_writing != NULL && f_file_writing->is_done() )
             {
                 MTINFO( mtlog, "file writing is done, but run status still does not indicate run is complete"
-                << "                exiting run now!" )
+                        << "                exiting run now!" );
                 f_return = RETURN_CANCELED;
                 break;
             }
@@ -481,7 +473,7 @@ namespace mantis
             if( f_run_context->wait_for_status() )
                 continue;
 
-            MTERROR( mtlog, "(run loop) unable to communicate with server" )
+            MTERROR( mtlog, "(run loop) unable to communicate with server" );
             f_return = RETURN_ERROR;
             break;
         }
