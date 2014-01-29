@@ -1,3 +1,8 @@
 #!/bin/bash
 
-protoc --cpp_out=. --proto_path=${PWD}/proto ${PWD}/Protobuf/request.proto ${PWD}/Protobuf/status.proto ${PWD}/Protobuf/response.proto
+# this should be run from the build directory
+
+# this should specify the location of the protobuf source directory relative to where this script is being run
+PROTOBUFDIR="${PWD}/../Protobuf"
+
+protoc --cpp_out=. --proto_path=${PROTOBUFDIR} ${PROTOBUFDIR}/block_header.proto ${PROTOBUFDIR}/client_status.proto ${PROTOBUFDIR}/request.proto ${PROTOBUFDIR}/status.proto ${PROTOBUFDIR}/response.proto
