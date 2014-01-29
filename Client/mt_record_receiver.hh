@@ -8,8 +8,6 @@
 
 #include "thorax.hh"
 
-#include <stdint.h>
-
 namespace mantis
 {
     class buffer;
@@ -17,9 +15,6 @@ namespace mantis
     class record_dist;
     class response;
     class server;
-
-    typedef uint8_t rr_8bit_data_t ;
-    typedef uint16_t rr_16bit_data_t;
 
     template< typename DataType >
     struct block_cleanup_rr : block_cleanup
@@ -35,8 +30,10 @@ namespace mantis
         public callable
     {
         public:
-            record_receiver( server* a_server, buffer* a_buffer, condition* a_condition );
+            record_receiver( server* a_server );
             virtual ~record_receiver();
+
+            bool allocate( buffer* a_buffer, condition* a_condition );
 
             void execute();
             void cancel();
@@ -44,6 +41,9 @@ namespace mantis
 
             size_t get_data_chunk_size();
             void set_data_chunk_size( size_t size );
+
+            size_t get_data_type_size();
+            void set_data_type_size( size_t size );
 
         private:
             server* f_server;
@@ -55,18 +55,19 @@ namespace mantis
             time_nsec_type f_dead_time;
 
             size_t f_data_chunk_size;
+            size_t f_data_type_size;
 
             atomic_bool f_canceled;
 
             bool receive( block* a_block, record_dist* a_dist );
 
             template< typename DataType >
-            void allocate( buffer* a_buffer );
+            void allocate_buffer();
 
     };
 
     template< typename DataType >
-    void record_receiver::allocate( buffer* a_buffer )
+    void record_receiver::allocate_buffer()
     {
         typed_iterator< DataType > t_it( f_buffer );
         for( unsigned int index = 0; index < f_buffer->size(); index++ )
@@ -83,9 +84,9 @@ namespace mantis
     }
 
 
-    //***********************************
-    // Block Cleanup Test
-    //***********************************
+    //**********************************
+    // Block Cleanup -- Request Receiver
+    //**********************************
 
     template< typename DataType >
     block_cleanup_rr< DataType >::block_cleanup_rr( DataType* a_data ) :

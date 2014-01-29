@@ -52,6 +52,7 @@ namespace mantis
 
         f_receiver = new record_receiver( f_server, f_buffer, f_buffer_condition );
         f_receiver->set_data_chunk_size( t_status->data_chunk_size() );
+        f_receiver->set_data_type_size( t_status->data_type_size() );
 
         a_run_context->unlock_inbound();
 

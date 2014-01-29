@@ -9,41 +9,23 @@
 #include "response.pb.h"
 
 #include <cstddef>
+#include <stdint.h>
 
 namespace mantis
 {
     MTLOGGER( mtlog, "record_receiver" );
 
-    record_receiver::record_receiver( server* a_server, buffer* a_buffer, condition* a_condition ) :
+    record_receiver::record_receiver( server* a_server ) :
             f_server( a_server ),
-            f_buffer( a_buffer ),
-            f_condition( a_condition ),
+            f_buffer( NULL ),
+            f_condition( NULL ),
             f_record_count( 0 ),
             f_live_time( 0 ),
             f_dead_time( 0 ),
             f_data_chunk_size( 1024 ),
+            f_data_type_size( 1 ),
             f_canceled( false )
     {
-        MTINFO( mtlog, "allocating buffer..." );
-
-        // TODO: fix this condition!
-        if( true )
-        {
-            allocate< rr_8bit_data_t >( f_buffer );
-        }
-        else
-        {
-            allocate< rr_16bit_data_t >( f_buffer );
-        }
-        /*
-        iterator t_it( f_buffer );
-        for( unsigned int index = 0; index < f_buffer->size(); index++ )
-        {
-            *( t_it->handle() ) = new data_type[ f_buffer->record_size() ];
-            t_it->set_data_size( f_buffer->record_size() );
-            ++t_it;
-        }
-        */
     }
 
     record_receiver::~record_receiver()
@@ -57,6 +39,37 @@ namespace mantis
             //delete [] t_it->data();
             ++t_it;
         }
+    }
+
+    bool record_receiver::allocate( buffer* a_buffer, condition* a_condition )
+    {
+        f_buffer = a_buffer;
+        f_condition = a_condition;
+
+        MTINFO( mtlog, "allocating buffer..." );
+
+        if( f_data_type_size == sizeof( uint8_t ) )
+        {
+            allocate_buffer< uint8_t >();
+        }
+        else if( f_data_type_size == sizeof( uint16_t ) )
+        {
+            allocate_buffer< uint16_t >();
+        }
+        else if( f_data_type_size == sizeof( uint32_t ) )
+        {
+            allocate_buffer< uint32_t >();
+        }
+        else if( f_data_type_size == sizeof( uint64_t ) )
+        {
+            allocate_buffer< uint64_t >();
+        }
+        else
+        {
+            MTERROR( mtlog, "Cannot accommodate " << f_data_type_size << "-byte data" );
+            return false;
+        }
+        return true;
     }
 
     void record_receiver::execute()
@@ -200,6 +213,16 @@ namespace mantis
     void record_receiver::set_data_chunk_size( size_t size )
     {
         f_data_chunk_size = size;
+        return;
+    }
+
+    size_t record_receiver::get_data_type_size()
+    {
+        return f_data_type_size;
+    }
+    void record_receiver::set_data_type_size( size_t size )
+    {
+        f_data_type_size = size;
         return;
     }
 
