@@ -22,9 +22,11 @@ namespace mantis
             bool initialize_derived( request* a_response );
 
         private:
-            monarch::Monarch8Bit* f_monarch;
+            monarch::Monarch* f_monarch;
             monarch::MonarchHeader* f_header;
-            monarch::MonarchRecord8Bit* f_record;
+            monarch::MonarchRecordBytes* f_record;
+
+            unsigned f_data_bytes;
 
             bool write( block* a_block );
     };

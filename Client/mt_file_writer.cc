@@ -16,18 +16,44 @@ namespace mantis
     static registrar< writer, file_writer > s_file_writer_registrar( "file" );
 
     file_writer::file_writer() :
-            writer(),
-            f_monarch( NULL ),
-            f_header( NULL ),
-            f_record( NULL )
+                    writer(),
+                    f_monarch( NULL ),
+                    f_header( NULL ),
+                    f_record( NULL ),
+                    f_data_bytes( 1 )
     {
     }
     file_writer::~file_writer()
     {
     }
 
-    void file_writer::configure( configurator* )
+    void file_writer::configure( configurator* a_config )
     {
+        unsigned t_bit_depth = a_config->get< unsigned >( "bit_depth", 8 );
+        if( t_bit_depth == 0 )
+        {
+            throw exception() << "Bit depth cannot be 0";
+        }
+        if( t_bit_depth <= 8 )
+        {
+            f_data_bytes = 1;
+        }
+        else if( t_bit_depth <= 16 )
+        {
+            f_data_bytes = 2;
+        }
+        else if( t_bit_depth <= 32 )
+        {
+            f_data_bytes = 4;
+        }
+        else if( t_bit_depth <= 64 )
+        {
+            f_data_bytes = 8;
+        }
+        else
+        {
+            throw exception() << "Unable to write a file with a bit depth of " << t_bit_depth;
+        }
         return;
     }
 
@@ -37,7 +63,7 @@ namespace mantis
 
         try
         {
-            f_monarch = monarch::Monarch8Bit::OpenForWriting( a_request->file() );
+            f_monarch = monarch::Monarch::OpenForWriting( a_request->file() );
         }
         catch( monarch::MonarchException& e )
         {
@@ -72,18 +98,19 @@ namespace mantis
         f_header->SetDescription( a_request->description() );
         f_header->SetRunType( monarch::sRunTypeSignal );
         f_header->SetRunSource( monarch::sSourceMantis );
+        f_header->SetDataTypeSize( f_data_bytes );
 
         MTINFO( mtlog, "writing header..." );
 
         try
-	{ 
+        {
             f_monarch->WriteHeader();
         }
         catch( monarch::MonarchException& e )
-	{
+        {
             MTERROR( mtlog, "error while writing header: " << e.what() );
             return false;
-	}
+        }
         f_monarch->SetInterface( monarch::sInterfaceInterleaved );
         f_record = f_monarch->GetRecordInterleaved();
 
@@ -94,7 +121,7 @@ namespace mantis
         f_record->fAcquisitionId = (monarch::AcquisitionIdType) (a_block->get_acquisition_id());
         f_record->fRecordId = (monarch::RecordIdType) (a_block->get_record_id());
         f_record->fTime = (monarch::TimeType) (a_block->get_timestamp());
-        ::memcpy( f_record->fData, a_block->data(), a_block->get_data_size() );
+        ::memcpy( f_record->fData, a_block->data_bytes(), a_block->get_data_nbytes() );
 
         return f_monarch->WriteRecord();
     }
