@@ -85,7 +85,7 @@ namespace mantis
         */
     }
 
-    void digitizer_test::allocate( buffer* a_buffer, condition* a_condition )
+    bool digitizer_test::allocate( buffer* a_buffer, condition* a_condition )
     {
         f_buffer = a_buffer;
         f_condition = a_condition;
@@ -105,10 +105,10 @@ namespace mantis
         }
 
         f_allocated = true;
-        return;
+        return true;
     }
 
-    void digitizer_test::initialize( request* a_request )
+    bool digitizer_test::initialize( request* a_request )
     {
         //MTINFO( mtlog, "resetting counters..." );
 
@@ -118,7 +118,7 @@ namespace mantis
         f_live_time = 0;
         f_dead_time = 0;
 
-        return;
+        return true;
     }
     void digitizer_test::execute()
     {
@@ -341,9 +341,9 @@ namespace mantis
         return;
     }
 
-    //***********************************
-    // Block Cleanup Test
-    //***********************************
+    //********************************
+    // Block Cleanup -- Test Digitizer
+    //********************************
 
     block_cleanup_test::block_cleanup_test( test_data_t* a_data ) :
         f_triggered( false ),

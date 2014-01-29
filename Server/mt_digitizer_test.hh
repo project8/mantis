@@ -39,8 +39,8 @@ namespace mantis
             digitizer_test();
             virtual ~digitizer_test();
 
-            void allocate( buffer* a_buffer, condition* a_condition );
-            void initialize( request* a_request );
+            bool allocate( buffer* a_buffer, condition* a_condition );
+            bool initialize( request* a_request );
             void execute();
             void cancel();
             void finalize( response* a_response );
