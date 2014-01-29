@@ -20,7 +20,7 @@ namespace mantis
                     f_monarch( NULL ),
                     f_header( NULL ),
                     f_record( NULL ),
-                    f_data_bytes( 1 )
+                    f_data_type_size( 1 )
     {
     }
     file_writer::~file_writer()
@@ -29,31 +29,7 @@ namespace mantis
 
     void file_writer::configure( configurator* a_config )
     {
-        unsigned t_bit_depth = a_config->get< unsigned >( "bit_depth", 8 );
-        if( t_bit_depth == 0 )
-        {
-            throw exception() << "Bit depth cannot be 0";
-        }
-        if( t_bit_depth <= 8 )
-        {
-            f_data_bytes = 1;
-        }
-        else if( t_bit_depth <= 16 )
-        {
-            f_data_bytes = 2;
-        }
-        else if( t_bit_depth <= 32 )
-        {
-            f_data_bytes = 4;
-        }
-        else if( t_bit_depth <= 64 )
-        {
-            f_data_bytes = 8;
-        }
-        else
-        {
-            throw exception() << "Unable to write a file with a bit depth of " << t_bit_depth;
-        }
+        f_data_type_size = a_config->get< unsigned >( "data-type-size", 1 );
         return;
     }
 
@@ -98,7 +74,7 @@ namespace mantis
         f_header->SetDescription( a_request->description() );
         f_header->SetRunType( monarch::sRunTypeSignal );
         f_header->SetRunSource( monarch::sSourceMantis );
-        f_header->SetDataTypeSize( f_data_bytes );
+        f_header->SetDataTypeSize( f_data_type_size );
 
         MTINFO( mtlog, "writing header..." );
 

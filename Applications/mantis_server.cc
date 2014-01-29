@@ -112,6 +112,11 @@ int main( int argc, char** argv )
         return -1;
     }
 
+    // find the type size of the data from the bit depth
+    unsigned t_data_type_size = t_digitizer->data_type_size();
+    t_receiver.set_data_type_size( t_data_type_size );
+    t_config->config().add( "data-type-size", new param_value( t_data_type_size ) );
+
     t_digitizer->allocate( &t_buffer, &t_buffer_condition );
 
     server_worker t_worker( t_config, t_digitizer, &t_buffer, &t_run_queue, &t_queue_condition, &t_buffer_condition );

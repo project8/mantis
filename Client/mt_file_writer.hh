@@ -26,7 +26,7 @@ namespace mantis
             monarch::MonarchHeader* f_header;
             monarch::MonarchRecordBytes* f_record;
 
-            unsigned f_data_bytes;
+            unsigned f_data_type_size;
 
             bool write( block* a_block );
     };

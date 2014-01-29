@@ -20,7 +20,8 @@ namespace mantis
             f_condition( a_condition ),
             f_buffer_size( 512 ),
             f_record_size( 419304 ),
-            f_data_chunk_size( 1024 )
+            f_data_chunk_size( 1024 ),
+            f_data_type_size( 1 )
     {
     }
 
@@ -63,6 +64,7 @@ namespace mantis
                 t_status->set_buffer_size( f_buffer_size );
                 t_status->set_record_size( f_record_size );
                 t_status->set_data_chunk_size( f_data_chunk_size );
+                t_status->set_data_type_size( f_data_type_size );
                 t_run_context->push_status_no_mutex();
                 t_run_context->unlock_outbound();
 
@@ -151,6 +153,16 @@ namespace mantis
     void request_receiver::set_data_chunk_size( size_t size )
     {
         f_data_chunk_size = size;
+        return;
+    }
+
+    size_t request_receiver::get_data_type_size() const
+    {
+        return f_data_type_size;
+    }
+    void request_receiver::set_data_type_size( size_t size )
+    {
+        f_data_type_size = size;
         return;
     }
 

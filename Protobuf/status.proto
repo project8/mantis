@@ -29,7 +29,7 @@ message status
     optional uint32 data_chunk_size = 4;
     
     //bytes for each data sample
-    optional uint32 data_byte_size = 5;
+    optional uint32 data_type_size = 5;
 	
 
 }

@@ -30,6 +30,9 @@ namespace mantis
             size_t get_data_chunk_size() const;
             void set_data_chunk_size( size_t size );
 
+            size_t get_data_type_size() const;
+            void set_data_type_size( size_t size );
+
         private:
             server* f_server;
             run_queue* f_run_queue;
@@ -38,6 +41,7 @@ namespace mantis
             size_t f_buffer_size;
             size_t f_record_size;
             size_t f_data_chunk_size;
+            size_t f_data_type_size;
     };
 
 }
