@@ -52,6 +52,8 @@ namespace mantis
     {
         public:
             param_value();
+            template< typename XStreamableType >
+            param_value( XStreamableType a_streamable );
             param_value(const param_value& orig);
             virtual ~param_value();
 
@@ -73,6 +75,14 @@ namespace mantis
             mutable std::string f_value_buffer;
 
     };
+
+    template< typename XStreamableType >
+    param_value::param_value( XStreamableType a_streamable ) :
+            param(),
+            f_value_str()
+    {
+        (*this) << a_streamable;
+    }
 
     template< typename XValType >
     XValType param_value::get()
