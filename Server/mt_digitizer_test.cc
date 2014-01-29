@@ -69,12 +69,9 @@ namespace mantis
         {
             MTINFO( mtlog, "deallocating buffer..." );
 
-            iterator t_it( f_buffer );
             for( unsigned int index = 0; index < f_buffer->size(); index++ )
             {
-                f_buffer->delete_block( t_it.index() );
-                //delete [] t_it->data();
-                ++t_it;
+                f_buffer->delete_block( index );
             }
         }
         /*
@@ -94,16 +91,13 @@ namespace mantis
 
         try
         {
-            typed_iterator< test_data_t > t_it( f_buffer );
             for( unsigned int index = 0; index < f_buffer->size(); index++ )
             {
-                block* t_new_block = new typed_block< test_data_t >();
-                *( t_it->handle() ) = new data_type[ f_buffer->record_size() ];
-                t_it->set_data_size( f_buffer->record_size() );
-                t_new_block->set_cleanup( new block_cleanup_test( t_it->data() ) );
-                f_buffer->set_block( t_it.index(), t_new_block );
-
-                ++t_it;
+                typed_block< test_data_t >* t_new_block = new typed_block< test_data_t >();
+                *( t_new_block->handle() ) = new test_data_t[ f_buffer->record_size() ];
+                t_new_block->set_data_size( f_buffer->record_size() );
+                t_new_block->set_cleanup( new block_cleanup_test( t_new_block->data() ) );
+                f_buffer->set_block( index, t_new_block );
             }
         }
         catch( exception& e )

@@ -72,18 +72,9 @@ namespace mantis
             MTINFO( mtlog, "deallocating dma buffer..." );
 
             iterator t_it( f_buffer );
-            for( size_t Index = 0; Index < f_buffer->size(); Index++ )
+            for( size_t index = 0; index < f_buffer->size(); index++ )
             {
-                f_buffer->delete_block( t_it.index() );
-                /*
-                t_result = FreeDmaBufferPX4( f_handle, t_it->data() );
-                if( t_result != SIG_SUCCESS )
-                {
-                    DumpLibErrorPX4( t_result, "failed to deallocate dma memory: " );
-                    exit( -1 );
-                }
-                */
-                ++t_it;
+                f_buffer->delete_block( index );
             }
 
             MTINFO( mtlog, "disconnecting from digitizer card..." );
@@ -132,21 +123,18 @@ namespace mantis
 
         try
         {
-            typed_iterator< px1500_data_t > t_it( f_buffer );
             for( unsigned int index = 0; index < f_buffer->size(); index++ )
             {
-                block* t_new_block = new typed_block< px1500_data_t >();
-                t_result = AllocateDmaBufferPX4( f_handle, f_buffer->record_size(), t_it->handle() );
+                typed_block< px1500_data_t >* t_new_block = new typed_block< px1500_data_t >();
+                t_result = AllocateDmaBufferPX4( f_handle, f_buffer->record_size(), t_new_block->handle() );
                 if( t_result != SIG_SUCCESS )
                 {
                     DumpLibErrorPX4( t_result, "failed to allocate dma memory: " );
                     return false;
                 }
-                t_it->set_data_size( f_buffer->record_size() );
-                t_new_block->set_cleanup( new block_cleanup_px1500( t_it->data(), &f_handle ) );
-                f_buffer->set_block( t_it.index(), t_new_block );
-
-                ++t_it;
+                t_new_block->set_data_size( f_buffer->record_size() );
+                t_new_block->set_cleanup( new block_cleanup_px1500( t_new_block->data(), &f_handle ) );
+                f_buffer->set_block( index, t_new_block );
             }
         }
         catch( exception& e )

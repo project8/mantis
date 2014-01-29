@@ -31,12 +31,9 @@ namespace mantis
     {
         MTINFO( mtlog, "deallocating buffer..." );
 
-        iterator t_it( f_buffer );
         for( unsigned int index = 0; index < f_buffer->size(); index++ )
         {
-            f_buffer->delete_block( t_it.index() );
-            //delete [] t_it->data();
-            ++t_it;
+            f_buffer->delete_block( index );
         }
     }
 

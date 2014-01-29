@@ -70,16 +70,13 @@ namespace mantis
     template< typename DataType >
     void record_receiver::allocate_buffer()
     {
-        typed_iterator< DataType > t_it( f_buffer );
         for( unsigned int index = 0; index < f_buffer->size(); index++ )
         {
-            block* t_new_block = new typed_block< DataType >();
-            *( t_it->handle() ) = new DataType[ f_buffer->record_size() ];
-            t_it->set_data_size( f_buffer->record_size() );
-            t_new_block->set_cleanup( new block_cleanup_rr< DataType >( t_it->data() ) );
-            f_buffer->set_block( t_it.index(), t_new_block );
-
-            ++t_it;
+            typed_block< DataType >* t_new_block = new typed_block< DataType >();
+            *( t_new_block->handle() ) = new DataType[ f_buffer->record_size() ];
+            t_new_block->set_data_size( f_buffer->record_size() );
+            t_new_block->set_cleanup( new block_cleanup_rr< DataType >( t_new_block->data() ) );
+            f_buffer->set_block( index, t_new_block );
         }
         return;
     }
