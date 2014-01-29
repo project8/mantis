@@ -26,6 +26,8 @@ namespace mantis
 
             virtual bool write_mode_check( request_file_write_mode_t mode ) = 0;
 
+            virtual unsigned bit_depth() = 0;
+
     };
 }
 

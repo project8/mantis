@@ -21,6 +21,12 @@ namespace mantis
 
     static registrar< digitizer, digitizer_test > s_digtest_registrar("test");
 
+    unsigned digitizer_test::s_bit_depth = 8;
+    unsigned digitizer_test::bit_depth_test()
+    {
+        return digitizer_test::s_bit_depth;
+    }
+
     digitizer_test::digitizer_test() :
             //f_semaphore( NULL ),
             f_allocated( false ),
@@ -306,6 +312,11 @@ namespace mantis
     bool digitizer_test::write_mode_check( request_file_write_mode_t )
     {
         return true;
+    }
+
+    unsigned digitizer_test::bit_depth()
+    {
+        return digitizer_test::s_bit_depth();
     }
 
     bool digitizer_test::get_canceled()

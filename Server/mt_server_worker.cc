@@ -99,6 +99,8 @@ namespace mantis
                 continue;
             }
 
+            f_config->config().add( "bit_depth", new param_value( f_digitizer->bit_depth() ) );
+
             factory< writer >* t_writer_factory = factory< writer >::get_instance();
             if( t_request->file_write_mode() == request_file_write_mode_t_local )
             {

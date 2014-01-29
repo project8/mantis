@@ -20,6 +20,12 @@ namespace mantis
 
     static registrar< digitizer, digitizer_px1500 > s_px1500_registrar("px1500");
 
+    unsigned digitizer_px1500::s_bit_depth = 8;
+    unsigned digitizer_px1500::bit_depth_px1500()
+    {
+        return digitizer_px1500::s_bit_depth;
+    }
+
     digitizer_px1500::digitizer_px1500() :
             //f_semaphore( NULL ),
             f_buffer( NULL ),
@@ -377,6 +383,12 @@ namespace mantis
     {
         return true;
     }
+
+    unsigned digitizer_px1500::bit_depth()
+    {
+        return digitizer_px1500::s_bit_depth();
+    }
+
 
     bool digitizer_px1500::get_canceled()
     {

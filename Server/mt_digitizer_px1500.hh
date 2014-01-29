@@ -30,6 +30,9 @@ namespace mantis
         public digitizer
     {
         public:
+            static unsigned bit_depth_px1500();
+
+        public:
             digitizer_px1500();
             virtual ~digitizer_px1500();
 
@@ -41,12 +44,16 @@ namespace mantis
 
             bool write_mode_check( request_file_write_mode_t mode );
 
+            unsigned bit_depth();
+
             // thread-safe getter
             bool get_canceled();
             // thread-safe setter
             void set_canceled( bool a_flag );
 
         private:
+            static const unsigned s_bit_depth;
+
             //sem_t* f_semaphore;
 
             HPX4 f_handle;
