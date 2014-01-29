@@ -59,7 +59,7 @@ namespace mantis
             iterator( a_buffer )
     {
         // verify that the blocks are of the right type by checking the first with a dynamic cast
-        if( dynamic_cast< typed_block< DataType >* >( f_blocks[ 0 ] ) == NULL )
+        if( f_blocks[ 0 ] != NULL && dynamic_cast< typed_block< DataType >* >( f_blocks[ 0 ] ) == NULL )
         {
             throw exception() << "buffer contained blocks of the wrong type";
         }

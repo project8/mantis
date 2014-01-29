@@ -47,25 +47,33 @@ namespace mantis
 
         MTINFO( mtlog, "allocating buffer..." );
 
-        if( f_data_type_size == sizeof( uint8_t ) )
+        try
         {
-            allocate_buffer< uint8_t >();
+            if( f_data_type_size == sizeof( uint8_t ) )
+            {
+                allocate_buffer< uint8_t >();
+            }
+            else if( f_data_type_size == sizeof( uint16_t ) )
+            {
+                allocate_buffer< uint16_t >();
+            }
+            else if( f_data_type_size == sizeof( uint32_t ) )
+            {
+                allocate_buffer< uint32_t >();
+            }
+            else if( f_data_type_size == sizeof( uint64_t ) )
+            {
+                allocate_buffer< uint64_t >();
+            }
+            else
+            {
+                MTERROR( mtlog, "cannot accommodate " << f_data_type_size << "-byte data" );
+                return false;
+            }
         }
-        else if( f_data_type_size == sizeof( uint16_t ) )
+        catch( exception& e )
         {
-            allocate_buffer< uint16_t >();
-        }
-        else if( f_data_type_size == sizeof( uint32_t ) )
-        {
-            allocate_buffer< uint32_t >();
-        }
-        else if( f_data_type_size == sizeof( uint64_t ) )
-        {
-            allocate_buffer< uint64_t >();
-        }
-        else
-        {
-            MTERROR( mtlog, "Cannot accommodate " << f_data_type_size << "-byte data" );
+            MTERROR( mtlog, "unable to allocate buffer: " << e.what() );
             return false;
         }
         return true;

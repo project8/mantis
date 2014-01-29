@@ -92,16 +92,24 @@ namespace mantis
 
         MTINFO( mtlog, "allocating buffer..." );
 
-        typed_iterator< test_data_t > t_it( f_buffer );
-        for( unsigned int index = 0; index < f_buffer->size(); index++ )
+        try
         {
-            block* t_new_block = new typed_block< test_data_t >();
-            *( t_it->handle() ) = new data_type[ f_buffer->record_size() ];
-            t_it->set_data_size( f_buffer->record_size() );
-            t_new_block->set_cleanup( new block_cleanup_test( t_it->data() ) );
-            f_buffer->set_block( t_it.index(), t_new_block );
+            typed_iterator< test_data_t > t_it( f_buffer );
+            for( unsigned int index = 0; index < f_buffer->size(); index++ )
+            {
+                block* t_new_block = new typed_block< test_data_t >();
+                *( t_it->handle() ) = new data_type[ f_buffer->record_size() ];
+                t_it->set_data_size( f_buffer->record_size() );
+                t_new_block->set_cleanup( new block_cleanup_test( t_it->data() ) );
+                f_buffer->set_block( t_it.index(), t_new_block );
 
-            ++t_it;
+                ++t_it;
+            }
+        }
+        catch( exception& e )
+        {
+            MTERROR( mtlog, "unable to allocate buffer: " << e.what() );
+            return false;
         }
 
         f_allocated = true;

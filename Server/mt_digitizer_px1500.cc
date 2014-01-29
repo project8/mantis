@@ -130,21 +130,29 @@ namespace mantis
 
         MTINFO( mtlog, "allocating dma buffer..." );
 
-        typed_iterator< px1500_data_t > t_it( f_buffer );
-        for( unsigned int index = 0; index < f_buffer->size(); index++ )
+        try
         {
-            block* t_new_block = new typed_block< px1500_data_t >();
-            t_result = AllocateDmaBufferPX4( f_handle, f_buffer->record_size(), t_it->handle() );
-            if( t_result != SIG_SUCCESS )
+            typed_iterator< px1500_data_t > t_it( f_buffer );
+            for( unsigned int index = 0; index < f_buffer->size(); index++ )
             {
-                DumpLibErrorPX4( t_result, "failed to allocate dma memory: " );
-                return false;
-            }
-            t_it->set_data_size( f_buffer->record_size() );
-            t_new_block->set_cleanup( new block_cleanup_px1500( t_it->data(), &f_handle ) );
-            f_buffer->set_block( t_it.index(), t_new_block );
+                block* t_new_block = new typed_block< px1500_data_t >();
+                t_result = AllocateDmaBufferPX4( f_handle, f_buffer->record_size(), t_it->handle() );
+                if( t_result != SIG_SUCCESS )
+                {
+                    DumpLibErrorPX4( t_result, "failed to allocate dma memory: " );
+                    return false;
+                }
+                t_it->set_data_size( f_buffer->record_size() );
+                t_new_block->set_cleanup( new block_cleanup_px1500( t_it->data(), &f_handle ) );
+                f_buffer->set_block( t_it.index(), t_new_block );
 
-            ++t_it;
+                ++t_it;
+            }
+        }
+        catch( exception& e )
+        {
+            MTERROR( mtlog, "unable to allocate buffer: " << e.what() );
+            return false;
         }
 
         f_allocated = true;
