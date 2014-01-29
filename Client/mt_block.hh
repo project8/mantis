@@ -62,6 +62,18 @@ namespace mantis
 
     };
 
+    class empty_block : public block
+    {
+        public:
+            empty_block();
+            virtual ~empty_block();
+
+            virtual size_t get_data_nbytes() const;
+
+            virtual char* data_bytes();
+            virtual const char* data_bytes() const;
+    };
+
     template< typename DataType >
     class typed_block : public block
     {

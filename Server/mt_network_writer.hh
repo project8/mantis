@@ -30,7 +30,7 @@ namespace mantis
 
             size_t f_data_chunk_size;
 
-            bool write( block_base* a_block );
+            bool write( block* a_block );
     };
 }
 

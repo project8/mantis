@@ -49,7 +49,7 @@ namespace mantis
         }
 
         f_record_dist = new record_dist();
-        f_record_dist->set_data_chunk_size( f_data_chunk_size );
+        f_record_dist->set_data_chunk_nbytes( f_data_chunk_size );
 
         f_record_dist->set_connection( f_client );
 
@@ -59,8 +59,7 @@ namespace mantis
     void network_writer::finalize( response* a_response )
     {
         // push empty block to indicate end of run
-        block t_block;
-        t_block.set_data_size( 0 );
+        empty_block t_block;
         if(! f_record_dist->push_record( &t_block ) )
         {
             MTERROR( mtlog, "there was an error pushing the end-of-run block" );
@@ -75,7 +74,7 @@ namespace mantis
         f_record_dist = NULL;
     }
 
-    bool network_writer::write( block_base* a_block )
+    bool network_writer::write( block* a_block )
     {
         return f_record_dist->push_record( a_block );
     }

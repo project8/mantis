@@ -47,7 +47,7 @@ namespace mantis
             acquisition_id_type f_acquisition_count;
             time_nsec_type f_live_time;
 
-            virtual bool write( block_base* a_block ) = 0;
+            virtual bool write( block* a_block ) = 0;
     };
 }
 

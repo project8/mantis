@@ -144,4 +144,27 @@ namespace mantis
     }
 
 
+    empty_block::empty_block() :
+            block()
+    {
+        set_data_size( 0 );
+    }
+    virtual empty_block::~empty_block()
+    {
+    }
+
+    virtual size_t empty_block::get_data_nbytes() const
+    {
+        return 0;
+    }
+
+    char* empty_block::data_bytes()
+    {
+        return NULL;
+    }
+    const char* empty_block::data_bytes() const
+    {
+        return NULL;
+    }
+
 }
