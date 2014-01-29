@@ -98,7 +98,7 @@ namespace mantis
 
     template< typename DataType >
     typed_block< DataType >::typed_block() :
-            typed_block(),
+            block(),
             f_data( NULL )
     {
     }
@@ -111,7 +111,7 @@ namespace mantis
     template< typename DataType >
     size_t typed_block< DataType >::get_data_nbytes() const
     {
-        return sizeof( DataType ) * f_header->data_size();
+        return sizeof( DataType ) * f_header.data_size();
     }
 
     template< typename DataType >

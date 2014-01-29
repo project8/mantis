@@ -21,7 +21,7 @@ namespace mantis
     {
     }
 
-    bool record_dist::push_record( const block_base* a_block, int flags )
+    bool record_dist::push_record( const block* a_block, int flags )
     {
         if( ! push_header( a_block->header(), flags ) )
         {
@@ -44,7 +44,7 @@ namespace mantis
         return true;
     }
 
-    bool record_dist::pull_record( block_base* a_block, int flags )
+    bool record_dist::pull_record( block* a_block, int flags )
     {
         if( ! pull_header( a_block->header(), flags ) )
         {

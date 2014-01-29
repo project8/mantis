@@ -2,7 +2,6 @@
 
 #include "mt_buffer.hh"
 #include "mt_condition.hh"
-#include "mt_iterator.hh"
 #include "mt_logger.hh"
 #include "mt_record_dist.hh"
 #include "mt_server.hh"

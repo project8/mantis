@@ -26,7 +26,7 @@ namespace mantis
             void operator--();
             bool operator-();
 
-        private:
+        protected:
             iterator();
             iterator( const iterator& );
 
@@ -55,7 +55,8 @@ namespace mantis
     };
 
     template< typename DataType >
-    typed_iterator< DataType >::typed_iterator( buffer* a_buffer )
+    typed_iterator< DataType >::typed_iterator( buffer* a_buffer ) :
+            iterator( a_buffer )
     {
         // verify that the blocks are of the right type by checking the first with a dynamic cast
         if( dynamic_cast< typed_block< DataType >* >( f_blocks[ 0 ] ) == NULL )
@@ -75,13 +76,15 @@ namespace mantis
         return f_blocks[ f_current_index ];
     }
 
+    template< typename DataType >
     typed_block< DataType >* typed_iterator< DataType >::operator->()
     {
-        return f_blocks[ f_current_index ];
+        return static_cast< typed_block< DataType >* >( f_blocks[ f_current_index ] );
     }
+    template< typename DataType >
     typed_block< DataType >& typed_iterator< DataType >::operator*()
     {
-        return *f_blocks[ f_current_index ];
+        return *static_cast< typed_block< DataType >* >( f_blocks[ f_current_index ] );
     }
 
 

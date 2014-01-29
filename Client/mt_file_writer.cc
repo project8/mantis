@@ -1,5 +1,6 @@
 #include "mt_file_writer.hh"
 
+#include "mt_configurator.hh"
 #include "mt_exception.hh"
 #include "mt_factory.hh"
 #include "mt_logger.hh"

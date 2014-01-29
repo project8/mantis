@@ -5,6 +5,7 @@
 
 #include "mt_atomic.hh"
 #include "mt_block.hh"
+#include "mt_iterator.hh"
 
 #include "thorax.hh"
 
@@ -75,7 +76,7 @@ namespace mantis
             block* t_new_block = new typed_block< DataType >();
             *( t_it->handle() ) = new DataType[ f_buffer->record_size() ];
             t_it->set_data_size( f_buffer->record_size() );
-            t_new_block->set_cleanup( new block_cleanup_rr< DataType >( t_it->handle() ) );
+            t_new_block->set_cleanup( new block_cleanup_rr< DataType >( t_it->data() ) );
             f_buffer->set_block( t_it.index(), t_new_block );
 
             ++t_it;

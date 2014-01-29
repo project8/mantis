@@ -50,7 +50,7 @@ namespace mantis
         f_buffer_condition = new condition();
         f_buffer = new buffer( t_status->buffer_size(), t_status->record_size() );
 
-        f_receiver = new record_receiver( f_server, f_buffer, f_buffer_condition );
+        f_receiver = new record_receiver( f_server );
         f_receiver->set_data_chunk_size( t_status->data_chunk_size() );
         f_receiver->set_data_type_size( t_status->data_type_size() );
 

@@ -149,11 +149,11 @@ namespace mantis
     {
         set_data_size( 0 );
     }
-    virtual empty_block::~empty_block()
+    empty_block::~empty_block()
     {
     }
 
-    virtual size_t empty_block::get_data_nbytes() const
+    size_t empty_block::get_data_nbytes() const
     {
         return 0;
     }
