@@ -26,6 +26,12 @@ namespace mantis
         return digitizer_px1500::s_bit_depth;
     }
 
+    unsigned digitizer_px1500::s_data_type_size = sizeof( px1500_data_t );
+    unsigned digitizer_px1500::data_type_size_px1500()
+    {
+        return digitizer_px1500::s_data_type_size;
+    }
+
     digitizer_px1500::digitizer_px1500() :
             //f_semaphore( NULL ),
             f_buffer( NULL ),
@@ -387,6 +393,11 @@ namespace mantis
     unsigned digitizer_px1500::bit_depth()
     {
         return digitizer_px1500::s_bit_depth();
+    }
+
+    unsigned digitizer_px1500::data_type_size()
+    {
+        return digitizer_px1500::s_data_type_size;
     }
 
 

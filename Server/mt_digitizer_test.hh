@@ -33,6 +33,7 @@ namespace mantis
     {
         public:
             static unsigned bit_depth_test();
+            static unsigned data_type_size_test();
 
         public:
             digitizer_test();
@@ -47,6 +48,7 @@ namespace mantis
             bool write_mode_check( request_file_write_mode_t mode );
 
             unsigned bit_depth();
+            unsigned data_type_size();
 
             // thread-safe getter
             bool get_canceled();
@@ -55,6 +57,7 @@ namespace mantis
 
         private:
             static unsigned s_bit_depth;
+            static unsigned s_data_type_size;
 
             //sem_t* f_semaphore;
 

@@ -27,6 +27,12 @@ namespace mantis
         return digitizer_test::s_bit_depth;
     }
 
+    unsigned digitizer_test::s_data_type_size = 8;
+    unsigned digitizer_test::data_type_size_test()
+    {
+        return digitizer_test::s_data_type_size;
+    }
+
     digitizer_test::digitizer_test() :
             //f_semaphore( NULL ),
             f_allocated( false ),
@@ -317,6 +323,11 @@ namespace mantis
     unsigned digitizer_test::bit_depth()
     {
         return digitizer_test::s_bit_depth();
+    }
+
+    unsigned digitizer_test::data_type_size()
+    {
+        return digitizer_test::s_data_type_size;
     }
 
     bool digitizer_test::get_canceled()

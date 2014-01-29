@@ -26,11 +26,11 @@ namespace mantis
         HPX4* f_dig_ptr;
     };
 
-    class digitizer_px1500 :
-        public digitizer
+    class digitizer_px1500 : public digitizer
     {
         public:
             static unsigned bit_depth_px1500();
+            static unsigned data_type_size_px1500();
 
         public:
             digitizer_px1500();
@@ -45,6 +45,7 @@ namespace mantis
             bool write_mode_check( request_file_write_mode_t mode );
 
             unsigned bit_depth();
+            unsigned data_type_size();
 
             // thread-safe getter
             bool get_canceled();
@@ -53,6 +54,7 @@ namespace mantis
 
         private:
             static const unsigned s_bit_depth;
+            static const unsigned s_data_type_size;
 
             //sem_t* f_semaphore;
 
