@@ -26,6 +26,16 @@ namespace mantis
     {
         MTINFO( mtlog, "allocating buffer..." );
 
+        // TODO: fix this condition!
+        if( true )
+        {
+            allocate< rr_8bit_data_t >( f_buffer );
+        }
+        else
+        {
+            allocate< rr_16bit_data_t >( f_buffer );
+        }
+        /*
         iterator t_it( f_buffer );
         for( unsigned int index = 0; index < f_buffer->size(); index++ )
         {
@@ -33,6 +43,7 @@ namespace mantis
             t_it->set_data_size( f_buffer->record_size() );
             ++t_it;
         }
+        */
     }
 
     record_receiver::~record_receiver()
@@ -42,7 +53,8 @@ namespace mantis
         iterator t_it( f_buffer );
         for( unsigned int index = 0; index < f_buffer->size(); index++ )
         {
-            delete [] t_it->data();
+            f_buffer->delete_block( t_it.index() );
+            //delete [] t_it->data();
             ++t_it;
         }
     }
@@ -50,7 +62,7 @@ namespace mantis
     void record_receiver::execute()
     {
         record_dist* t_record_dist = new record_dist();
-        t_record_dist->set_data_chunk_size( f_data_chunk_size );
+        t_record_dist->set_data_chunk_nbytes( f_data_chunk_size );
         MTINFO( mtlog, "waiting for incoming record connection" );
         // thread is blocked by the accept call in server::get_connection
         // until an incoming connection is received
