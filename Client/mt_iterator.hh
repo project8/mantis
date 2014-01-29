@@ -73,7 +73,7 @@ namespace mantis
     template< typename DataType >
     typed_block< DataType >* typed_iterator< DataType >::typed_object()
     {
-        return f_blocks[ f_current_index ];
+        return static_cast< typed_block< DataType >* >( f_blocks[ f_current_index ] );
     }
 
     template< typename DataType >

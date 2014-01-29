@@ -20,13 +20,13 @@ namespace mantis
 
     static registrar< digitizer, digitizer_px1500 > s_px1500_registrar("px1500");
 
-    unsigned digitizer_px1500::s_bit_depth = 8;
+    const unsigned digitizer_px1500::s_bit_depth = 8;
     unsigned digitizer_px1500::bit_depth_px1500()
     {
         return digitizer_px1500::s_bit_depth;
     }
 
-    unsigned digitizer_px1500::s_data_type_size = sizeof( px1500_data_t );
+    const unsigned digitizer_px1500::s_data_type_size = sizeof( px1500_data_t );
     unsigned digitizer_px1500::data_type_size_px1500()
     {
         return digitizer_px1500::s_data_type_size;
@@ -141,7 +141,7 @@ namespace mantis
                 return false;
             }
             t_it->set_data_size( f_buffer->record_size() );
-            t_new_block->set_cleanup( new block_cleanup_px1500( t_it->handle(), &f_handle ) );
+            t_new_block->set_cleanup( new block_cleanup_px1500( t_it->data(), &f_handle ) );
             f_buffer->set_block( t_it.index(), t_new_block );
 
             ++t_it;
@@ -197,7 +197,7 @@ namespace mantis
     }
     void digitizer_px1500::execute()
     {
-        iterator t_it( f_buffer );
+        typed_iterator< px1500_data_t > t_it( f_buffer );
 
         timespec t_live_start_time;
         timespec t_live_stop_time;
@@ -214,6 +214,7 @@ namespace mantis
         //start acquisition
         if( start() == false )
         {
+            MTERROR( mtlog, "unable to start acquisition" );
             return;
         }
 
@@ -252,7 +253,7 @@ namespace mantis
 
             t_it->set_acquiring();
 
-            if( acquire( t_it.object(), t_stamp_time ) == false )
+            if( acquire( t_it.typed_object(), t_stamp_time ) == false )
             {
                 //mark the block as written
                 t_it->set_written();
@@ -354,7 +355,7 @@ namespace mantis
 
         return true;
     }
-    bool digitizer_px1500::acquire( block* a_block, timespec& a_stamp_time )
+    bool digitizer_px1500::acquire( typed_block< px1500_data_t >* a_block, timespec& a_stamp_time )
     {
         a_block->set_record_id( f_record_count );
         a_block->set_acquisition_id( f_acquisition_count );
@@ -392,7 +393,7 @@ namespace mantis
 
     unsigned digitizer_px1500::bit_depth()
     {
-        return digitizer_px1500::s_bit_depth();
+        return digitizer_px1500::s_bit_depth;
     }
 
     unsigned digitizer_px1500::data_type_size()

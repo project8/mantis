@@ -21,13 +21,13 @@ namespace mantis
 
     static registrar< digitizer, digitizer_test > s_digtest_registrar("test");
 
-    unsigned digitizer_test::s_bit_depth = 8;
+    const unsigned digitizer_test::s_bit_depth = 8;
     unsigned digitizer_test::bit_depth_test()
     {
         return digitizer_test::s_bit_depth;
     }
 
-    unsigned digitizer_test::s_data_type_size = 8;
+    const unsigned digitizer_test::s_data_type_size = 8;
     unsigned digitizer_test::data_type_size_test()
     {
         return digitizer_test::s_data_type_size;
@@ -98,7 +98,7 @@ namespace mantis
             block* t_new_block = new typed_block< test_data_t >();
             *( t_it->handle() ) = new data_type[ f_buffer->record_size() ];
             t_it->set_data_size( f_buffer->record_size() );
-            t_new_block->set_cleanup( new block_cleanup_test( t_it->handle() ) );
+            t_new_block->set_cleanup( new block_cleanup_test( t_it->data() ) );
             f_buffer->set_block( t_it.index(), t_new_block );
 
             ++t_it;
@@ -322,7 +322,7 @@ namespace mantis
 
     unsigned digitizer_test::bit_depth()
     {
-        return digitizer_test::s_bit_depth();
+        return digitizer_test::s_bit_depth;
     }
 
     unsigned digitizer_test::data_type_size()

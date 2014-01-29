@@ -74,7 +74,7 @@ namespace mantis
             condition f_cancel_condition;
 
             bool start();
-            bool acquire( block* a_block, timespec& a_time_stamp );
+            bool acquire( typed_block< px1500_data_t >* a_block, timespec& a_time_stamp );
             bool stop();
     };
 }

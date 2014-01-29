@@ -56,8 +56,8 @@ namespace mantis
             void set_canceled( bool a_flag );
 
         private:
-            static unsigned s_bit_depth;
-            static unsigned s_data_type_size;
+            static const unsigned s_bit_depth;
+            static const unsigned s_data_type_size;
 
             //sem_t* f_semaphore;
 
