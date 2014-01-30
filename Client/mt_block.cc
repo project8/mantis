@@ -2,10 +2,8 @@
 
 namespace mantis
 {
-
     block::block() :
-            f_header(),
-            f_cleanup( NULL )
+            f_header()
     {
         f_header.set_state( block_header_state_t_written );
         f_header.set_acquisition_id( 0 );
@@ -16,8 +14,6 @@ namespace mantis
 
     block::~block()
     {
-        if( f_cleanup != NULL ) f_cleanup->delete_data();
-        delete f_cleanup;
     }
 
     block_header_state_t block::get_state() const
@@ -134,13 +130,6 @@ namespace mantis
     const block_header* block::header() const
     {
         return &f_header;
-    }
-
-    void block::set_cleanup( block_cleanup* a_cleanup )
-    {
-        delete a_cleanup;
-        f_cleanup = a_cleanup;
-        return;
     }
 
 

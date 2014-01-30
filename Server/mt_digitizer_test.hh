@@ -19,13 +19,15 @@ namespace mantis
 {
     typedef uint8_t test_data_t ;
 
-    struct block_cleanup_test : block_cleanup
+    class block_cleanup_test : public block_cleanup
     {
-        block_cleanup_test( test_data_t* a_data );
-        virtual ~block_cleanup_test();
-        virtual bool delete_data();
-        bool f_triggered;
-        test_data_t* f_data;
+        public:
+            block_cleanup_test( test_data_t* a_data );
+            virtual ~block_cleanup_test();
+            virtual bool delete_data();
+        private:
+            bool f_triggered;
+            test_data_t* f_data;
     };
 
     class digitizer_test :

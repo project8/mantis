@@ -348,8 +348,9 @@ namespace mantis
     //********************************
 
     block_cleanup_test::block_cleanup_test( test_data_t* a_data ) :
-        f_triggered( false ),
-        f_data( a_data )
+            block_cleanup(),
+            f_triggered( false ),
+            f_data( a_data )
     {}
     block_cleanup_test::~block_cleanup_test()
     {}

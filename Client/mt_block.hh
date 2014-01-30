@@ -6,12 +6,6 @@
 
 namespace mantis
 {
-    struct block_cleanup
-    {
-            virtual ~block_cleanup() {};
-            virtual bool delete_data() = 0;
-    };
-
     class block
     {
         public:
@@ -53,12 +47,8 @@ namespace mantis
             virtual char* data_bytes() = 0;
             virtual const char* data_bytes() const = 0;
 
-            void set_cleanup( block_cleanup* a_cleanup );
-
         protected:
             block_header f_header;
-
-            block_cleanup* f_cleanup;
 
     };
 
@@ -72,6 +62,14 @@ namespace mantis
 
             virtual char* data_bytes();
             virtual const char* data_bytes() const;
+    };
+
+    class block_cleanup
+    {
+        public:
+            block_cleanup() {}
+            virtual ~block_cleanup() {}
+            virtual bool delete_data() = 0;
     };
 
     template< typename DataType >
@@ -91,21 +89,27 @@ namespace mantis
             virtual char* data_bytes();
             virtual const char* data_bytes() const;
 
+            void set_cleanup( block_cleanup* a_cleanup );
+
         private:
             DataType* f_data;
 
+            block_cleanup* f_cleanup;
     };
 
     template< typename DataType >
     typed_block< DataType >::typed_block() :
             block(),
-            f_data( NULL )
+            f_data( NULL ),
+            f_cleanup( NULL )
     {
     }
 
     template< typename DataType >
     typed_block< DataType >::~typed_block()
     {
+        if( f_cleanup != NULL ) f_cleanup->delete_data();
+        delete f_cleanup;
     }
 
     template< typename DataType >
@@ -144,6 +148,13 @@ namespace mantis
         return ( const char* )f_data;
     }
 
+    template< typename DataType >
+    void typed_block< DataType >::set_cleanup( block_cleanup* a_cleanup )
+    {
+        delete f_cleanup;
+        f_cleanup = a_cleanup;
+        return;
+    }
 
 }
 
