@@ -23,7 +23,7 @@ namespace mantis
 
             void set_buffer( buffer* a_buffer, condition* a_condition );
 
-            virtual void configure( configurator* config ) = 0;
+            virtual void configure( const configurator* config ) = 0;
 
             bool initialize( request* a_response );
             virtual bool initialize_derived( request* a_response ) = 0;

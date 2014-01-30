@@ -17,7 +17,7 @@ namespace mantis
 {
     MTLOGGER( mtlog, "server_worker" );
 
-    server_worker::server_worker( configurator* a_config, digitizer* a_digitizer, buffer* a_buffer, run_queue* a_run_queue, condition* a_queue_condition, condition* a_buffer_condition ) :
+    server_worker::server_worker( const configurator* a_config, digitizer* a_digitizer, buffer* a_buffer, run_queue* a_run_queue, condition* a_queue_condition, condition* a_buffer_condition ) :
                     f_config( a_config ),
                     f_digitizer( a_digitizer ),
                     f_writer( NULL ),
@@ -109,7 +109,18 @@ namespace mantis
                 f_writer = t_writer_factory->create( "network" );
             }
             f_writer->set_buffer( f_buffer, f_buffer_condition );
-            f_writer->configure( f_config );
+            try
+            {
+                f_writer->configure( f_config );
+            }
+            catch( exception& e )
+            {
+                MTERROR( mtlog, "unable to configure writer: " << e.what() );
+                t_run_context->unlock_inbound();
+                delete t_run_context->get_connection();
+                delete t_run_context;
+                continue;
+            }
             if( ! f_writer->initialize( t_request ) )
             {
                 t_run_context->unlock_inbound();

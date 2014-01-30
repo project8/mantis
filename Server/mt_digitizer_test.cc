@@ -27,7 +27,7 @@ namespace mantis
         return digitizer_test::s_bit_depth;
     }
 
-    const unsigned digitizer_test::s_data_type_size = 8;
+    const unsigned digitizer_test::s_data_type_size = 1;
     unsigned digitizer_test::data_type_size_test()
     {
         return digitizer_test::s_data_type_size;

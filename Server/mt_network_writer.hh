@@ -16,7 +16,7 @@ namespace mantis
             network_writer();
             virtual ~network_writer();
 
-            void configure( configurator* a_config );
+            void configure( const configurator* a_config );
 
             bool initialize_derived( request* a_request );
             void finalize( response* a_response );

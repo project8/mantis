@@ -62,9 +62,18 @@ int main( int argc, char** argv )
 
     MTINFO( mtlog, "creating objects..." );
 
-    size_t t_buffer_size = t_config->get< int >( "buffer-size" );
-    size_t t_record_size = t_config->get< int >( "record-size" );
-    size_t t_data_chunk_size = t_config->get< int >( "data-chunk-size" );
+    size_t t_buffer_size, t_record_size, t_data_chunk_size;
+    try
+    {
+        t_buffer_size = t_config->get< int >( "buffer-size" );
+        t_record_size = t_config->get< int >( "record-size" );
+        t_data_chunk_size = t_config->get< int >( "data-chunk-size" );
+    }
+    catch( exception& e )
+    {
+        MTERROR( mtlog, "required parameters were not available: " << e.what() );
+        return -1;
+    }
 
     // set up the server and request receiver
 
@@ -115,13 +124,11 @@ int main( int argc, char** argv )
     // find the type size of the data from the bit depth
     unsigned t_data_type_size = t_digitizer->data_type_size();
     t_receiver.set_data_type_size( t_data_type_size );
-    t_config->config().add( "data-type-size", new param_value( t_data_type_size ) );
+    t_config->config()->add( "data-type-size", new param_value( t_data_type_size ) );
 
     t_digitizer->allocate( &t_buffer, &t_buffer_condition );
 
     server_worker t_worker( t_config, t_digitizer, &t_buffer, &t_run_queue, &t_queue_condition, &t_buffer_condition );
-
-    delete t_config;
 
     MTINFO( mtlog, "starting threads..." );
 
@@ -162,6 +169,7 @@ int main( int argc, char** argv )
     MTINFO( mtlog, "shutting down..." );
 
     delete t_server;
+    delete t_config;
 
     return 0;
 }

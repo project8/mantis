@@ -28,9 +28,9 @@ namespace mantis
     {
     }
 
-    void file_writer::configure( configurator* a_config )
+    void file_writer::configure( const configurator* a_config )
     {
-        f_data_type_size = a_config->get< unsigned >( "data-type-size", 1 );
+        f_data_type_size = a_config->get< unsigned >( "data-type-size", f_data_type_size );
         return;
     }
 

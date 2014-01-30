@@ -17,7 +17,7 @@ namespace mantis
             file_writer();
             virtual ~file_writer();
 
-            void configure( configurator* );
+            void configure( const configurator* );
 
             bool initialize_derived( request* a_response );
 

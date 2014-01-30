@@ -1,7 +1,6 @@
 #include "mt_network_writer.hh"
 
 #include "mt_configurator.hh"
-#include "MonarchException.hpp"
 #include "mt_factory.hh"
 #include "mt_logger.hh"
 
@@ -28,9 +27,9 @@ namespace mantis
         delete f_record_dist;
     }
 
-    void network_writer::configure( configurator* a_config )
+    void network_writer::configure( const configurator* a_config )
     {
-        set_data_chunk_size( a_config->get< int >( "data-chunk-size" ));
+        set_data_chunk_size( a_config->get< unsigned >( "data-chunk-size" ));
         return;
     }
 

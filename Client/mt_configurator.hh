@@ -23,17 +23,17 @@ namespace mantis
             configurator( int an_argc, char** an_argv, param_node* a_default = NULL );
             virtual ~configurator();
 
-            param_node& config();
-            const param_node& config() const;
+            param_node* config();
+            const param_node* config() const;
 
             template< typename XReturnType >
-            XReturnType get( const std::string& a_name );
+            XReturnType get( const std::string& a_name ) const;
 
             template< typename XReturnType >
-            XReturnType get( const std::string& a_name, XReturnType a_default );
+            XReturnType get( const std::string& a_name, XReturnType a_default ) const;
 
         private:
-            param_node f_master_config;
+            param_node* f_master_config;
 
             mutable param* f_param_buffer;
 
@@ -41,10 +41,10 @@ namespace mantis
     };
 
     template< typename XReturnType >
-    XReturnType configurator::get( const std::string& a_name )
+    XReturnType configurator::get( const std::string& a_name ) const
     {
-        f_param_buffer = f_master_config.at( a_name );
-        if( f_param_buffer->is_value() )
+        f_param_buffer = const_cast< param* >( f_master_config->at( a_name ) );
+        if( f_param_buffer != NULL && f_param_buffer->is_value() )
         {
             return f_param_buffer->as_value().get< XReturnType >();
         }
@@ -52,9 +52,9 @@ namespace mantis
     }
 
     template< typename XReturnType >
-    XReturnType configurator::get( const std::string& a_name, XReturnType a_default )
+    XReturnType configurator::get( const std::string& a_name, XReturnType a_default ) const
     {
-        f_param_buffer = f_master_config.at( a_name );
+        f_param_buffer = const_cast< param* >( f_master_config->at( a_name ) );
         if( f_param_buffer != NULL && f_param_buffer->is_value() )
         {
             return f_param_buffer->as_value().get< XReturnType >();
