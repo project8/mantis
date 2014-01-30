@@ -17,23 +17,14 @@
 
 namespace mantis
 {
-    typedef uint8_t test_data_t ;
-
-    class block_cleanup_test : public block_cleanup
-    {
-        public:
-            block_cleanup_test( test_data_t* a_data );
-            virtual ~block_cleanup_test();
-            virtual bool delete_data();
-        private:
-            bool f_triggered;
-            test_data_t* f_data;
-    };
+    class block_cleanup_test;
 
     class digitizer_test :
         public digitizer
     {
         public:
+            typedef uint8_t data_type;
+
             static unsigned bit_depth_test();
             static unsigned data_type_size_test();
 
@@ -63,6 +54,8 @@ namespace mantis
 
             //sem_t* f_semaphore;
 
+            data_type* f_master_record;
+
             bool f_allocated;
 
             buffer* f_buffer;
@@ -81,6 +74,19 @@ namespace mantis
             bool acquire( block* a_block, timespec& a_time_stamp );
             bool stop();
     };
+
+    class block_cleanup_test : public block_cleanup
+    {
+        public:
+            block_cleanup_test( digitizer_test::data_type* a_data );
+            virtual ~block_cleanup_test();
+            virtual bool delete_data();
+        private:
+            bool f_triggered;
+            digitizer_test::data_type* f_data;
+    };
+
+
 }
 
 #endif

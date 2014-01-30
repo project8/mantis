@@ -147,11 +147,11 @@ namespace mantis
         return 0;
     }
 
-    char* empty_block::data_bytes()
+    byte_type* empty_block::data_bytes()
     {
         return NULL;
     }
-    const char* empty_block::data_bytes() const
+    const byte_type* empty_block::data_bytes() const
     {
         return NULL;
     }

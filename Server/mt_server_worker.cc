@@ -18,16 +18,16 @@ namespace mantis
     MTLOGGER( mtlog, "server_worker" );
 
     server_worker::server_worker( const configurator* a_config, digitizer* a_digitizer, buffer* a_buffer, run_queue* a_run_queue, condition* a_queue_condition, condition* a_buffer_condition ) :
-                    f_config( a_config ),
-                    f_digitizer( a_digitizer ),
-                    f_writer( NULL ),
-                    f_buffer( a_buffer ),
-                    f_run_queue( a_run_queue ),
-                    f_queue_condition( a_queue_condition ),
-                    f_buffer_condition( a_buffer_condition ),
-                    f_canceled( false ),
-                    f_digitizer_state( k_inactive ),
-                    f_writer_state( k_inactive )
+            f_config( a_config ),
+            f_digitizer( a_digitizer ),
+            f_writer( NULL ),
+            f_buffer( a_buffer ),
+            f_run_queue( a_run_queue ),
+            f_queue_condition( a_queue_condition ),
+            f_buffer_condition( a_buffer_condition ),
+            f_canceled( false ),
+            f_digitizer_state( k_inactive ),
+            f_writer_state( k_inactive )
     {
     }
 

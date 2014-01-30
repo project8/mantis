@@ -22,10 +22,10 @@ namespace mantis
 
         private:
             bool push_header( const block_header* a_block_header, int flags = 0 );
-            bool push_data( const char* a_block_data, int flags = 0 );
+            bool push_data( const byte_type* a_block_data, int flags = 0 );
 
             bool pull_header( block_header* a_block_header, int flags = 0 );
-            bool pull_data( char* a_block_data, int flags = 0 );
+            bool pull_data( byte_type* a_block_data, int flags = 0 );
 
             size_t f_data_chunk_nbytes;
             size_t f_n_full_chunks;

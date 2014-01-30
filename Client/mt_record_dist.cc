@@ -89,15 +89,15 @@ namespace mantis
         return true;
     }
 
-    bool record_dist::push_data( const char* a_block_data, int flags )
+    bool record_dist::push_data( const byte_type* a_block_data, int flags )
     {
-        const char* t_offset_data = a_block_data;
+        const byte_type* t_offset_data = a_block_data;
         unsigned i_chunk = 0;
         try
         {
             for( ; i_chunk < f_n_full_chunks; ++i_chunk )
             {
-                f_connection->send( t_offset_data, f_data_chunk_nbytes, flags );
+                f_connection->send( (char*)t_offset_data, f_data_chunk_nbytes, flags );
                 t_offset_data += f_data_chunk_nbytes;
             }
         }
@@ -117,7 +117,7 @@ namespace mantis
         {
             try
             {
-                f_connection->send( t_offset_data, f_last_data_chunk_nbytes, flags );
+                f_connection->send( (char*)t_offset_data, f_last_data_chunk_nbytes, flags );
             }
             catch( closed_connection& cc )
             {
@@ -179,16 +179,16 @@ namespace mantis
         return;
     }
 
-    bool record_dist::pull_data( char* a_block_data, int flags )
+    bool record_dist::pull_data( byte_type* a_block_data, int flags )
     {
-        char* t_offset_data = a_block_data;
+        byte_type* t_offset_data = a_block_data;
         unsigned i_chunk = 0;
         try
         {
             for( ; i_chunk < f_n_full_chunks; ++i_chunk )
             {
                 f_connection->recv_type< size_t >( flags );
-                if( f_connection->recv( t_offset_data, f_data_chunk_nbytes, flags ) == 0 )
+                if( f_connection->recv( (char*)t_offset_data, f_data_chunk_nbytes, flags ) == 0 )
                     return false;
                 t_offset_data += f_data_chunk_nbytes;
             }
@@ -210,7 +210,7 @@ namespace mantis
             try
             {
                 f_connection->recv_type< size_t >( flags );
-                if( f_connection->recv( t_offset_data, f_last_data_chunk_nbytes, flags ) == 0 )
+                if( f_connection->recv( (char*)t_offset_data, f_last_data_chunk_nbytes, flags ) == 0 )
                     return false;
             }
             catch( closed_connection& cc )

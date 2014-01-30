@@ -35,6 +35,7 @@ namespace mantis
 
     digitizer_test::digitizer_test() :
             //f_semaphore( NULL ),
+            f_master_record( NULL ),
             f_allocated( false ),
             f_buffer( NULL ),
             f_condition( NULL ),
@@ -67,6 +68,8 @@ namespace mantis
     {
         if( f_allocated )
         {
+            delete [] f_master_record;
+
             MTINFO( mtlog, "deallocating buffer..." );
 
             for( unsigned int index = 0; index < f_buffer->size(); index++ )
@@ -91,10 +94,10 @@ namespace mantis
 
         try
         {
-            for( unsigned int index = 0; index < f_buffer->size(); index++ )
+            for( unsigned int index = 0; index < f_buffer->size(); ++index )
             {
-                typed_block< test_data_t >* t_new_block = new typed_block< test_data_t >();
-                *( t_new_block->handle() ) = new test_data_t[ f_buffer->record_size() ];
+                typed_block< data_type >* t_new_block = new typed_block< data_type >();
+                *( t_new_block->handle() ) = new data_type [ f_buffer->record_size() ];
                 t_new_block->set_data_size( f_buffer->record_size() );
                 t_new_block->set_cleanup( new block_cleanup_test( t_new_block->data() ) );
                 f_buffer->set_block( index, t_new_block );
@@ -104,6 +107,16 @@ namespace mantis
         {
             MTERROR( mtlog, "unable to allocate buffer: " << e.what() );
             return false;
+        }
+
+        MTINFO( mtlog, "creating master record..." );
+
+        unsigned t_levels = 1 << s_bit_depth;
+        if( f_master_record != NULL ) delete [] f_master_record;
+        f_master_record = new data_type [f_buffer->record_size()];
+        for( unsigned index = 0; index < f_buffer->record_size(); ++index )
+        {
+            f_master_record[ index ] = index % t_levels;
         }
 
         f_allocated = true;
@@ -305,7 +318,7 @@ namespace mantis
         get_time_monotonic( &a_stamp_time );
         a_block->set_timestamp( time_to_nsec( a_stamp_time ) );
 
-        ::memset( a_block->data_bytes(), f_record_count % 256, f_buffer->record_size() );
+        ::memcpy( a_block->data_bytes(), f_master_record, f_buffer->record_size() );
 
         ++f_record_count;
 
@@ -347,7 +360,7 @@ namespace mantis
     // Block Cleanup -- Test Digitizer
     //********************************
 
-    block_cleanup_test::block_cleanup_test( test_data_t* a_data ) :
+    block_cleanup_test::block_cleanup_test( digitizer_test::data_type* a_data ) :
             block_cleanup(),
             f_triggered( false ),
             f_data( a_data )

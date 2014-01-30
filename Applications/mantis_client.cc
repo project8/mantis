@@ -135,8 +135,6 @@ int main( int argc, char** argv )
     }
     t_run_context.unlock_outbound();
 
-    delete t_config;
-
     // start the client for sending the request
     MTINFO( mtlog, "connecting with the server...");
 
@@ -209,6 +207,13 @@ int main( int argc, char** argv )
     // Status message should now contain any information the client might need from the server
     // Server is now waiting for a client status update
 
+
+    // get the data type size
+    unsigned t_data_type_size = t_run_context.lock_status_in()->data_type_size();
+    // record receiver is given data_type_size in client_file_writing's constructor
+    t_config->config()->add( "data-type-size", new param_value( t_data_type_size ) );
+    t_run_context.unlock_inbound();
+
     /****************************************************************/
     /*********************** file writing ***************************/
     /****************************************************************/
@@ -219,7 +224,7 @@ int main( int argc, char** argv )
 
         try
         {
-            t_file_writing = new client_file_writing( &t_run_context, t_write_port );
+            t_file_writing = new client_file_writing( t_config, &t_run_context, t_write_port );
         }
         catch( exception& e )
         {
@@ -338,6 +343,7 @@ int main( int argc, char** argv )
     t_run_context.cancel();
     t_comm_thread.cancel();
     delete t_request_client;
+    delete t_config;
 
     return t_run_success;
 }

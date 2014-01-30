@@ -23,7 +23,8 @@ namespace mantis
 {
     MTLOGGER( mtlog, "client_file_writing" );
 
-    client_file_writing::client_file_writing( run_context_dist* a_run_context, int a_write_port ) :
+    client_file_writing::client_file_writing( const configurator* a_config, run_context_dist* a_run_context, int a_write_port ) :
+            f_config( a_config ),
             f_server( NULL ),
             f_buffer_condition( NULL ),
             f_buffer( NULL ),
@@ -58,6 +59,7 @@ namespace mantis
 
         f_writer = new file_writer();
         f_writer->set_buffer( f_buffer, f_buffer_condition );
+        f_writer->configure( f_config );
 
         try
         {

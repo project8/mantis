@@ -44,8 +44,8 @@ namespace mantis
             block_header* header();
             const block_header* header() const;
 
-            virtual char* data_bytes() = 0;
-            virtual const char* data_bytes() const = 0;
+            virtual byte_type* data_bytes() = 0;
+            virtual const byte_type* data_bytes() const = 0;
 
         protected:
             block_header f_header;
@@ -60,8 +60,8 @@ namespace mantis
 
             virtual size_t get_data_nbytes() const;
 
-            virtual char* data_bytes();
-            virtual const char* data_bytes() const;
+            virtual byte_type* data_bytes();
+            virtual const byte_type* data_bytes() const;
     };
 
     class block_cleanup
@@ -86,8 +86,8 @@ namespace mantis
 
             DataType** handle();
 
-            virtual char* data_bytes();
-            virtual const char* data_bytes() const;
+            virtual byte_type* data_bytes();
+            virtual const byte_type* data_bytes() const;
 
             void set_cleanup( block_cleanup* a_cleanup );
 
@@ -137,15 +137,15 @@ namespace mantis
     }
 
     template< typename DataType >
-    char* typed_block< DataType >::data_bytes()
+    byte_type* typed_block< DataType >::data_bytes()
     {
-        return ( char* )f_data;
+        return ( byte_type* )f_data;
     }
 
     template< typename DataType >
-    const char* typed_block< DataType >::data_bytes() const
+    const byte_type* typed_block< DataType >::data_bytes() const
     {
-        return ( const char* )f_data;
+        return ( const byte_type* )f_data;
     }
 
     template< typename DataType >
