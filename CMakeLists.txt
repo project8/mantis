@@ -60,7 +60,7 @@ if( Mantis_BUILD_SERVER )
     endif (Mantis_INCLUDE_PX1500_SERVER)
 
     if( Mantis_INCLUDE_PX14400_SERVER )
-        find_path( PX14400_INCLUDE_DIR px14400.h PATHS ${PX14400_PREFIX} )
+        find_path( PX14400_INCLUDE_DIR px14.h PATHS ${PX14400_PREFIX} )
         if( NOT PX14400_INCLUDE_DIR )
             message( FATAL_ERROR "Did not find px14400 header; set PX14400_PREFIX to suggest a path" )
         endif( NOT PX14400_INCLUDE_DIR )

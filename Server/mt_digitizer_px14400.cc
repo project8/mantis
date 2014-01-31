@@ -162,7 +162,7 @@ namespace mantis
 
         if( a_request->mode() == request_mode_t_single )
         {
-            t_result = SetActiveChannelsPX4( f_handle, PX14CHANNEL_ONE );
+            t_result = SetActiveChannelsPX14( f_handle, PX14CHANNEL_ONE );
             if( t_result != SIG_SUCCESS )
             {
                 DumpLibErrorPX14( t_result, "failed to activate channel 1: " );
@@ -172,7 +172,7 @@ namespace mantis
         }
         if( a_request->mode() == request_mode_t_dual_separate || a_request->mode() == request_mode_t_dual_interleaved )
         {
-            t_result = SetActiveChannelsPX4( f_handle, PX14CHANNEL_DUAL );
+            t_result = SetActiveChannelsPX14( f_handle, PX14CHANNEL_DUAL );
             if( t_result != SIG_SUCCESS )
             {
                 DumpLibErrorPX14( t_result, "failed to activate channels 1 and 2: " );
@@ -193,7 +193,7 @@ namespace mantis
     }
     void digitizer_px14400::execute()
     {
-        typed_iterator< px14400_data_t > t_it( f_buffer );
+        typed_iterator< data_type > t_it( f_buffer );
 
         timespec t_live_start_time;
         timespec t_live_stop_time;
@@ -351,7 +351,7 @@ namespace mantis
 
         return true;
     }
-    bool digitizer_px14400::acquire( typed_block< px14400_data_t >* a_block, timespec& a_stamp_time )
+    bool digitizer_px14400::acquire( typed_block< data_type >* a_block, timespec& a_stamp_time )
     {
         a_block->set_record_id( f_record_count );
         a_block->set_acquisition_id( f_acquisition_count );
@@ -362,7 +362,7 @@ namespace mantis
         if( t_result != SIG_SUCCESS )
         {
             DumpLibErrorPX14( t_result, "failed to acquire dma data over pci: " );
-            t_result = EndBufferedPciAcquisitionPX4( f_handle );
+            t_result = EndBufferedPciAcquisitionPX14( f_handle );
             return false;
         }
 

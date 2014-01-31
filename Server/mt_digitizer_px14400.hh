@@ -7,7 +7,7 @@
 #include "mt_block.hh"
 #include "mt_condition.hh"
 
-#include "px14400.h"
+#include "px14.h"
 #include "thorax.hh"
 
 //#include <semaphore.h>
@@ -66,11 +66,11 @@ namespace mantis
             condition f_cancel_condition;
 
             bool start();
-            bool acquire( typed_block< px14400_data_t >* a_block, timespec& a_time_stamp );
+            bool acquire( typed_block< data_type >* a_block, timespec& a_time_stamp );
             bool stop();
     };
 
-    class block_cleanup_px14400 : block_cleanup
+    class block_cleanup_px14400 : public block_cleanup
     {
         public:
             block_cleanup_px14400( digitizer_px14400::data_type* a_data, HPX14* a_dig_ptr );

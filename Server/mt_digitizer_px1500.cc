@@ -125,7 +125,7 @@ namespace mantis
         {
             for( unsigned int index = 0; index < f_buffer->size(); index++ )
             {
-                typed_block< px1500_data_t >* t_new_block = new typed_block< px1500_data_t >();
+                typed_block< data_type >* t_new_block = new typed_block< data_type >();
                 t_result = AllocateDmaBufferPX4( f_handle, f_buffer->record_size(), t_new_block->handle() );
                 if( t_result != SIG_SUCCESS )
                 {
@@ -193,7 +193,7 @@ namespace mantis
     }
     void digitizer_px1500::execute()
     {
-        typed_iterator< px1500_data_t > t_it( f_buffer );
+        typed_iterator< data_type > t_it( f_buffer );
 
         timespec t_live_start_time;
         timespec t_live_stop_time;
@@ -351,7 +351,7 @@ namespace mantis
 
         return true;
     }
-    bool digitizer_px1500::acquire( typed_block< px1500_data_t >* a_block, timespec& a_stamp_time )
+    bool digitizer_px1500::acquire( typed_block< data_type >* a_block, timespec& a_stamp_time )
     {
         a_block->set_record_id( f_record_count );
         a_block->set_acquisition_id( f_acquisition_count );

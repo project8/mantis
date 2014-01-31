@@ -70,7 +70,7 @@ namespace mantis
             bool stop();
     };
 
-    class block_cleanup_px1500 : block_cleanup
+    class block_cleanup_px1500 : public block_cleanup
     {
         public:
             block_cleanup_px1500( digitizer_px1500::data_type* a_data, HPX4* a_dig_ptr );
