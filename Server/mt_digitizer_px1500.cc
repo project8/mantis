@@ -26,7 +26,7 @@ namespace mantis
         return digitizer_px1500::s_bit_depth;
     }
 
-    const unsigned digitizer_px1500::s_data_type_size = sizeof( px1500_data_t );
+    const unsigned digitizer_px1500::s_data_type_size = sizeof( digitizer_px1500::data_type );
     unsigned digitizer_px1500::data_type_size_px1500()
     {
         return digitizer_px1500::s_data_type_size;
@@ -414,7 +414,7 @@ namespace mantis
     // Block Cleanup px1500
     //***********************************
 
-    block_cleanup_px1500::block_cleanup_px1500( px1500_data_t* a_data, HPX4* a_dig_ptr ) :
+    block_cleanup_px1500::block_cleanup_px1500( digitizer_px1500::data_type* a_data, HPX4* a_dig_ptr ) :
         f_triggered( false ),
         f_data( a_data ),
         f_dig_ptr( a_dig_ptr )

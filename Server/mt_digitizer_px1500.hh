@@ -14,21 +14,13 @@
 
 namespace mantis
 {
-    typedef px4_sample_t px1500_data_t;
-
-    struct block_cleanup_px1500 : block_cleanup
-    {
-        block_cleanup_px1500( px1500_data_t* a_data, HPX4* a_dig_ptr );
-        virtual ~block_cleanup_px1500();
-        virtual bool delete_data();
-        bool f_triggered;
-        px1500_data_t* f_data;
-        HPX4* f_dig_ptr;
-    };
+    class block_cleanup_px1500;
 
     class digitizer_px1500 : public digitizer
     {
         public:
+            typedef px4_sample_t data_type;
+
             static unsigned bit_depth_px1500();
             static unsigned data_type_size_px1500();
 
@@ -74,9 +66,23 @@ namespace mantis
             condition f_cancel_condition;
 
             bool start();
-            bool acquire( typed_block< px1500_data_t >* a_block, timespec& a_time_stamp );
+            bool acquire( typed_block< data_type >* a_block, timespec& a_time_stamp );
             bool stop();
     };
+
+    class block_cleanup_px1500 : block_cleanup
+    {
+        public:
+            block_cleanup_px1500( digitizer_px1500::data_type* a_data, HPX4* a_dig_ptr );
+            virtual ~block_cleanup_px1500();
+            virtual bool delete_data();
+        private:
+            bool f_triggered;
+            digitizer_px1500::data_type* f_data;
+            HPX4* f_dig_ptr;
+    };
+
+
 }
 
 #endif
