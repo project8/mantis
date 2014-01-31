@@ -193,6 +193,7 @@ if( Mantis_BUILD_SERVER )
         ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_destroyer.hh
         ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_digitizer.hh
         ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_digitizer_test.hh
+        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_digitizer_test16.hh
         ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_factory.hh
         ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_network_writer.hh
         ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_run_queue.hh
@@ -205,6 +206,7 @@ if( Mantis_BUILD_SERVER )
     set( MANTIS_SERVER_SOURCEFILES
         ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_digitizer.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_digitizer_test.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_digitizer_test16.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_network_writer.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_run_queue.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_request_receiver.cc
