@@ -21,6 +21,7 @@ include_directories( ${PROJECT_SOURCE_DIR}/Server )
 # Option for a non-px1500 build, which includes only the client application
 set( Mantis_BUILD_SERVER FALSE CACHE BOOL "Flag to enable building of the server library and applications" )
 set( Mantis_INCLUDE_PX1500_SERVER TRUE CACHE BOOL "Flag to include the px1500 server; ignored unless the build-server flag is enabled" )
+set( Mantis_INCLUDE_PX14400_SERVER TRUE CACHE BOOL "Flag to include the px14400 server; ignored unless the build-server flag is enabled" )
 
 
 #######################
@@ -57,6 +58,23 @@ if( Mantis_BUILD_SERVER )
         pbuilder_add_ext_libraries( ${PX1500_LIBRARIES} )
         message( STATUS "Will include the PX1500 server" )
     endif (Mantis_INCLUDE_PX1500_SERVER)
+
+    if( Mantis_INCLUDE_PX14400_SERVER )
+        find_path( PX14400_INCLUDE_DIR px14400.h PATHS ${PX14400_PREFIX} )
+        if( NOT PX14400_INCLUDE_DIR )
+            message( FATAL_ERROR "Did not find px14400 header; set PX14400_PREFIX to suggest a path" )
+        endif( NOT PX14400_INCLUDE_DIR )
+        include_directories( ${PX14400_INCLUDE_DIR} )
+        link_directories( ${PX14400_PREFIX} )
+            
+        find_library( PX14400_LIBRARIES sig_px14400 PATHS ${PX14400_PREFIX} )
+        if( NOT PX14400_LIBRARIES )
+            message( FATAL_ERROR "Did not find px1500 library; set PX14400_PREFIX to suggest a path" )
+        endif( NOT PX14400_LIBRARIES )
+        message( STATUS "Found px14400 library: ${PX14400_LIBRARIES}" )
+        pbuilder_add_ext_libraries( ${PX14400_LIBRARIES} )
+        message( STATUS "Will include the PX14400 server" )
+    endif (Mantis_INCLUDE_PX14400_SERVER)
 else( Mantis_BUILD_SERVER )
     message( STATUS "Will perform a client-only build")
 endif( Mantis_BUILD_SERVER )
@@ -225,6 +243,18 @@ if( Mantis_BUILD_SERVER )
             ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_digitizer_px1500.cc
         )
     endif( Mantis_INCLUDE_PX1500_SERVER )
+
+    if( Mantis_INCLUDE_PX14400_SERVER )
+        set( MANTIS_SERVER_HEADERFILES
+            ${MANTIS_SERVER_HEADERFILES}
+            ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_digitizer_px14400.hh
+        )
+        
+        set( MANTIS_SERVER_SOURCEFILES
+            ${MANTIS_SERVER_SOURCEFILES}
+            ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_digitizer_px14400.cc
+        )
+    endif( Mantis_INCLUDE_PX14400_SERVER )
 
     add_library( MantisServer ${MANTIS_SERVER_SOURCEFILES} )
     target_link_libraries( MantisServer MantisClient ${EXTERNAL_LIBRARIES} )
