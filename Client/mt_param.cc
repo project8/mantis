@@ -7,7 +7,6 @@
 
 #include "mt_param.hh"
 
-#include "mt_exception.hh"
 #include "mt_logger.hh"
 
 #include <sstream>
@@ -113,13 +112,17 @@ namespace mantis
 
     param_value::param_value() :
             param(),
-            f_value_str()
+            f_value_str(),
+            f_value_str_buffer(),
+            f_value_buffer()
     {
     }
 
     param_value::param_value( const param_value& orig ) :
             param( orig ),
-            f_value_str()
+            f_value_str(),
+            f_value_str_buffer(),
+            f_value_buffer()
     {
         f_value_str << orig.f_value_str.str();
     }
@@ -131,6 +134,11 @@ namespace mantis
     param* param_value::clone() const
     {
         return new param_value( *this );
+    }
+
+    bool param_value::is_null() const
+    {
+        return false;
     }
 
     bool param_value::is_value() const
@@ -182,6 +190,11 @@ namespace mantis
         return new param_array( *this );
     }
 
+    bool param_array::is_null() const
+    {
+        return false;
+    }
+
     bool param_array::is_array() const
     {
         return true;
@@ -196,8 +209,6 @@ namespace mantis
         return f_contents.empty();
     }
 
-    /// sets the size of the array
-    /// if smaller than the current size, extra elements are deleted
     void param_array::resize( unsigned a_size )
     {
         unsigned curr_size = f_contents.size();
@@ -209,8 +220,20 @@ namespace mantis
         return;
     }
 
-    /// Returns a pointer to the param corresponding to a_name.
-    /// Returns NULL if a_name is not present.
+    const std::string& param_array::get_value( unsigned a_index ) const
+    {
+        const param_value* value = value_at( a_index );
+        if( value == NULL ) throw exception() << "No value at <" << a_index << "> is present at this node";
+        return value->get();
+    }
+
+    const std::string& param_array::get_value( unsigned a_index, const std::string& a_default ) const
+    {
+        const param_value* value = value_at( a_index );
+        if( value == NULL ) return a_default;
+        return value->get();
+    }
+
     const param* param_array::at( unsigned a_index ) const
     {
         if( a_index >= f_contents.size() ) return NULL;
@@ -386,7 +409,7 @@ namespace mantis
 
 
     //************************************
-    //***********  OBJECT  ***************
+    //***********  NODE  *****************
     //************************************
 
     param_node::param_node() :
@@ -418,6 +441,11 @@ namespace mantis
         return new param_node( *this );
     }
 
+    bool param_node::is_null() const
+    {
+        return false;
+    }
+
     bool param_node::is_node() const
     {
         return true;
@@ -431,6 +459,20 @@ namespace mantis
     unsigned param_node::count( const std::string& a_name ) const
     {
         return f_contents.count( a_name );
+    }
+
+    const std::string& param_node::get_value( const std::string& a_name ) const
+    {
+        const param_value* value = value_at( a_name );
+        if( value == NULL ) throw exception() << "No value with name <" << a_name << "> is present at this node";
+        return value->get();
+    }
+
+    const std::string& param_node::get_value( const std::string& a_name, const std::string& a_default ) const
+    {
+        const param_value* value = value_at( a_name );
+        if( value == NULL ) return a_default;
+        return value->get();
     }
 
     const param* param_node::at( const std::string& a_name ) const

@@ -8,6 +8,8 @@
 #ifndef MT_PARAM_HH_
 #define MT_PARAM_HH_
 
+#include "mt_exception.hh"
+
 #include "document.h"
 
 #include <deque>
@@ -59,11 +61,12 @@ namespace mantis
 
             virtual param* clone() const;
 
+            virtual bool is_null() const;
             virtual bool is_value() const;
 
             const std::string& get() const;
             template< typename XValType >
-            XValType get();
+            XValType get() const;
 
             template< typename XStreamableType >
             param_value& operator<<( const XStreamableType& a_streamable );
@@ -72,6 +75,7 @@ namespace mantis
 
         protected:
             std::stringstream f_value_str;
+            mutable std::stringstream f_value_str_buffer;
             mutable std::string f_value_buffer;
 
     };
@@ -79,16 +83,19 @@ namespace mantis
     template< typename XStreamableType >
     param_value::param_value( XStreamableType a_streamable ) :
             param(),
-            f_value_str()
+            f_value_str(),
+            f_value_str_buffer(),
+            f_value_buffer()
     {
         (*this) << a_streamable;
     }
 
     template< typename XValType >
-    XValType param_value::get()
+    XValType param_value::get() const
     {
         XValType t_return;
-        f_value_str >> t_return;
+        f_value_str_buffer << f_value_str.rdbuf();
+        f_value_str_buffer >> t_return;
         return t_return;
     }
 
@@ -118,6 +125,7 @@ namespace mantis
 
             virtual param* clone() const;
 
+            virtual bool is_null() const;
             virtual bool is_array() const;
 
             unsigned size() const;
@@ -126,6 +134,22 @@ namespace mantis
             /// sets the size of the array
             /// if smaller than the current size, extra elements are deleted
             void resize( unsigned a_size );
+
+            /// Returns the result of ParamValue::get if a_name is present and is of type ParamValue
+            /// Throws an exception if a_name is not present or is not of type ParamValue
+            const std::string& get_value( unsigned a_index ) const;
+            /// Returns the result of ParamValue::get if a_name is present and is of type ParamValue
+            /// Throws an exception if a_name is not present or is not of type ParamValue
+            template< typename XValType >
+            XValType get_value( unsigned a_index ) const;
+
+            /// Returns the result of ParamValue::get if a_name is present and is of type ParamValue
+            /// Returns a_default if a_name is not present or is not of type ParamValue
+            const std::string& get_value( unsigned a_index, const std::string& a_default ) const;
+            /// Returns the result of ParamValue::get if a_name is present and is of type ParamValue
+            /// Returns a_default if a_name is not present or is not of type ParamValue
+            template< typename XValType >
+            XValType get_value( unsigned a_index, XValType a_default ) const;
 
             /// Returns a pointer to the param corresponding to a_name.
             /// Returns NULL if a_name is not present.
@@ -200,6 +224,24 @@ namespace mantis
             contents f_contents;
     };
 
+    template< typename XValType >
+    XValType param_array::get_value( unsigned a_index ) const
+    {
+        const param_value* value = value_at( a_index );
+        if( value == NULL ) throw exception() << "No value at <" << a_index << "> is present at this node";
+        return value->get< XValType >();
+    }
+
+    template< typename XValType >
+    XValType param_array::get_value( unsigned a_index, XValType a_default ) const
+    {
+        const param_value* value = value_at( a_index );
+        if( value == NULL ) return a_default;
+        return value->get< XValType >();
+    }
+
+
+
     class param_node : public param
     {
         public:
@@ -214,10 +256,27 @@ namespace mantis
 
             virtual param* clone() const;
 
+            virtual bool is_null() const;
             virtual bool is_node() const;
 
             bool has( const std::string& a_name ) const;
             unsigned count( const std::string& a_name ) const;
+
+            /// Returns the result of ParamValue::get if a_name is present and is of type ParamValue
+            /// Throws an exception if a_name is not present or is not of type ParamValue
+            const std::string& get_value( const std::string& a_name ) const;
+            /// Returns the result of ParamValue::get if a_name is present and is of type ParamValue
+            /// Throws an exception if a_name is not present or is not of type ParamValue
+            template< typename XValType >
+            XValType get_value( const std::string& a_name ) const;
+
+            /// Returns the result of ParamValue::get if a_name is present and is of type ParamValue
+            /// Returns a_default if a_name is not present or is not of type ParamValue
+            const std::string& get_value( const std::string& a_name, const std::string& a_default ) const;
+            /// Returns the result of ParamValue::get if a_name is present and is of type ParamValue
+            /// Returns a_default if a_name is not present or is not of type ParamValue
+            template< typename XValType >
+            XValType get_value( const std::string& a_name, XValType a_default ) const;
 
             /// Returns a pointer to the param corresponding to a_name.
             /// Returns NULL if a_name is not present.
@@ -272,6 +331,22 @@ namespace mantis
             contents f_contents;
 
     };
+
+    template< typename XValType >
+    XValType param_node::get_value( const std::string& a_name ) const
+    {
+        const param_value* value = value_at( a_name );
+        if( value == NULL ) throw exception() << "No value with name <" << a_name << "> is present at this node";
+        return value->get< XValType >();
+    }
+
+    template< typename XValType >
+    XValType param_node::get_value( const std::string& a_name, XValType a_default ) const
+    {
+        const param_value* value = value_at( a_name );
+        if( value == NULL ) return a_default;
+        return value->get< XValType >();
+    }
 
 
 
