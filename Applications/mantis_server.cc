@@ -136,7 +136,12 @@ int main( int argc, char** argv )
     t_receiver.set_data_type_size( t_data_type_size );
     t_config->config()->add( "data-type-size", new param_value( t_data_type_size ) );
 
-    t_digitizer->allocate( &t_buffer, &t_buffer_condition );
+    if(! t_digitizer->allocate( &t_buffer, &t_buffer_condition ) )
+    {
+        MTERROR( mtlog, "digitizer was not able to allocate the buffer" );
+        delete t_server;
+        return -1;
+    }
 
     server_worker t_worker( t_config, t_digitizer, &t_buffer, &t_run_queue, &t_queue_condition, &t_buffer_condition );
 
