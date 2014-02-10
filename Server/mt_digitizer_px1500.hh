@@ -88,11 +88,6 @@ namespace mantis
         public:
             test_digitizer_px1500() {}
             virtual ~test_digitizer_px1500() {}
-
-            bool run_test()
-            {
-                return true;
-            }
     };
 
 }

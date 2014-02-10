@@ -435,4 +435,128 @@ namespace mantis
     }
 
 
+    //***********************************
+    // test_digitizer_px1500
+    //***********************************
+
+    bool test_digitizer_px1500::run_test()
+    {
+        int t_result;
+        HPX4 f_handle;
+
+        MTINFO( mtlog, "beginning allocation phase" );
+
+        MTDEBUG( mtlog, "connecting to digitizer card..." );
+
+        t_result = ConnectToDevicePX4( &f_handle, 1 );
+        if( t_result != SIG_SUCCESS )
+        {
+            DumpLibErrorPX4( t_result, "failed to connect to digitizer card: " );
+            return false;
+        }
+
+        MTDEBUG( mtlog, "setting power up defaults..." );
+
+        t_result = SetPowerupDefaultsPX4( f_handle );
+        if( t_result != SIG_SUCCESS )
+        {
+            DumpLibErrorPX4( t_result, "failed to enter default state: " );
+            return false;
+        }
+
+        MTDEBUG( mtlog, "allocating dma buffer..." );
+
+        typed_block< data_type >* t_block = NULL;
+        unsigned t_rec_size = 1024;
+
+        try
+        {
+                t_block = new typed_block< data_type >();
+                t_result = AllocateDmaBufferPX4( f_handle, t_rec_size, t_block->handle() );
+                if( t_result != SIG_SUCCESS )
+                {
+                    DumpLibErrorPX4( t_result, "failed to allocate dma memory: " );
+                    return false;
+                }
+                t_block->set_data_size( t_rec_size );
+                t_block->set_cleanup( new block_cleanup_px1500( t_block->data(), &f_handle ) );
+        }
+        catch( exception& e )
+        {
+            MTERROR( mtlog, "unable to allocate buffer: " << e.what() );
+            return false;
+        }
+
+        MTINFO( mtlog, "allocation complete!\n" );
+
+
+
+        MTINFO( mtlog, "beginning initialization phase" );
+
+        MTDEBUG( mtlog, "setting run mode..." );
+
+        t_result = SetActiveChannelsPX4( f_handle, PX4CHANSEL_SINGLE_CH1 );
+        if( t_result != SIG_SUCCESS )
+        {
+            DumpLibErrorPX4( t_result, "failed to activate channel 1: " );
+            return false;
+        }
+
+        MTDEBUG( mtlog, "setting clock rate..." );
+
+        t_result = SetInternalAdcClockRatePX4( f_handle, a_request->rate() );
+        if( t_result != SIG_SUCCESS )
+        {
+            DumpLibErrorPX4( t_result, "failed to set clock rate: " );
+            return false;
+        }
+
+        MTINFO( mtlog, "initialization complete!\n" );
+
+
+        MTINFO( mtlog, "beginning run phase" );
+
+        MTDEBUG( mtlog, "beginning acquisition" );
+
+        t_result = BeginBufferedPciAcquisitionPX4( f_handle, PX4_FREE_RUN );
+        if( t_result != SIG_SUCCESS )
+        {
+            DumpLibErrorPX4( t_result, "failed to begin dma acquisition: " );
+            return false;
+        }
+
+        MTDEBUG( mtlog, "acquiring a record" );
+
+        t_result = GetPciAcquisitionDataFastPX4( f_handle, t_rec_size, t_block->data(), 0 );
+        if( t_result != SIG_SUCCESS )
+        {
+            DumpLibErrorPX4( t_result, "failed to acquire dma data over pci: " );
+            t_result = EndBufferedPciAcquisitionPX4( f_handle );
+            return false;
+        }
+
+        MTDEBUG( mtlog, "ending acquisition..." );
+
+        t_result = EndBufferedPciAcquisitionPX4( f_handle );
+        if( t_result != SIG_SUCCESS )
+        {
+            DumpLibErrorPX4( t_result, "failed to end dma acquisition: " );
+            return false;
+        }
+
+        MTINFO( mtlog, "run complete!\n" );
+
+
+        MTINFO( mtlog, "beginning finalization phase" );
+
+        MTDEBUG( mtlog, "deallocating dma buffer" );
+
+        delete t_block;
+
+        MTINFO( mtlog, "finalization complete!\n" );
+
+
+        return true;
+    }
+
 }
