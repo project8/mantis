@@ -23,6 +23,12 @@ set( Mantis_BUILD_SERVER FALSE CACHE BOOL "Flag to enable building of the server
 set( Mantis_INCLUDE_PX1500_SERVER TRUE CACHE BOOL "Flag to include the px1500 server; ignored unless the build-server flag is enabled" )
 set( Mantis_INCLUDE_PX14400_SERVER TRUE CACHE BOOL "Flag to include the px14400 server; ignored unless the build-server flag is enabled" )
 
+# add an option to build the validation tests
+option (Mantis_ENABLE_TESTING "Build the validation tests and enable CMake testing" OFF)
+if (Mantis_ENABLE_TESTING)
+    enable_testing ()
+endif (Mantis_ENABLE_TESTING)
+
 
 #######################
 # mantis dependencies #
@@ -187,13 +193,15 @@ target_link_libraries( MantisClient ${EXTERNAL_LIBRARIES} )
 pbuilder_install_headers( ${MANTIS_CLIENT_HEADERFILES} )
 pbuilder_install_libraries( MantisClient )
 
-add_executable( test_mantis_client ${CMAKE_CURRENT_SOURCE_DIR}/Applications/test_mantis_client.cc )
-target_link_libraries( test_mantis_client MantisClient ${EXTERNAL_LIBRARIES} )
-pbuilder_install_executables( test_mantis_client )
-
-add_executable( test_mantis_config ${CMAKE_CURRENT_SOURCE_DIR}/Applications/test_mantis_config.cc )
-target_link_libraries( test_mantis_config MantisClient ${EXTERNAL_LIBRARIES} )
-pbuilder_install_executables( test_mantis_config )
+if( Mantis_ENABLE_TESTING )
+    add_executable( test_mantis_client ${CMAKE_CURRENT_SOURCE_DIR}/Applications/test_mantis_client.cc )
+    target_link_libraries( test_mantis_client MantisClient ${EXTERNAL_LIBRARIES} )
+    pbuilder_install_executables( test_mantis_client )
+    
+    add_executable( test_mantis_config ${CMAKE_CURRENT_SOURCE_DIR}/Applications/test_mantis_config.cc )
+    target_link_libraries( test_mantis_config MantisClient ${EXTERNAL_LIBRARIES} )
+    pbuilder_install_executables( test_mantis_config )
+endif( Mantis_ENABLE_TESTING )
 
 add_executable( mantis_client ${CMAKE_CURRENT_SOURCE_DIR}/Applications/mantis_client.cc )
 target_link_libraries( mantis_client MantisClient ${EXTERNAL_LIBRARIES} )
@@ -262,9 +270,15 @@ if( Mantis_BUILD_SERVER )
     pbuilder_install_headers( ${MANTIS_SERVER_HEADERFILES} )
     pbuilder_install_libraries( MantisServer )
     
-    add_executable( test_mantis_server ${CMAKE_CURRENT_SOURCE_DIR}/Applications/test_mantis_server.cc )
-    target_link_libraries( test_mantis_server MantisClient MantisServer ${EXTERNAL_LIBRARIES} )
-    pbuilder_install_executables( test_mantis_server )
+    if( Mantis_ENABLE_TESTING )
+        add_executable( test_mantis_digitizer ${CMAKE_CURRENT_SOURCE_DIR}/Applications/test_mantis_digitizer.cc )
+        target_link_libraries( test_mantis_digitizer MantisClient MantisServer ${EXTERNAL_LIBRARIES} )
+        pbuilder_install_executables( test_mantis_digitizer )
+        
+        add_executable( test_mantis_server ${CMAKE_CURRENT_SOURCE_DIR}/Applications/test_mantis_server.cc )
+        target_link_libraries( test_mantis_server MantisClient MantisServer ${EXTERNAL_LIBRARIES} )
+        pbuilder_install_executables( test_mantis_server )
+    endif( Mantis_ENABLE_TESTING )
     
     add_executable( mantis_server ${CMAKE_CURRENT_SOURCE_DIR}/Applications/mantis_server.cc )
     target_link_libraries( mantis_server MantisClient MantisServer ${EXTERNAL_LIBRARIES} )

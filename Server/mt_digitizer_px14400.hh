@@ -82,6 +82,19 @@ namespace mantis
             HPX14* f_dig_ptr;
     };
 
+
+    class test_digitizer_px14400 : public test_digitizer
+    {
+        public:
+            test_digitizer_px14400() {}
+            virtual ~test_digitizer_px14400() {}
+
+            bool run_test()
+            {
+                return true;
+            }
+    };
+
 }
 
 #endif

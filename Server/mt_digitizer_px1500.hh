@@ -83,6 +83,18 @@ namespace mantis
     };
 
 
+    class test_digitizer_px1500 : public test_digitizer
+    {
+        public:
+            test_digitizer_px1500() {}
+            virtual ~test_digitizer_px1500() {}
+
+            bool run_test()
+            {
+                return true;
+            }
+    };
+
 }
 
 #endif

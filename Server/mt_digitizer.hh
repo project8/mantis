@@ -30,6 +30,16 @@ namespace mantis
             virtual unsigned data_type_size() = 0;
 
     };
+
+    class test_digitizer
+    {
+        public:
+            test_digitizer() {}
+            virtual ~test_digitizer() {}
+
+            virtual bool run_test() = 0;
+    };
+
 }
 
 #endif

@@ -19,7 +19,8 @@ namespace mantis
 {
     MTLOGGER( mtlog, "digitizer_test16" );
 
-    static registrar< digitizer, digitizer_test16 > s_digtest_registrar("test16");
+    static registrar< digitizer, digitizer_test16 > s_digtest_registrar( "test16" );
+    static registrar< test_digitizer, test_digitizer_test16 > s_testdigtest_registrar( "test16" );
 
     const unsigned digitizer_test16::s_bit_depth = 16;
     unsigned digitizer_test16::bit_depth_test()

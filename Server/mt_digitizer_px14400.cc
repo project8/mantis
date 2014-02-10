@@ -18,7 +18,8 @@ namespace mantis
 {
     MTLOGGER( mtlog, "digitizer_px14400" );
 
-    static registrar< digitizer, digitizer_px14400 > s_px14400_registrar("px14400");
+    static registrar< digitizer, digitizer_px14400 > s_px14400_registrar( "px14400" );
+    static registrar< test_digitizer, test_digitizer_px14400 > s_test_px14400_registrar( "px14400" );
 
     const unsigned digitizer_px14400::s_bit_depth = 14;
     unsigned digitizer_px14400::bit_depth_px14400()

@@ -21,7 +21,7 @@ namespace mantis
 
         add( "port", server_config << 98342 );
 
-        add( "digitizer", server_config << "px1500" );
+        add( "digitizer", server_config << "test" );
 
         add( "buffer-size", server_config << 512 );
 
