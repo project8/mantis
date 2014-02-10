@@ -724,7 +724,35 @@ namespace mantis
         rapidjson::Document t_config_doc;
         if( t_config_doc.ParseStream<0>( t_file_stream ).HasParseError() )
         {
-            MTERROR( "error parsing config file:\n" << t_config_doc.GetParseError() );
+            unsigned errorPos = t_config_doc.GetErrorOffset();
+            rewind( t_config_file );
+            unsigned iChar, newlineCount = 1, lastNewlinePos = 0;
+            int thisChar;
+            for( iChar = 0; iChar != errorPos; ++iChar )
+            {
+                thisChar = fgetc( t_config_file );
+                if( thisChar == EOF )
+                {
+                    break;
+                }
+                if( thisChar == '\n' || thisChar == '\r' )
+                {
+                    newlineCount++;
+                    lastNewlinePos = iChar + 1;
+                }
+            }
+            if( iChar == errorPos )
+            {
+                MTERROR( mtlog, "error parsing config file :\n" <<
+                        '\t' << t_config_doc.GetParseError() << '\n' <<
+                        "\tThe error was reported at line " << newlineCount << ", character " << errorPos - lastNewlinePos );
+            }
+            else
+            {
+                MTERROR( mtlog, "error parsing config file :\n" <<
+                        '\t' << t_config_doc.GetParseError() <<
+                        "\tend of file reached before error location was found" );
+            }
             fclose( t_config_file );
             return NULL;
         }
