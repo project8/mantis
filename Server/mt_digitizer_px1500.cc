@@ -466,12 +466,13 @@ namespace mantis
 
         MTDEBUG( mtlog, "allocating dma buffer..." );
 
-        typed_block< data_type >* t_block = NULL;
-        unsigned t_rec_size = 1024;
+        typed_block< digitizer_px1500::data_type >* t_block = NULL;
+        // this is the minimum record size for the px1500
+        unsigned t_rec_size = 16384;
 
         try
         {
-                t_block = new typed_block< data_type >();
+                t_block = new typed_block< digitizer_px1500::data_type >();
                 t_result = AllocateDmaBufferPX4( f_handle, t_rec_size, t_block->handle() );
                 if( t_result != SIG_SUCCESS )
                 {
@@ -504,7 +505,7 @@ namespace mantis
 
         MTDEBUG( mtlog, "setting clock rate..." );
 
-        t_result = SetInternalAdcClockRatePX4( f_handle, a_request->rate() );
+        t_result = SetInternalAdcClockRatePX4( f_handle, 200. );
         if( t_result != SIG_SUCCESS )
         {
             DumpLibErrorPX4( t_result, "failed to set clock rate: " );
@@ -543,6 +544,14 @@ namespace mantis
             DumpLibErrorPX4( t_result, "failed to end dma acquisition: " );
             return false;
         }
+
+	std::stringstream t_str_buff;
+        for( unsigned i = 0; i < 99; ++i )
+	  {
+	    t_str_buff << t_block->data()[ i ] << ", ";
+	  }
+	t_str_buff << t_block->data()[ 99 ];
+        MTDEBUG( mtlog, "the first 100 samples taken:\n" << t_str_buff.str() );
 
         MTINFO( mtlog, "run complete!\n" );
 
