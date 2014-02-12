@@ -21,8 +21,10 @@ namespace mantis
                     f_monarch( NULL ),
                     f_header( NULL ),
                     f_record( NULL ),
-                    f_data_type_size( 1 )
+                    f_dig_params()
     {
+        // give some reasonable digitizer parameter defaults
+        f_dig_params = get_calib_params( 8, 1, -0.25, 0.5 );
     }
     file_writer::~file_writer()
     {
@@ -30,7 +32,11 @@ namespace mantis
 
     void file_writer::configure( const configurator* a_config )
     {
-        f_data_type_size = a_config->get< unsigned >( "data-type-size", f_data_type_size );
+        f_dig_params = get_calib_params(
+                a_config->get< unsigned >( "bit-depth",      f_dig_params.bit_depth ),
+                a_config->get< unsigned >( "data-type-size", f_dig_params.data_type_size ),
+                a_config->get< double   >( "voltage-min",    f_dig_params.v_min ),
+                a_config->get< double   >( "voltage_range",  f_dig_params.v_range ) );
         return;
     }
 
@@ -75,7 +81,10 @@ namespace mantis
         f_header->SetDescription( a_request->description() );
         f_header->SetRunType( monarch::sRunTypeSignal );
         f_header->SetRunSource( monarch::sSourceMantis );
-        f_header->SetDataTypeSize( f_data_type_size );
+        f_header->SetDataTypeSize( f_dig_params.data_type_size );
+        f_header->SetBitDepth( f_dig_params.bit_depth );
+        f_header->SetVoltageMin( f_dig_params.v_min );
+        f_header->SetVoltageRange( f_dig_params.v_range );
 
         MTINFO( mtlog, "writing header..." );
 

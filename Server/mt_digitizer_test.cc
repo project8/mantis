@@ -23,12 +23,6 @@ namespace mantis
     static registrar< test_digitizer, test_digitizer_test > s_testdigtest_registrar( "test" );
 
 
-    const unsigned digitizer_test::s_bit_depth = 8;
-    unsigned digitizer_test::bit_depth_test()
-    {
-        return digitizer_test::s_bit_depth;
-    }
-
     const unsigned digitizer_test::s_data_type_size = sizeof( digitizer_test::data_type );
     unsigned digitizer_test::data_type_size_test()
     {
@@ -49,6 +43,8 @@ namespace mantis
             f_canceled( false ),
             f_cancel_condition()
     {
+        f_params = get_calib_params( 8, s_data_type_size, -0.25, 0.5 );
+
         /*
         errno = 0;
         f_semaphore = sem_open( "/digitizer_test", O_CREAT | O_EXCL );
@@ -113,12 +109,11 @@ namespace mantis
 
         MTINFO( mtlog, "creating master record..." );
 
-        unsigned t_levels = 1 << s_bit_depth;
         if( f_master_record != NULL ) delete [] f_master_record;
         f_master_record = new data_type [f_buffer->record_size()];
         for( unsigned index = 0; index < f_buffer->record_size(); ++index )
         {
-            f_master_record[ index ] = index % t_levels;
+            f_master_record[ index ] = index % f_params.levels;
         }
 
         f_allocated = true;
@@ -335,11 +330,6 @@ namespace mantis
     bool digitizer_test::write_mode_check( request_file_write_mode_t )
     {
         return true;
-    }
-
-    unsigned digitizer_test::bit_depth()
-    {
-        return digitizer_test::s_bit_depth;
     }
 
     unsigned digitizer_test::data_type_size()

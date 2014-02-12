@@ -5,6 +5,8 @@
 
 #include "request.pb.h"
 
+#include "thorax.hh"
+
 #include <cstddef>
 
 namespace mantis
@@ -26,9 +28,13 @@ namespace mantis
 
             virtual bool write_mode_check( request_file_write_mode_t mode ) = 0;
 
-            virtual unsigned bit_depth() = 0;
             virtual unsigned data_type_size() = 0;
 
+            const dig_calib_params& params() const;
+            dig_calib_params& params();
+
+        protected:
+            dig_calib_params f_params;
     };
 
     class test_digitizer

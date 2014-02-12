@@ -21,12 +21,6 @@ namespace mantis
     static registrar< digitizer, digitizer_px14400 > s_px14400_registrar( "px14400" );
     static registrar< test_digitizer, test_digitizer_px14400 > s_test_px14400_registrar( "px14400" );
 
-    const unsigned digitizer_px14400::s_bit_depth = 14;
-    unsigned digitizer_px14400::bit_depth_px14400()
-    {
-        return digitizer_px14400::s_bit_depth;
-    }
-
     const unsigned digitizer_px14400::s_data_type_size = sizeof( digitizer_px14400::data_type );
     unsigned digitizer_px14400::data_type_size_px14400()
     {
@@ -47,6 +41,7 @@ namespace mantis
             f_canceled( false ),
             f_cancel_condition()
     {
+        f_params = get_calib_params( px14400_bits, s_data_type_size, px14400_min_val, px14400_range );
         /*
         errno = 0;
         f_semaphore = sem_open( "/digitizer_px14400", O_CREAT | O_EXCL );
@@ -388,11 +383,6 @@ namespace mantis
         return true;
     }
 
-    unsigned digitizer_px14400::bit_depth()
-    {
-        return digitizer_px14400::s_bit_depth;
-    }
-
     unsigned digitizer_px14400::data_type_size()
     {
         return digitizer_px14400::s_data_type_size;
@@ -434,5 +424,138 @@ namespace mantis
         return true;
     }
 
+
+    //***********************************
+    // test_digitizer_px14400
+    //***********************************
+
+    bool test_digitizer_px14400::run_test()
+    {
+        int t_result;
+        HPX14 f_handle;
+
+        MTINFO( mtlog, "beginning allocation phase" );
+
+        MTDEBUG( mtlog, "connecting to digitizer card..." );
+
+        t_result = ConnectToDevicePX14( &f_handle, 1 );
+        if( t_result != SIG_SUCCESS )
+        {
+            DumpLibErrorPX14( t_result, "failed to connect to digitizer card: " );
+            return false;
+        }
+
+        MTDEBUG( mtlog, "setting power up defaults..." );
+
+        t_result = SetPowerupDefaultsPX14( f_handle );
+        if( t_result != SIG_SUCCESS )
+        {
+            DumpLibErrorPX14( t_result, "failed to enter default state: " );
+            return false;
+        }
+
+        MTDEBUG( mtlog, "allocating dma buffer..." );
+
+        typed_block< digitizer_px1500::data_type >* t_block = NULL;
+        // this is the minimum record size for the px1500
+        unsigned t_rec_size = 16384;
+
+        try
+        {
+                t_block = new typed_block< digitizer_px1500::data_type >();
+                t_result = AllocateDmaBufferPX14( f_handle, t_rec_size, t_block->handle() );
+                if( t_result != SIG_SUCCESS )
+                {
+                    DumpLibErrorPX14( t_result, "failed to allocate dma memory: " );
+                    return false;
+                }
+                t_block->set_data_size( t_rec_size );
+                t_block->set_cleanup( new block_cleanup_px1500( t_block->data(), &f_handle ) );
+        }
+        catch( exception& e )
+        {
+            MTERROR( mtlog, "unable to allocate buffer: " << e.what() );
+            return false;
+        }
+
+        MTINFO( mtlog, "allocation complete!\n" );
+
+
+
+        MTINFO( mtlog, "beginning initialization phase" );
+
+        MTDEBUG( mtlog, "setting run mode..." );
+
+        t_result = SetActiveChannelsPX14( f_handle, PX14CHANNEL_ONE );
+        if( t_result != SIG_SUCCESS )
+        {
+            DumpLibErrorPX14( t_result, "failed to activate channel 1: " );
+            return false;
+        }
+
+        MTDEBUG( mtlog, "setting clock rate..." );
+
+        t_result = SetInternalAdcClockRatePX14( f_handle, 200. );
+        if( t_result != SIG_SUCCESS )
+        {
+            DumpLibErrorPX14( t_result, "failed to set clock rate: " );
+            return false;
+        }
+
+        MTINFO( mtlog, "initialization complete!\n" );
+
+
+        MTINFO( mtlog, "beginning run phase" );
+
+        MTDEBUG( mtlog, "beginning acquisition" );
+
+        t_result = BeginBufferedPciAcquisitionPX14( f_handle, PX14_FREE_RUN );
+        if( t_result != SIG_SUCCESS )
+        {
+            DumpLibErrorPX14( t_result, "failed to begin dma acquisition: " );
+            return false;
+        }
+
+        MTDEBUG( mtlog, "acquiring a record" );
+
+        t_result = GetPciAcquisitionDataFastPX14( f_handle, t_rec_size, t_block->data(), 0 );
+        if( t_result != SIG_SUCCESS )
+        {
+            DumpLibErrorPX14( t_result, "failed to acquire dma data over pci: " );
+            t_result = EndBufferedPciAcquisitionPX14( f_handle );
+            return false;
+        }
+
+        MTDEBUG( mtlog, "ending acquisition..." );
+
+        t_result = EndBufferedPciAcquisitionPX14( f_handle );
+        if( t_result != SIG_SUCCESS )
+        {
+            DumpLibErrorPX14( t_result, "failed to end dma acquisition: " );
+            return false;
+        }
+
+        std::stringstream t_str_buff;
+        for( unsigned i = 0; i < 99; ++i )
+        {
+            t_str_buff << t_block->data()[ i ] << ", ";
+        }
+        t_str_buff << t_block->data()[ 99 ];
+        MTDEBUG( mtlog, "the first 100 samples taken:\n" << t_str_buff.str() );
+
+        MTINFO( mtlog, "run complete!\n" );
+
+
+        MTINFO( mtlog, "beginning finalization phase" );
+
+        MTDEBUG( mtlog, "deallocating dma buffer" );
+
+        delete t_block;
+
+        MTINFO( mtlog, "finalization complete!\n" );
+
+
+        return true;
+    }
 
 }

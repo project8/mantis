@@ -30,6 +30,14 @@ message status
     
     //bytes for each data sample
     optional uint32 data_type_size = 5;
-	
+    
+    //bits with which the data were sampled
+    optional uint32 bit_depth = 6;
+    
+    //minimum voltage accepted by the digitizer
+    optional double voltage_min = 7;
+    
+    //voltage range of the digitizer
+    optional double voltage_range = 8;
 
 }

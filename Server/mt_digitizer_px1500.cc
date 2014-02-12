@@ -21,12 +21,6 @@ namespace mantis
     static registrar< digitizer, digitizer_px1500 > s_px1500_registrar( "px1500" );
     static registrar< test_digitizer, test_digitizer_px1500 > s_test_px1500_registrar( "px1500" );
 
-    const unsigned digitizer_px1500::s_bit_depth = 8;
-    unsigned digitizer_px1500::bit_depth_px1500()
-    {
-        return digitizer_px1500::s_bit_depth;
-    }
-
     const unsigned digitizer_px1500::s_data_type_size = sizeof( digitizer_px1500::data_type );
     unsigned digitizer_px1500::data_type_size_px1500()
     {
@@ -47,6 +41,7 @@ namespace mantis
             f_canceled( false ),
             f_cancel_condition()
     {
+        f_params = get_calib_params( px1500_bits, s_data_type_size, px1500_min_val, px1500_range );
         /*
         errno = 0;
         f_semaphore = sem_open( "/digitizer_px1500", O_CREAT | O_EXCL );
@@ -388,11 +383,6 @@ namespace mantis
         return true;
     }
 
-    unsigned digitizer_px1500::bit_depth()
-    {
-        return digitizer_px1500::s_bit_depth;
-    }
-
     unsigned digitizer_px1500::data_type_size()
     {
         return digitizer_px1500::s_data_type_size;
@@ -472,15 +462,15 @@ namespace mantis
 
         try
         {
-                t_block = new typed_block< digitizer_px1500::data_type >();
-                t_result = AllocateDmaBufferPX4( f_handle, t_rec_size, t_block->handle() );
-                if( t_result != SIG_SUCCESS )
-                {
-                    DumpLibErrorPX4( t_result, "failed to allocate dma memory: " );
-                    return false;
-                }
-                t_block->set_data_size( t_rec_size );
-                t_block->set_cleanup( new block_cleanup_px1500( t_block->data(), &f_handle ) );
+            t_block = new typed_block< digitizer_px1500::data_type >();
+            t_result = AllocateDmaBufferPX4( f_handle, t_rec_size, t_block->handle() );
+            if( t_result != SIG_SUCCESS )
+            {
+                DumpLibErrorPX4( t_result, "failed to allocate dma memory: " );
+                return false;
+            }
+            t_block->set_data_size( t_rec_size );
+            t_block->set_cleanup( new block_cleanup_px1500( t_block->data(), &f_handle ) );
         }
         catch( exception& e )
         {
@@ -545,12 +535,12 @@ namespace mantis
             return false;
         }
 
-	std::stringstream t_str_buff;
+        std::stringstream t_str_buff;
         for( unsigned i = 0; i < 99; ++i )
-	  {
-	    t_str_buff << t_block->data()[ i ] << ", ";
-	  }
-	t_str_buff << t_block->data()[ 99 ];
+        {
+            t_str_buff << t_block->data()[ i ] << ", ";
+        }
+        t_str_buff << t_block->data()[ 99 ];
         MTDEBUG( mtlog, "the first 100 samples taken:\n" << t_str_buff.str() );
 
         MTINFO( mtlog, "run complete!\n" );
