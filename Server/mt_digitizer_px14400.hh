@@ -89,10 +89,7 @@ namespace mantis
             test_digitizer_px14400() {}
             virtual ~test_digitizer_px14400() {}
 
-            bool run_test()
-            {
-                return true;
-            }
+            bool run_test();
     };
 
 }

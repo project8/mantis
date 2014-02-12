@@ -472,15 +472,15 @@ namespace mantis
 
         try
         {
-                t_block = new typed_block< digitizer_px1500::data_type >();
-                t_result = AllocateDmaBufferPX4( f_handle, t_rec_size, t_block->handle() );
-                if( t_result != SIG_SUCCESS )
-                {
-                    DumpLibErrorPX4( t_result, "failed to allocate dma memory: " );
-                    return false;
-                }
-                t_block->set_data_size( t_rec_size );
-                t_block->set_cleanup( new block_cleanup_px1500( t_block->data(), &f_handle ) );
+            t_block = new typed_block< digitizer_px1500::data_type >();
+            t_result = AllocateDmaBufferPX4( f_handle, t_rec_size, t_block->handle() );
+            if( t_result != SIG_SUCCESS )
+            {
+                DumpLibErrorPX4( t_result, "failed to allocate dma memory: " );
+                return false;
+            }
+            t_block->set_data_size( t_rec_size );
+            t_block->set_cleanup( new block_cleanup_px1500( t_block->data(), &f_handle ) );
         }
         catch( exception& e )
         {
@@ -545,12 +545,12 @@ namespace mantis
             return false;
         }
 
-	std::stringstream t_str_buff;
+        std::stringstream t_str_buff;
         for( unsigned i = 0; i < 99; ++i )
-	  {
-	    t_str_buff << t_block->data()[ i ] << ", ";
-	  }
-	t_str_buff << t_block->data()[ 99 ];
+        {
+            t_str_buff << t_block->data()[ i ] << ", ";
+        }
+        t_str_buff << t_block->data()[ 99 ];
         MTDEBUG( mtlog, "the first 100 samples taken:\n" << t_str_buff.str() );
 
         MTINFO( mtlog, "run complete!\n" );
