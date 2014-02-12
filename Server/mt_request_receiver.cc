@@ -21,7 +21,10 @@ namespace mantis
             f_buffer_size( 512 ),
             f_record_size( 419304 ),
             f_data_chunk_size( 1024 ),
-            f_data_type_size( 1 )
+            f_data_type_size( 1 ),
+	    f_bit_depth( 8 ),
+	    f_voltage_min( -0.25 ),
+	    f_voltage_range( 0.5 )
     {
     }
 
@@ -65,6 +68,9 @@ namespace mantis
                 t_status->set_record_size( f_record_size );
                 t_status->set_data_chunk_size( f_data_chunk_size );
                 t_status->set_data_type_size( f_data_type_size );
+		t_status->set_bit_depth( f_bit_depth );
+		t_status->set_voltage_min( f_voltage_min );
+		t_status->set_voltage_range( f_voltage_range );
                 t_run_context->push_status_no_mutex();
                 t_run_context->unlock_outbound();
 
@@ -165,5 +171,38 @@ namespace mantis
         f_data_type_size = size;
         return;
     }
+
+  size_t request_receiver::get_bit_depth() const
+  {
+    return f_bit_depth;
+  }
+
+  void request_receiver::set_bit_depth( size_t bd )
+  {
+    f_bit_depth = bd;
+    return;
+  }
+
+  double request_receiver::get_voltage_min() const
+  {
+    return f_voltage_min;
+  }
+
+  void request_receiver::set_voltage_min( double v_min )
+  {
+    f_voltage_min = v_min;
+    return;
+  }
+
+  double request_receiver::get_voltage_range() const
+  {
+    return f_voltage_range;
+  }
+
+  void request_receiver::set_voltage_range( double v_range )
+  {
+    f_voltage_range = v_range;
+    return;
+  }
 
 }

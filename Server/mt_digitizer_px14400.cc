@@ -456,13 +456,13 @@ namespace mantis
 
         MTDEBUG( mtlog, "allocating dma buffer..." );
 
-        typed_block< digitizer_px1500::data_type >* t_block = NULL;
-        // this is the minimum record size for the px1500
+        typed_block< digitizer_px14400::data_type >* t_block = NULL;
+        // for the px14400, there is no minimum record size listed
         unsigned t_rec_size = 16384;
 
         try
         {
-                t_block = new typed_block< digitizer_px1500::data_type >();
+                t_block = new typed_block< digitizer_px14400::data_type >();
                 t_result = AllocateDmaBufferPX14( f_handle, t_rec_size, t_block->handle() );
                 if( t_result != SIG_SUCCESS )
                 {
@@ -470,7 +470,7 @@ namespace mantis
                     return false;
                 }
                 t_block->set_data_size( t_rec_size );
-                t_block->set_cleanup( new block_cleanup_px1500( t_block->data(), &f_handle ) );
+                t_block->set_cleanup( new block_cleanup_px14400( t_block->data(), &f_handle ) );
         }
         catch( exception& e )
         {

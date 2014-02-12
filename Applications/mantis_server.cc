@@ -133,6 +133,9 @@ int main( int argc, char** argv )
 
     // get the digitizer parameters
     t_receiver.set_data_type_size( t_digitizer->params().data_type_size );
+    t_receiver.set_bit_depth( t_digitizer->params().bit_depth );
+    t_receiver.set_voltage_min( t_digitizer->params().v_min );
+    t_receiver.set_voltage_range( t_digitizer->params().v_range );
     t_config->config()->add( "data-type-size", new param_value( t_digitizer->params().data_type_size ) );
     t_config->config()->add( "bit-depth", new param_value( t_digitizer->params().bit_depth ) );
     t_config->config()->add( "voltage-min", new param_value( t_digitizer->params().v_min ) );
