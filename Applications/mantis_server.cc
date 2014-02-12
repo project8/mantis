@@ -131,10 +131,12 @@ int main( int argc, char** argv )
         return -1;
     }
 
-    // find the type size of the data from the bit depth
-    unsigned t_data_type_size = t_digitizer->data_type_size();
-    t_receiver.set_data_type_size( t_data_type_size );
-    t_config->config()->add( "data-type-size", new param_value( t_data_type_size ) );
+    // get the digitizer parameters
+    t_receiver.set_data_type_size( t_digitizer->params().data_type_size );
+    t_config->config()->add( "data-type-size", new param_value( t_digitizer->params().data_type_size ) );
+    t_config->config()->add( "bit-depth", new param_value( t_digitizer->params().bit_depth ) );
+    t_config->config()->add( "voltage-min", new param_value( t_digitizer->params().v_min ) );
+    t_config->config()->add( "voltage-range", new param_value( t_digitizer->params().v_range ) );
 
     if(! t_digitizer->allocate( &t_buffer, &t_buffer_condition ) )
     {

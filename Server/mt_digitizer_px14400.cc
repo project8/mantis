@@ -21,12 +21,6 @@ namespace mantis
     static registrar< digitizer, digitizer_px14400 > s_px14400_registrar( "px14400" );
     static registrar< test_digitizer, test_digitizer_px14400 > s_test_px14400_registrar( "px14400" );
 
-    const unsigned digitizer_px14400::s_bit_depth = 14;
-    unsigned digitizer_px14400::bit_depth_px14400()
-    {
-        return digitizer_px14400::s_bit_depth;
-    }
-
     const unsigned digitizer_px14400::s_data_type_size = sizeof( digitizer_px14400::data_type );
     unsigned digitizer_px14400::data_type_size_px14400()
     {
@@ -47,6 +41,7 @@ namespace mantis
             f_canceled( false ),
             f_cancel_condition()
     {
+        f_params = get_calib_params( px14400_bits, s_data_type_size, px14400_min_val, px14400_range );
         /*
         errno = 0;
         f_semaphore = sem_open( "/digitizer_px14400", O_CREAT | O_EXCL );
@@ -386,11 +381,6 @@ namespace mantis
     bool digitizer_px14400::write_mode_check( request_file_write_mode_t mode )
     {
         return true;
-    }
-
-    unsigned digitizer_px14400::bit_depth()
-    {
-        return digitizer_px14400::s_bit_depth;
     }
 
     unsigned digitizer_px14400::data_type_size()

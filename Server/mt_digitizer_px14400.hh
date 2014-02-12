@@ -8,7 +8,6 @@
 #include "mt_condition.hh"
 
 #include "px14.h"
-#include "thorax.hh"
 
 //#include <semaphore.h>
 
@@ -21,7 +20,6 @@ namespace mantis
         public:
             typedef px14_sample_t data_type;
 
-            static unsigned bit_depth_px14400();
             static unsigned data_type_size_px14400();
 
         public:
@@ -36,7 +34,6 @@ namespace mantis
 
             bool write_mode_check( request_file_write_mode_t mode );
 
-            unsigned bit_depth();
             unsigned data_type_size();
 
             // thread-safe getter

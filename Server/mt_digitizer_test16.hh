@@ -9,8 +9,6 @@
 #include "mt_mutex.hh"
 #include "request.pb.h"
 
-#include "thorax.hh"
-
 #include <stdint.h>
 
 //#include <semaphore.h>
@@ -25,7 +23,6 @@ namespace mantis
         public:
             typedef uint16_t data_type;
 
-            static unsigned bit_depth_test();
             static unsigned data_type_size_test();
 
         public:
@@ -40,7 +37,6 @@ namespace mantis
 
             bool write_mode_check( request_file_write_mode_t mode );
 
-            unsigned bit_depth();
             unsigned data_type_size();
 
             // thread-safe getter
@@ -49,7 +45,6 @@ namespace mantis
             void set_canceled( bool a_flag );
 
         private:
-            static const unsigned s_bit_depth;
             static const unsigned s_data_type_size;
 
             //sem_t* f_semaphore;

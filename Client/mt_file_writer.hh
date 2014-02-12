@@ -5,6 +5,8 @@
 
 #include "Monarch.hpp"
 
+#include "thorax.hh"
+
 #include <string>
 
 namespace mantis
@@ -26,7 +28,7 @@ namespace mantis
             monarch::MonarchHeader* f_header;
             monarch::MonarchRecordBytes* f_record;
 
-            unsigned f_data_type_size;
+            dig_calib_params f_dig_params;
 
             bool write( block* a_block );
     };

@@ -209,9 +209,13 @@ int main( int argc, char** argv )
 
 
     // get the data type size
-    unsigned t_data_type_size = t_run_context.lock_status_in()->data_type_size();
+    status* t_status = t_run_context.lock_status_in();
+    //unsigned t_data_type_size = t_status->data_type_size();
     // record receiver is given data_type_size in client_file_writing's constructor
-    t_config->config()->add( "data-type-size", new param_value( t_data_type_size ) );
+    t_config->config()->add( "data-type-size", new param_value( t_status->data_type_size() ) );
+    t_config->config()->add( "bit-depth", new param_value( t_status->bit_depth() ) );
+    t_config->config()->add( "voltage-min", new param_value( t_status->voltage_min() ) );
+    t_config->config()->add( "voltage-range", new param_value( t_status->voltage_range() ) );
     t_run_context.unlock_inbound();
 
     /****************************************************************/
