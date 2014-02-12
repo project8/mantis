@@ -22,7 +22,7 @@ namespace mantis
     static registrar< digitizer, digitizer_test16 > s_digtest_registrar( "test16" );
     static registrar< test_digitizer, test_digitizer_test16 > s_testdigtest_registrar( "test16" );
 
-    const unsigned digitizer_test16::s_bit_depth = 16;
+    const unsigned digitizer_test16::s_bit_depth = 14;
     unsigned digitizer_test16::bit_depth_test()
     {
         return digitizer_test16::s_bit_depth;
@@ -119,7 +119,7 @@ namespace mantis
         for( unsigned index = 0; index < f_buffer->record_size(); ++index )
         {
             f_master_record[ index ] = index % t_levels;
-            if( index < 2000 ) MTDEBUG( mtlog, f_master_record[index] );
+            //if( index < 2000 ) MTDEBUG( mtlog, f_master_record[index] );
         }
 
         f_allocated = true;
@@ -321,11 +321,11 @@ namespace mantis
         get_time_monotonic( &a_stamp_time );
         a_block->set_timestamp( time_to_nsec( a_stamp_time ) );
 
-        ::memcpy( a_block->data_bytes(), f_master_record, f_buffer->record_size() );
-        for(unsigned index = 1000; index < 1050; ++index)
-        {
-            MTERROR( mtlog, ((data_type*)(a_block->data_bytes()))[index]);
-        }
+        ::memcpy( a_block->data_bytes(), f_master_record, f_buffer->record_size() * s_data_type_size );
+        //for(unsigned index = 1000; index < 1050; ++index)
+        //{
+        //    MTERROR( mtlog, ((data_type*)(a_block->data_bytes()))[index]);
+        //}
 
         ++f_record_count;
 
