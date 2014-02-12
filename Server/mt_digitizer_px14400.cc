@@ -104,7 +104,7 @@ namespace mantis
 
         MTINFO( mtlog, "connecting to digitizer card..." );
 
-        t_result = ConnectToDevicePX14( &f_handle, 1 );
+        t_result = ConnectToDevicePX14( &f_handle, 100954 );
         if( t_result != SIG_SUCCESS )
         {
             DumpLibErrorPX14( t_result, "failed to connect to digitizer card: " );
