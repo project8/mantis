@@ -34,7 +34,7 @@ namespace mantis
             dig_calib_params& params();
 
         protected:
-            dig_calib_params f_params;
+            struct dig_calib_params f_params;
     };
 
     class test_digitizer

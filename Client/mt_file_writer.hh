@@ -28,7 +28,7 @@ namespace mantis
             monarch::MonarchHeader* f_header;
             monarch::MonarchRecordBytes* f_record;
 
-            dig_calib_params f_dig_params;
+            struct dig_calib_params f_dig_params;
 
             bool write( block* a_block );
     };

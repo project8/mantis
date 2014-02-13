@@ -88,6 +88,7 @@ namespace mantis
 
             //write the block
             t_it->set_writing();
+            //f_buffer->print_states();
             if( write( t_it.object() ) == false )
             {
                 // to make sure we don't deadlock anything

@@ -21,6 +21,8 @@ namespace mantis
             void set_block( unsigned a_index, block* a_block );
             void delete_block( unsigned a_index );
 
+            void print_states();
+
         private:
             block** f_blocks;
             mutex* f_mutexes;

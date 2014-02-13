@@ -24,7 +24,7 @@ namespace mantis
                     f_dig_params()
     {
         // give some reasonable digitizer parameter defaults
-        f_dig_params = get_calib_params( 8, 1, -0.25, 0.5 );
+        get_calib_params( 8, 1, -0.25, 0.5, &f_dig_params );
     }
     file_writer::~file_writer()
     {
@@ -32,11 +32,12 @@ namespace mantis
 
     void file_writer::configure( const configurator* a_config )
     {
-        f_dig_params = get_calib_params(
+        get_calib_params(
                 a_config->get< unsigned >( "bit-depth",      f_dig_params.bit_depth ),
                 a_config->get< unsigned >( "data-type-size", f_dig_params.data_type_size ),
                 a_config->get< double   >( "voltage-min",    f_dig_params.v_min ),
-                a_config->get< double   >( "voltage_range",  f_dig_params.v_range ) );
+                a_config->get< double   >( "voltage-range",  f_dig_params.v_range ),
+                &f_dig_params );
         return;
     }
 

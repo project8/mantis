@@ -42,7 +42,7 @@ namespace mantis
             f_canceled( false ),
             f_cancel_condition()
     {
-        f_params = get_calib_params( 14, s_data_type_size, -0.25, 0.5 );
+        get_calib_params( 14, s_data_type_size, -0.25, 0.5, &f_params );
         /*
         errno = 0;
         f_semaphore = sem_open( "/digitizer_test16", O_CREAT | O_EXCL );

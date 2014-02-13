@@ -94,7 +94,7 @@ namespace mantis
     XValType param_value::get() const
     {
         XValType t_return;
-        f_value_str_buffer << f_value_str.rdbuf();
+        f_value_str_buffer << f_value_str.str();
         f_value_str_buffer >> t_return;
         return t_return;
     }

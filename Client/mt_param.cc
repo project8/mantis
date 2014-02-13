@@ -67,37 +67,37 @@ namespace mantis
 
     param_value& param::as_value()
     {
-        param_value* t_cast_ptr = static_cast< param_value* >( this );
+        param_value* t_cast_ptr = dynamic_cast< param_value* >( this );
         return *t_cast_ptr;
     }
 
     param_array& param::as_array()
     {
-        param_array* t_cast_ptr = static_cast< param_array* >( this );
+        param_array* t_cast_ptr = dynamic_cast< param_array* >( this );
         return *t_cast_ptr;
     }
 
     param_node& param::as_node()
     {
-        param_node* t_cast_ptr = static_cast< param_node* >( this );
+        param_node* t_cast_ptr = dynamic_cast< param_node* >( this );
         return *t_cast_ptr;
     }
 
     const param_value& param::as_value() const
     {
-        const param_value* t_cast_ptr = static_cast< const param_value* >( this );
+        const param_value* t_cast_ptr = dynamic_cast< const param_value* >( this );
         return *t_cast_ptr;
     }
 
     const param_array& param::as_array() const
     {
-        const param_array* t_cast_ptr = static_cast< const param_array* >( this );
+        const param_array* t_cast_ptr = dynamic_cast< const param_array* >( this );
         return *t_cast_ptr;
     }
 
     const param_node& param::as_node() const
     {
-        const param_node* t_cast_ptr = static_cast< const param_node* >( this );
+        const param_node* t_cast_ptr = dynamic_cast< const param_node* >( this );
         return *t_cast_ptr;
     }
 

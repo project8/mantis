@@ -43,7 +43,7 @@ namespace mantis
             f_canceled( false ),
             f_cancel_condition()
     {
-        f_params = get_calib_params( 8, s_data_type_size, -0.25, 0.5 );
+        get_calib_params( 8, s_data_type_size, -0.25, 0.5, &f_params );
 
         /*
         errno = 0;
@@ -193,6 +193,8 @@ namespace mantis
             }
 
             t_it->set_acquiring();
+
+            //f_buffer->print_states();
 
             if( acquire( t_it.object(), t_stamp_time ) == false )
             {
