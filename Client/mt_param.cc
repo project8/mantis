@@ -112,19 +112,14 @@ namespace mantis
 
     param_value::param_value() :
             param(),
-            f_value_str(),
-            f_value_str_buffer(),
-            f_value_buffer()
+            f_value()
     {
     }
 
     param_value::param_value( const param_value& orig ) :
             param( orig ),
-            f_value_str(),
-            f_value_str_buffer(),
-            f_value_buffer()
+            f_value( orig.f_value )
     {
-        f_value_str << orig.f_value_str.str();
     }
 
     param_value::~param_value()
@@ -148,13 +143,12 @@ namespace mantis
 
     const string& param_value::get() const
     {
-        f_value_buffer = f_value_str.str();
-        return f_value_buffer;
+         return f_value;
     }
 
     std::string param_value::to_string() const
     {
-        return string(f_value_str.str());
+        return string( f_value );
     }
 
     //************************************

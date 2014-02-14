@@ -10,6 +10,8 @@
 
 #include "mt_exception.hh"
 
+#include "mt_logger.hh"
+
 #include "document.h"
 
 #include <deque>
@@ -19,6 +21,7 @@
 
 namespace mantis
 {
+    MTLOGGER(mtlog_p, "param");
     class param_value;
     class param_array;
     class param_node;
@@ -74,18 +77,14 @@ namespace mantis
             virtual std::string to_string() const;
 
         protected:
-            std::stringstream f_value_str;
-            mutable std::stringstream f_value_str_buffer;
-            mutable std::string f_value_buffer;
+            std::string f_value;
 
     };
 
     template< typename XStreamableType >
     param_value::param_value( XStreamableType a_streamable ) :
             param(),
-            f_value_str(),
-            f_value_str_buffer(),
-            f_value_buffer()
+            f_value()
     {
         (*this) << a_streamable;
     }
@@ -94,16 +93,18 @@ namespace mantis
     XValType param_value::get() const
     {
         XValType t_return;
-        f_value_str_buffer << f_value_str.str();
-        f_value_str_buffer >> t_return;
+        std::stringstream t_buffer;
+        t_buffer << f_value;
+        t_buffer >> t_return;
         return t_return;
     }
 
     template< typename XStreamableType >
     param_value& param_value::operator<<( const XStreamableType& a_streamable )
     {
-        f_value_str.str("");
-        f_value_str << a_streamable;
+        std::stringstream t_buffer;
+        t_buffer << a_streamable;
+        f_value = t_buffer.str();
         return *this;
     }
 
