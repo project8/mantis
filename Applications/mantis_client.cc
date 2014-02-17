@@ -85,10 +85,10 @@ namespace mantis
 int main( int argc, char** argv )
 {
     client_config t_cc;
-    configurator* t_config = NULL;
+    configurator* t_configurator = NULL;
     try
     {
-        t_config = new configurator( argc, argv, &t_cc );
+        t_configurator = new configurator( argc, argv, &t_cc );
     }
     catch( exception& e )
     {
@@ -96,37 +96,39 @@ int main( int argc, char** argv )
         return RETURN_ERROR;
     }
 
+    param_node* t_config = t_configurator->config();
+
     MTINFO( mtlog, "creating request objects..." );
 
     bool t_client_writes_file = true;
-    if( t_config->get< string >( "file-writer" ) == std::string( "server" ) )
+    if( t_config->get_value< string >( "file-writer" ) == std::string( "server" ) )
     {
         t_client_writes_file = false;
     }
 
-    string t_request_host = t_config->get< string >( "host" );
-    int t_request_port = t_config->get< int >( "port" );
+    string t_request_host = t_config->get_value< string >( "host" );
+    int t_request_port = t_config->get_value< int >( "port" );
 
     string t_write_host;
     int t_write_port = -1;
     if( t_client_writes_file )
     {
-        t_write_host = t_config->get< string >( "client-host" );
-        t_write_port = t_config->get< int >( "client-port", t_request_port + 1 );
+        t_write_host = t_config->get_value< string >( "client-host" );
+        t_write_port = t_config->get_value< int >( "client-port", t_request_port + 1 );
     }
 
-    double t_duration = t_config->get< double >( "duration" );
+    double t_duration = t_config->get_value< double >( "duration" );
 
     run_context_dist t_run_context;
 
     request* t_request = t_run_context.lock_request_out();
     t_request->set_write_host( t_write_host );
     t_request->set_write_port( t_write_port );
-    t_request->set_file( t_config->get< string >( "file" ) );
-    t_request->set_description( t_config->get< string >( "description", "default client run" ) );
+    t_request->set_file( t_config->get_value< string >( "file" ) );
+    t_request->set_description( t_config->get_value< string >( "description", "default client run" ) );
     t_request->set_date( get_absolute_time_string() );
-    t_request->set_mode( (request_mode_t)t_config->get< int >( "mode" ) );
-    t_request->set_rate( t_config->get< double >( "rate" ) );
+    t_request->set_mode( (request_mode_t)t_config->get_value< int >( "mode" ) );
+    t_request->set_rate( t_config->get_value< double >( "rate" ) );
     t_request->set_duration( t_duration );
     t_request->set_file_write_mode( request_file_write_mode_t_local );
     if( t_client_writes_file )
@@ -212,10 +214,10 @@ int main( int argc, char** argv )
     status* t_status = t_run_context.lock_status_in();
     //unsigned t_data_type_size = t_status->data_type_size();
     // record receiver is given data_type_size in client_file_writing's constructor
-    t_config->config()->add( "data-type-size", new param_value( t_status->data_type_size() ) );
-    t_config->config()->add( "bit-depth", new param_value( t_status->bit_depth() ) );
-    t_config->config()->add( "voltage-min", new param_value( t_status->voltage_min() ) );
-    t_config->config()->add( "voltage-range", new param_value( t_status->voltage_range() ) );
+    t_config->add( "data-type-size", new param_value( t_status->data_type_size() ) );
+    t_config->add( "bit-depth", new param_value( t_status->bit_depth() ) );
+    t_config->add( "voltage-min", new param_value( t_status->voltage_min() ) );
+    t_config->add( "voltage-range", new param_value( t_status->voltage_range() ) );
     t_run_context.unlock_inbound();
 
     /****************************************************************/

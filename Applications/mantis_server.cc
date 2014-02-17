@@ -59,10 +59,10 @@ int main( int argc, char** argv )
             "\t\t|/     \\||/     \\||/    \\_)   )_(   \\_______/\\_______)\n\n");
 
     server_config t_sc;
-    configurator* t_config = NULL;
+    configurator* t_configurator = NULL;
     try
     {
-        t_config = new configurator( argc, argv, &t_sc );
+        t_configurator = new configurator( argc, argv, &t_sc );
     }
     catch( exception& e )
     {
@@ -70,14 +70,16 @@ int main( int argc, char** argv )
         return -1;
     }
 
+    param_node* t_config = t_configurator->config();
+
     MTINFO( mtlog, "creating objects..." );
 
     size_t t_buffer_size, t_record_size, t_data_chunk_size;
     try
     {
-        t_buffer_size = t_config->get< int >( "buffer-size" );
-        t_record_size = t_config->get< int >( "record-size" );
-        t_data_chunk_size = t_config->get< int >( "data-chunk-size" );
+        t_buffer_size = t_config->get_value< int >( "buffer-size" );
+        t_record_size = t_config->get_value< int >( "record-size" );
+        t_data_chunk_size = t_config->get_value< int >( "data-chunk-size" );
     }
     catch( exception& e )
     {
@@ -90,7 +92,7 @@ int main( int argc, char** argv )
     server* t_server;
     try
     {
-        t_server = new server( t_config->get< int >( "port" ) );
+        t_server = new server( t_config->get_value< int >( "port" ) );
     }
     catch( exception& e )
     {
@@ -116,10 +118,10 @@ int main( int argc, char** argv )
     try
     {
         t_dig_factory = factory< digitizer >::get_instance();
-        t_digitizer = t_dig_factory->create( t_config->get< string >( "digitizer" ) );
+        t_digitizer = t_dig_factory->create( t_config->get_value< string >( "digitizer" ) );
         if( t_digitizer == NULL )
         {
-            MTERROR( mtlog, "could not create digitizer <" << t_config->get< string >( "digitizer" ) << ">; aborting" );
+            MTERROR( mtlog, "could not create digitizer <" << t_config->get_value< string >( "digitizer" ) << ">; aborting" );
             delete t_server;
             return -1;
         }
@@ -136,10 +138,10 @@ int main( int argc, char** argv )
     t_receiver.set_bit_depth( t_digitizer->params().bit_depth );
     t_receiver.set_voltage_min( t_digitizer->params().v_min );
     t_receiver.set_voltage_range( t_digitizer->params().v_range );
-    t_config->config()->add( "data-type-size", new param_value( t_digitizer->params().data_type_size ) );
-    t_config->config()->add( "bit-depth", new param_value( t_digitizer->params().bit_depth ) );
-    t_config->config()->add( "voltage-min", new param_value( t_digitizer->params().v_min ) );
-    t_config->config()->add( "voltage-range", new param_value( t_digitizer->params().v_range ) );
+    t_config->add( "data-type-size", new param_value( t_digitizer->params().data_type_size ) );
+    t_config->add( "bit-depth", new param_value( t_digitizer->params().bit_depth ) );
+    t_config->add( "voltage-min", new param_value( t_digitizer->params().v_min ) );
+    t_config->add( "voltage-range", new param_value( t_digitizer->params().v_range ) );
 
     if(! t_digitizer->allocate( &t_buffer, &t_buffer_condition ) )
     {

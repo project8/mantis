@@ -17,7 +17,7 @@ namespace mantis
 {
     MTLOGGER( mtlog, "server_worker" );
 
-    server_worker::server_worker( const configurator* a_config, digitizer* a_digitizer, buffer* a_buffer, run_queue* a_run_queue, condition* a_queue_condition, condition* a_buffer_condition ) :
+    server_worker::server_worker( const param_node* a_config, digitizer* a_digitizer, buffer* a_buffer, run_queue* a_run_queue, condition* a_queue_condition, condition* a_buffer_condition ) :
             f_config( a_config ),
             f_digitizer( a_digitizer ),
             f_writer( NULL ),

@@ -30,13 +30,13 @@ namespace mantis
     {
     }
 
-    void file_writer::configure( const configurator* a_config )
+    void file_writer::configure( const param_node* a_config )
     {
         get_calib_params(
-                a_config->get< unsigned >( "bit-depth",      f_dig_params.bit_depth ),
-                a_config->get< unsigned >( "data-type-size", f_dig_params.data_type_size ),
-                a_config->get< double   >( "voltage-min",    f_dig_params.v_min ),
-                a_config->get< double   >( "voltage-range",  f_dig_params.v_range ),
+                a_config->get_value< unsigned >( "bit-depth",      f_dig_params.bit_depth ),
+                a_config->get_value< unsigned >( "data-type-size", f_dig_params.data_type_size ),
+                a_config->get_value< double   >( "voltage-min",    f_dig_params.v_min ),
+                a_config->get_value< double   >( "voltage-range",  f_dig_params.v_range ),
                 &f_dig_params );
         return;
     }

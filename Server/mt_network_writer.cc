@@ -27,9 +27,9 @@ namespace mantis
         delete f_record_dist;
     }
 
-    void network_writer::configure( const configurator* a_config )
+    void network_writer::configure( const param_node* a_config )
     {
-        set_data_chunk_size( a_config->get< unsigned >( "data-chunk-size" ));
+        set_data_chunk_size( a_config->get_value< unsigned >( "data-chunk-size" ));
         return;
     }
 

@@ -13,8 +13,8 @@ namespace mantis
     class buffer;
     class client_worker;
     class condition;
-    class configurator;
     class file_writer;
+    class param_node;
     class record_receiver;
     class run_context_dist;
     class server;
@@ -23,7 +23,7 @@ namespace mantis
     class client_file_writing
     {
         public:
-            client_file_writing( const configurator* a_config, run_context_dist* a_run_context_dist, int a_write_port );
+            client_file_writing( const param_node* a_config, run_context_dist* a_run_context_dist, int a_write_port );
             virtual ~client_file_writing();
 
             void wait_for_finish();
@@ -33,7 +33,7 @@ namespace mantis
             bool is_done();
 
         private:
-            const configurator* f_config;
+            const param_node* f_config;
             server* f_server;
             condition *f_buffer_condition;
             buffer *f_buffer;
