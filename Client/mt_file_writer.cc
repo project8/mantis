@@ -58,24 +58,28 @@ namespace mantis
 
         //required fields
         f_header->SetFilename( a_request->file() );
+        unsigned t_n_channels = 1;
         if( a_request->mode() == request_mode_t_single )
         {
             f_header->SetAcquisitionMode( monarch::sOneChannel );
             f_header->SetFormatMode( monarch::sFormatSingle );
+            t_n_channels = 1;
         }
         if( a_request->mode() == request_mode_t_dual_separate )
         {
             f_header->SetAcquisitionMode( monarch::sTwoChannel );
             f_header->SetFormatMode( monarch::sFormatMultiSeparate );
+            t_n_channels = 2;
         }
         if( a_request->mode() == request_mode_t_dual_interleaved )
         {
             f_header->SetAcquisitionMode( monarch::sTwoChannel );
             f_header->SetFormatMode( monarch::sFormatMultiInterleaved );
+            t_n_channels = 2;
         }
         f_header->SetAcquisitionRate( a_request->rate() );
         f_header->SetRunDuration( a_request->duration() );
-        f_header->SetRecordSize( f_buffer->record_size() );
+        f_header->SetRecordSize( f_buffer->record_size() / t_n_channels );
 
         //optional fields
         f_header->SetTimestamp( a_request->date() );
