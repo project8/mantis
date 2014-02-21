@@ -104,7 +104,7 @@ namespace mantis
         FactoryCIt it = fMap->find(a_class_name);
         if (it != fMap->end())
         {
-            MTERROR( mtlog_fact, "Already have factory register_classed for <" << a_class_name << ">." );
+            MTERROR( mtlog_fact, "Already have factory registered for <" << a_class_name << ">." );
             return;
         }
         fMap->insert(std::pair< std::string, const base_registrar< XBaseType >* >(a_class_name, a_registrar));
