@@ -19,6 +19,9 @@
 
 // UTILITY MACROS
 
+#ifndef LOGGER_UTILITY_MACROS_
+#define LOGGER_UTILITY_MACROS_
+
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
 #define __FILE_LINE__      __FILE__ "(" TOSTRING(__LINE__) ")"
@@ -44,17 +47,19 @@
 #define macro_dispatcher_(func, nargs) macro_dispatcher__(func, nargs)
 #define macro_dispatcher__(func, nargs) func ## nargs
 
+#endif  /* LOGGER_UTILITY_MACROS_ */
+
 // COLOR DEFINITIONS
-#define COLOR_NORMAL "0"
-#define COLOR_BRIGHT "1"
-#define COLOR_FOREGROUND_RED "31"
-#define COLOR_FOREGROUND_GREEN "32"
-#define COLOR_FOREGROUND_YELLOW "33"
-#define COLOR_FOREGROUND_CYAN "36"
-#define COLOR_FOREGROUND_WHITE "37"
-#define COLOR_PREFIX "\033["
-#define COLOR_SUFFIX "m"
-#define COLOR_SEPARATOR ";"
+#define MTCOLOR_NORMAL "0"
+#define MTCOLOR_BRIGHT "1"
+#define MTCOLOR_FOREGROUND_RED "31"
+#define MTCOLOR_FOREGROUND_GREEN "32"
+#define MTCOLOR_FOREGROUND_YELLOW "33"
+#define MTCOLOR_FOREGROUND_CYAN "36"
+#define MTCOLOR_FOREGROUND_WHITE "37"
+#define MTCOLOR_PREFIX "\033["
+#define MTCOLOR_SUFFIX "m"
+#define MTCOLOR_SEPARATOR ";"
 
 // INCLUDES
 
@@ -67,7 +72,8 @@
 /**
  * The standard mantis namespace.
  */
-namespace mantis {
+namespace mantis
+{
 
     /**
      * The mantis logger.

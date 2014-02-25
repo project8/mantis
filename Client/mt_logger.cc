@@ -21,15 +21,14 @@
 #include <cstring>
 
 using namespace std;
-using namespace mantis;
 
-static const string skEndColor =   COLOR_PREFIX COLOR_NORMAL COLOR_SUFFIX;
-static const string skFatalColor = COLOR_PREFIX COLOR_BRIGHT COLOR_SEPARATOR COLOR_FOREGROUND_RED    COLOR_SUFFIX;
-static const string skErrorColor = COLOR_PREFIX COLOR_BRIGHT COLOR_SEPARATOR COLOR_FOREGROUND_RED    COLOR_SUFFIX;
-static const string skWarnColor =  COLOR_PREFIX COLOR_BRIGHT COLOR_SEPARATOR COLOR_FOREGROUND_YELLOW COLOR_SUFFIX;
-static const string skInfoColor =  COLOR_PREFIX COLOR_BRIGHT COLOR_SEPARATOR COLOR_FOREGROUND_GREEN  COLOR_SUFFIX;
-static const string skDebugColor = COLOR_PREFIX COLOR_BRIGHT COLOR_SEPARATOR COLOR_FOREGROUND_CYAN   COLOR_SUFFIX;
-static const string skOtherColor = COLOR_PREFIX COLOR_BRIGHT COLOR_SEPARATOR COLOR_FOREGROUND_WHITE  COLOR_SUFFIX;
+static const string skMTEndColor =   MTCOLOR_PREFIX MTCOLOR_NORMAL MTCOLOR_SUFFIX;
+static const string skMTFatalColor = MTCOLOR_PREFIX MTCOLOR_BRIGHT MTCOLOR_SEPARATOR MTCOLOR_FOREGROUND_RED    MTCOLOR_SUFFIX;
+static const string skMTErrorColor = MTCOLOR_PREFIX MTCOLOR_BRIGHT MTCOLOR_SEPARATOR MTCOLOR_FOREGROUND_RED    MTCOLOR_SUFFIX;
+static const string skMTWarnColor =  MTCOLOR_PREFIX MTCOLOR_BRIGHT MTCOLOR_SEPARATOR MTCOLOR_FOREGROUND_YELLOW MTCOLOR_SUFFIX;
+static const string skMTInfoColor =  MTCOLOR_PREFIX MTCOLOR_BRIGHT MTCOLOR_SEPARATOR MTCOLOR_FOREGROUND_GREEN  MTCOLOR_SUFFIX;
+static const string skMTDebugColor = MTCOLOR_PREFIX MTCOLOR_BRIGHT MTCOLOR_SEPARATOR MTCOLOR_FOREGROUND_CYAN   MTCOLOR_SUFFIX;
+static const string skMTOtherColor = MTCOLOR_PREFIX MTCOLOR_BRIGHT MTCOLOR_SEPARATOR MTCOLOR_FOREGROUND_WHITE  MTCOLOR_SUFFIX;
 
 
 #if defined(LOG4CXX_FOUND)
@@ -49,23 +48,24 @@ static const string skOtherColor = COLOR_PREFIX COLOR_BRIGHT COLOR_SEPARATOR COL
 
 using namespace log4cxx;
 
-#ifndef _LOG4CXX_COLORED_PATTERN_LAYOUT_H
-#define _LOG4CXX_COLORED_PATTERN_LAYOUT_H
+#ifndef MT_LOG4CXX_COLORED_PATTERN_LAYOUT_H
+#define MT_LOG4CXX_COLORED_PATTERN_LAYOUT_H
 
-namespace log4cxx {
+namespace log4cxx
+{
 
-    class LOG4CXX_EXPORT ColoredPatternLayout : public PatternLayout
+    class LOG4CXX_EXPORT MTColoredPatternLayout : public PatternLayout
     {
         public:
-            DECLARE_LOG4CXX_OBJECT(ColoredPatternLayout)
-        BEGIN_LOG4CXX_CAST_MAP()
-        LOG4CXX_CAST_ENTRY(ColoredPatternLayout)
-        LOG4CXX_CAST_ENTRY_CHAIN(Layout)
-        END_LOG4CXX_CAST_MAP()
+            DECLARE_LOG4CXX_OBJECT(MTColoredPatternLayout)
+            BEGIN_LOG4CXX_CAST_MAP()
+            LOG4CXX_CAST_ENTRY(MTColoredPatternLayout)
+            LOG4CXX_CAST_ENTRY_CHAIN(Layout)
+            END_LOG4CXX_CAST_MAP()
 
-        ColoredPatternLayout() : PatternLayout() {}
-            ColoredPatternLayout(const LogString& pattern) : PatternLayout(pattern) {};
-            virtual ~ColoredPatternLayout() {}
+            MTColoredPatternLayout() : PatternLayout() {}
+            MTColoredPatternLayout(const LogString& pattern) : PatternLayout(pattern) {};
+            virtual ~MTColoredPatternLayout() {}
 
         protected:
             virtual void format(LogString& output, const spi::LoggingEventPtr& event, helpers::Pool& pool) const;
@@ -73,60 +73,63 @@ namespace log4cxx {
 
     };
 
-    LOG4CXX_PTR_DEF(ColoredPatternLayout);
+    LOG4CXX_PTR_DEF(MTColoredPatternLayout);
 
 }
 
-#endif /* _LOG4CXX_COLORED_PATTERN_LAYOUT_H */
+#endif /* MT_LOG4CXX_COLORED_PATTERN_LAYOUT_H */
 
-IMPLEMENT_LOG4CXX_OBJECT(ColoredPatternLayout)
+IMPLEMENT_LOG4CXX_OBJECT(MTColoredPatternLayout)
 
-void ColoredPatternLayout::format(LogString& output, const spi::LoggingEventPtr& event, helpers::Pool& pool) const
+void MTColoredPatternLayout::format(LogString& output, const spi::LoggingEventPtr& event, helpers::Pool& pool) const
 {
     PatternLayout::format(output, event, pool);
-    output = getColor(event->getLevel()) + output + skEndColor;
+    output = getColor(event->getLevel()) + output + skMTEndColor;
     return;
 }
 
-string ColoredPatternLayout::getColor(const LevelPtr& level) const
+string MTColoredPatternLayout::getColor(const LevelPtr& level) const
 {
     switch(level->toInt())
     {
         case Level::FATAL_INT:
-            return skFatalColor;
+            return skMTFatalColor;
             break;
         case Level::ERROR_INT:
-            return skErrorColor;
+            return skMTErrorColor;
             break;
         case Level::WARN_INT:
-            return skWarnColor;
+            return skMTWarnColor;
             break;
         case Level::INFO_INT:
-            return skInfoColor;
+            return skMTInfoColor;
             break;
         case Level::DEBUG_INT:
-            return skDebugColor;
+            return skMTDebugColor;
             break;
         case Level::TRACE_INT:
-            return skDebugColor;
+            return skMTDebugColor;
             break;
         default:
-            return skOtherColor;
+            return skMTOtherColor;
     }
 }
 
-namespace {
+namespace
+{
 
-    struct StaticInitializer {
-            StaticInitializer() {
+    struct MTStaticInitializer {
+            MTStaticInitializer()
+            {
 
-                if (LogManager::getLoggerRepository()->isConfigured())
-                    return;
+                ///if (LogManager::getLoggerRepository()->isConfigured())
+                ///    return;
                 //        AppenderList appenders = Logger::getRootLogger()->getAllAppenders();
 
                 char* envLoggerConfig;
                 envLoggerConfig = getenv("LOGGER_CONFIGURATION");
-                if (envLoggerConfig != 0) {
+                if (envLoggerConfig != 0)
+                {
                     PropertyConfigurator::configure(envLoggerConfig);
                 }
                 else {
@@ -139,72 +142,75 @@ namespace {
                     Logger::getRootLogger()->setLevel(Level::getInfo());
 #endif
                     static const LogString TTCC_CONVERSION_PATTERN(LOG4CXX_STR("%r [%-5p] %16c: %m%n"));
-                    LayoutPtr layout(new PatternLayout(TTCC_CONVERSION_PATTERN));
-                    //                LayoutPtr layout(new ColoredPatternLayout(TTCC_CONVERSION_PATTERN));
+                    //LayoutPtr layout(new PatternLayout(TTCC_CONVERSION_PATTERN));
+                    LayoutPtr layout(new MTColoredPatternLayout(TTCC_CONVERSION_PATTERN));
                     AppenderPtr appender(new ConsoleAppender(layout));
                     root->addAppender(appender);
 #endif
                 }
 
             }
-    } static sLoggerInitializer;
+    } static sMTLoggerInitializer;
 
 }
 
-struct logger::Private
+namespace mantis
 {
-        void log(const LevelPtr& level, const string& message, const Location& loc)
-        {
-            fLogger->forcedLog(level, message, ::log4cxx::spi::LocationInfo(loc.fFileName, loc.fFunctionName, loc.fLineNumber));
-        }
-
-        static LevelPtr level2Ptr(ELevel level)
-        {
-            switch(level)
+    struct logger::Private
+    {
+            void log(const LevelPtr& level, const string& message, const Location& loc)
             {
-                case eTrace : return Level::getTrace();
-                case eDebug : return Level::getDebug();
-                case eInfo  : return Level::getInfo();
-                case eWarn  : return Level::getWarn();
-                case eError : return Level::getError();
-                case eFatal : return Level::getFatal();
-                default     : return Level::getOff();
+                fLogger->forcedLog(level, message, ::log4cxx::spi::LocationInfo(loc.fFileName, loc.fFunctionName, loc.fLineNumber));
             }
-        }
 
-        LoggerPtr fLogger;
-};
+            static LevelPtr level2Ptr(ELevel level)
+            {
+                switch(level)
+                {
+                    case eTrace : return Level::getTrace();
+                    case eDebug : return Level::getDebug();
+                    case eInfo  : return Level::getInfo();
+                    case eWarn  : return Level::getWarn();
+                    case eError : return Level::getError();
+                    case eFatal : return Level::getFatal();
+                    default     : return Level::getOff();
+                }
+            }
 
-logger::logger(const char* name) : fPrivate(new Private())
-{
-    fPrivate->fLogger = (name == 0) ? Logger::getRootLogger() : Logger::getLogger(name);
-}
+            LoggerPtr fLogger;
+    };
 
-logger::logger(const std::string& name) : fPrivate(new Private())
-{
-    fPrivate->fLogger = Logger::getLogger(name);
-}
+    logger::logger(const char* name) : fPrivate(new Private())
+    {
+        fPrivate->fLogger = (name == 0) ? Logger::getRootLogger() : Logger::getLogger(name);
+    }
 
-logger::~logger()
-{
-    delete fPrivate;
-}
+    logger::logger(const std::string& name) : fPrivate(new Private())
+    {
+        fPrivate->fLogger = Logger::getLogger(name);
+    }
 
-bool logger::IsLevelEnabled(ELevel level) const
-{
-    return fPrivate->fLogger->isEnabledFor( Private::level2Ptr(level) );
-}
+    logger::~logger()
+    {
+        delete fPrivate;
+    }
 
-void logger::SetLevel(ELevel level) const
-{
-    fPrivate->fLogger->setLevel( Private::level2Ptr(level) );
-}
+    bool logger::IsLevelEnabled(ELevel level) const
+    {
+        return fPrivate->fLogger->isEnabledFor( Private::level2Ptr(level) );
+    }
 
-void logger::Log(ELevel level, const string& message, const Location& loc)
-{
-    fPrivate->log(Private::level2Ptr(level), message, loc);
-}
+    void logger::SetLevel(ELevel level) const
+    {
+        fPrivate->fLogger->setLevel( Private::level2Ptr(level) );
+    }
 
+    void logger::Log(ELevel level, const string& message, const Location& loc)
+    {
+        fPrivate->log(Private::level2Ptr(level), message, loc);
+    }
+
+} /* namespace mantis */
 
 
 #else
@@ -242,32 +248,32 @@ namespace mantis
             {
                 switch(level)
                 {
-                    case eTrace : return skDebugColor; break;
-                    case eDebug : return skDebugColor; break;
-                    case eInfo  : return skInfoColor; break;
-                    case eWarn  : return skWarnColor; break;
-                    case eError : return skErrorColor; break;
-                    case eFatal : return skErrorColor; break;
-                    default     : return skOtherColor;
+                    case eTrace : return skMTDebugColor; break;
+                    case eDebug : return skMTDebugColor; break;
+                    case eInfo  : return skMTInfoColor; break;
+                    case eWarn  : return skMTWarnColor; break;
+                    case eError : return skMTErrorColor; break;
+                    case eFatal : return skMTErrorColor; break;
+                    default     : return skMTOtherColor;
                 }
             }
 
 
-            void logCout(const char* level, const string& message, const Location& /*loc*/, const string& color = skOtherColor)
+            void logCout(const char* level, const string& message, const Location& /*loc*/, const string& color = skMTOtherColor)
             {
                 logger::Private::sMutex.lock();
                 if (fColored)
-                    cout << color << __DATE__ " " __TIME__ " [" << setw(5) << level << "] " << setw(16) << fLogger << ": " << message << skEndColor << endl;
+                    cout << color << __DATE__ " " __TIME__ " [" << setw(5) << level << "] " << setw(16) << fLogger << ": " << message << skMTEndColor << endl;
                 else
                     cout << __DATE__ " " __TIME__ " [" << setw(5) << level << "] " << setw(16) << fLogger << ": " << message << endl;
                 logger::Private::sMutex.unlock();
             }
 
-            void logCerr(const char* level, const string& message, const Location& /*loc*/, const string& color = skOtherColor)
+            void logCerr(const char* level, const string& message, const Location& /*loc*/, const string& color = skMTOtherColor)
             {
                 logger::Private::sMutex.lock();
                 if (fColored)
-                    cerr << color << __DATE__ " " __TIME__ " [" << setw(5) << level << "] " << setw(16) << fLogger << ": " << message << skEndColor << endl;
+                    cerr << color << __DATE__ " " __TIME__ " [" << setw(5) << level << "] " << setw(16) << fLogger << ": " << message << skMTEndColor << endl;
                 else
                     cerr << __DATE__ " " __TIME__ " [" << setw(5) << level << "] " << setw(16) << fLogger << ": " << message << endl;
                 logger::Private::sMutex.unlock();
