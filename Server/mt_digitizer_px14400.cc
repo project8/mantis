@@ -99,7 +99,27 @@ namespace mantis
 
         MTINFO( mtlog, "connecting to digitizer card..." );
 
+        // SN of the px14400 card is 100954
+	MTDEBUG( mtlog, "trying the SN, 100954" );
         t_result = ConnectToDevicePX14( &f_handle, 100954 );
+        if( t_result == SIG_SUCCESS )
+	  {
+	    MTWARN( mtlog, "connection worked using serial number: 100954" );
+	  }
+	else
+	  {
+	    for( unsigned i = 0; i <= 16; ++i )
+	      {
+		MTDEBUG( mtlog, "trying device number " << i );
+		t_result = ConnectToDevicePX14( &f_handle, i );
+		if( t_result == SIG_SUCCESS )
+		  {
+		    MTWARN( mtlog, "connection worked using board number: " << i );
+		    break;
+		  }
+	      }
+	  }
+        //t_result = ConnectToDevicePX14( &f_handle, 0 );
         if( t_result != SIG_SUCCESS )
         {
             DumpLibErrorPX14( t_result, "failed to connect to digitizer card: " );
