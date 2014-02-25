@@ -194,8 +194,6 @@ namespace mantis
 
             t_it->set_acquiring();
 
-            //f_buffer->print_states();
-
             if( acquire( t_it.object(), t_stamp_time ) == false )
             {
                 //mark the block as written
@@ -218,6 +216,9 @@ namespace mantis
 
                 return;
             }
+
+            //MTDEBUG( mtlog, "digitizer_test:" );
+            //f_buffer->print_states();
 
             t_it->set_acquired();
 
