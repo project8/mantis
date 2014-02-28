@@ -13,6 +13,7 @@
 #include <cstring>
 #include <errno.h>
 //#include <fcntl.h> // for O_CREAT and O_EXCL
+#include <sstream>
 
 namespace mantis
 {
@@ -125,7 +126,9 @@ namespace mantis
                 t_result = AllocateDmaBufferPX4( f_handle, f_buffer->record_size(), t_new_block->handle() );
                 if( t_result != SIG_SUCCESS )
                 {
-                    DumpLibErrorPX4( t_result, "failed to allocate dma memory: " );
+                    std::stringstream t_buff;
+                    t_buff << "failed to allocate dma memory for block " << index <<": ";
+                    DumpLibErrorPX4( t_result, t_buff.str().c_str() );
                     return false;
                 }
                 t_new_block->set_data_size( f_buffer->record_size() );

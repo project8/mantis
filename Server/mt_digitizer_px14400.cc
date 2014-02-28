@@ -13,6 +13,7 @@
 #include <cstring>
 #include <errno.h>
 //#include <fcntl.h> // for O_CREAT and O_EXCL
+#include <sstream>
 
 namespace mantis
 {
@@ -56,7 +57,7 @@ namespace mantis
                 throw exception() << "semaphore error: " << strerror( errno );
             }
         }
-        */
+         */
     }
 
     digitizer_px14400::~digitizer_px14400()
@@ -87,7 +88,7 @@ namespace mantis
         {
             sem_close( f_semaphore );
         }
-        */
+         */
     }
 
     bool digitizer_px14400::allocate( buffer* a_buffer, condition* a_condition )
@@ -100,25 +101,25 @@ namespace mantis
         MTINFO( mtlog, "connecting to digitizer card..." );
 
         // SN of the px14400 card is 100954
-	MTDEBUG( mtlog, "trying the SN, 100954" );
+        MTDEBUG( mtlog, "trying the SN, 100954" );
         t_result = ConnectToDevicePX14( &f_handle, 100954 );
         if( t_result == SIG_SUCCESS )
-	  {
-	    MTWARN( mtlog, "connection worked using serial number: 100954" );
-	  }
-	else
-	  {
-	    for( unsigned i = 0; i <= 16; ++i )
-	      {
-		MTDEBUG( mtlog, "trying device number " << i );
-		t_result = ConnectToDevicePX14( &f_handle, i );
-		if( t_result == SIG_SUCCESS )
-		  {
-		    MTWARN( mtlog, "connection worked using board number: " << i );
-		    break;
-		  }
-	      }
-	  }
+        {
+            MTWARN( mtlog, "connection worked using serial number: 100954" );
+        }
+        else
+        {
+            for( unsigned i = 0; i <= 16; ++i )
+            {
+                MTDEBUG( mtlog, "trying device number " << i );
+                t_result = ConnectToDevicePX14( &f_handle, i );
+                if( t_result == SIG_SUCCESS )
+                {
+                    MTWARN( mtlog, "connection worked using board number: " << i );
+                    break;
+                }
+            }
+        }
         //t_result = ConnectToDevicePX14( &f_handle, 0 );
         if( t_result != SIG_SUCCESS )
         {
@@ -145,7 +146,9 @@ namespace mantis
                 t_result = AllocateDmaBufferPX14( f_handle, f_buffer->record_size(), t_new_block->handle() );
                 if( t_result != SIG_SUCCESS )
                 {
-                    DumpLibErrorPX14( t_result, "failed to allocate dma memory: " );
+                    std::stringstream t_buff;
+                    t_buff << "failed to allocate dma memory for block " << index <<": ";
+                    DumpLibErrorPX14( t_result, t_buff.str().c_str() );
                     return false;
                 }
                 t_new_block->set_data_size( f_buffer->record_size() );
@@ -426,9 +429,9 @@ namespace mantis
     //***********************************
 
     block_cleanup_px14400::block_cleanup_px14400( digitizer_px14400::data_type* a_data, HPX14* a_dig_ptr ) :
-        f_triggered( false ),
-        f_data( a_data ),
-        f_dig_ptr( a_dig_ptr )
+                f_triggered( false ),
+                f_data( a_data ),
+                f_dig_ptr( a_dig_ptr )
     {}
     block_cleanup_px14400::~block_cleanup_px14400()
     {}
@@ -482,15 +485,15 @@ namespace mantis
 
         try
         {
-                t_block = new typed_block< digitizer_px14400::data_type >();
-                t_result = AllocateDmaBufferPX14( f_handle, t_rec_size, t_block->handle() );
-                if( t_result != SIG_SUCCESS )
-                {
-                    DumpLibErrorPX14( t_result, "failed to allocate dma memory: " );
-                    return false;
-                }
-                t_block->set_data_size( t_rec_size );
-                t_block->set_cleanup( new block_cleanup_px14400( t_block->data(), &f_handle ) );
+            t_block = new typed_block< digitizer_px14400::data_type >();
+            t_result = AllocateDmaBufferPX14( f_handle, t_rec_size, t_block->handle() );
+            if( t_result != SIG_SUCCESS )
+            {
+                DumpLibErrorPX14( t_result, "failed to allocate dma memory: " );
+                return false;
+            }
+            t_block->set_data_size( t_rec_size );
+            t_block->set_cleanup( new block_cleanup_px14400( t_block->data(), &f_handle ) );
         }
         catch( exception& e )
         {
