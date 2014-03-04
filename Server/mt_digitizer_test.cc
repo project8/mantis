@@ -19,8 +19,8 @@ namespace mantis
 {
     MTLOGGER( mtlog, "digitizer_test" );
 
-    static registrar< digitizer, digitizer_test > s_digtest_registrar( "test" );
-    static registrar< test_digitizer, test_digitizer_test > s_testdigtest_registrar( "test" );
+    MT_REGISTER_DIGITIZER( digitizer_test, test );
+    MT_REGISTER_TEST_DIGITIZER( test_digitizer_test, test );
 
 
     const unsigned digitizer_test::s_data_type_size = sizeof( digitizer_test::data_type );
