@@ -47,10 +47,10 @@ namespace mantis
     };
 
 #define MT_REGISTER_DIGITIZER(dig_class, dig_name) \
-        static registrar< digitizer, dig_class > s_##dig_name##_digitizer_registrar( #dig_name );
+        static registrar< digitizer, dig_class > s_##dig_class##_digitizer_registrar( dig_name );
 
 #define MT_REGISTER_TEST_DIGITIZER(test_dig_class, test_dig_name) \
-        static registrar< test_digitizer, test_dig_class > s_##test_dig_name##_test_digitizer_registrar( #test_dig_name );
+        static registrar< test_digitizer, test_dig_class > s_##test_dig_class##_test_digitizer_registrar( test_dig_name );
 
 }
 

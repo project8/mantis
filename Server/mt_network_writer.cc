@@ -12,7 +12,7 @@ namespace mantis
 {
     MTLOGGER( mtlog, "network_writer" );
 
-    MT_REGISTER_WRITER( network_writer, network );
+    MT_REGISTER_WRITER( network_writer, "network" );
 
     network_writer::network_writer() :
             writer(),

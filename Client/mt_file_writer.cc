@@ -14,7 +14,7 @@ namespace mantis
 {
     MTLOGGER( mtlog, "file_writer" );
 
-    MT_REGISTER_WRITER( file_writer, file );
+    MT_REGISTER_WRITER( file_writer, "file" );
 
     file_writer::file_writer() :
                     writer(),

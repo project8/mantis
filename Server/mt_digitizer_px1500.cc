@@ -19,8 +19,8 @@ namespace mantis
 {
     MTLOGGER( mtlog, "digitizer_px1500" );
 
-    MT_REGISTER_DIGITIZER( digitizer_px1500, px1500 );
-    MT_REGISTER_TEST_DIGITIZER( test_digitizer_px1500, px1500 );
+    MT_REGISTER_DIGITIZER( digitizer_px1500, "px1500" );
+    MT_REGISTER_TEST_DIGITIZER( test_digitizer_px1500, "px1500" );
 
     const unsigned digitizer_px1500::s_data_type_size = sizeof( digitizer_px1500::data_type );
     unsigned digitizer_px1500::data_type_size_px1500()
