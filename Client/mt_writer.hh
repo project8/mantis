@@ -49,6 +49,10 @@ namespace mantis
 
             virtual bool write( block* a_block ) = 0;
     };
+
+#define MT_REGISTER_WRITER(writer_class, writer_name) \
+        static registrar< writer, writer_class > s_##writer_name##_writer_registrar( #writer_name );
+
 }
 
 #endif
