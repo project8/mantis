@@ -229,7 +229,7 @@ namespace mantis
     XValType param_array::get_value( unsigned a_index ) const
     {
         const param_value* value = value_at( a_index );
-        if( value == NULL ) throw exception() << "No value at <" << a_index << "> is present at this node";
+        if( value == NULL ) throw exception() << "No value is present at index <" << a_index << ">";
         return value->get< XValType >();
     }
 
