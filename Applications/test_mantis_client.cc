@@ -1,6 +1,7 @@
-#include "mt_parser.hh"
+#include "mt_configurator.hh"
 #include "mt_logger.hh"
 #include "mt_client.hh"
+#include "mt_client_config.hh"
 #include "mt_run_context_dist.hh"
 #include "thorax.hh"
 using namespace mantis;
@@ -59,9 +60,10 @@ int analyze_status( run_context_dist* t_run_context )
 
 int main( int argc, char** argv )
 {
-    parser t_parser( argc, argv );
+    client_config t_cc;
+    configurator t_configurator( argc, argv, &t_cc );
 
-    client* t_client = new client( t_parser.value_at( "host" )->get(), t_parser.value_at( "port" )->get< int >() );
+    client* t_client = new client( t_configurator.get< string >( "host" ), t_configurator.get< int >( "port" ) );
     run_context_dist* t_run_context = new run_context_dist();
     t_run_context->set_connection( t_client );
 
