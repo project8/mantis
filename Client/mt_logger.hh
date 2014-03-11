@@ -170,7 +170,7 @@ namespace mantis
              * Set whether colored text will be used
              * @param flag Bool determining whether colored text will be used
              */
-            void SetColored(bool flag);
+            static void SetColored(bool flag);
 
             /**
              * Set the ostream pointer used for standard output messages

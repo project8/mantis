@@ -229,7 +229,8 @@ namespace mantis
             static mutex sMutex;
 
             const char* fLogger;
-            bool fColored;
+
+            static bool fColored;
 
             static std::ostream* fOut;
             static std::ostream* fErr;
@@ -266,7 +267,7 @@ namespace mantis
             void logCout(const char* level, const string& message, const Location& /*loc*/, const string& color = skMTOtherColor)
             {
                 logger::Private::sMutex.lock();
-                if (fColored)
+                if (logger::Private::fColored)
                     (*fOut) << color << __DATE__ " " __TIME__ " [" << setw(5) << level << "] " << setw(16) << fLogger << ": " << message << skMTEndColor << endl;
                 else
                     (*fOut) << __DATE__ " " __TIME__ " [" << setw(5) << level << "] " << setw(16) << fLogger << ": " << message << endl;
@@ -276,7 +277,7 @@ namespace mantis
             void logCerr(const char* level, const string& message, const Location& /*loc*/, const string& color = skMTOtherColor)
             {
                 logger::Private::sMutex.lock();
-                if (fColored)
+                if (logger::Private::fColored)
                     (*fErr) << color << __DATE__ " " __TIME__ " [" << setw(5) << level << "] " << setw(16) << fLogger << ": " << message << skMTEndColor << endl;
                 else
                     (*fErr) << __DATE__ " " __TIME__ " [" << setw(5) << level << "] " << setw(16) << fLogger << ": " << message << endl;
@@ -285,6 +286,8 @@ namespace mantis
     };
 
     mutex logger::Private::sMutex;
+
+    bool logger::Private::fColored = true;
 
     std::ostream* logger::Private::fOut = &cout;
     std::ostream* logger::Private::fErr = &cerr;
@@ -301,15 +304,11 @@ namespace mantis
             const char* logName = strrchr(name, '/') ? strrchr(name, '/') + 1 : name;
             fPrivate->fLogger = logName;
         }
-        fPrivate->fColored = true;
     }
 
     logger::logger(const std::string& name) : fPrivate(new Private())
     {
         fPrivate->fLogger = name.c_str();
-        fPrivate->fOut = &cout;
-        fPrivate->fErr = &cerr;
-        fPrivate->fColored = true;
     }
 
     logger::~logger()
@@ -334,7 +333,7 @@ namespace mantis
 
     void logger::SetColored(bool flag)
     {
-        fPrivate->fColored = flag;
+        logger::Private::fColored = flag;
         return;
     }
 
