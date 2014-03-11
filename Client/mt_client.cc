@@ -3,6 +3,7 @@
 #include "mt_exception.hh"
 #include "mt_logger.hh"
 
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -28,7 +29,7 @@ namespace mantis
             return;
         }
 
-        //MTINFO( mtlog, "host found..." );
+        //MTDEBUG( mtlog, "host found: " );
 
         //initialize address
         socklen_t t_address_length = sizeof(sockaddr_in);
@@ -46,7 +47,7 @@ namespace mantis
         f_socket = ::socket( AF_INET, SOCK_STREAM, 0 );
         if( f_socket < 0 )
         {
-            throw exception() << "[client] could not create socket\n";
+            throw exception() << "[client] could not create socket:\n\t" << strerror( errno );
             return;
         }
 
@@ -55,7 +56,7 @@ namespace mantis
         //connect socket
         if( ::connect( f_socket, (sockaddr*) (f_address), t_address_length ) < 0 )
         {
-            throw exception() << "could not create connection\n";
+            throw exception() << "[client] could not create connection:\n\t" << strerror( errno );
         }
 
         //MTINFO( mtlog, "socket connected..." );
