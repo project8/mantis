@@ -29,6 +29,9 @@ if (Mantis_ENABLE_TESTING)
     enable_testing ()
 endif (Mantis_ENABLE_TESTING)
 
+# add an option to build the Qt-based GUI
+option( Mantis_ENABLE_GUI "Build the Qt-based GUI" OFF )
+
 
 #######################
 # mantis dependencies #
@@ -111,6 +114,15 @@ include_directories (
 add_subdirectory (boost)
 
 pbuilder_add_ext_libraries( boost_atomic )
+
+# Qt
+if( Mantis_ENABLE_GUI )
+    find_package( Qt4 4.2 REQUIRED QtCore QtGui )
+    if( Qt4_FOUND )
+        include( ${QT_USE_FILE} )
+        include_directories( ${CMAKE_CURRENT_BINARY_DIR} )
+    endif( Qt4_FOUND )
+endif( Mantis_ENABLE_GUI )
 
 
 
@@ -209,6 +221,40 @@ add_executable( mantis_client ${CMAKE_CURRENT_SOURCE_DIR}/Applications/mantis_cl
 target_link_libraries( mantis_client MantisClient ${EXTERNAL_LIBRARIES} )
 pbuilder_install_executables( mantis_client )
 
+if( Qt4_FOUND )
+    set( client_gui_SOURCES 
+        ${CMAKE_CURRENT_SOURCE_DIR}/QtClient/main.cc  
+        ${CMAKE_CURRENT_SOURCE_DIR}/QtClient/mtq_client_exe_gui.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/QtClient/mtq_run_client.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/QtClient/mtq_signaling_stream.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/QtClient/mtq_single_client_window.cc
+    )
+    set( client_gui_HEADERS
+        ${CMAKE_CURRENT_SOURCE_DIR}/QtClient/mtq_client_exe_gui.hh
+        ${CMAKE_CURRENT_SOURCE_DIR}/QtClient/mtq_run_client.hh
+        ${CMAKE_CURRENT_SOURCE_DIR}/QtClient/mtq_signaling_stream.hh
+        ${CMAKE_CURRENT_SOURCE_DIR}/QtClient/mtq_single_client_window.hh
+    )
+    set( client_gui_FORMS
+        ${CMAKE_CURRENT_SOURCE_DIR}/QtClient/client_exe_gui.ui
+        ${CMAKE_CURRENT_SOURCE_DIR}/QtClient/single_client_window.ui
+    )
+    set( client_RESOURCES ${CMAKE_CURRENT_SOURCE_DIR}/QtClient/mantis-gui.qrc )
+    
+    QT4_WRAP_CPP( client_gui_HEADERS_MOD ${client_gui_HEADERS} )
+    QT4_WRAP_UI( client_gui_FORMS_HEADERS ${client_gui_FORMS} )
+    QT4_ADD_RESOURCES( client_gui_RESOURCES_RCC ${client_gui_RESOURCES} )
+    
+    add_executable( mantis_client_gui
+        ${client_gui_SOURCES}
+        ${client_gui_HEADERS_MOC}
+        ${client_gui_FORMS_HEADERS}
+        ${client_gui_RESOURCES_RCC}
+    )
+    target_link_libraries( mantis_client_gui MantisClient ${EXTERNAL_LIBRARIES} ${QT_LIBRARIES} )
+    pbuilder_install_executables( mantis_client_gui )
+        
+endif( Qt4_FOUND )
 
 
 #################

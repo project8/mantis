@@ -353,7 +353,7 @@ namespace mantis
     {
         const char* levelStr = Private::level2Str(level);
 
-        if (level >= eFatal)
+        if (level >= eWarn)
         {
             fPrivate->logCerr(levelStr, message, loc, Private::level2Color(level));
         }
