@@ -1,13 +1,13 @@
 /////////////////////////////////////////////////
 // Program to make egg files from roach1 board //
 // Original Author: N.S.Oblath                 //
-//		    nsoblath@mit.edu           //
+//		            nsoblath@mit.edu           //
 // Modified by:     Prajwal Mohanmurthy        //
 //                  prajwal@mohanmurthy.com    //
-//		    MIT LNS                    //
+//		            MIT LNS                    //
 /////////////////////////////////////////////////
-#ifndef MT_DIGITIZER_TEST_HH_
-#define MT_DIGITIZER_TEST_HH_
+#ifndef MT_DIGITIZER_ROACH_HH_
+#define MT_DIGITIZER_ROACH_HH_
 
 #include "mt_digitizer.hh"
 
@@ -21,19 +21,19 @@
 
 namespace mantis
 {
-    class block_cleanup_test;
+    class block_cleanup_roach;
 
-    class digitizer_test :
+    class digitizer_roach :
         public digitizer
     {
         public:
             typedef uint8_t data_type;
 
-            static unsigned data_type_size_test();
+            static unsigned data_type_size_roach();
 
         public:
-            digitizer_test();
-            virtual ~digitizer_test();
+            digitizer_roach();
+            virtual ~digitizer_roach();
 
             bool allocate( buffer* a_buffer, condition* a_condition );
             bool initialize( request* a_request );
@@ -76,23 +76,23 @@ namespace mantis
             bool stop();
     };
 
-    class block_cleanup_test : public block_cleanup
+    class block_cleanup_roach : public block_cleanup
     {
         public:
-            block_cleanup_test( digitizer_test::data_type* a_data );
-            virtual ~block_cleanup_test();
+            block_cleanup_roach( digitizer_roach::data_type* a_data );
+            virtual ~block_cleanup_roach();
             virtual bool delete_data();
         private:
             bool f_triggered;
-            digitizer_test::data_type* f_data;
+            digitizer_roach::data_type* f_data;
     };
 
 
-    class test_digitizer_test : public test_digitizer
+    class test_digitizer_roach : public test_digitizer
     {
         public:
-            test_digitizer_test() {}
-            virtual ~test_digitizer_test() {}
+            test_digitizer_roach() {}
+            virtual ~test_digitizer_roach() {}
 
             bool run_test()
             {

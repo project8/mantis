@@ -20,17 +20,17 @@ namespace mantis
 {
     MTLOGGER( mtlog, "digitizer_roach" );
 
-    static registrar< digitizer, digitizer_test > s_digtest_registrar( "roach" );
-    static registrar< test_digitizer, test_digitizer_test > s_testdigtest_registrar( "roach" );
+    static registrar< digitizer, digitizer_roach > s_digtest_registrar( "roach" );
+    static registrar< test_digitizer, test_digitizer_roach > s_testdigtest_registrar( "roach" );
 
 
-    const unsigned digitizer_test::s_data_type_size = sizeof( digitizer_test::data_type );
-    unsigned digitizer_test::data_type_size_test()
+    const unsigned digitizer_roach::s_data_type_size = sizeof( digitizer_roach::data_type );
+    unsigned digitizer_roach::data_type_size_test()
     {
-        return digitizer_test::s_data_type_size;
+        return digitizer_roach::s_data_type_size;
     }
 
-    digitizer_test::digitizer_test() :
+    digitizer_roach::digitizer_roach() :
             //f_semaphore( NULL ),
             f_master_record( NULL ),
             f_allocated( false ),
@@ -48,12 +48,12 @@ namespace mantis
 
         /*
         errno = 0;
-        f_semaphore = sem_open( "/digitizer_test", O_CREAT | O_EXCL );
+        f_semaphore = sem_open( "/digitizer_roach", O_CREAT | O_EXCL );
         if( f_semaphore == SEM_FAILED )
         {
             if( errno == EEXIST )
             {
-                throw exception() << "digitizer_test is already in use";
+                throw exception() << "digitizer_roach is already in use";
             }
             else
             {
@@ -63,7 +63,7 @@ namespace mantis
         */
     }
 
-    digitizer_test::~digitizer_test()
+    digitizer_roach::~digitizer_roach()
     {
         if( f_allocated )
         {
@@ -84,7 +84,7 @@ namespace mantis
         */
     }
 
-    bool digitizer_test::allocate( buffer* a_buffer, condition* a_condition )
+    bool digitizer_roach::allocate( buffer* a_buffer, condition* a_condition )
     {
         f_buffer = a_buffer;
         f_condition = a_condition;
@@ -121,7 +121,7 @@ namespace mantis
         return true;
     }
 
-    bool digitizer_test::initialize( request* a_request )
+    bool digitizer_roach::initialize( request* a_request )
     {
         //MTINFO( mtlog, "resetting counters..." );
 
@@ -133,7 +133,7 @@ namespace mantis
 
         return true;
     }
-    void digitizer_test::execute()
+    void digitizer_roach::execute()
     {
         iterator t_it( f_buffer );
 
@@ -282,7 +282,7 @@ namespace mantis
 
         return;
     }
-    void digitizer_test::cancel()
+    void digitizer_roach::cancel()
     {
         //cout << "CANCELLING DIGITIZER TEST" );
         if( ! f_canceled.load() )
@@ -290,10 +290,10 @@ namespace mantis
             f_canceled.store( true );
             f_cancel_condition.wait();
         }
-        //cout << "  digitizer_test is done canceling" );
+        //cout << "  digitizer_roach is done canceling" );
         return;
     }
-    void digitizer_test::finalize( response* a_response )
+    void digitizer_roach::finalize( response* a_response )
     {
         //MTINFO( mtlog, "calculating statistics..." );
 
@@ -307,11 +307,11 @@ namespace mantis
         return;
     }
 
-    bool digitizer_test::start()
+    bool digitizer_roach::start()
     {
         return true;
     }
-    bool digitizer_test::acquire( block* a_block, timespec& a_stamp_time )
+    bool digitizer_roach::acquire( block* a_block, timespec& a_stamp_time )
     {
         a_block->set_record_id( f_record_count );
         a_block->set_acquisition_id( f_acquisition_count );
@@ -324,28 +324,28 @@ namespace mantis
 
         return true;
     }
-    bool digitizer_test::stop()
+    bool digitizer_roach::stop()
     {
         ++f_acquisition_count;
         return true;
     }
 
-    bool digitizer_test::write_mode_check( request_file_write_mode_t )
+    bool digitizer_roach::write_mode_check( request_file_write_mode_t )
     {
         return true;
     }
 
-    unsigned digitizer_test::data_type_size()
+    unsigned digitizer_roach::data_type_size()
     {
-        return digitizer_test::s_data_type_size;
+        return digitizer_roach::s_data_type_size;
     }
 
-    bool digitizer_test::get_canceled()
+    bool digitizer_roach::get_canceled()
     {
         return f_canceled.load();
     }
 
-    void digitizer_test::set_canceled( bool a_flag )
+    void digitizer_roach::set_canceled( bool a_flag )
     {
         f_canceled.store( a_flag );
         return;
@@ -355,7 +355,7 @@ namespace mantis
     // Block Cleanup -- Test Digitizer
     //********************************
 
-    block_cleanup_test::block_cleanup_test( digitizer_test::data_type* a_data ) :
+    block_cleanup_test::block_cleanup_test( digitizer_roach::data_type* a_data ) :
             block_cleanup(),
             f_triggered( false ),
             f_data( a_data )
