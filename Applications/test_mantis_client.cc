@@ -1,6 +1,7 @@
-#include "mt_parser.hh"
+#include "mt_configurator.hh"
 #include "mt_logger.hh"
 #include "mt_client.hh"
+#include "mt_client_config.hh"
 #include "mt_run_context_dist.hh"
 #include "thorax.hh"
 using namespace mantis;
@@ -59,43 +60,56 @@ int analyze_status( run_context_dist* t_run_context )
 
 int main( int argc, char** argv )
 {
-    parser t_parser( argc, argv );
+    try
+    {
+        client_config t_cc;
+        configurator t_configurator( argc, argv, &t_cc );
 
-    client* t_client = new client( t_parser.value_at( "host" )->get(), t_parser.value_at( "port" )->get< int >() );
-    run_context_dist* t_run_context = new run_context_dist();
-    t_run_context->set_connection( t_client );
+        string t_host = t_configurator.get< string >( "host" );
+        MTINFO( mtlog, "attempting to reach host at: " << t_host );
+        int t_port = t_configurator.get< int >( "port" );
+        MTINFO( mtlog, "host port: " << t_port );
+        client* t_client = new client( t_host, t_port );
+        run_context_dist* t_run_context = new run_context_dist();
+        t_run_context->set_connection( t_client );
 
-    request* t_request = t_run_context->lock_request_out();
-    t_request->set_write_host( "" );
-    t_request->set_write_port( -1 );
-    t_request->set_file( "/value/ohgod.egg" );
-    t_request->set_description( "junk" );
-    t_request->set_date( get_absolute_time_string() );
-    t_request->set_mode( request_mode_t_single );
-    t_request->set_rate( 800.0 );
-    t_request->set_duration( 2000.0 );
-    t_request->set_file_write_mode( request_file_write_mode_t_local );
+        request* t_request = t_run_context->lock_request_out();
+        t_request->set_write_host( "" );
+        t_request->set_write_port( -1 );
+        t_request->set_file( "/value/ohgod.egg" );
+        t_request->set_description( "junk" );
+        t_request->set_date( get_absolute_time_string() );
+        t_request->set_mode( request_mode_t_single );
+        t_request->set_rate( 800.0 );
+        t_request->set_duration( 2000.0 );
+        t_request->set_file_write_mode( request_file_write_mode_t_local );
 
-    MTINFO( mtlog, "sending request...\n" << t_request->DebugString() );
+        MTINFO( mtlog, "sending request...\n" << t_request->DebugString() );
 
-    t_run_context->push_request_no_mutex();
+        t_run_context->push_request_no_mutex();
 
-    t_run_context->unlock_outbound();
+        t_run_context->unlock_outbound();
 
-    t_run_context->pull_status();
-    analyze_status( t_run_context );
+        t_run_context->pull_status();
+        analyze_status( t_run_context );
 
-//    do
-//    {
-//        t_run_context->pull_status();
-//    }
-//    while( analyze_status( t_run_context ) == 0 );
+    //    do
+    //    {
+    //        t_run_context->pull_status();
+    //    }
+    //    while( analyze_status( t_run_context ) == 0 );
 
-    MTINFO( mtlog, "done" );
+        MTINFO( mtlog, "done" );
 
-    delete t_run_context;
-    delete t_client;
+        delete t_run_context;
+        delete t_client;
 
-    return 0;
+        return 0;
+    }
+    catch( exception& e )
+    {
+        MTERROR( "exception caught: " << e.what() );
+    }
+    return -1;
 }
 

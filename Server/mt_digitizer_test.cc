@@ -19,8 +19,8 @@ namespace mantis
 {
     MTLOGGER( mtlog, "digitizer_test" );
 
-    static registrar< digitizer, digitizer_test > s_digtest_registrar( "test" );
-    static registrar< test_digitizer, test_digitizer_test > s_testdigtest_registrar( "test" );
+    MT_REGISTER_DIGITIZER( digitizer_test, "test" );
+    MT_REGISTER_TEST_DIGITIZER( test_digitizer_test, "test" );
 
 
     const unsigned digitizer_test::s_data_type_size = sizeof( digitizer_test::data_type );
@@ -194,8 +194,6 @@ namespace mantis
 
             t_it->set_acquiring();
 
-            //f_buffer->print_states();
-
             if( acquire( t_it.object(), t_stamp_time ) == false )
             {
                 //mark the block as written
@@ -218,6 +216,9 @@ namespace mantis
 
                 return;
             }
+
+            //MTDEBUG( mtlog, "digitizer_test:" );
+            //f_buffer->print_states();
 
             t_it->set_acquired();
 
