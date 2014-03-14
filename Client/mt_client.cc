@@ -38,7 +38,7 @@ namespace mantis
 
         //prepare address
         f_address->sin_family = AF_INET;
-        ::memcpy( t_host->h_addr_list[ 0 ], &(f_address->sin_addr.s_addr), t_host->h_length );
+        ::memcpy( &(f_address->sin_addr.s_addr), t_host->h_addr_list[ 0 ], t_host->h_length );
         f_address->sin_port = htons( a_port );
 
         //MTINFO( mtlog, "address prepared..." );
