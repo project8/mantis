@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/images">
+        <file>images/mantis_title.png</file>
+    </qresource>
+</RCC>
