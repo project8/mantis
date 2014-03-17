@@ -1,5 +1,8 @@
 <RCC>
-    <qresource prefix="/images">
-        <file>images/mantis_title.png</file>
+    <qresource prefix="/Title">
+        <file>mantis_title.png</file>
+    </qresource>
+    <qresource prefix="/Icons">
+        <file>mantis_head.png</file>
     </qresource>
 </RCC>

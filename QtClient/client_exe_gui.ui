@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>495</height>
+    <height>505</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -38,7 +38,7 @@
       </size>
      </property>
      <property name="styleSheet">
-      <string notr="true">background-image: url(:/images/images/mantis_title.png);
+      <string notr="true">background-image: url(:/Title/mantis_title.png);
 background-repeat: no-repeat;
 background-position: center center</string>
      </property>
@@ -99,6 +99,9 @@ background-position: center center</string>
         </item>
         <item>
          <widget class="QPushButton" name="buttonSave">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
           <property name="toolTip">
            <string>Save config file</string>
           </property>
@@ -109,6 +112,9 @@ background-position: center center</string>
         </item>
         <item>
          <widget class="QPushButton" name="buttonSaveAs">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
           <property name="text">
            <string>Save As</string>
           </property>
@@ -430,6 +436,9 @@ background-position: center center</string>
       <layout class="QGridLayout" name="gridLayout_2">
        <item row="0" column="0">
         <widget class="QTreeWidget" name="treeWidget">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
            <horstretch>0</horstretch>
