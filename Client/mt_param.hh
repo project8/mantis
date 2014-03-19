@@ -140,7 +140,7 @@ namespace mantis
 
             /// Returns the result of ParamValue::get if a_name is present and is of type ParamValue
             /// Throws an exception if a_name is not present or is not of type ParamValue
-            const std::string& get_value( unsigned a_index ) const;
+            std::string get_value( unsigned a_index ) const;
             /// Returns the result of ParamValue::get if a_name is present and is of type ParamValue
             /// Throws an exception if a_name is not present or is not of type ParamValue
             template< typename XValType >
@@ -148,7 +148,8 @@ namespace mantis
 
             /// Returns the result of ParamValue::get if a_name is present and is of type ParamValue
             /// Returns a_default if a_name is not present or is not of type ParamValue
-            const std::string& get_value( unsigned a_index, const std::string& a_default ) const;
+            std::string get_value( unsigned a_index, const std::string& a_default ) const;
+            std::string get_value( unsigned a_index, const char* a_default ) const;
             /// Returns the result of ParamValue::get if a_name is present and is of type ParamValue
             /// Returns a_default if a_name is not present or is not of type ParamValue
             template< typename XValType >
@@ -267,7 +268,7 @@ namespace mantis
 
             /// Returns the result of ParamValue::get if a_name is present and is of type ParamValue
             /// Throws an exception if a_name is not present or is not of type ParamValue
-            const std::string& get_value( const std::string& a_name ) const;
+            std::string get_value( const std::string& a_name ) const;
             /// Returns the result of ParamValue::get if a_name is present and is of type ParamValue
             /// Throws an exception if a_name is not present or is not of type ParamValue
             template< typename XValType >
@@ -275,7 +276,8 @@ namespace mantis
 
             /// Returns the result of ParamValue::get if a_name is present and is of type ParamValue
             /// Returns a_default if a_name is not present or is not of type ParamValue
-            const std::string& get_value( const std::string& a_name, const std::string& a_default ) const;
+            std::string get_value( const std::string& a_name, const std::string& a_default ) const;
+            std::string get_value( const std::string& a_name, const char* a_default ) const;
             /// Returns the result of ParamValue::get if a_name is present and is of type ParamValue
             /// Returns a_default if a_name is not present or is not of type ParamValue
             template< typename XValType >

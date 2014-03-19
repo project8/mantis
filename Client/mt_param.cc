@@ -214,18 +214,23 @@ namespace mantis
         return;
     }
 
-    const std::string& param_array::get_value( unsigned a_index ) const
+    std::string param_array::get_value( unsigned a_index ) const
     {
         const param_value* value = value_at( a_index );
         if( value == NULL ) throw exception() << "No value at <" << a_index << "> is present at this node";
         return value->get();
     }
 
-    const std::string& param_array::get_value( unsigned a_index, const std::string& a_default ) const
+    std::string param_array::get_value( unsigned a_index, const std::string& a_default ) const
     {
         const param_value* value = value_at( a_index );
         if( value == NULL ) return a_default;
         return value->get();
+    }
+
+    std::string param_array::get_value( unsigned a_index, const std::string& a_default ) const
+    {
+        return get_value( a_index, string( a_default ) );
     }
 
     const param* param_array::at( unsigned a_index ) const
@@ -455,18 +460,23 @@ namespace mantis
         return f_contents.count( a_name );
     }
 
-    const std::string& param_node::get_value( const std::string& a_name ) const
+    std::string param_node::get_value( const std::string& a_name ) const
     {
         const param_value* value = value_at( a_name );
         if( value == NULL ) throw exception() << "No value with name <" << a_name << "> is present at this node";
         return value->get();
     }
 
-    const std::string& param_node::get_value( const std::string& a_name, const std::string& a_default ) const
+    std::string param_node::get_value( const std::string& a_name, const std::string& a_default ) const
     {
         const param_value* value = value_at( a_name );
         if( value == NULL ) return a_default;
         return value->get();
+    }
+
+    std::string param_node::get_value( const std::string& a_name, const char* a_default ) const
+    {
+        return get_value( a_name, a_default );
     }
 
     const param* param_node::at( const std::string& a_name ) const
