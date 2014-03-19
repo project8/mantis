@@ -228,7 +228,7 @@ namespace mantis
         return value->get();
     }
 
-    std::string param_array::get_value( unsigned a_index, const std::string& a_default ) const
+    std::string param_array::get_value( unsigned a_index, const char* a_default ) const
     {
         return get_value( a_index, string( a_default ) );
     }

@@ -219,6 +219,7 @@ namespace mantis
  * Fallback solution for systems without log4cxx.
  */
 
+#include <cstdio>
 #include <iomanip>
 #include <sys/time.h>
 #include <time.h>
