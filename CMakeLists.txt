@@ -146,6 +146,7 @@ set( MANTIS_CLIENT_HEADERFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_parser.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_record_dist.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_record_receiver.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_run_client.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_run_context_dist.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_server.hh    
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_signal_handler.hh
@@ -180,6 +181,7 @@ set( MANTIS_CLIENT_SOURCEFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_parser.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_record_dist.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_record_receiver.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_run_client.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_run_context_dist.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_server.cc    
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/mt_signal_handler.cc
