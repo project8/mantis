@@ -19,7 +19,7 @@ namespace mantis
     class server_worker : public callable
     {
         public:
-            server_worker( const param_node* a_config, digitizer* a_digitizer, buffer* a_buffer, run_queue* a_run_queue, condition* a_queue_condition, condition* a_buffer_condition );
+            server_worker( const param_node* a_config, digitizer* a_digitizer, buffer* a_buffer, run_queue* a_run_queue, condition* a_queue_condition, condition* a_buffer_condition, const std::string& a_exe_name = "unknown" );
             virtual ~server_worker();
 
             void execute();
@@ -35,6 +35,8 @@ namespace mantis
             run_queue* f_run_queue;
             condition* f_queue_condition;
             condition* f_buffer_condition;
+
+            std::string f_exe_name;
 
             atomic_bool f_canceled;
 

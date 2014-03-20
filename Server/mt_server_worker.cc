@@ -19,7 +19,7 @@ namespace mantis
 {
     MTLOGGER( mtlog, "server_worker" );
 
-    server_worker::server_worker( const param_node* a_config, digitizer* a_digitizer, buffer* a_buffer, run_queue* a_run_queue, condition* a_queue_condition, condition* a_buffer_condition ) :
+    server_worker::server_worker( const param_node* a_config, digitizer* a_digitizer, buffer* a_buffer, run_queue* a_run_queue, condition* a_queue_condition, condition* a_buffer_condition, const string& a_exe_name ) :
             f_config( a_config ),
             f_digitizer( a_digitizer ),
             f_writer( NULL ),
@@ -27,9 +27,10 @@ namespace mantis
             f_run_queue( a_run_queue ),
             f_queue_condition( a_queue_condition ),
             f_buffer_condition( a_buffer_condition ),
-            f_canceled( false ),
             f_digitizer_state( k_inactive ),
-            f_writer_state( k_inactive )
+            f_writer_state( k_inactive ),
+            f_exe_name( a_exe_name ),
+            f_canceled( false )
     {
     }
 
@@ -106,8 +107,7 @@ namespace mantis
             {
                 f_writer = t_writer_factory->create( "file" );
                 run_description* t_run_desc = new run_description();
-                // TODO: extract server executable info from somewhere
-                //t_run_desc->set_mantis_server_exe(  );
+                t_run_desc->set_mantis_server_exe( f_exe_name );
                 t_run_desc->set_mantis_server_version( "Mantis_VERSION" );
                 t_run_desc->set_mantis_server_commit( "Mantis_GIT_COMMIT" );
                 static_cast< file_writer* >( f_writer )->set_run_description( t_run_desc );

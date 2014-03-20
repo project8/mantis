@@ -17,6 +17,7 @@ namespace mantis
     MTLOGGER( mtlog, "configurator" );
 
     configurator::configurator( int an_argc, char** an_argv, param_node* a_default ) :
+            f_exe_name( "unknown" ),
             f_master_config( new param_node() ),
             f_param_buffer( NULL ),
             f_string_buffer()
@@ -35,13 +36,17 @@ namespace mantis
         //cout << f_master_config );
         //cout << t_parser );
 
-        string t_name_config("config");
-        string t_name_json("json");
+        string t_name_exe( "executable" ); // the name used to specify the executable in parser
+        string t_name_config( "config" );
+        string t_name_json( "json" );
+
+        // name of executable
+        f_exe_name = t_parser.get_value( t_name_exe, f_exe_name );
 
         // second configuration: config file
         if( t_parser.has( t_name_config ) )
         {
-            string t_config_filename = t_parser.value_at( t_name_config )->get();
+            string t_config_filename = t_parser.get_value( t_name_config );
             if( ! t_config_filename.empty() )
             {
                 param_node* t_config_from_file = param_input_json::read_file( t_config_filename );
@@ -61,7 +66,7 @@ namespace mantis
         // third configuration: command line json
         if( t_parser.has( t_name_json ) )
         {
-            string t_config_json = t_parser.value_at( t_name_json )->get();
+            string t_config_json = t_parser.get_value( t_name_json );
             if( ! t_config_json.empty() )
             {
                 param_node* t_config_from_json = param_input_json::read_string( t_config_json );
@@ -75,6 +80,7 @@ namespace mantis
         //cout << t_parser );
 
         // fourth configuration: command line arguments
+        t_parser.erase( t_name_exe );
         t_parser.erase( t_name_config );
         t_parser.erase( t_name_json );
 
@@ -89,6 +95,11 @@ namespace mantis
     configurator::~configurator()
     {
         delete f_master_config;
+    }
+
+    const string& configurator::exe_name() const
+    {
+        return f_exe_name();
     }
 
     param_node* configurator::config()

@@ -15,8 +15,8 @@
 #include "mt_run_context_dist.hh"
 #include "mt_signal_handler.hh"
 #include "mt_thread.hh"
+#include "mt_version.hh"
 #include "thorax.hh"
-using namespace mantis;
 
 #include <algorithm> // for min
 #include <string>
@@ -28,8 +28,9 @@ namespace mantis
 {
     MTLOGGER( mtlog, "run_client" );
 
-    run_client::run_client( const param_node* a_node ) :
+    run_client::run_client( const param_node* a_node, const string& a_exe_name ) :
             f_config( *a_node ),
+            f_exe_name( a_exe_name ),
             f_canceled( false ),
             f_return( 0 )
     {
@@ -74,6 +75,9 @@ namespace mantis
         t_request->set_rate( f_config.get_value< double >( "rate" ) );
         t_request->set_duration( t_duration );
         t_request->set_file_write_mode( request_file_write_mode_t_local );
+        t_request->set_client_exe( f_exe_name );
+        t_request->set_client_version( "Mantis_VERSION" );
+        t_request->set_client_commit( "Mantis_GIT_COMMIT" );
         if( t_client_writes_file )
         {
             t_request->set_file_write_mode( request_file_write_mode_t_remote );

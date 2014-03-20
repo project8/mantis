@@ -150,7 +150,11 @@ int main( int argc, char** argv )
         return -1;
     }
 
-    server_worker t_worker( t_config, t_digitizer, &t_buffer, &t_run_queue, &t_queue_condition, &t_buffer_condition );
+    server_worker t_worker( t_config,
+                            t_digitizer,
+                            &t_buffer, &t_run_queue,
+                            &t_queue_condition, &t_buffer_condition,
+                            t_configurator->exe_name() );
 
     MTINFO( mtlog, "starting threads..." );
 

@@ -64,7 +64,7 @@ namespace mantis
             };
 
         public:
-            run_client( const param_node* a_node );
+            run_client( const param_node* a_node, const std::string& a_exe_name = "unknown" );
             virtual ~run_client();
 
             void execute();
@@ -74,6 +74,7 @@ namespace mantis
 
         private:
             param_node f_config;
+            std::string f_exe_name;
             atomic_bool f_canceled;
             int f_return;
     };
