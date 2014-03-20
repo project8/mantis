@@ -109,8 +109,8 @@ namespace mantis
                 f_writer = t_writer_factory->create( "file" );
                 run_description* t_run_desc = new run_description();
                 t_run_desc->set_mantis_server_exe( f_exe_name );
-                t_run_desc->set_mantis_server_version( "Mantis_VERSION" );
-                t_run_desc->set_mantis_server_commit( "Mantis_GIT_COMMIT" );
+                t_run_desc->set_mantis_server_version( TOSTRING(Mantis_VERSION) );
+                t_run_desc->set_mantis_server_commit( TOSTRING(Mantis_GIT_COMMIT) );
                 t_run_desc->set_server_config( *f_config );
                 static_cast< file_writer* >( f_writer )->set_run_description( t_run_desc );
             }
