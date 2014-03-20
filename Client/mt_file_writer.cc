@@ -7,6 +7,7 @@
 #include "mt_run_description.hh"
 
 #include "MonarchException.hpp"
+#include "MonarchVersion.hpp"
 
 #include <cstring> // for memcpy()
 using std::stringstream;
@@ -109,6 +110,8 @@ namespace mantis
         f_run_desc->set_mantis_client_exe( a_request->client_exe() );
         f_run_desc->set_mantis_client_version( a_request->client_version() );
         f_run_desc->set_mantis_client_commit( a_request->client_commit() );
+        f_run_desc->set_monarch_version( TOSTRING(Monarch_VERSION) );
+        f_run_desc->set_monarch_commit( TOSTRING(Monarch_GIT_COMMIT) );
         f_run_desc->set_description( a_request->description() );
         param_node* t_client_config = param_input_json::read_string( a_request->client_config() );
         f_run_desc->set_client_config( *t_client_config );

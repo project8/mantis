@@ -66,6 +66,7 @@ endif( "${isSystemDir}" STREQUAL "-1" )
 include_directories( ${PROJECT_SOURCE_DIR}/Monarch/Source )
 include_directories( ${PROJECT_SOURCE_DIR}/Monarch/libthorax/cpp )
 include_directories( ${PROJECT_SOURCE_DIR}/Monarch/libthorax )
+include_directories( ${PROJECT_BINARY_DIR}/Monarch )
 
 
 #############
