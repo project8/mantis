@@ -15,6 +15,7 @@
 #include "mt_logger.hh"
 #include "mt_record_receiver.hh"
 #include "mt_run_context_dist.hh"
+#include "mt_run_description.hh"
 #include "mt_server.hh"
 #include "mt_signal_handler.hh"
 #include "mt_thread.hh"
@@ -56,10 +57,16 @@ namespace mantis
         f_receiver->set_data_type_size( t_status->data_type_size() );
         f_receiver->allocate( f_buffer, f_buffer_condition );
 
+        run_description* t_run_desc = new run_description();
+        t_run_desc->set_mantis_server_exe( t_status->server_exe() );
+        t_run_desc->set_mantis_server_version( t_status->server_version() );
+        t_run_desc->set_mantis_server_commit( t_status->server_commit() );
+
         a_run_context->unlock_inbound();
 
         f_writer = new file_writer();
         f_writer->set_buffer( f_buffer, f_buffer_condition );
+        f_writer->set_run_description( t_run_desc );
         f_writer->configure( f_config );
 
         try

@@ -34,6 +34,12 @@ endif (Mantis_ENABLE_TESTING)
 # mantis dependencies #
 #######################
 
+# if git is used, get the commit SHA1
+find_package( Git )
+if( GIT_FOUND )
+    execute_process( COMMAND ${GIT_EXECUTABLE} rev-parse -q HEAD  OUTPUT_VARIABLE Mantis_GIT_COMMIT  OUTPUT_STRIP_TRAILING_WHITESPACE )
+endif( GIT_FOUND )
+
 include_directories ("${PROJECT_SOURCE_DIR}/RapidJSON")
 
 add_subdirectory( Monarch )
@@ -185,6 +191,12 @@ set( MANTIS_CLIENT_SOURCEFILES
     ${Mantis_PB_Client_Status_Source}
     ${Mantis_PB_Response_Source}
     ${Mantis_PB_Block_Header_Source}
+)
+
+configure_file( Client/mt_version.hh.in ${CMAKE_CURRENT_BINARY_DIR}/mt_version.hh )
+set( MANTIS_CLIENT_HEADERFILES
+    ${MANTIS_CLIENT_HEADERFILES}
+    ${CMAKE_CURRENT_BINARY_DIR}/mt_version.hh
 )
 
 add_library( MantisClient ${MANTIS_CLIENT_SOURCEFILES} )

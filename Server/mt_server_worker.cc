@@ -5,11 +5,13 @@
 #include "mt_configurator.hh"
 #include "mt_digitizer.hh"
 #include "mt_factory.hh"
+#include "mt_file_writer.hh"
 #include "mt_logger.hh"
 #include "mt_run_context_dist.hh"
 #include "mt_run_queue.hh"
 #include "mt_signal_handler.hh"
 #include "mt_thread.hh"
+#include "mt_version.hh"
 #include "mt_writer.hh"
 
 
@@ -103,6 +105,12 @@ namespace mantis
             if( t_request->file_write_mode() == request_file_write_mode_t_local )
             {
                 f_writer = t_writer_factory->create( "file" );
+                run_description* t_run_desc = new run_description();
+                // TODO: extract server executable info from somewhere
+                //t_run_desc->set_mantis_server_exe(  );
+                t_run_desc->set_mantis_server_version( "Mantis_VERSION" );
+                t_run_desc->set_mantis_server_commit( "Mantis_GIT_COMMIT" );
+                static_cast< file_writer* >( f_writer )->set_run_description( t_run_desc );
             }
             else
             {
