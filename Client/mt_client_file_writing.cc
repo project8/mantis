@@ -61,6 +61,8 @@ namespace mantis
         t_run_desc->set_mantis_server_exe( t_status->server_exe() );
         t_run_desc->set_mantis_server_version( t_status->server_version() );
         t_run_desc->set_mantis_server_commit( t_status->server_commit() );
+        param_node* t_server_config = param_input_json::read_string( t_status->server_config() );
+        t_run_desc->set_server_config( *t_server_config );
 
         a_run_context->unlock_inbound();
 

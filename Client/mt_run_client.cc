@@ -78,6 +78,9 @@ namespace mantis
         t_request->set_client_exe( f_exe_name );
         t_request->set_client_version( "Mantis_VERSION" );
         t_request->set_client_commit( "Mantis_GIT_COMMIT" );
+        string t_config_as_string;
+        param_output_json::write_string( f_config, t_config_as_string, param_output_json::k_compact );
+        t_request->set_client_config( t_config_as_string );
         if( t_client_writes_file )
         {
             t_request->set_file_write_mode( request_file_write_mode_t_remote );

@@ -8,6 +8,7 @@
 #include "mt_file_writer.hh"
 #include "mt_logger.hh"
 #include "mt_run_context_dist.hh"
+#include "mt_run_description.hh"
 #include "mt_run_queue.hh"
 #include "mt_signal_handler.hh"
 #include "mt_thread.hh"
@@ -110,6 +111,7 @@ namespace mantis
                 t_run_desc->set_mantis_server_exe( f_exe_name );
                 t_run_desc->set_mantis_server_version( "Mantis_VERSION" );
                 t_run_desc->set_mantis_server_commit( "Mantis_GIT_COMMIT" );
+                t_run_desc->set_server_config( *f_config );
                 static_cast< file_writer* >( f_writer )->set_run_description( t_run_desc );
             }
             else

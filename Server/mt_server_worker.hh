@@ -5,6 +5,8 @@
 
 #include "mt_atomic.hh"
 
+#include <string>
+
 namespace mantis
 {
     class buffer;

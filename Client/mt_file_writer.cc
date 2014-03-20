@@ -25,7 +25,7 @@ namespace mantis
             f_dig_params(),
             f_run_desc( NULL )
     {
-        // give some reasonable digitizer parameter defaults
+        // give some reasonable digitizer parameter defaults (these are from the px1500)
         get_calib_params( 8, 1, -0.25, 0.5, &f_dig_params );
     }
     file_writer::~file_writer()
@@ -35,6 +35,7 @@ namespace mantis
 
     void file_writer::configure( const param_node* a_config )
     {
+        // this should be present whether the configuration is from the client or from the server
         get_calib_params(
                 a_config->get_value< unsigned >( "bit-depth",      f_dig_params.bit_depth ),
                 a_config->get_value< unsigned >( "data-type-size", f_dig_params.data_type_size ),
@@ -105,10 +106,13 @@ namespace mantis
         {
             f_run_desc = new run_description();
         }
-        f_run_desc->set_client_exe( a_request->client_exe() );
-        f_run_desc->set_client_version( a_request->client_version() );
-        f_run_desc->set_client_commit( a_request->client_commit() );
+        f_run_desc->set_mantis_client_exe( a_request->client_exe() );
+        f_run_desc->set_mantis_client_version( a_request->client_version() );
+        f_run_desc->set_mantis_client_commit( a_request->client_commit() );
         f_run_desc->set_description( a_request->description() );
+        param_node* t_client_config = param_input_json::read_string( a_request->client_config() );
+        f_run_desc->set_client_config( *t_client_config );
+
         string t_full_desc;
         param_output_json::write_string( *f_run_desc, t_full_desc, param_output_json::k_compact );
         f_header->SetDescription( t_full_desc );

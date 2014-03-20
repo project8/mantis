@@ -40,6 +40,7 @@ namespace mantis
             void configure( const param_node* );
 
             void set_run_description( run_description* a_run_desc );
+
             bool initialize_derived( request* a_response );
 
         private:

@@ -6,18 +6,23 @@
 #include "mt_run_context_dist.hh"
 #include "mt_run_queue.hh"
 #include "mt_server.hh"
+#include "mt_version.hh"
 
 #include <cstddef>
+
+using std::string;
 
 
 namespace mantis
 {
     MTLOGGER( mtlog, "request_receiver" );
 
-    request_receiver::request_receiver( server* a_server, run_queue* a_run_queue, condition* a_condition ) :
+    request_receiver::request_receiver( const param_node* a_config, server* a_server, run_queue* a_run_queue, condition* a_condition, const string& a_exe_name ) :
+            f_config( *a_config ),
             f_server( a_server ),
             f_run_queue( a_run_queue ),
             f_condition( a_condition ),
+            f_exe_name( a_exe_name ),
             f_buffer_size( 512 ),
             f_record_size( 419304 ),
             f_data_chunk_size( 1024 ),
@@ -71,6 +76,13 @@ namespace mantis
                 t_status->set_bit_depth( f_bit_depth );
                 t_status->set_voltage_min( f_voltage_min );
                 t_status->set_voltage_range( f_voltage_range );
+                t_status->set_server_exe( f_exe_name );
+                t_status->set_server_version( "Mantis_VERSION" );
+                t_status->set_server_commit( "Mantis_GIT_COMMIT" );
+                string t_config_as_string;
+                param_output_json::write_string( f_config, t_config_as_string, param_output_json::k_compact );
+                t_status->set_server_config( t_config_as_string );
+
                 t_run_context->push_status_no_mutex();
                 t_run_context->unlock_outbound();
 

@@ -44,4 +44,7 @@ message request
 	optional string client_exe = 10 [default = "unknown"];
 	optional string client_version = 11 [default = "unknown"];
 	optional string client_commit = 12 [default = "unknown"];
+	
+	//client config (JSON-formatted)
+    optional string client_config = 13 [default = "{}"];
 }

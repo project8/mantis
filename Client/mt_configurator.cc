@@ -99,7 +99,7 @@ namespace mantis
 
     const string& configurator::exe_name() const
     {
-        return f_exe_name();
+        return f_exe_name;
     }
 
     param_node* configurator::config()

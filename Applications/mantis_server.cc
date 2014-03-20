@@ -103,7 +103,7 @@ int main( int argc, char** argv )
     condition t_queue_condition;
     run_queue t_run_queue;
 
-    request_receiver t_receiver( t_server, &t_run_queue, &t_queue_condition );
+    request_receiver t_receiver( t_config, t_server, &t_run_queue, &t_queue_condition, t_configurator->exe_name() );
     t_receiver.set_buffer_size( t_buffer_size );
     t_receiver.set_record_size( t_record_size );
     t_receiver.set_data_chunk_size( t_data_chunk_size );
