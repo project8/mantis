@@ -7,6 +7,9 @@
  *      Author: nsoblath
  */
 
+#ifndef MT_VERSION_HH_
+#define MT_VERSION_HH_
+
 #define Mantis_VERSION_MAJOR @Mantis_VERSION_MAJOR@
 #define Mantis_VERSION_MINOR @Mantis_VERSION_MINOR@
 #define Mantis_REVISION @Mantis_REVISION@
@@ -14,3 +17,5 @@
 #define Mantis_FULL_VERSION @Mantis_FULL_VERSION@
 
 #define Mantis_GIT_COMMIT @Mantis_GIT_COMMIT@
+
+#endif /* MT_VERSION_HH_ */

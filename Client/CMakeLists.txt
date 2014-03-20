@@ -1,4 +1,6 @@
 # CMakeLists.txt for Mantis/Client
+# Author: N. Oblath
+# Created: Mar 20, 2014
 
 protobuf_generate_cpp( Mantis_PB_Request_Source Mantis_PB_Request_Header ${PROJECT_SOURCE_DIR}/Protobuf/request.proto )
 protobuf_generate_cpp( Mantis_PB_Status_Source Mantis_PB_Status_Header ${PROJECT_SOURCE_DIR}/Protobuf/status.proto )

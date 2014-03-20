@@ -1,4 +1,6 @@
 # CMakeLists.txt for Mantis/Applications
+# Author: N. Oblath
+# Created: Mar 20, 2014
 
 ######################
 # Client Applications

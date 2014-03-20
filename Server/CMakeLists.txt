@@ -1,4 +1,6 @@
 # CMakeLists.txt for Mantis/Server
+# Author: N. Oblath
+# Created: Mar 20, 2014
 
 if( Mantis_BUILD_SERVER )
 
