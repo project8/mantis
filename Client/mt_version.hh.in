@@ -17,5 +17,6 @@
 #define Mantis_FULL_VERSION @Mantis_FULL_VERSION@
 
 #define Mantis_GIT_COMMIT @Mantis_GIT_COMMIT@
+#define Mantis_GIT_DESCRIBE @Mantis_GIT_DESCRIBE@
 
 #endif /* MT_VERSION_HH_ */

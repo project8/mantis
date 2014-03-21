@@ -42,6 +42,7 @@ endif (Mantis_ENABLE_TESTING)
 find_package( Git )
 if( GIT_FOUND )
     execute_process( COMMAND ${GIT_EXECUTABLE} rev-parse -q HEAD  OUTPUT_VARIABLE Mantis_GIT_COMMIT  OUTPUT_STRIP_TRAILING_WHITESPACE )
+    execute_process( COMMAND ${GIT_EXECUTABLE} describe --tags --long  OUTPUT_VARIABLE Mantis_GIT_DESCRIBE  OUTPUT_STRIP_TRAILING_WHITESPACE )
 endif( GIT_FOUND )
 
 
