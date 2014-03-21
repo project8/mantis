@@ -367,6 +367,7 @@ namespace mantis
 
     void setup_loop::execute()
     {
+        f_run_context->wait_for_status();
         while( ! f_canceled.load() )
         {
             status_state_t t_state = f_run_context->lock_status_in()->state();
@@ -430,6 +431,7 @@ namespace mantis
 
     void run_loop::execute()
     {
+        f_run_context->wait_for_status();
         while( ! f_canceled.load() )
         {
             status_state_t t_state = f_run_context->lock_status_in()->state();
