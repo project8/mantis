@@ -336,7 +336,9 @@ namespace mantis
     {
         while( ! f_canceled.load() )
         {
-            status_state_t t_state = f_run_context->lock_status_in()->state();
+            status* t_status = f_run_context->lock_status_in();
+            status_state_t t_state = t_status->state();
+            string t_error_msg = t_status->error_message();
             f_run_context->unlock_inbound();
 
             if( t_state == status_state_t_acknowledged )
@@ -347,13 +349,13 @@ namespace mantis
             }
             else if( t_state == status_state_t_error )
             {
-                MTERROR( mtlog, "error reported; run was not acknowledged\n" );
+                MTERROR( mtlog, "error reported: " << t_error_msg << "\n" );
                 f_return = RETURN_ERROR;
                 break;
             }
             else if( t_state == status_state_t_revoked )
             {
-                MTINFO( mtlog, "request revoked; run did not take place\n" );
+                MTINFO( mtlog, "request revoked: " << t_error_msg << "\n" );
                 f_return = RETURN_ERROR;
                 break;
             }
@@ -399,7 +401,9 @@ namespace mantis
     {
         while( ! f_canceled.load() )
         {
-            status_state_t t_state = f_run_context->lock_status_in()->state();
+            status* t_status = f_run_context->lock_status_in();
+            status_state_t t_state = t_status->state();
+            string t_error_msg = t_status->error_message();
             f_run_context->unlock_inbound();
 
             if( t_state == status_state_t_waiting )
@@ -425,13 +429,13 @@ namespace mantis
             }
             else if( t_state == status_state_t_error )
             {
-                MTINFO( mtlog, "error reported; run did not complete\n" );
+                MTINFO( mtlog, "error reported: " << t_error_msg << "\n" );
                 f_return = RETURN_ERROR;
                 break;
             }
             else if( t_state == status_state_t_canceled )
             {
-                MTINFO( mtlog, "cancellation reported; some data may have been written\n" );
+                MTINFO( mtlog, "cancellation reported: " << t_error_msg << ";\n\t some data may have been written\n" );
                 f_return = RETURN_CANCELED;
                 break;
             }

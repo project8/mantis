@@ -15,6 +15,7 @@
 #include "mt_version.hh"
 #include "mt_writer.hh"
 
+#include <sstream>
 
 namespace mantis
 {
@@ -90,7 +91,11 @@ namespace mantis
                         << "                run request ignored" );
                 t_run_context->unlock_inbound();
 
-                t_run_context->lock_status_out()->set_state( status_state_t_error );
+                status* t_status = t_run_context->lock_status_out();
+                t_status->set_state( status_state_t_error );
+                std::stringstream t_error_msg;
+                t_error_msg << "unable to operate in write mode " <<  t_request->file_write_mode();
+                t_status->set_error_message( t_error_msg.str() );
                 try
                 {
                     t_run_context->push_status_no_mutex();
@@ -209,6 +214,7 @@ namespace mantis
             {
                 MTINFO( mtlog, "sending server status <canceled>..." );
                 t_status->set_state( status_state_t_canceled );
+                t_status->set_error_message( "run was cancelled" );
             }
             try
             {

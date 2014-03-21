@@ -57,7 +57,9 @@ namespace mantis
                 if( ! t_run_context->pull_request( MSG_WAITALL ) )
                 {
                     MTERROR( mtlog, "unable to pull run request; sending server status <error>" );
-                    t_run_context->lock_status_out()->set_state( status_state_t_error );
+                    status* t_status = t_run_context->lock_status_out();
+                    t_status->set_state( status_state_t_error );
+                    t_status->set_error_message( "unable to pull run request" );
                     t_run_context->push_status_no_mutex();
                     t_run_context->unlock_outbound();
                     delete t_run_context->get_connection();
@@ -91,7 +93,9 @@ namespace mantis
                 if( ! t_run_context->pull_client_status( MSG_WAITALL ) )
                 {
                     MTERROR( mtlog, "unable to pull client status; sending server status <error>" );
-                    t_run_context->lock_status_out()->set_state( status_state_t_error );
+                    status* t_status = t_run_context->lock_status_out();
+                    t_status->set_state( status_state_t_error );
+                    t_status->set_error_message( "unable to pull client status" );
                     t_run_context->push_status_no_mutex();
                     t_run_context->unlock_outbound();
                     delete t_run_context->get_connection();
@@ -103,7 +107,9 @@ namespace mantis
                 if( ! t_client_state == client_status_state_t_ready )
                 {
                     MTERROR( mtlog, "client did not get ready; sending server status <error>" );
-                    t_run_context->lock_status_out()->set_state( status_state_t_error );
+                    status* t_status = t_run_context->lock_status_out();
+                    t_status->set_state( status_state_t_error );
+                    t_status->set_error_message( "client is not ready" );
                     t_run_context->push_status_no_mutex();
                     t_run_context->unlock_outbound();
                     delete t_run_context->get_connection();
