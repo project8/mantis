@@ -10,8 +10,11 @@
 #include<string>
 using std::string;
 
+#include "mt_logger.hh"
+
 namespace mantis
 {
+    MTLOGGER(mtlog, "run_description");
 
     run_description::run_description()
     {
@@ -33,6 +36,7 @@ namespace mantis
     {
         param_value t_value;
         this->node_at( "mantis" )->replace( "client-exe", t_value << a_exe );
+        MTDEBUG( mtlog, "setting client exe:\n" << *this );
         return;
     }
 
@@ -40,6 +44,7 @@ namespace mantis
     {
         param_value t_value;
         this->node_at( "mantis" )->replace( "server-exe", t_value << a_exe );
+        MTDEBUG( mtlog, "setting server exe:\n" << *this );
         return;
     }
 
@@ -47,6 +52,7 @@ namespace mantis
     {
         param_value t_value;
         this->node_at( "mantis" )->replace( "client-version", t_value << a_ver );
+        MTDEBUG( mtlog, "setting client version:\n" << *this );
         return;
     }
 
@@ -54,6 +60,7 @@ namespace mantis
     {
         param_value t_value;
         this->node_at( "mantis" )->replace( "server-version", t_value << a_ver );
+        MTDEBUG( mtlog, "setting server version:\n" << *this );
         return;
     }
 
@@ -61,6 +68,7 @@ namespace mantis
     {
         param_value t_value;
         this->node_at( "monarch" )->replace( "version", t_value << a_ver );
+        MTDEBUG( mtlog, "setting monarch version:\n" << *this );
         return;
     }
 
@@ -68,6 +76,7 @@ namespace mantis
     {
         param_value t_value;
         this->node_at( "mantis" )->replace( "client-commit", t_value << a_ver );
+        MTDEBUG( mtlog, "setting client commit:\n" << *this );
         return;
     }
 
@@ -75,6 +84,7 @@ namespace mantis
     {
         param_value t_value;
         this->node_at( "mantis" )->replace( "server-commit", t_value << a_ver );
+        MTDEBUG( mtlog, "setting server commit:\n" << *this );
         return;
     }
 
@@ -82,6 +92,7 @@ namespace mantis
     {
         param_value t_value;
         this->node_at( "monarch" )->replace( "commit", t_value << a_ver );
+        MTDEBUG( mtlog, "setting monarch commit:\n" << *this );
         return;
     }
 
@@ -89,6 +100,7 @@ namespace mantis
     {
         param_value t_value;
         this->replace( "description", t_value << a_desc );
+        MTDEBUG( mtlog, "setting description:\n" << *this );
         return;
     }
 
@@ -96,6 +108,7 @@ namespace mantis
     {
         param_value t_value;
         this->replace( "client-config", a_config );
+        MTDEBUG( mtlog, "setting client_config:\n" << *this );
         return;
     }
 
@@ -103,6 +116,7 @@ namespace mantis
     {
         param_value t_value;
         this->replace( "server-config", a_config );
+        MTDEBUG( mtlog, "setting server config:\n" << *this );
         return;
     }
 
