@@ -67,6 +67,35 @@ namespace mantis
                     continue;
                 }
 
+                // check version of client
+                // major and minor versions must match
+                unsigned t_server_major_ver = Mantis_VERSION_MAJOR;
+                unsigned t_server_minor_ver = Mantis_VERSION_MINOR;
+                //MTDEBUG( mtlog, "server major ver: " << t_server_major_ver << "; minor ver: " << t_server_minor_ver );
+                request* t_request = t_run_context->lock_request_in();
+                t_run_context->unlock_inbound();
+                version t_client_version( t_request->client_version() );
+                unsigned t_client_major_ver = t_client_version.major_version();
+                unsigned t_client_minor_ver = t_client_version.minor_version();
+                //MTDEBUG( mtlog, "client major ver: " << t_client_major_ver << "; minor ver: " << t_client_minor_ver );
+
+                if( t_server_major_ver != t_client_major_ver || t_server_minor_ver != t_client_minor_ver )
+                {
+                    MTERROR( mtlog, "client and server software versions do not match:\n" <<
+                            "\tServer: " << TOSTRING(Mantis_VERSION) << '\n' <<
+                            "\tClient: " << t_client_version.version_str());
+                    status* t_status = t_run_context->lock_status_out();
+                    t_status->set_state( status_state_t_error );
+                    std::stringstream t_error_msg;
+                    t_error_msg << "client (" << t_client_version.version_str() << ") and server (" << TOSTRING(Mantis_VERSION) << ") software versions do not match";
+                    t_status->set_error_message( t_error_msg.str() );
+                    t_run_context->push_status_no_mutex();
+                    t_run_context->unlock_outbound();
+                    delete t_run_context->get_connection();
+                    delete t_run_context;
+                    continue;
+                }
+
                 MTINFO( mtlog, "sending server status <acknowledged>..." );
 
                 status* t_status = t_run_context->lock_status_out();

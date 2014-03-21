@@ -72,6 +72,7 @@ set( MANTIS_CLIENT_SOURCEFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/mt_server.cc    
     ${CMAKE_CURRENT_SOURCE_DIR}/mt_signal_handler.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/mt_thread.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/mt_version.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/mt_writer.cc
 
     ${Mantis_PB_Request_Source}

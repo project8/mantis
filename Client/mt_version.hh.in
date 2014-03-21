@@ -10,6 +10,8 @@
 #ifndef MT_VERSION_HH_
 #define MT_VERSION_HH_
 
+#include <string>
+
 #define Mantis_VERSION_MAJOR @Mantis_VERSION_MAJOR@
 #define Mantis_VERSION_MINOR @Mantis_VERSION_MINOR@
 #define Mantis_REVISION @Mantis_REVISION@
@@ -18,5 +20,34 @@
 
 #define Mantis_GIT_COMMIT @Mantis_GIT_COMMIT@
 #define Mantis_GIT_DESCRIBE @Mantis_GIT_DESCRIBE@
+
+namespace mantis
+{
+    class version
+    {
+        public:
+            version();
+            version( const std::string& a_ver );
+            ~version();
+            
+            unsigned major_version() const;
+            unsigned minor_version() const;
+            unsigned revision() const;
+            
+            const std::string& version_str() const;
+            
+            bool parse( const std::string& a_ver );
+            
+            bool combine( unsigned a_maj_ver, unsigned a_min_ver, unsigned a_rev );
+            
+        private:
+            static char s_delimeter;
+        
+            unsigned f_major_ver;
+            unsigned f_minor_ver;
+            unsigned f_revision;
+            std::string f_version;
+    };
+}
 
 #endif /* MT_VERSION_HH_ */
