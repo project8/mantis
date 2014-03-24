@@ -1,3 +1,6 @@
 [submodule "Monarch"]
 	path = Monarch
 	url = git://github.com/project8/monarch
+[submodule "katcp_devel"]
+	path = katcp_devel
+	url = https://github.com/project8/katcp_devel
