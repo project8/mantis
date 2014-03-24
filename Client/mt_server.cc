@@ -3,6 +3,7 @@
 #include "mt_exception.hh"
 #include "mt_logger.hh"
 
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -37,7 +38,7 @@ namespace mantis
         f_socket = ::socket( AF_INET, SOCK_STREAM, 0 );
         if( f_socket < 0 )
         {
-            throw exception() << "could not create socket\n";
+            throw exception() << "[server] could not create socket:\n\t" << strerror( errno );
             return;
         }
 
@@ -46,14 +47,17 @@ namespace mantis
         //bind socket
         if( ::bind( f_socket, (const sockaddr*) (f_address), t_socket_length ) < 0 )
         {
-            throw exception() << "[server] could not bind socket\n";
+            throw exception() << "[server] could not bind socket:\n\t" << strerror( errno );
             return;
         }
 
         //MTINFO( mtlog, "socket bound..." );
 
         //start listening
-        ::listen( f_socket, 10 );
+        if( ::listen( f_socket, 10 ) < 0 )
+        {
+            throw exception() << "[server] listen failed:\n\t" << strerror( errno );
+        }
 
         //MTINFO( mtlog, "listening..." );
 
@@ -84,7 +88,7 @@ namespace mantis
         t_socket = ::accept( f_socket, (sockaddr*) (t_address), &t_address_length );
         if( t_socket < 0 )
         {
-            throw exception() << "could not accept connection\n";
+            throw exception() << "[server] could not accept connection:\n\t" << strerror( errno );
         }
 
         //MTINFO( mtlog, "connection accepted..." );

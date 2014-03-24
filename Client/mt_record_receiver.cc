@@ -128,6 +128,9 @@ namespace mantis
                 return;
             }
 
+            //MTDEBUG( mtlog, "record_receiver:" );
+            //f_buffer->print_states();
+
             ++f_record_count;
 
             //a zero-length data array indicates the end of the data

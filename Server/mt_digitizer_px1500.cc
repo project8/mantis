@@ -13,13 +13,14 @@
 #include <cstring>
 #include <errno.h>
 //#include <fcntl.h> // for O_CREAT and O_EXCL
+#include <sstream>
 
 namespace mantis
 {
     MTLOGGER( mtlog, "digitizer_px1500" );
 
-    static registrar< digitizer, digitizer_px1500 > s_px1500_registrar( "px1500" );
-    static registrar< test_digitizer, test_digitizer_px1500 > s_test_px1500_registrar( "px1500" );
+    MT_REGISTER_DIGITIZER( digitizer_px1500, "px1500" );
+    MT_REGISTER_TEST_DIGITIZER( test_digitizer_px1500, "px1500" );
 
     const unsigned digitizer_px1500::s_data_type_size = sizeof( digitizer_px1500::data_type );
     unsigned digitizer_px1500::data_type_size_px1500()
@@ -125,7 +126,9 @@ namespace mantis
                 t_result = AllocateDmaBufferPX4( f_handle, f_buffer->record_size(), t_new_block->handle() );
                 if( t_result != SIG_SUCCESS )
                 {
-                    DumpLibErrorPX4( t_result, "failed to allocate dma memory: " );
+                    std::stringstream t_buff;
+                    t_buff << "failed to allocate dma memory for block " << index <<": ";
+                    DumpLibErrorPX4( t_result, t_buff.str().c_str() );
                     return false;
                 }
                 t_new_block->set_data_size( f_buffer->record_size() );
