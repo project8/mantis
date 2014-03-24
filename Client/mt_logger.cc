@@ -219,14 +219,30 @@ namespace mantis
  * Fallback solution for systems without log4cxx.
  */
 
+#include <cstdio>
 #include <iomanip>
-#include <iostream>
+#include <sys/time.h>
+#include <time.h>
 
 namespace mantis
 {
     struct logger::Private
     {
             static mutex sMutex;
+
+            static char sDateTimeFormat[16];
+            static time_t sRawTime;
+            static tm* sProcessedTime;
+            static char sTimeBuff[512];
+            static size_t getTimeAbsoluteStr()
+            {
+                time(&logger::Private::sRawTime);
+                sProcessedTime = gmtime(&logger::Private::sRawTime);
+                return strftime(logger::Private::sTimeBuff, 512,
+                        logger::Private::sDateTimeFormat,
+                        logger::Private::sProcessedTime);
+            }
+
 
             const char* fLogger;
 
@@ -267,20 +283,22 @@ namespace mantis
             void logCout(const char* level, const string& message, const Location& /*loc*/, const string& color = skMTOtherColor)
             {
                 logger::Private::sMutex.lock();
+                logger::Private::getTimeAbsoluteStr();
                 if (logger::Private::fColored)
-                    (*fOut) << color << __DATE__ " " __TIME__ " [" << setw(5) << level << "] " << setw(16) << fLogger << ": " << message << skMTEndColor << endl;
+                    (*fOut) << color << logger::Private::sTimeBuff << " [" << setw(5) << level << "] " << setw(16) << fLogger << ": " << message << skMTEndColor << endl;
                 else
-                    (*fOut) << __DATE__ " " __TIME__ " [" << setw(5) << level << "] " << setw(16) << fLogger << ": " << message << endl;
+                    (*fOut) << logger::Private::sTimeBuff << " [" << setw(5) << level << "] " << setw(16) << fLogger << ": " << message << endl;
                 logger::Private::sMutex.unlock();
             }
 
             void logCerr(const char* level, const string& message, const Location& /*loc*/, const string& color = skMTOtherColor)
             {
                 logger::Private::sMutex.lock();
+                logger::Private::getTimeAbsoluteStr();
                 if (logger::Private::fColored)
-                    (*fErr) << color << __DATE__ " " __TIME__ " [" << setw(5) << level << "] " << setw(16) << fLogger << ": " << message << skMTEndColor << endl;
+                    (*fErr) << color << logger::Private::sTimeBuff <<  " [" << setw(5) << level << "] " << setw(16) << fLogger << ": " << message << skMTEndColor << endl;
                 else
-                    (*fErr) << __DATE__ " " __TIME__ " [" << setw(5) << level << "] " << setw(16) << fLogger << ": " << message << endl;
+                    (*fErr) << logger::Private::sTimeBuff <<  " [" << setw(5) << level << "] " << setw(16) << fLogger << ": " << message << endl;
                 logger::Private::sMutex.unlock();
             }
     };
@@ -291,6 +309,11 @@ namespace mantis
 
     std::ostream* logger::Private::fOut = &cout;
     std::ostream* logger::Private::fErr = &cerr;
+
+    char logger::Private::sDateTimeFormat[16];
+    time_t logger::Private::sRawTime;
+    tm* logger::Private::sProcessedTime;
+    char logger::Private::sTimeBuff[512];
 
 
     logger::logger(const char* name) : fPrivate(new Private())
@@ -304,11 +327,13 @@ namespace mantis
             const char* logName = strrchr(name, '/') ? strrchr(name, '/') + 1 : name;
             fPrivate->fLogger = logName;
         }
+        sprintf(logger::Private::sDateTimeFormat,  "%%FT%%TZ");
     }
 
     logger::logger(const std::string& name) : fPrivate(new Private())
     {
         fPrivate->fLogger = name.c_str();
+        sprintf(logger::Private::sDateTimeFormat,  "%%FT%%TZ");
     }
 
     logger::~logger()

@@ -149,9 +149,17 @@ of status objects.  After a received status object indicates the run is complete
 the client program spits out the run summary. Usage is:
 
 ```
-$> mantis_client config=client-config.json file/s=new-filename.egg description/s="this is an awesome run"
+$> mantis_client config=client-config.json file=new-filename.egg description="this is an awesome run"
 ```
 
+Versioning Policy
+-----------------
+* Mantis will use [Semantic Versioning](http://semver.org): MAJOR:MINOR:REVISION.
+* Version numbers should be incremented when changes are introduced into the Master branch.
+* Minor changes that do not affect client/server communication or egg file format shall be accompanied by a REVISION increment.
+* Changes that affect the client/server communication or the egg file format shall be accompanied by a MINOR version increment.
+* Major changes to the structure of Mantis shall be accompanied by a MAJOR version increment.
+* The server shall require that clients communicating with it have the same MAJOR and MINOR versions.
 
 Potential Issues
 ----------------
