@@ -1,5 +1,12 @@
-
-
+/////////////////////////////////////////////////
+// Program to make egg files from roach1 board //
+// Original Author: N.S.Oblath                 //
+//		            nsoblath@mit.edu           //
+// Modified by:     Prajwal Mohanmurthy        //
+//                  prajwal@mohanmurthy.com    //
+//		            MIT LNS                    //
+//                  03/ 2014                   //
+/////////////////////////////////////////////////
 #include "mt_digitizer_roach.hh"
 
 #include "mt_buffer.hh"
@@ -19,9 +26,9 @@
 namespace mantis
 {
     MTLOGGER( mtlog, "digitizer_roach" );
-
-    static registrar< digitizer, digitizer_roach > s_digtest_registrar( "roach" );
-    static registrar< test_digitizer, test_digitizer_roach > s_testdigtest_registrar( "roach" );
+    
+    MT_REGISTER_DIGITIZER( digitizer_roach, "roach" );
+    MT_REGISTER_TEST_DIGITIZER( test_digitizer_roach, "roach" );
 
 
     const unsigned digitizer_roach::s_data_type_size = sizeof( digitizer_roach::data_type );
@@ -84,6 +91,12 @@ namespace mantis
         */
     }
 
+    void configure( const param_node* config )
+    {
+        f_roach_ipaddress = config->get_value("roach-host");
+        f_roach_boffile = config->get_value("roach-boffile");
+    }
+    
     bool digitizer_roach::allocate( buffer* a_buffer, condition* a_condition )
     {
         f_buffer = a_buffer;

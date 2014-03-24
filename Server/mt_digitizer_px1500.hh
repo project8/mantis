@@ -24,6 +24,9 @@ namespace mantis
 
         public:
             digitizer_px1500();
+            
+            virtual void configure( const param_node* config ) = 0;
+            
             virtual ~digitizer_px1500();
 
             bool allocate( buffer* a_buffer, condition* a_condition );

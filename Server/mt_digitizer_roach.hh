@@ -33,6 +33,9 @@ namespace mantis
 
         public:
             digitizer_roach();
+            
+            virtual void configure( const param_node* config );
+            
             virtual ~digitizer_roach();
 
             bool allocate( buffer* a_buffer, condition* a_condition );
@@ -74,6 +77,10 @@ namespace mantis
             bool start();
             bool acquire( block* a_block, timespec& a_time_stamp );
             bool stop();
+            
+            //For Roach cmd line parameters
+            std::string f_roach_ipaddress;
+            std::string f_roach_boffile;
     };
 
     class block_cleanup_roach : public block_cleanup

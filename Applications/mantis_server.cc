@@ -132,7 +132,9 @@ int main( int argc, char** argv )
         delete t_server;
         return -1;
     }
-
+    //configure digitizer
+    t_digitizer->configure(t_config);
+    
     // get the digitizer parameters
     t_receiver.set_data_type_size( t_digitizer->params().data_type_size );
     t_receiver.set_bit_depth( t_digitizer->params().bit_depth );

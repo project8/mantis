@@ -27,7 +27,10 @@ namespace mantis
 
         public:
             digitizer_test16();
+            
             virtual ~digitizer_test16();
+
+            void configure( const param_node* config ) {;}
 
             bool allocate( buffer* a_buffer, condition* a_condition );
             bool initialize( request* a_request );

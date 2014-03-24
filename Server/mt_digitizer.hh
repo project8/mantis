@@ -14,7 +14,8 @@ namespace mantis
     class buffer;
     class condition;
     class response;
-
+    class param_node;
+    
     class digitizer :
         public callable
     {
@@ -22,6 +23,8 @@ namespace mantis
             digitizer();
             virtual ~digitizer();
 
+            virtual void configure( const param_node* config ) = 0;
+            
             virtual bool allocate( buffer* a_buffer, condition* a_condition ) = 0;
             virtual bool initialize( request* a_request ) = 0;
             virtual void finalize( response* a_response ) = 0;

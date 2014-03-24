@@ -46,6 +46,8 @@ endif( "${isSystemDir}" STREQUAL "-1" )
 include_directories( ${PROJECT_SOURCE_DIR}/Monarch/Source )
 include_directories( ${PROJECT_SOURCE_DIR}/Monarch/libthorax/cpp )
 include_directories( ${PROJECT_SOURCE_DIR}/Monarch/libthorax )
+add_subdirectory( katcp_devel )
+include_directories( ${PROJECT_SOURCE_DIR}/katcp_devel/katcp )
 
 if( Mantis_BUILD_SERVER )
     if( Mantis_INCLUDE_PX1500_SERVER )
