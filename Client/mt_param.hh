@@ -13,6 +13,8 @@
 #include "mt_logger.hh"
 
 #include "document.h"
+#include "filestream.h"
+#include "prettywriter.h"
 
 #include <deque>
 #include <map>
@@ -138,7 +140,7 @@ namespace mantis
 
             /// Returns the result of ParamValue::get if a_name is present and is of type ParamValue
             /// Throws an exception if a_name is not present or is not of type ParamValue
-            const std::string& get_value( unsigned a_index ) const;
+            std::string get_value( unsigned a_index ) const;
             /// Returns the result of ParamValue::get if a_name is present and is of type ParamValue
             /// Throws an exception if a_name is not present or is not of type ParamValue
             template< typename XValType >
@@ -146,7 +148,8 @@ namespace mantis
 
             /// Returns the result of ParamValue::get if a_name is present and is of type ParamValue
             /// Returns a_default if a_name is not present or is not of type ParamValue
-            const std::string& get_value( unsigned a_index, const std::string& a_default ) const;
+            std::string get_value( unsigned a_index, const std::string& a_default ) const;
+            std::string get_value( unsigned a_index, const char* a_default ) const;
             /// Returns the result of ParamValue::get if a_name is present and is of type ParamValue
             /// Returns a_default if a_name is not present or is not of type ParamValue
             template< typename XValType >
@@ -265,7 +268,7 @@ namespace mantis
 
             /// Returns the result of ParamValue::get if a_name is present and is of type ParamValue
             /// Throws an exception if a_name is not present or is not of type ParamValue
-            const std::string& get_value( const std::string& a_name ) const;
+            std::string get_value( const std::string& a_name ) const;
             /// Returns the result of ParamValue::get if a_name is present and is of type ParamValue
             /// Throws an exception if a_name is not present or is not of type ParamValue
             template< typename XValType >
@@ -273,7 +276,8 @@ namespace mantis
 
             /// Returns the result of ParamValue::get if a_name is present and is of type ParamValue
             /// Returns a_default if a_name is not present or is not of type ParamValue
-            const std::string& get_value( const std::string& a_name, const std::string& a_default ) const;
+            std::string get_value( const std::string& a_name, const std::string& a_default ) const;
+            std::string get_value( const std::string& a_name, const char* a_default ) const;
             /// Returns the result of ParamValue::get if a_name is present and is of type ParamValue
             /// Returns a_default if a_name is not present or is not of type ParamValue
             template< typename XValType >
@@ -373,6 +377,36 @@ namespace mantis
             static param_node* read_document( const rapidjson::Document& a_document );
             static param* read_value( const rapidjson::Value& a_value );
     };
+
+    //***************************************
+    //************** OUTPUT *****************
+    //***************************************
+
+    class param_output_json
+    {
+        public:
+            typedef rapidjson::Writer< rapidjson::FileStream, rapidjson::UTF8<>, rapidjson::MemoryPoolAllocator<> > rj_writer;
+            typedef rapidjson::PrettyWriter< rapidjson::FileStream, rapidjson::UTF8<>, rapidjson::MemoryPoolAllocator<> > rj_pretty_writer;
+
+            enum json_writing_style
+            {
+                k_compact,
+                k_pretty
+            };
+
+        public:
+            param_output_json();
+            virtual ~param_output_json();
+
+            static bool write_file( const param& a_to_write, const std::string& a_filename, json_writing_style a_style );
+            static bool write_param( const param& a_to_write, rj_writer* a_writer );
+            static bool write_param_null( const param& a_to_write, rj_writer* a_writer );
+            static bool write_param_value( const param_value& a_to_write, rj_writer* a_writer );
+            static bool write_param_array( const param_array& a_to_write, rj_writer* a_writer );
+            static bool write_param_node( const param_node& a_to_write, rj_writer* a_writer );
+
+    };
+
 
 } /* namespace mantis */
 

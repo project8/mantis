@@ -219,13 +219,30 @@ namespace mantis
  * Fallback solution for systems without log4cxx.
  */
 
+#include <cstdio>
 #include <iomanip>
+#include <sys/time.h>
+#include <time.h>
 
 namespace mantis
 {
     struct logger::Private
     {
             static mutex sMutex;
+
+            static char sDateTimeFormat[16];
+            static time_t sRawTime;
+            static tm* sProcessedTime;
+            static char sTimeBuff[512];
+            static size_t getTimeAbsoluteStr()
+            {
+                time(&logger::Private::sRawTime);
+                sProcessedTime = gmtime(&logger::Private::sRawTime);
+                return strftime(logger::Private::sTimeBuff, 512,
+                        logger::Private::sDateTimeFormat,
+                        logger::Private::sProcessedTime);
+            }
+
 
             const char* fLogger;
             bool fColored;
@@ -253,7 +270,7 @@ namespace mantis
                     case eInfo  : return skMTInfoColor; break;
                     case eWarn  : return skMTWarnColor; break;
                     case eError : return skMTErrorColor; break;
-                    case eFatal : return skMTErrorColor; break;
+                    case eFatal : return skMTFatalColor; break;
                     default     : return skMTOtherColor;
                 }
             }
@@ -262,25 +279,33 @@ namespace mantis
             void logCout(const char* level, const string& message, const Location& /*loc*/, const string& color = skMTOtherColor)
             {
                 logger::Private::sMutex.lock();
+                logger::Private::getTimeAbsoluteStr();
                 if (fColored)
-                    cout << color << __DATE__ " " __TIME__ " [" << setw(5) << level << "] " << setw(16) << fLogger << ": " << message << skMTEndColor << endl;
+                    cout << color << logger::Private::sTimeBuff << " [" << setw(5) << level << "] " << setw(16) << fLogger << ": " << message << skMTEndColor << endl;
                 else
-                    cout << __DATE__ " " __TIME__ " [" << setw(5) << level << "] " << setw(16) << fLogger << ": " << message << endl;
+                    cout << logger::Private::sTimeBuff << " [" << setw(5) << level << "] " << setw(16) << fLogger << ": " << message << endl;
                 logger::Private::sMutex.unlock();
             }
 
             void logCerr(const char* level, const string& message, const Location& /*loc*/, const string& color = skMTOtherColor)
             {
                 logger::Private::sMutex.lock();
+                logger::Private::getTimeAbsoluteStr();
                 if (fColored)
-                    cerr << color << __DATE__ " " __TIME__ " [" << setw(5) << level << "] " << setw(16) << fLogger << ": " << message << skMTEndColor << endl;
+                    cerr << color << logger::Private::sTimeBuff <<  " [" << setw(5) << level << "] " << setw(16) << fLogger << ": " << message << skMTEndColor << endl;
                 else
-                    cerr << __DATE__ " " __TIME__ " [" << setw(5) << level << "] " << setw(16) << fLogger << ": " << message << endl;
+                    cerr << logger::Private::sTimeBuff <<  " [" << setw(5) << level << "] " << setw(16) << fLogger << ": " << message << endl;
                 logger::Private::sMutex.unlock();
             }
     };
 
     mutex logger::Private::sMutex;
+
+    char logger::Private::sDateTimeFormat[16];
+    time_t logger::Private::sRawTime;
+    tm* logger::Private::sProcessedTime;
+    char logger::Private::sTimeBuff[512];
+
 
     logger::logger(const char* name) : fPrivate(new Private())
     {
@@ -294,12 +319,14 @@ namespace mantis
             fPrivate->fLogger = logName;
         }
         fPrivate->fColored = true;
+        sprintf(logger::Private::sDateTimeFormat,  "%%FT%%TZ");
     }
 
     logger::logger(const std::string& name) : fPrivate(new Private())
     {
         fPrivate->fLogger = name.c_str();
         fPrivate->fColored = true;
+        sprintf(logger::Private::sDateTimeFormat,  "%%FT%%TZ");
     }
 
     logger::~logger()
@@ -326,7 +353,7 @@ namespace mantis
     {
         const char* levelStr = Private::level2Str(level);
 
-        if (level >= eFatal)
+        if (level >= eWarn)
         {
             fPrivate->logCerr(levelStr, message, loc, Private::level2Color(level));
         }
