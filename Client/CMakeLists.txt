@@ -10,6 +10,7 @@ protobuf_generate_cpp( Mantis_PB_Block_Header_Source Mantis_PB_Block_Header_Head
 
 set( MANTIS_CLIENT_HEADERFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/mt_atomic.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/mt_bit_shift_modifier.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/mt_block.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/mt_buffer.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/mt_callable.hh
@@ -48,6 +49,7 @@ set( MANTIS_CLIENT_HEADERFILES
 
 set( MANTIS_CLIENT_SOURCEFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/mt_block.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/mt_bit_shift_modifier.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/mt_buffer.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/mt_callable.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/mt_client_config.cc
