@@ -25,6 +25,7 @@ set( MANTIS_CLIENT_HEADERFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/mt_file_writer.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/mt_iterator.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/mt_logger.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/mt_modifier.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/mt_mutex.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/mt_param.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/mt_parser.hh
@@ -61,6 +62,7 @@ set( MANTIS_CLIENT_SOURCEFILES
     ${CMAKE_CURRENT_SOURCE_DIR}/mt_file_writer.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/mt_iterator.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/mt_logger.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/mt_modifier.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/mt_mutex.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/mt_param.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/mt_parser.cc
