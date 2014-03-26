@@ -91,6 +91,7 @@ if( Mantis_BUILD_SERVER )
         if( "${isSystemDir}" STREQUAL "-1" )
             list( APPEND CMAKE_INSTALL_RPATH ${katcp_devel_LIBRARIES} )
         endif( "${isSystemDir}" STREQUAL "-1" )
+        message( Status "Katcp:${katcp_devel_LIBRARIES}")
         include_directories( ${PROJECT_SOURCE_DIR}/katcp_devel/katcp )
     endif( Mantis_INCLUDE_ROACH_SERVER )
 else( Mantis_BUILD_SERVER )
@@ -275,6 +276,18 @@ if( Mantis_BUILD_SERVER )
             ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_digitizer_px14400.cc
         )
     endif( Mantis_INCLUDE_PX14400_SERVER )
+    
+    if( Mantis_INCLUDE_ROACH_SERVER )
+        set( MANTIS_SERVER_HEADERFILES
+            ${MANTIS_SERVER_HEADERFILES}
+            ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_digitizer_roach.hh
+        )
+        
+        set( MANTIS_SERVER_SOURCEFILES
+            ${MANTIS_SERVER_SOURCEFILES}
+            ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_digitizer_roach.cc
+        )
+    endif( Mantis_INCLUDE_ROACH_SERVER )
 
     add_library( MantisServer ${MANTIS_SERVER_SOURCEFILES} )
     target_link_libraries( MantisServer MantisClient ${EXTERNAL_LIBRARIES} )

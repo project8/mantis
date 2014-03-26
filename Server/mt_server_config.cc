@@ -28,6 +28,10 @@ namespace mantis
         add( "record-size", server_config << 4194304 );
 
         add( "data-chunk-size", server_config << 1024 );
+        
+        add( "roach-host", server_config << "198.125.161.179" );
+        
+        add( "roach-boffile", server_config << "adc.bof" );
     }
 
     server_config::~server_config()

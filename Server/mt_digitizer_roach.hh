@@ -16,15 +16,30 @@
 #include "mt_condition.hh"
 #include "mt_mutex.hh"
 #include "request.pb.h"
+#include "mt_param.hh"
 
 #include <stdint.h>
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <errno.h>
+#include <string.h>
+#include <ctype.h>
+#include <stdint.h>
+
+#include <sys/select.h>
+#include <sys/time.h>
+
+#include "netc.h"
+#include "katcp.h"
+#include "katcl.h"
 
 namespace mantis
 {
     class block_cleanup_roach;
 
-    class digitizer_roach :
-        public digitizer
+    class digitizer_roach : public digitizer
     {
         public:
             typedef uint8_t data_type;
@@ -52,10 +67,33 @@ namespace mantis
             bool get_canceled();
             // thread-safe setter
             void set_canceled( bool a_flag );
+            
+            //From Katcp
+            static int dispatch_client(struct katcl_line *l, char *msgname, int verbose, unsigned int timeout);
+            int borph_write(struct katcl_line *l, char *regname, int buffer, int len, unsigned int timeout);
+            int borph_prog(struct katcl_line *l, char *boffile, unsigned int timeout);
+            int borph_read(struct katcl_line *l, char *regname, void *buffer, int len, unsigned int timeout);
+            //End:Katcp part//
 
         private:
             static const unsigned s_data_type_size;
-
+            
+            //For Katcp
+            char *f_katcp_server;
+	        struct katcl_line *f_katcp_cmdline;
+	        int f_katcp_fd;
+	
+	        //Place to set vitals
+	        unsigned int f_RM_recordSize; // = 65536*4;
+	        int f_RM_timeout; // = 5000; /*Time out in ms*/
+	        char *f_boffile; //= const_cast<char*>("adc.bof");
+	        //
+	
+	        unsigned char* f_datax;
+	        unsigned char* f_datax1;
+	        uint8_t* f_datay;
+	        //End Katcp Desc.//
+	        
             //sem_t* f_semaphore;
 
             data_type* f_master_record;
