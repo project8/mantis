@@ -5,56 +5,56 @@
 if( Mantis_BUILD_SERVER )
 
     set( MANTIS_SERVER_HEADERFILES
-        ${CMAKE_CURRENT_SOURCE_DIR}/mt_destroyer.hh
-        ${CMAKE_CURRENT_SOURCE_DIR}/mt_digitizer.hh
-        ${CMAKE_CURRENT_SOURCE_DIR}/mt_digitizer_test.hh
-        ${CMAKE_CURRENT_SOURCE_DIR}/mt_digitizer_test16.hh
-        ${CMAKE_CURRENT_SOURCE_DIR}/mt_factory.hh
-        ${CMAKE_CURRENT_SOURCE_DIR}/mt_network_writer.hh
-        ${CMAKE_CURRENT_SOURCE_DIR}/mt_run_queue.hh
-        ${CMAKE_CURRENT_SOURCE_DIR}/mt_request_receiver.hh
-        ${CMAKE_CURRENT_SOURCE_DIR}/mt_server_config.hh
-        ${CMAKE_CURRENT_SOURCE_DIR}/mt_server_worker.hh
-        ${CMAKE_CURRENT_SOURCE_DIR}/mt_singleton.hh
+        mt_destroyer.hh
+        mt_digitizer.hh
+        mt_digitizer_test.hh
+        mt_digitizer_test16.hh
+        mt_factory.hh
+        mt_network_writer.hh
+        mt_run_queue.hh
+        mt_request_receiver.hh
+        mt_server_config.hh
+        mt_server_worker.hh
+        mt_singleton.hh
     )
     
     set( MANTIS_SERVER_SOURCEFILES
-        ${CMAKE_CURRENT_SOURCE_DIR}/mt_digitizer.cc
-        ${CMAKE_CURRENT_SOURCE_DIR}/mt_digitizer_test.cc
-        ${CMAKE_CURRENT_SOURCE_DIR}/mt_digitizer_test16.cc
-        ${CMAKE_CURRENT_SOURCE_DIR}/mt_network_writer.cc
-        ${CMAKE_CURRENT_SOURCE_DIR}/mt_run_queue.cc
-        ${CMAKE_CURRENT_SOURCE_DIR}/mt_request_receiver.cc
-        ${CMAKE_CURRENT_SOURCE_DIR}/mt_server_config.cc
-        ${CMAKE_CURRENT_SOURCE_DIR}/mt_server_worker.cc
+        mt_digitizer.cc
+        mt_digitizer_test.cc
+        mt_digitizer_test16.cc
+        mt_network_writer.cc
+        mt_run_queue.cc
+        mt_request_receiver.cc
+        mt_server_config.cc
+        mt_server_worker.cc
     )
     
     if( Mantis_INCLUDE_PX1500_SERVER )
         set( MANTIS_SERVER_HEADERFILES
             ${MANTIS_SERVER_HEADERFILES}
-            ${CMAKE_CURRENT_SOURCE_DIR}/mt_digitizer_px1500.hh
+            mt_digitizer_px1500.hh
         )
         
         set( MANTIS_SERVER_SOURCEFILES
             ${MANTIS_SERVER_SOURCEFILES}
-            ${CMAKE_CURRENT_SOURCE_DIR}/mt_digitizer_px1500.cc
+            mt_digitizer_px1500.cc
         )
     endif( Mantis_INCLUDE_PX1500_SERVER )
 
     if( Mantis_INCLUDE_PX14400_SERVER )
         set( MANTIS_SERVER_HEADERFILES
             ${MANTIS_SERVER_HEADERFILES}
-            ${CMAKE_CURRENT_SOURCE_DIR}/mt_digitizer_px14400.hh
+            mt_digitizer_px14400.hh
         )
         
         set( MANTIS_SERVER_SOURCEFILES
             ${MANTIS_SERVER_SOURCEFILES}
-            ${CMAKE_CURRENT_SOURCE_DIR}/mt_digitizer_px14400.cc
+            mt_digitizer_px14400.cc
         )
     endif( Mantis_INCLUDE_PX14400_SERVER )
 
     add_library( MantisServer ${MANTIS_SERVER_SOURCEFILES} )
-    target_link_libraries( MantisServer MantisClient ${EXTERNAL_LIBRARIES} )
+    target_link_libraries( MantisServer MantisClient MantisProto ${EXTERNAL_LIBRARIES} )
     
     pbuilder_install_headers( ${MANTIS_SERVER_HEADERFILES} )
     pbuilder_install_libraries( MantisServer )

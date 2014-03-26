@@ -11,8 +11,11 @@ list( APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR} )
 
 include( PackageBuilder.cmake )
 pbuilder_prepare_project( 2 5 0 )
-include_directories( ${PROJECT_SOURCE_DIR}/Client )
-include_directories( ${PROJECT_SOURCE_DIR}/Server )
+include_directories( 
+    ${PROJECT_SOURCE_DIR}/Client
+    ${PROJECT_SOURCE_DIR}/Server
+    ${PROJECT_BINARY_DIR}/Client
+)
 
 ##################
 # mantis options #
@@ -64,10 +67,13 @@ list( FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${Monarch_LIBRARY_DIR}" isS
 if( "${isSystemDir}" STREQUAL "-1" )
    list( APPEND CMAKE_INSTALL_RPATH ${Monarch_LIBRARY_DIR} )
 endif( "${isSystemDir}" STREQUAL "-1" )
-include_directories( ${PROJECT_SOURCE_DIR}/Monarch/Source )
-include_directories( ${PROJECT_SOURCE_DIR}/Monarch/libthorax/cpp )
-include_directories( ${PROJECT_SOURCE_DIR}/Monarch/libthorax )
-include_directories( ${PROJECT_BINARY_DIR}/Monarch )
+include_directories( 
+    ${PROJECT_SOURCE_DIR}/Monarch/Source
+    ${PROJECT_SOURCE_DIR}/Monarch/libthorax/cpp
+    ${PROJECT_SOURCE_DIR}/Monarch/libthorax
+    ${PROJECT_BINARY_DIR}/Monarch
+    ${PROJECT_BINARY_DIR}/Monarch/Protobuf 
+)
 
 
 #############
@@ -120,8 +126,8 @@ endif( Mantis_BUILD_SERVER )
 find_package( Protobuf )
 include_directories( ${PROTOBUF_INCLUDE_DIR} )
 pbuilder_add_ext_libraries( ${PROTOBUF_LIBRARIES} )
-
-include_directories( ${CMAKE_CURRENT_BINARY_DIR}/Client )
+include_directories( ${CMAKE_CURRENT_BINARY_DIR}/Protobuf )
+add_subdirectory( Protobuf )
 
 
 ##########
