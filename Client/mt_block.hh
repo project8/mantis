@@ -6,6 +6,47 @@
 
 namespace mantis
 {
+    /*!
+     @class block
+     @author D. Furse, N. Oblath
+
+     @brief Single-record data class for mantis buffers; this base class provides the byte-type access functions
+    */
+
+    /*!
+     @class empty_block
+     @author N. Oblath
+
+     @brief Block with no data
+    */
+
+    /*!
+     @class block_cleanup
+     @author N. Oblath
+
+     @brief Memory de-allocation class
+    */
+
+    /*!
+     @class typed_block
+     @author N. Oblath
+
+     @brief Single-record data class for mantis buffers; this templated derived class contains the actual data array
+    */
+
+    /*!
+     @class block_view
+     @author N. Oblath
+
+     @brief Convenience class giving access to the data array cast to a different type
+    */
+
+
+
+    //**************************************************
+    // block
+    //**************************************************
+
     class block
     {
         public:
@@ -52,6 +93,11 @@ namespace mantis
 
     };
 
+
+    //**************************************************
+    // empty_block
+    //**************************************************
+
     class empty_block : public block
     {
         public:
@@ -64,6 +110,11 @@ namespace mantis
             virtual const byte_type* data_bytes() const;
     };
 
+
+    //**************************************************
+    // block_cleanup
+    //**************************************************
+
     class block_cleanup
     {
         public:
@@ -71,6 +122,11 @@ namespace mantis
             virtual ~block_cleanup() {}
             virtual bool delete_data() = 0;
     };
+
+
+    //**************************************************
+    // typed_block< DataType >
+    //**************************************************
 
     template< typename DataType >
     class typed_block : public block
@@ -139,7 +195,7 @@ namespace mantis
     template< typename DataType >
     byte_type* typed_block< DataType >::data_bytes()
     {
-        return ( byte_type* )f_data;
+        return static_cast< byte_type* >( f_data );
     }
 
     template< typename DataType >
@@ -155,6 +211,42 @@ namespace mantis
         f_cleanup = a_cleanup;
         return;
     }
+
+
+    //**************************************************
+    // block_view< DataType >
+    //**************************************************
+
+    template< typename DataType >
+    class block_view : public block
+    {
+        public:
+            typedef DataType data_type;
+
+        public:
+            block_view( block* a_block );
+            virtual ~block_view();
+
+            data_type* data_view() const;
+
+        private:
+            block* f_block;
+            DataType* f_data_view;
+    };
+
+    template< typename DataType >
+    block_view< DataType >::block_view( block* a_block ) :
+            f_block( a_block ),
+            f_data_view( static_cast< DataType* >( a_block->data_bytes() ) )
+    {
+    }
+
+    template< typename DataType >
+    DataType* block_view< DataType >::data_view() const
+    {
+        return f_data_view;
+    }
+
 
 }
 

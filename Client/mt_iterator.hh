@@ -15,15 +15,23 @@ namespace mantis
             iterator( buffer* a_buffer );
             virtual ~iterator();
 
+            /// returns the index of the current block in the buffer
             unsigned int index();
+            /// returns a pointer to the current block
             block* object();
 
+            /// returns a reference to the current block
             block& operator*();
+            /// returns a pointer to the current block
             block* operator->();
 
+            /// move to the next block; blocks thread if the next block is locked
             void operator++();
+            /// try to move to the next block; fails if the next block's mutex is locked
             bool operator+();
+            /// move to the previous block; blocks thread if the next block is locked
             void operator--();
+            /// try to move to the previous block;
             bool operator-();
 
         protected:

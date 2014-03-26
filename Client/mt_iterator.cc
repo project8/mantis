@@ -11,6 +11,7 @@ namespace mantis
             f_current_index( 0 ),
             f_next_index( 1 )
     {
+        // start out by passing any blocks that are currently locked, then lock the first free block
         while( f_mutexes[ f_current_index ].trylock() == false )
         {
             increment();
