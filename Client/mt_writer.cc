@@ -38,7 +38,7 @@ namespace mantis
     }
     void writer::execute()
     {
-        iterator t_it( f_buffer );
+        iterator t_it( f_buffer, "writer" );
 
         timespec t_start_time;
         timespec t_stop_time;

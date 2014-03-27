@@ -134,7 +134,7 @@ namespace mantis
     }
     void digitizer_test::execute()
     {
-        iterator t_it( f_buffer );
+        iterator t_it( f_buffer, "dig_test" );
 
         timespec t_live_start_time;
         timespec t_live_stop_time;

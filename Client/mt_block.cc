@@ -54,6 +54,20 @@ namespace mantis
         return;
     }
 
+    bool block::is_processing() const
+    {
+        if( f_header.state() == block_header_state_t_processing)
+        {
+            return true;
+        }
+        return false;
+    }
+    void block::set_processing()
+    {
+        f_header.set_state( block_header_state_t_processing );
+        return;
+    }
+
     bool block::is_writing() const
     {
         if( f_header.state() == block_header_state_t_writing )

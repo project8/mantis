@@ -38,13 +38,14 @@ namespace mantis
     }
     void modifier::execute()
     {
-        iterator t_it( f_buffer );
+        iterator t_it( f_buffer, "modifier" );
 
         timespec t_start_time;
         timespec t_stop_time;
 
         while( +t_it == true )
             ;
+        MTDEBUG( mtlog, "iterator <" << t_it.name() << "> beginning loop at " << t_it.index() );
 
         //start live timing
         get_time_monotonic( &t_start_time );
@@ -55,10 +56,11 @@ namespace mantis
             //try to advance
             if( +t_it == false )
             {
+                // if other threads are waiting on the buffer, we should do that too
                 if( f_condition->is_waiting() == true )
                 {
-                    MTINFO( mtlog, "releasing" );
-                    f_condition->release();
+                    MTINFO( mtlog, "waiting for buffer readiness" );
+                    f_condition->wait();
                 }
                 ++t_it;
             }
@@ -86,8 +88,8 @@ namespace mantis
                 return;
             }
 
-            //write the block
-            t_it->set_writing();
+            //process the block
+            t_it->set_processing();
 
             //MTDEBUG( mtlog, "modifier:" );
             //f_buffer->print_states();
@@ -133,13 +135,13 @@ namespace mantis
     void modifier::finalize( response* a_response )
     {
         //MTINFO( mtlog, "calculating statistics..." );
-
+        /*
         a_response->set_modifier_records( f_record_count );
         a_response->set_modifier_acquisitions( f_acquisition_count );
         a_response->set_modifier_live_time( (double) (f_live_time) * SEC_PER_NSEC );
         a_response->set_modifier_megabytes( (double) (4 * f_record_count) );
         a_response->set_modifier_rate( a_response->modifier_megabytes() / a_response->modifier_live_time() );
-
+        */
         return;
     }
 

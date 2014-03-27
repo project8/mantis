@@ -12,11 +12,13 @@ namespace mantis
     class iterator
     {
         public:
-            iterator( buffer* a_buffer );
+            iterator( buffer* a_buffer, const std::string& a_name = "default" );
             virtual ~iterator();
 
+            const std::string& name() const;
+
             /// returns the index of the current block in the buffer
-            unsigned int index();
+            unsigned int index() const;
             /// returns a pointer to the current block
             block* object();
 
@@ -34,9 +36,14 @@ namespace mantis
             /// try to move to the previous block;
             bool operator-();
 
+            /// remove iterator from buffer
+            void release();
+
         protected:
             iterator();
             iterator( const iterator& );
+
+            std::string f_name;
 
             block** f_blocks;
             mutex* f_mutexes;
@@ -47,6 +54,8 @@ namespace mantis
             unsigned int f_previous_index;
             unsigned int f_current_index;
             unsigned int f_next_index;
+
+            bool f_released;
     };
 
     template< typename DataType >

@@ -1,21 +1,27 @@
 #include "mt_iterator.hh"
 
+#include "mt_logger.hh"
+
 namespace mantis
 {
+    MTLOGGER( mtlog, "iterator" );
 
-    iterator::iterator( buffer* a_buffer ) :
+    iterator::iterator( buffer* a_buffer, const std::string& a_name ) :
+            f_name( a_name ),
             f_blocks( a_buffer->f_blocks ),
             f_mutexes( a_buffer->f_mutexes ),
             f_size( a_buffer->f_size ),
             f_previous_index( f_size ),
             f_current_index( 0 ),
-            f_next_index( 1 )
+            f_next_index( 1 ),
+            f_released( false )
     {
         // start out by passing any blocks that are currently locked, then lock the first free block
         while( f_mutexes[ f_current_index ].trylock() == false )
         {
-            increment();
+            decrement();
         }
+        MTDEBUG( mtlog, "iterator " << f_name << " starting at index " << f_current_index );
     }
     iterator::iterator( const iterator& a_copy )
     {
@@ -25,13 +31,19 @@ namespace mantis
         f_previous_index = a_copy.f_previous_index;
         f_current_index = a_copy.f_current_index;
         f_next_index = a_copy.f_next_index;
+        f_released = a_copy.f_released;
     }
     iterator::~iterator()
     {
-        f_mutexes[ f_current_index ].unlock();
+        if(! f_released ) release();
     }
 
-    unsigned int iterator::index()
+    const std::string& iterator::name() const
+    {
+        return f_name;
+    }
+
+    unsigned int iterator::index() const
     {
         return f_current_index;
     }
@@ -127,6 +139,18 @@ namespace mantis
             f_next_index = f_size;
         }
         f_next_index--;
+        return;
+    }
+
+    void iterator::release()
+    {
+        f_mutexes[ f_current_index ].unlock();
+        f_blocks = NULL;
+        f_mutexes = NULL;
+        f_size = 0;
+        f_previous_index = 0;
+        f_current_index = 0;
+        f_next_index = 0;
         return;
     }
 

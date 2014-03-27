@@ -62,6 +62,9 @@ namespace mantis
             bool is_acquired() const;
             void set_acquired();
 
+            bool is_processing() const;
+            void set_processing();
+
             bool is_writing() const;
             void set_writing();
 
@@ -195,7 +198,7 @@ namespace mantis
     template< typename DataType >
     byte_type* typed_block< DataType >::data_bytes()
     {
-        return static_cast< byte_type* >( f_data );
+        return reinterpret_cast< byte_type* >( f_data );
     }
 
     template< typename DataType >
@@ -218,27 +221,53 @@ namespace mantis
     //**************************************************
 
     template< typename DataType >
-    class block_view : public block
+    class block_view
     {
         public:
             typedef DataType data_type;
 
         public:
-            block_view( block* a_block );
+            block_view( block* a_block = NULL );
             virtual ~block_view();
 
+            void set_viewed( block* a_block );
+
+            size_t get_data_view_size() const;
             data_type* data_view() const;
 
         private:
             block* f_block;
             DataType* f_data_view;
+            size_t f_view_size;
     };
 
     template< typename DataType >
     block_view< DataType >::block_view( block* a_block ) :
-            f_block( a_block ),
-            f_data_view( static_cast< DataType* >( a_block->data_bytes() ) )
+            f_block( NULL ),
+            f_data_view( NULL ),
+            f_view_size( 0 )
     {
+        if( a_block != NULL ) set_viewed( a_block );
+    }
+
+    template< typename DataType >
+    block_view< DataType >::~block_view()
+    {
+    }
+
+    template< typename DataType >
+    void block_view< DataType >::set_viewed( block* a_block )
+    {
+        f_block = a_block;
+        f_data_view = reinterpret_cast< DataType* >( a_block->data_bytes() );
+        f_view_size = a_block->get_data_size() / sizeof( DataType );
+        return;
+    }
+
+    template< typename DataType >
+    size_t block_view< DataType >::get_data_view_size() const
+    {
+        return f_view_size;
     }
 
     template< typename DataType >
