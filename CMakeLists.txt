@@ -10,18 +10,12 @@ cmake_policy (SET CMP0011 NEW)
 list( APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR} )
 
 include( PackageBuilder.cmake )
-<<<<<<< HEAD
 pbuilder_prepare_project( 2 5 1 )
-include_directories( ${PROJECT_SOURCE_DIR}/Client )
-include_directories( ${PROJECT_SOURCE_DIR}/Server )
-=======
-pbuilder_prepare_project( 2 5 0 )
 include_directories( 
     ${PROJECT_SOURCE_DIR}/Client
     ${PROJECT_SOURCE_DIR}/Server
     ${PROJECT_BINARY_DIR}/Client
 )
->>>>>>> refs/heads/templatedMantis
 
 ##################
 # mantis options #
@@ -124,7 +118,7 @@ if( Mantis_BUILD_SERVER )
     
     if( Mantis_INCLUDE_ROACH_SERVER )
         add_subdirectory( katcp_devel )
-        pbuilder_add_ext_libraries( ${katcp_devel_LIBRARIES} )
+        pbuilder_add_ext_libraries( ${katcp_devel_LIBRARIES} dl )
         # add to the RPATH to be used when installing, but only if it's not a system directory
         list( FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${katcp_devel_LIBRARIES}" isSystemDir )
         if( "${isSystemDir}" STREQUAL "-1" )

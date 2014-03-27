@@ -56,12 +56,12 @@ if( Mantis_BUILD_SERVER )
     if( Mantis_INCLUDE_ROACH_SERVER )
         set( MANTIS_SERVER_HEADERFILES
             ${MANTIS_SERVER_HEADERFILES}
-            ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_digitizer_roach.hh
+            mt_digitizer_roach.hh
         )
         
         set( MANTIS_SERVER_SOURCEFILES
             ${MANTIS_SERVER_SOURCEFILES}
-            ${CMAKE_CURRENT_SOURCE_DIR}/Server/mt_digitizer_roach.cc
+            mt_digitizer_roach.cc
         )
     endif( Mantis_INCLUDE_ROACH_SERVER )
 
