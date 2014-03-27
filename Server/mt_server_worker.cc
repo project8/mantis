@@ -5,19 +5,23 @@
 #include "mt_configurator.hh"
 #include "mt_digitizer.hh"
 #include "mt_factory.hh"
+#include "mt_file_writer.hh"
 #include "mt_logger.hh"
 #include "mt_run_context_dist.hh"
+#include "mt_run_description.hh"
 #include "mt_run_queue.hh"
 #include "mt_signal_handler.hh"
 #include "mt_thread.hh"
+#include "mt_version.hh"
 #include "mt_writer.hh"
 
+#include <sstream>
 
 namespace mantis
 {
     MTLOGGER( mtlog, "server_worker" );
 
-    server_worker::server_worker( const param_node* a_config, digitizer* a_digitizer, buffer* a_buffer, run_queue* a_run_queue, condition* a_queue_condition, condition* a_buffer_condition ) :
+    server_worker::server_worker( const param_node* a_config, digitizer* a_digitizer, buffer* a_buffer, run_queue* a_run_queue, condition* a_queue_condition, condition* a_buffer_condition, const string& a_exe_name ) :
             f_config( a_config ),
             f_digitizer( a_digitizer ),
             f_writer( NULL ),
@@ -25,9 +29,10 @@ namespace mantis
             f_run_queue( a_run_queue ),
             f_queue_condition( a_queue_condition ),
             f_buffer_condition( a_buffer_condition ),
-            f_canceled( false ),
             f_digitizer_state( k_inactive ),
-            f_writer_state( k_inactive )
+            f_writer_state( k_inactive ),
+            f_exe_name( a_exe_name ),
+            f_canceled( false )
     {
     }
 
@@ -86,7 +91,11 @@ namespace mantis
                         << "                run request ignored" );
                 t_run_context->unlock_inbound();
 
-                t_run_context->lock_status_out()->set_state( status_state_t_error );
+                status* t_status = t_run_context->lock_status_out();
+                t_status->set_state( status_state_t_error );
+                std::stringstream t_error_msg;
+                t_error_msg << "unable to operate in write mode " <<  t_request->file_write_mode();
+                t_status->set_error_message( t_error_msg.str() );
                 try
                 {
                     t_run_context->push_status_no_mutex();
@@ -103,6 +112,12 @@ namespace mantis
             if( t_request->file_write_mode() == request_file_write_mode_t_local )
             {
                 f_writer = t_writer_factory->create( "file" );
+                run_description* t_run_desc = new run_description();
+                t_run_desc->set_mantis_server_exe( f_exe_name );
+                t_run_desc->set_mantis_server_version( TOSTRING(Mantis_VERSION) );
+                t_run_desc->set_mantis_server_commit( TOSTRING(Mantis_GIT_COMMIT) );
+                t_run_desc->set_server_config( *f_config );
+                static_cast< file_writer* >( f_writer )->set_run_description( t_run_desc );
             }
             else
             {
@@ -199,6 +214,7 @@ namespace mantis
             {
                 MTINFO( mtlog, "sending server status <canceled>..." );
                 t_status->set_state( status_state_t_canceled );
+                t_status->set_error_message( "run was cancelled" );
             }
             try
             {
