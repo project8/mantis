@@ -4,7 +4,7 @@
 
 set( MANTIS_CLIENT_HEADERFILES
     mt_atomic.hh
-    mt_bit_shift_modifier.h
+    mt_bit_shift_modifier.hh
     mt_block.hh
     mt_buffer.hh
     mt_callable.hh
@@ -36,7 +36,7 @@ set( MANTIS_CLIENT_HEADERFILES
 )
 
 set( MANTIS_CLIENT_SOURCEFILES
-    mt_bit_shift_modifier.cc
+    #mt_bit_shift_modifier.cc
     mt_block.cc
     mt_buffer.cc
     mt_callable.cc
