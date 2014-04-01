@@ -17,6 +17,8 @@
 
 #include <sstream>
 
+using std::string;
+
 namespace mantis
 {
     MTLOGGER( mtlog, "server_worker" );
