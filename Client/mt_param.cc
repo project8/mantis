@@ -887,13 +887,11 @@ namespace mantis
         bool t_result = false;
         if( a_style == k_compact )
         {
-            MTDEBUG( mtlog, "Printing JSON with compact writer" );
             rj_file_writer t_writer( t_filestream );
             t_result = param_output_json::write_param( a_to_write, &t_writer );
         }
         else
         {
-            MTDEBUG( mtlog, "Printing JSON with pretty writer" );
             rj_pretty_file_writer t_writer( t_filestream );
             t_result = param_output_json::write_param( a_to_write, &t_writer );
         }
@@ -913,13 +911,11 @@ namespace mantis
         bool t_result = false;
         if( a_style == k_compact )
         {
-            MTDEBUG( mtlog, "Printing JSON with compact writer" );
             rj_string_writer t_writer( t_str_buff );
             t_result = param_output_json::write_param( a_to_write, &t_writer );
         }
         else
         {
-            MTDEBUG( mtlog, "Printing JSON with pretty writer" );
             rj_pretty_string_writer t_writer( t_str_buff );
             t_result = param_output_json::write_param( a_to_write, &t_writer );
         }
