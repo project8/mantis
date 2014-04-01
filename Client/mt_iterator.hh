@@ -1,10 +1,11 @@
 #ifndef MT_ITERATOR_HH_
 #define MT_ITERATOR_HH_
 
+#include "mt_block.hh"
 #include "mt_buffer.hh"
 #include "mt_mutex.hh"
-#include "mt_block.hh"
 #include "mt_exception.hh"
+#include "mt_iterator_timer.hh"
 
 namespace mantis
 {
@@ -45,6 +46,7 @@ namespace mantis
 
             std::string f_name;
 
+            buffer* f_buffer;
             block** f_blocks;
             mutex* f_mutexes;
             unsigned int f_size;
@@ -56,8 +58,11 @@ namespace mantis
             unsigned int f_next_index;
 
             bool f_released;
+
+            IT_TIMER_DECLARE
     };
 
+    /*
     template< typename DataType >
     class typed_iterator : public iterator
     {
@@ -103,7 +108,7 @@ namespace mantis
     {
         return *static_cast< typed_block< DataType >* >( f_blocks[ f_current_index ] );
     }
-
+*/
 
 }
 

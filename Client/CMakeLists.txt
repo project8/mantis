@@ -19,6 +19,7 @@ set( MANTIS_CLIENT_HEADERFILES
     mt_exception.hh
     mt_file_writer.hh
     mt_iterator.hh
+    mt_iterator_timer.hh
     mt_logger.hh
     mt_modifier.hh
     mt_mutex.hh
@@ -51,6 +52,7 @@ set( MANTIS_CLIENT_SOURCEFILES
     mt_exception.cc
     mt_file_writer.cc
     mt_iterator.cc
+    mt_iterator_timer.cc
     mt_logger.cc
     mt_modifier.cc
     mt_mutex.cc
