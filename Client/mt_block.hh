@@ -59,6 +59,9 @@ namespace mantis
             block_header_state_t get_state() const;
             void set_state( block_header_state_t a_state );
 
+            bool is_unused() const;
+            void set_unused();
+
             bool is_acquiring() const;
             void set_acquiring();
 

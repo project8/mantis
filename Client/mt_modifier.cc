@@ -54,6 +54,9 @@ namespace mantis
         while( true )
         {
             //try to advance
+            //blocks if it runs up against the iterator in front of it
+            ++t_it;
+            /*
             if( +t_it == false )
             {
                 // if other threads are waiting on the buffer, we should do that too
@@ -63,6 +66,13 @@ namespace mantis
                     f_condition->wait();
                 }
                 ++t_it;
+            }
+            */
+
+            //if the block we're on is unused, skip it
+            if( t_it->is_unused() == true )
+            {
+                continue;
             }
 
             //if the block we're on is already written, the run is done
@@ -112,8 +122,6 @@ namespace mantis
                 f_acquisition_count++;
             }
             f_record_count++;
-
-            t_it->set_processing();
 
             //MTINFO( mtlog, "records written: " << f_record_count );
 

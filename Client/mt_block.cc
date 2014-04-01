@@ -29,13 +29,19 @@ namespace mantis
         return;
     }
 
+    bool block::is_unused() const
+    {
+        return f_header.state() == block_header_state_t_unused;
+    }
+    void block::set_unused()
+    {
+        f_header.set_state( block_header_state_t_unused );
+        return;
+    }
+
     bool block::is_acquiring() const
     {
-        if( f_header.state() == block_header_state_t_acquiring )
-        {
-            return true;
-        }
-        return false;
+        return f_header.state() == block_header_state_t_acquiring;
     }
     void block::set_acquiring()
     {
@@ -45,11 +51,7 @@ namespace mantis
 
     bool block::is_acquired() const
     {
-        if( f_header.state() == block_header_state_t_acquired )
-        {
-            return true;
-        }
-        return false;
+        return f_header.state() == block_header_state_t_acquired;
     }
     void block::set_acquired()
     {
@@ -59,11 +61,7 @@ namespace mantis
 
     bool block::is_processing() const
     {
-        if( f_header.state() == block_header_state_t_processing)
-        {
-            return true;
-        }
-        return false;
+        return f_header.state() == block_header_state_t_processing;
     }
     void block::set_processing()
     {
@@ -73,11 +71,7 @@ namespace mantis
 
     bool block::is_writing() const
     {
-        if( f_header.state() == block_header_state_t_writing )
-        {
-            return true;
-        }
-        return false;
+        return f_header.state() == block_header_state_t_writing;
     }
     void block::set_writing()
     {
@@ -87,11 +81,7 @@ namespace mantis
 
     bool block::is_written() const
     {
-        if( f_header.state() == block_header_state_t_written )
-        {
-            return true;
-        }
-        return false;
+        return f_header.state() == block_header_state_t_written;
     }
     void block::set_written()
     {

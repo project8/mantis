@@ -63,6 +63,12 @@ namespace mantis
                 ++t_it;
             }
 
+            //if the block we're on is unused, skip it
+            if( t_it->is_unused() == true )
+            {
+                continue;
+            }
+
             //if the block we're on is already written, the run is done
             if( t_it->is_written() == true )
             {
