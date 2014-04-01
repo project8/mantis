@@ -53,6 +53,9 @@ namespace mantis
             block();
             virtual ~block();
 
+            template< typename DataType >
+            static block* allocate_block( unsigned a_size );
+
             block_header_state_t get_state() const;
             void set_state( block_header_state_t a_state );
 
@@ -72,147 +75,43 @@ namespace mantis
             void set_written();
 
             acquisition_id_type get_acquisition_id() const;
-            void set_acquisition_id( const acquisition_id_type& an_id );
+            void set_acquisition_id( acquisition_id_type an_id );
 
             record_id_type get_record_id() const;
-            void set_record_id( const record_id_type& an_id );
+            void set_record_id( record_id_type an_id );
 
             time_nsec_type get_timestamp() const;
-            void set_timestamp( const time_nsec_type& a_timestamp );
+            void set_timestamp( time_nsec_type a_timestamp );
 
             size_t get_data_size() const;
-            void set_data_size( const size_t& a_size );
-
-            virtual size_t get_data_nbytes() const = 0;
+            void set_data_size( size_t a_size );
 
             block_header* header();
             const block_header* header() const;
 
-            virtual byte_type* data_bytes() = 0;
-            virtual const byte_type* data_bytes() const = 0;
+            byte_type* data_bytes();
+            const byte_type* data_bytes() const;
+
+            size_t get_data_nbytes() const;
+            void set_data_nbytes( size_t a_nbytes );
+
+            byte_type** handle();
 
         protected:
             block_header f_header;
 
-    };
+            byte_type* f_data_bytes;
+            unsigned f_data_nbytes;
 
-
-    //**************************************************
-    // empty_block
-    //**************************************************
-
-    class empty_block : public block
-    {
-        public:
-            empty_block();
-            virtual ~empty_block();
-
-            virtual size_t get_data_nbytes() const;
-
-            virtual byte_type* data_bytes();
-            virtual const byte_type* data_bytes() const;
-    };
-
-
-    //**************************************************
-    // block_cleanup
-    //**************************************************
-
-    class block_cleanup
-    {
-        public:
-            block_cleanup() {}
-            virtual ~block_cleanup() {}
-            virtual bool delete_data() = 0;
-    };
-
-
-    //**************************************************
-    // typed_block< DataType >
-    //**************************************************
-
-    template< typename DataType >
-    class typed_block : public block
-    {
-        public:
-            typed_block();
-            virtual ~typed_block();
-
-            virtual size_t get_data_nbytes() const;
-
-            DataType* data();
-            const DataType* data() const;
-
-            DataType** handle();
-
-            virtual byte_type* data_bytes();
-            virtual const byte_type* data_bytes() const;
-
-            void set_cleanup( block_cleanup* a_cleanup );
-
-        private:
-            DataType* f_data;
-
-            block_cleanup* f_cleanup;
     };
 
     template< typename DataType >
-    typed_block< DataType >::typed_block() :
-            block(),
-            f_data( NULL ),
-            f_cleanup( NULL )
+    block* block::allocate_block( unsigned a_size )
     {
-    }
-
-    template< typename DataType >
-    typed_block< DataType >::~typed_block()
-    {
-        if( f_cleanup != NULL ) f_cleanup->delete_data();
-        delete f_cleanup;
-    }
-
-    template< typename DataType >
-    size_t typed_block< DataType >::get_data_nbytes() const
-    {
-        return sizeof( DataType ) * f_header.data_size();
-    }
-
-    template< typename DataType >
-    DataType* typed_block< DataType >::data()
-    {
-        return f_data;
-    }
-
-    template< typename DataType >
-    const DataType* typed_block< DataType >::data() const
-    {
-        return f_data;
-    }
-
-    template< typename DataType >
-    DataType** typed_block< DataType >::handle()
-    {
-        return &f_data;
-    }
-
-    template< typename DataType >
-    byte_type* typed_block< DataType >::data_bytes()
-    {
-        return reinterpret_cast< byte_type* >( f_data );
-    }
-
-    template< typename DataType >
-    const byte_type* typed_block< DataType >::data_bytes() const
-    {
-        return ( const byte_type* )f_data;
-    }
-
-    template< typename DataType >
-    void typed_block< DataType >::set_cleanup( block_cleanup* a_cleanup )
-    {
-        delete f_cleanup;
-        f_cleanup = a_cleanup;
-        return;
+        block* t_new_block = new block();
+        t_new_block->f_data_nbytes = a_size * sizeof( DataType );
+        t_new_block->f_data_bytes = new byte_type [ t_new_block->f_data_nbytes ];
+        return t_new_block;
     }
 
 

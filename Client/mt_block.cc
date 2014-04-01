@@ -3,9 +3,11 @@
 namespace mantis
 {
     block::block() :
-            f_header()
+            f_header(),
+            f_data_bytes( NULL ),
+            f_data_nbytes( 0 )
     {
-        f_header.set_state( block_header_state_t_written );
+        f_header.set_state( block_header_state_t_unused );
         f_header.set_acquisition_id( 0 );
         f_header.set_record_id( 0 );
         f_header.set_timestamp( 0 );
@@ -14,6 +16,7 @@ namespace mantis
 
     block::~block()
     {
+        delete [] f_data_bytes;
     }
 
     block_header_state_t block::get_state() const
@@ -100,7 +103,7 @@ namespace mantis
     {
         return f_header.acquisition_id();
     }
-    void block::set_acquisition_id( const acquisition_id_type& an_id )
+    void block::set_acquisition_id( acquisition_id_type an_id )
     {
         f_header.set_acquisition_id( an_id );
         return;
@@ -110,7 +113,7 @@ namespace mantis
     {
         return f_header.record_id();
     }
-    void block::set_record_id( const record_id_type& an_id )
+    void block::set_record_id( record_id_type an_id )
     {
         f_header.set_record_id( an_id );
         return;
@@ -120,7 +123,7 @@ namespace mantis
     {
         return f_header.timestamp();
     }
-    void block::set_timestamp( const time_nsec_type& a_timestamp )
+    void block::set_timestamp( time_nsec_type a_timestamp )
     {
         f_header.set_timestamp( a_timestamp );
         return;
@@ -130,7 +133,7 @@ namespace mantis
     {
         return f_header.data_size();
     }
-    void block::set_data_size( const size_t& a_size )
+    void block::set_data_size( size_t a_size )
     {
         f_header.set_data_size( a_size );
         return;
@@ -146,28 +149,30 @@ namespace mantis
         return &f_header;
     }
 
-
-    empty_block::empty_block() :
-            block()
+    byte_type* block::data_bytes()
     {
-        set_data_size( 0 );
-    }
-    empty_block::~empty_block()
-    {
+        return f_data_bytes;
     }
 
-    size_t empty_block::get_data_nbytes() const
+    const byte_type* block::data_bytes() const
     {
-        return 0;
+        return f_data_bytes;
     }
 
-    byte_type* empty_block::data_bytes()
+    size_t block::get_data_nbytes() const
     {
-        return NULL;
+        return f_data_nbytes;
     }
-    const byte_type* empty_block::data_bytes() const
+
+    void block::set_data_nbytes( size_t a_nbytes )
     {
-        return NULL;
+        f_data_nbytes = a_nbytes;
+        return;
+    }
+
+    byte_type** block::handle()
+    {
+        return &f_data_bytes;
     }
 
 }

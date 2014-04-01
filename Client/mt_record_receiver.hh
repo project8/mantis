@@ -17,16 +17,6 @@ namespace mantis
     class response;
     class server;
 
-    template< typename DataType >
-    struct block_cleanup_rr : block_cleanup
-    {
-        block_cleanup_rr( DataType* a_data );
-        virtual ~block_cleanup_rr();
-        virtual bool delete_data();
-        bool f_triggered;
-        DataType* f_data;
-    };
-
     class record_receiver :
         public callable
     {
@@ -72,38 +62,17 @@ namespace mantis
     {
         for( unsigned int index = 0; index < f_buffer->size(); index++ )
         {
+            block* t_new_block = block::allocate_block< DataType >( f_buffer->record_size() );
+            /*
             typed_block< DataType >* t_new_block = new typed_block< DataType >();
             *( t_new_block->handle() ) = new DataType[ f_buffer->record_size() ];
             t_new_block->set_data_size( f_buffer->record_size() );
             t_new_block->set_cleanup( new block_cleanup_rr< DataType >( t_new_block->data() ) );
+            */
             f_buffer->set_block( index, t_new_block );
         }
         return;
     }
-
-
-    //**********************************
-    // Block Cleanup -- Request Receiver
-    //**********************************
-
-    template< typename DataType >
-    block_cleanup_rr< DataType >::block_cleanup_rr( DataType* a_data ) :
-        f_triggered( false ),
-        f_data( a_data )
-    {}
-
-    template< typename DataType >
-    block_cleanup_rr< DataType >::~block_cleanup_rr()
-    {}
-
-    template< typename DataType >
-    bool block_cleanup_rr< DataType >::delete_data()
-    {
-        if( f_triggered ) return true;
-        delete [] f_data;
-        return true;
-    }
-
 
 }
 

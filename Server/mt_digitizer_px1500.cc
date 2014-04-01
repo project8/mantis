@@ -122,7 +122,7 @@ namespace mantis
         {
             for( unsigned int index = 0; index < f_buffer->size(); index++ )
             {
-                typed_block< data_type >* t_new_block = new typed_block< data_type >();
+                block* t_new_block = new block();
                 t_result = AllocateDmaBufferPX4( f_handle, f_buffer->record_size(), t_new_block->handle() );
                 if( t_result != SIG_SUCCESS )
                 {
@@ -132,7 +132,7 @@ namespace mantis
                     return false;
                 }
                 t_new_block->set_data_size( f_buffer->record_size() );
-                t_new_block->set_cleanup( new block_cleanup_px1500( t_new_block->data(), &f_handle ) );
+                t_new_block->set_data_nbytes( f_buffer->record_size() );
                 f_buffer->set_block( index, t_new_block );
             }
         }
@@ -401,30 +401,6 @@ namespace mantis
     {
         f_canceled.store( a_flag );
         return;
-    }
-
-
-    //***********************************
-    // Block Cleanup px1500
-    //***********************************
-
-    block_cleanup_px1500::block_cleanup_px1500( digitizer_px1500::data_type* a_data, HPX4* a_dig_ptr ) :
-        f_triggered( false ),
-        f_data( a_data ),
-        f_dig_ptr( a_dig_ptr )
-    {}
-    block_cleanup_px1500::~block_cleanup_px1500()
-    {}
-    bool block_cleanup_px1500::delete_data()
-    {
-        if( f_triggered ) return true;
-        int t_result = FreeDmaBufferPX4( *f_dig_ptr, f_data );
-        if( t_result != SIG_SUCCESS )
-        {
-            DumpLibErrorPX4( t_result, "failed to deallocate dma memory: " );
-            return false;
-        }
-        return true;
     }
 
 

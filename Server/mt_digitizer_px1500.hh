@@ -66,19 +66,6 @@ namespace mantis
             bool stop();
     };
 
-    class block_cleanup_px1500 : public block_cleanup
-    {
-        public:
-            block_cleanup_px1500( digitizer_px1500::data_type* a_data, HPX4* a_dig_ptr );
-            virtual ~block_cleanup_px1500();
-            virtual bool delete_data();
-        private:
-            bool f_triggered;
-            digitizer_px1500::data_type* f_data;
-            HPX4* f_dig_ptr;
-    };
-
-
     class test_digitizer_px1500 : public test_digitizer
     {
         public:

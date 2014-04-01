@@ -94,10 +94,7 @@ namespace mantis
         {
             for( unsigned int index = 0; index < f_buffer->size(); ++index )
             {
-                typed_block< data_type >* t_new_block = new typed_block< data_type >();
-                *( t_new_block->handle() ) = new data_type [ f_buffer->record_size() ];
-                t_new_block->set_data_size( f_buffer->record_size() );
-                t_new_block->set_cleanup( new block_cleanup_test16( t_new_block->data() ) );
+                block* t_new_block = block::allocate_block< data_type >( f_buffer->record_size() );
                 f_buffer->set_block( index, t_new_block );
             }
         }
@@ -115,7 +112,7 @@ namespace mantis
         for( unsigned index = 0; index < f_buffer->record_size(); ++index )
         {
             f_master_record[ index ] = (index % f_params.levels) << 2;
-            if( index < 100 ) MTDEBUG( mtlog, "setting master record [" << index << "]: " << f_master_record[index] );
+            //if( index < 100 ) MTDEBUG( mtlog, "setting master record [" << index << "]: " << f_master_record[index] );
         }
 
         f_allocated = true;
@@ -348,7 +345,8 @@ namespace mantis
         get_time_monotonic( &a_stamp_time );
         a_block->set_timestamp( time_to_nsec( a_stamp_time ) );
 
-        ::memcpy( a_block->data_bytes(), f_master_record, f_buffer->record_size() * s_data_type_size );
+        MTWARN( mtlog, "acquiring to: " << a_block->data_bytes() );
+        ::memcpy( a_block->data_bytes(), (byte_type*)f_master_record, a_block->get_data_nbytes() );
         //for(unsigned index = 1000; index < 1050; ++index)
         //{
         //    MTERROR( mtlog, ((data_type*)(a_block->data_bytes()))[index]);
@@ -383,24 +381,6 @@ namespace mantis
     {
         f_canceled.store( a_flag );
         return;
-    }
-
-    //**********************************
-    // Block Cleanup -- Test16 Digitizer
-    //**********************************
-
-    block_cleanup_test16::block_cleanup_test16( digitizer_test16::data_type* a_data ) :
-            block_cleanup(),
-            f_triggered( false ),
-            f_data( a_data )
-    {}
-    block_cleanup_test16::~block_cleanup_test16()
-    {}
-    bool block_cleanup_test16::delete_data()
-    {
-        if( f_triggered ) return true;
-        delete [] f_data;
-        return true;
     }
 
 }
