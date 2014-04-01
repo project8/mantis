@@ -83,8 +83,8 @@ namespace mantis
         size_t t_data_size = f_view.get_data_view_size();
         for( unsigned index = 0; index < t_data_size; ++index )
         {
-            unsigned temp = f_view.data_view()[index] >> f_bit_shift;
-            if( index < 100 ) MTDEBUG( mtlog_bsm, "shifting at [" << index << "]: " << f_view.data_view()[index] << " to " << temp );
+            //unsigned temp = f_view.data_view()[index] >> f_bit_shift;
+            //if( index < 100 ) MTDEBUG( mtlog_bsm, "shifting at [" << index << "]: " << f_view.data_view()[index] << " to " << temp );
             f_view.data_view()[index] = f_view.data_view()[index] >> f_bit_shift;
         }
         return true;
