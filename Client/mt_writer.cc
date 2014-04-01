@@ -57,7 +57,7 @@ namespace mantis
             {
                 if( f_condition->is_waiting() == true )
                 {
-                    MTINFO( mtlog, "releasing" );
+                    MTINFO( mtlog, "releasing buffer" );
                     f_condition->release();
                 }
                 ++t_it;

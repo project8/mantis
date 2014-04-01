@@ -113,7 +113,7 @@ namespace mantis
             }
             f_record_count++;
 
-            t_it->set_written();
+            t_it->set_processing();
 
             //MTINFO( mtlog, "records written: " << f_record_count );
 
