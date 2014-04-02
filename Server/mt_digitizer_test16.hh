@@ -73,15 +73,16 @@ namespace mantis
             bool stop();
     };
 
+
     class block_cleanup_test16 : public block_cleanup
     {
         public:
-            block_cleanup_test16( digitizer_test16::data_type* a_data );
+            block_cleanup_test16( byte_type* a_data );
             virtual ~block_cleanup_test16();
             virtual bool delete_data();
         private:
             bool f_triggered;
-            digitizer_test16::data_type* f_data;
+            byte_type* f_data;
     };
 
 

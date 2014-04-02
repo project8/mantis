@@ -66,19 +66,20 @@ namespace mantis
             condition f_cancel_condition;
 
             bool start();
-            bool acquire( typed_block< data_type >* a_block, timespec& a_time_stamp );
+            bool acquire( block* a_block, timespec& a_time_stamp );
             bool stop();
     };
+
 
     class block_cleanup_px14400 : public block_cleanup
     {
         public:
-            block_cleanup_px14400( digitizer_px14400::data_type* a_data, HPX14* a_dig_ptr );
+            block_cleanup_px14400( byte_type* a_data, HPX14* a_dig_ptr );
             virtual ~block_cleanup_px14400();
             virtual bool delete_data();
         private:
             bool f_triggered;
-            digitizer_px14400::data_type* f_data;
+           byte_type* f_data;
             HPX14* f_dig_ptr;
     };
 

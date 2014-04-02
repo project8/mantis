@@ -27,6 +27,14 @@ set( Mantis_INCLUDE_PX1500_SERVER TRUE CACHE BOOL "Flag to include the px1500 se
 set( Mantis_INCLUDE_PX14400_SERVER FALSE CACHE BOOL "Flag to include the px14400 server; ignored unless the build-server flag is enabled" )
 set( Mantis_INCLUDE_ROACH_SERVER FALSE CACHE BOOL "Flag to include the roach server; ignored unless the build-server flag is enabled" )
 
+# add an option to perform iterator time profiling
+set( Mantis_ENABLE_ITERATOR_TIMING FALSE CACHE BOOL "Flag to enable iterator time profiling" )
+if( Mantis_ENABLE_ITERATOR_TIMING )
+    add_definitions( -DENABLE_ITERATOR_TIMING )
+else( Mantis_ENABLE_ITERATOR_TIMING )
+    remove_definitions( -DENABLE_ITERATOR_TIMING )
+endif( Mantis_ENABLE_ITERATOR_TIMING )
+
 # add an option to build the validation tests
 option (Mantis_ENABLE_TESTING "Build the validation tests and enable CMake testing" OFF)
 if (Mantis_ENABLE_TESTING)

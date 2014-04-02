@@ -143,6 +143,8 @@ namespace mantis
         thread t_setup_loop_thread( &t_setup_loop );
         t_sig_hand.push_thread( & t_setup_loop_thread );
         t_setup_loop_thread.start();
+        // wait briefly to allow server to respond
+        usleep( 1000 );
         t_setup_loop_thread.join();
         if( ! t_sig_hand.got_exit_signal() )
         {
@@ -327,7 +329,7 @@ namespace mantis
     run_client::setup_loop::setup_loop( run_context_dist* a_run_context ) :
             f_run_context( a_run_context ),
             f_canceled( false ),
-            f_return( 0 )
+            f_return( RETURN_ERROR )
     {}
     run_client::setup_loop::~setup_loop()
     {}
@@ -393,7 +395,7 @@ namespace mantis
             f_run_context( a_run_context ),
             f_file_writing( a_file_writing ),
             f_canceled( false ),
-            f_return( 0 )
+            f_return( RETURN_ERROR )
     {}
     run_client::run_loop::~run_loop()
     {}
