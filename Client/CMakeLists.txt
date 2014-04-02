@@ -23,6 +23,7 @@ set( MANTIS_CLIENT_HEADERFILES
     mt_logger.hh
     mt_modifier.hh
     mt_mutex.hh
+    mt_oversampling_modifier.hh
     mt_param.hh
     mt_parser.hh
     mt_record_dist.hh
@@ -56,6 +57,7 @@ set( MANTIS_CLIENT_SOURCEFILES
     mt_logger.cc
     mt_modifier.cc
     mt_mutex.cc
+    mt_oversampling_modifier.cc
     mt_param.cc
     mt_parser.cc
     mt_record_dist.cc
