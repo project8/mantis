@@ -48,9 +48,9 @@ namespace mantis
 
         public:
             digitizer_roach();
-            
+
             virtual void configure( const param_node* config );
-            
+
             virtual ~digitizer_roach();
 
             bool allocate( buffer* a_buffer, condition* a_condition );
@@ -67,36 +67,36 @@ namespace mantis
             bool get_canceled();
             // thread-safe setter
             void set_canceled( bool a_flag );
-            
-            //From Katcp
-            static int dispatch_client(struct katcl_line *l, char *msgname, int verbose, unsigned int timeout);
-            int borph_write(struct katcl_line *l, char *regname, int buffer, int len, unsigned int timeout);
-            int borph_prog(struct katcl_line *l, char *boffile, unsigned int timeout);
-            int borph_read(struct katcl_line *l, char *regname, void *buffer, int len, unsigned int timeout);
-            //End:Katcp part//
 
         private:
             static const unsigned s_data_type_size;
-            
-            //For Katcp
-            char *f_katcp_server;
-	        struct katcl_line *f_katcp_cmdline;
-	        int f_katcp_fd;
-	
-	        //Place to set vitals
-	        unsigned int f_RM_recordSize; // = 65536*4;
-	        int f_RM_timeout; // = 5000; /*Time out in ms*/
-	        char *f_boffile; //= const_cast<char*>("adc.bof");
-	        //
-	
-	        unsigned char* f_datax;
-	        unsigned char* f_datax1;
-	        uint8_t* f_datay;
-	        //End Katcp Desc.//
-	        
-            //sem_t* f_semaphore;
 
-            data_type* f_master_record;
+            int dispatch_client( char *msgname, int verbose);
+            int borph_write( const std::string& regname, int buffer, int len);
+            int borph_prog( const std::string& a_bof_file );
+            int borph_read( const std::string& regname, void *buffer, int len );
+
+            // katcp communication
+            std::string f_katcp_server;
+            struct katcl_line *f_katcp_cmdline;
+            int f_katcp_fd;
+
+            //Place to set vitals
+            unsigned f_rm_half_record_size; // must be = 65536*4
+            unsigned f_rm_timeout; // = 5000; /*Time out in ms*/
+            std::string f_bof_file; //= const_cast<char*>("adc.bof");
+
+            // arrays for reading data
+            data_type* f_datax0;
+            data_type* f_datax1;
+
+            // hard-coded command strings
+            char f_write_start[32],  f_write_end[32];
+            char f_prog_start[32],   f_prog_end[32];
+            char f_read_start[32],   f_read_end[32];
+            std::string f_reg_name_msb, f_reg_name_lsb, f_reg_name_ctrl;
+
+            //sem_t* f_semaphore;
 
             bool f_allocated;
 
@@ -115,10 +115,7 @@ namespace mantis
             bool start();
             bool acquire( block* a_block, timespec& a_time_stamp );
             bool stop();
-            
-            //For Roach cmd line parameters
-            std::string f_roach_ipaddress;
-            std::string f_roach_boffile;
+
     };
 
     class block_cleanup_roach : public block_cleanup

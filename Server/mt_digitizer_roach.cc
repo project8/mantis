@@ -24,31 +24,36 @@
 #include <errno.h>
 #include <string>
 
+using std::string;
+
 namespace mantis
 {
     MTLOGGER( mtlog, "digitizer_roach" );
-    
+
     MT_REGISTER_DIGITIZER( digitizer_roach, "roach" );
     MT_REGISTER_TEST_DIGITIZER( test_digitizer_roach, "roach" );
 
 
     const unsigned digitizer_roach::s_data_type_size = sizeof( digitizer_roach::data_type );
-    
-    /*//katcp
-    const int digitizer_roach::f_RM_recordSize = 65536*4;
-    unsigned char digitizer_roach::f_datax[f_RM_recordSize];
-	unsigned char digitizer_roach::f_datax1[f_RM_recordSize];
-	uint8_t digitizer_roach::f_datay[f_RM_recordSize*2];*/
-    
-    
+
     unsigned digitizer_roach::data_type_size_roach()
     {
         return digitizer_roach::s_data_type_size;
     }
 
     digitizer_roach::digitizer_roach() :
+            f_katcp_server(),
+            f_katcp_cmdline( NULL ),
+            f_katcp_fd( 0 ),
+            f_rm_half_record_size( 0 ),
+            f_rm_timeout( 5000 ),
+            f_bof_file(),
+            f_datax0( NULL ),
+            f_datax1( NULL ),
+            f_reg_name_msb( "snap64_bram_msb" ),
+            f_reg_name_lsb( "snap64_bram_lsb" ),
+            f_reg_name_ctrl( "snap64_ctrl" ),
             //f_semaphore( NULL ),
-            f_master_record( NULL ),
             f_allocated( false ),
             f_buffer( NULL ),
             f_condition( NULL ),
@@ -58,15 +63,17 @@ namespace mantis
             f_live_time( 0 ),
             f_dead_time( 0 ),
             f_canceled( false ),
-            f_cancel_condition(),
-            f_roach_ipaddress( "" ),
-            f_roach_boffile( "" ),
-            f_katcp_fd( 0 )
+            f_cancel_condition()
     {
-        get_calib_params( 8, s_data_type_size, -0.25, 0.5, &f_params );
-        f_RM_timeout = 5000;
-        //boffile = const_cast<char*>("adc.bof");
-        //f_katcp_server = getenv("KATCP_SERVER");
+        get_calib_params( 8, s_data_type_size, -5.0, 10.0, &f_params );
+
+        strcpy( f_write_start,   "?write" );
+        strcpy( f_write_end,     "!write" );
+        strcpy( f_prog_start,    "?progdev" );
+        strcpy( f_prog_end,      "!progdev" );
+        strcpy( f_read_start,    "?read" );
+        strcpy( f_read_end,      "!read" );
+
         /*
         errno = 0;
         f_semaphore = sem_open( "/digitizer_roach", O_CREAT | O_EXCL );
@@ -81,46 +88,49 @@ namespace mantis
                 throw exception() << "semaphore error: " << strerror( errno );
             }
         }
-        */
+         */
     }
 
     digitizer_roach::~digitizer_roach()
     {
         if( f_allocated )
         {
-            delete [] f_master_record;
-
             MTINFO( mtlog, "deallocating buffer..." );
 
             for( unsigned int index = 0; index < f_buffer->size(); index++ )
             {
                 f_buffer->delete_block( index );
             }
+
+            delete [] f_datax0;
+            delete [] f_datax1;
         }
-        //destroy_katcl(f_katcp_cmdline, 1);
+
+        destroy_katcl(f_katcp_cmdline, 1);
+
         /*
         if( f_semaphore != SEM_FAILED )
         {
             sem_close( f_semaphore );
         }
-        */
+         */
     }
 
     void digitizer_roach::configure( const param_node* config )
     {
-        f_roach_ipaddress = config->get_value("roach-host");
-        f_roach_boffile = config->get_value("roach-boffile");
+        f_katcp_server = config->get_value("roach-host");
+        f_bof_file = config->get_value("roach-boffile");
+        return;
     }
-        
+
     //From Katcp Stuff:
-    int digitizer_roach::dispatch_client(struct katcl_line *f_katcp_cmdline, char *msgname, int verbose, unsigned int timeout)
+    int digitizer_roach::dispatch_client( char *msgname, int verbose )
     {
         fd_set fsr, fsw;
         struct timeval tv;
         int result;
         char *ptr, *match;
         int prefix;
-        int f_katcp_fd;
 
         f_katcp_fd = fileno_katcl( f_katcp_cmdline );
 
@@ -130,11 +140,11 @@ namespace mantis
             {
                 case '!' :
                 case '?' : prefix = strlen(msgname + 1);
-                           match = msgname + 1;
-                           break;
+                match = msgname + 1;
+                break;
                 default  : prefix = strlen(msgname);
-                           match = msgname;
-                           break;
+                match = msgname;
+                break;
             }
         } 
         else
@@ -159,24 +169,24 @@ namespace mantis
                 FD_SET(f_katcp_fd, &fsw);
             }
 
-            tv.tv_sec  = timeout / 1000;
-            tv.tv_usec = (timeout % 1000) * 1000;
+            tv.tv_sec  = f_rm_timeout / 1000;
+            tv.tv_usec = (f_rm_timeout % 1000) * 1000;
 
             result = select(f_katcp_fd + 1, &fsr, &fsw, NULL, &tv);
             switch(result)
             {
                 case -1 : switch(errno)
-                          {
-                                case EAGAIN :
-                                case EINTR  : continue; /* WARNING */
-                                default     : return -1;
-                          }
-                          break;
-                case  0 : if(verbose)
-                          {
-                                MTERROR(mtlog,"dispatch: no io activity within "<<timeout<<" ms");
-                          }
-                          return -1;
+                {
+                    case EAGAIN :
+                    case EINTR  : continue; /* WARNING */
+                    default     : return -1;
+                }
+                break;
+                    case  0 : if(verbose)
+                    {
+                        MTERROR(mtlog,"dispatch: no io activity within "<<f_rm_timeout<<" ms");
+                    }
+                    return -1;
             }
 
             if(FD_ISSET(f_katcp_fd, &fsw))
@@ -184,12 +194,12 @@ namespace mantis
                 result = write_katcl(f_katcp_cmdline);
                 if(result < 0)
                 {
-      	            MTERROR(mtlog,"dispatch: write failed:"<<strerror(error_katcl(f_katcp_cmdline)));
-      	            return -1;
+                    MTERROR(mtlog,"dispatch: write failed:"<<strerror(error_katcl(f_katcp_cmdline)));
+                    return -1;
                 }
                 if((result > 0) && (match == NULL))
                 { /* if we finished writing and don't expect a match then quit */
-      	            return 0;
+                    return 0;
                 }
             }
 
@@ -198,8 +208,8 @@ namespace mantis
                 result = read_katcl(f_katcp_cmdline);
                 if(result)
                 {
-      	            MTERROR(mtlog,"dispatch: read failed : "<<strerror(error_katcl(f_katcp_cmdline))<<" : connection terminated");
-      	            return -1;
+                    MTERROR(mtlog,"dispatch: read failed : "<<strerror(error_katcl(f_katcp_cmdline))<<" : connection terminated");
+                    return -1;
                 }
             }
 
@@ -208,123 +218,165 @@ namespace mantis
                 ptr = arg_string_katcl(f_katcp_cmdline, 0);
                 if(ptr)
                 {
-                    #ifdef DEBUG
+#ifdef DEBUG
                     MTERROR(mtlog,"dispatch: got back "<<ptr);
-                    #endif
-      	            switch(ptr[0])
-      	            {
-      	                case KATCP_INFORM : break;
+#endif
+                    switch(ptr[0])
+                    {
+                        case KATCP_INFORM : break;
                         case KATCP_REPLY  : if(match)
-                                            {
-                                                if(strncmp(match, ptr + 1, prefix) || ((ptr[prefix + 1] != '\0') && (ptr[prefix + 1] != ' ')))
-                                                {
-                                                    MTERROR(mtlog,"dispatch: warning, encountered reply "<<ptr<<" not match "<<match);
-                                                } 
-                                                else
-                                                {
-                                                    ptr = arg_string_katcl(f_katcp_cmdline, 1);
-                                                    if(ptr && !strcmp(ptr, KATCP_OK))
-                                                    {
-                                                        return 0;
-                                                    }
-                                                    else
-                                                    {
-                                                        return -1;
-                                                    }
-                                                }
-                                            }   
-                                            break;
+                        {
+                            if(strncmp(match, ptr + 1, prefix) || ((ptr[prefix + 1] != '\0') && (ptr[prefix + 1] != ' ')))
+                            {
+                                MTERROR(mtlog,"dispatch: warning, encountered reply "<<ptr<<" not match "<<match);
+                            }
+                            else
+                            {
+                                ptr = arg_string_katcl(f_katcp_cmdline, 1);
+                                if(ptr && !strcmp(ptr, KATCP_OK))
+                                {
+                                    return 0;
+                                }
+                                else
+                                {
+                                    return -1;
+                                }
+                            }
+                        }
+                        break;
                         case KATCP_REQUEST : MTERROR(mtlog,"dispatch: warning, encountered an unanswerable request "<<ptr);
-                                             break;
+                        break;
                         default : MTERROR(mtlog,"dispatch: read malformed message "<<ptr);
-                                  break;
+                        break;
                     }
                 }
             }
         }
+        return 0;
     }
     /////
-    
-    int digitizer_roach::borph_write(struct katcl_line *f_katcp_cmdline, char *regname, int buffer, int len, unsigned int timeout)
+
+    int digitizer_roach::borph_write( const string& a_regname, int buffer, int len )
     {
         /* populate a request */
-        if(append_string_katcl(f_katcp_cmdline, KATCP_FLAG_FIRST, const_cast<char*>("?write"))   < 0) return -1;
-        if(append_string_katcl(f_katcp_cmdline, 0, regname)                   < 0) return -1;
-        if(append_unsigned_long_katcl(f_katcp_cmdline, 0, 0)                  < 0) return -1;
-        if(append_unsigned_long_katcl(f_katcp_cmdline, 0, buffer)             < 0) return -1;
-        if(append_unsigned_long_katcl(f_katcp_cmdline, KATCP_FLAG_LAST, len)         < 0) return -1;
+        if( append_string_katcl( f_katcp_cmdline, KATCP_FLAG_FIRST, f_write_start ) < 0)
+            return -1;
+        if( append_string_katcl( f_katcp_cmdline, 0, f_write_end ) < 0)
+            return -1;
+        if( append_unsigned_long_katcl( f_katcp_cmdline, 0, 0) < 0)
+            return -1;
+        if( append_unsigned_long_katcl( f_katcp_cmdline, 0, buffer) < 0)
+            return -1;
+        if( append_unsigned_long_katcl( f_katcp_cmdline, KATCP_FLAG_LAST, len) < 0 )
+            return -1;
 
         /* use above function to send request */
-        if(dispatch_client(f_katcp_cmdline, const_cast<char*>("!write"), 1, timeout)             < 0) return -1;
+        if( dispatch_client( const_cast<char*>("!write"), 1 ) < 0 )
+            return -1;
 
         /* clean up request for next call */
-        have_katcl(f_katcp_cmdline);
+        have_katcl( f_katcp_cmdline );
 
         return 0;
     }
-    
+
     ///////
-    
-    int digitizer_roach::borph_prog(struct katcl_line *f_katcp_cmdline, char *f_boffile, unsigned int timeout)
+
+    int digitizer_roach::borph_prog( const string& a_bof_file )
     {   
         /* populate a request */
-        if(append_string_katcl(f_katcp_cmdline, KATCP_FLAG_FIRST, const_cast<char*>("?progdev")) < 0) return -1;
-        if(append_string_katcl(f_katcp_cmdline, KATCP_FLAG_LAST, f_boffile)     < 0) return -1;
-  
+        if( append_string_katcl( f_katcp_cmdline, KATCP_FLAG_FIRST, f_prog_start ) < 0 )
+            return -1;
+        if( append_string_katcl( f_katcp_cmdline, KATCP_FLAG_LAST, const_cast< char* >( a_bof_file.c_str() ) ) < 0 )
+            return -1;
+
         /* use above function to send request */
-        if(dispatch_client(f_katcp_cmdline, const_cast<char*>("!progdev"), 1, timeout)             < 0) return -1;
+        if( dispatch_client( f_prog_end, 1 ) < 0 )
+            return -1;
 
         /* clean up request for next call */
-        have_katcl(f_katcp_cmdline);
+        have_katcl( f_katcp_cmdline );
 
         return 0;
     }
 
     ///////
-    
-    int digitizer_roach::borph_read(struct katcl_line *f_katcp_cmdline, char *regname, void *buffer, int len, unsigned int timeout)
+
+    int digitizer_roach::borph_read( const string& a_regname, void* a_buffer, int a_len )
     {
-        int count, got;
-
-        if(append_string_katcl(f_katcp_cmdline, KATCP_FLAG_FIRST, const_cast<char*>("?read"))    < 0) return -1;
-        if(append_string_katcl(f_katcp_cmdline, 0, regname)                   < 0) return -1;
-        if(append_unsigned_long_katcl(f_katcp_cmdline, 0, 0)                  < 0) return -1;
-        if(append_unsigned_long_katcl(f_katcp_cmdline, KATCP_FLAG_LAST, len)  < 0) return -1;
-
-        if(dispatch_client(f_katcp_cmdline, const_cast<char*>("!read"), 1, timeout)              < 0) return -1;
-
-        count = arg_count_katcl(f_katcp_cmdline);
-        if(count < 2)
-        {
-            MTERROR(mtlog,"read: insufficient arguments in reply");
+        if( append_string_katcl( f_katcp_cmdline, KATCP_FLAG_FIRST, f_read_start ) < 0 )
             return -1;
-        }
-        got = arg_buffer_katcl(f_katcp_cmdline, 2, buffer, len);
+        if( append_string_katcl( f_katcp_cmdline, 0, const_cast< char* >( a_regname.c_str() ) ) < 0 )
+            return -1;
+        if( append_unsigned_long_katcl( f_katcp_cmdline, 0, 0 ) < 0 )
+            return -1;
+        if( append_unsigned_long_katcl( f_katcp_cmdline, KATCP_FLAG_LAST, a_len ) < 0 )
+            return -1;
 
-        if(got < len)
+        if( dispatch_client( f_read_end, 1 ) < 0 )
+            return -1;
+
+        int t_count = arg_count_katcl( f_katcp_cmdline );
+        if( t_count < 2 )
         {
-            MTERROR(mtlog,"read: partial data, wanted "<<len<<", got "<< got);
+            MTERROR( mtlog,"insufficient arguments in reply" );
             return -1;
         }
 
-        have_katcl(f_katcp_cmdline);
+        int t_got = arg_buffer_katcl( f_katcp_cmdline, 2, a_buffer, a_len );
+        if( t_got < a_len )
+        {
+            MTERROR( mtlog,"partial data, wanted "<< a_len <<", got "<< t_got );
+            return -1;
+        }
 
-        return len;
+        have_katcl( f_katcp_cmdline );
+
+        return a_len;
     }
-    
+
     //////End:Katcp Desc.//////////
-    
+
     bool digitizer_roach::allocate( buffer* a_buffer, condition* a_condition )
     {
         f_buffer = a_buffer;
         f_condition = a_condition;
-        
-        //katcp
-        f_katcp_server = const_cast<char*>(f_roach_ipaddress.c_str());
-        f_boffile = const_cast<char*>(f_roach_boffile.c_str());
-        f_katcp_cmdline = create_katcl(f_katcp_fd);
-        
-        //end:katcp
+
+        if(f_buffer->record_size() > 65536*4*2)
+        {
+            MTERROR( mtlog, "Record size must be <= 65536*4*2 = 524288" );
+            return false;   
+        }
+
+        MTINFO( mtlog, "connecting to katcp server..." );
+
+        // Connect to the ROACH board
+        if( f_katcp_server.empty() )
+        {
+            MTERROR( mtlog,"Please provide the host address for the ROACH system" );
+            return false;
+        }
+
+        // get the file descriptor
+        f_katcp_fd = net_connect( const_cast< char* >( f_katcp_server.c_str() ), 0, NETC_VERBOSE_ERRORS | NETC_VERBOSE_STATS );
+        if( f_katcp_fd < 0 )
+        {
+            MTINFO( mtlog,"Unable to connect to the ROACH board at <"<< f_katcp_server << ">" );
+            return false;
+        }
+        else
+        {
+            MTINFO( mtlog,"Connected to ROACH board at <" << f_katcp_server << ">" );
+        }
+
+        // katcp command line
+        destroy_katcl( f_katcp_cmdline, 0 );
+        f_katcp_cmdline = create_katcl( f_katcp_fd );
+        if( f_katcp_cmdline == NULL )
+        {
+            MTERROR( mtlog, "Unable to allocate katcp command line" );
+            return false;
+        }
 
         MTINFO( mtlog, "allocating buffer..." );
 
@@ -332,10 +384,8 @@ namespace mantis
         {
             for( unsigned int index = 0; index < f_buffer->size(); ++index )
             {
-                typed_block< data_type >* t_new_block = new typed_block< data_type >();
-                *( t_new_block->handle() ) = new data_type [ f_buffer->record_size() ];
-                t_new_block->set_data_size( f_buffer->record_size() );
-                t_new_block->set_cleanup( new block_cleanup_roach( t_new_block->data() ) );
+                block* t_new_block = block::allocate_block< data_type >( f_buffer->record_size() );
+                t_new_block->set_cleanup( new block_cleanup_roach( t_new_block->data_bytes() ) );
                 f_buffer->set_block( index, t_new_block );
             }
         }
@@ -345,29 +395,12 @@ namespace mantis
             return false;
         }
 
-        MTINFO( mtlog, "creating master record..." );
+        MTINFO( mtlog, "allocating katcp memory..." );
 
-/*
-        if( f_master_record != NULL ) delete [] f_master_record;
-        f_master_record = new data_type [f_buffer->record_size()];
-        for( unsigned index = 0; index < f_buffer->record_size(); ++index )
-        {
-            f_master_record[ index ] = index % f_params.levels;
-        }
-*/
-        //for Katcp
-        if(f_buffer->record_size() > 65536*4)
-        {
-            MTERROR( mtlog, "Record size must be < 65536*4" );
-            return false;   
-        }
-        f_RM_recordSize = f_buffer->record_size();
-        f_datax = new unsigned char [f_RM_recordSize];
-        f_datax1 = new unsigned char [f_RM_recordSize];
-        f_datay = new uint8_t [(f_RM_recordSize*2)];
-        
-        //end:Katcp
-        
+        f_rm_half_record_size = f_buffer->record_size() / 2;
+        f_datax0 = new data_type [f_rm_half_record_size];
+        f_datax1 = new data_type [f_rm_half_record_size];
+
         f_allocated = true;
         return true;
     }
@@ -381,76 +414,43 @@ namespace mantis
         f_acquisition_count = 0;
         f_live_time = 0;
         f_dead_time = 0;
-        //Katcp
-        MTINFO(mtlog,"Boffile set to: "<<f_boffile);
-	    MTINFO(mtlog,"Server IP set to: "<<f_katcp_server);
-	
-        if(f_katcp_server == NULL)
-	    {
-    	    MTERROR(mtlog,"Roachmantis: Need a server as first argument or in the KATCP_SERVER variable");
-    	    return 2;
-	    }
-	    else
+
+        if( borph_prog( f_bof_file ) < 0 )
         {
-            MTINFO(mtlog,"RoachMantis: KATCP_SERVER set, now trying to connect...");
+            MTERROR( mtlog,"Unable to program FPGA with bof file <" << f_bof_file << ">" );
+            return false;
+        }
+        else
+        {
+            MTINFO( mtlog,"FPGA programmed with bof file <"<< f_bof_file << ">" );
         }
 
-	    f_katcp_fd= net_connect(f_katcp_server, 0, NETC_VERBOSE_ERRORS | NETC_VERBOSE_STATS);
-        if(f_katcp_fd< 0)
+        if( borph_write( f_reg_name_ctrl, 0, 00  ) < 0 )
         {
-            MTINFO(mtlog,"Unable to connect to"<<f_katcp_server);
-            return 2;
-        }
-        else
-        {
-            MTINFO(mtlog,"Connected to roach board!");
-        }
-    
-        if(f_katcp_cmdline == NULL)
-        {
-            MTERROR(mtlog,"Unable to allocate state");
-            return 2;
-        }
-        else
-        {
-            MTINFO(mtlog,"State allocated");
-        }
-    
-        if(borph_prog(f_katcp_cmdline, f_boffile, f_RM_timeout) < 0)
-        {
-            MTERROR(mtlog,"Unable to program FPGA");
-            return 2;
-        }
-        else
-        {
-            MTINFO(mtlog,"FPGA programmed with: "<<f_boffile);
-        }
- 
-        if(borph_write(f_katcp_cmdline, const_cast<char*>("snap64_ctrl"), 0, 00, f_RM_timeout) < 0)
-        {
-            MTERROR(mtlog,"Unable to write to register - 'snap64_ctrl'");
-            return 2;
+            MTERROR( mtlog, "Unable to write to register - 'snap64_ctrl'" );
+            return false;
         }
         else
         {
             MTINFO(mtlog,"Wrote - 'snap64_ctrl'");
         }
-        if(borph_write(f_katcp_cmdline, const_cast<char*>("snap64_ctrl"), 0, 0111, f_RM_timeout) < 0)
+
+        if( borph_write( f_reg_name_ctrl, 0, 0111 ) < 0 )
         {
-            MTERROR(mtlog,"Unable to write to register - 'snap64_ctrl'");
-            return 2;
+            MTERROR( mtlog,"Unable to write to register - 'snap64_ctrl'" );
+            return false;
         }
         else
         {
             MTINFO(mtlog,"Wrote - 'snap64_ctrl'");
         }
-        //end:Katcp
-        MTINFO(mtlog,"Next: 'snap64_bram_msb' and 'snap64_bram_msb' will be read");
+
         return true;
     }
+
     void digitizer_roach::execute()
     {
-        iterator t_it( f_buffer );
+        iterator t_it( f_buffer, "dig-roach" );
 
         timespec t_live_start_time;
         timespec t_live_stop_time;
@@ -463,9 +463,6 @@ namespace mantis
         f_condition->wait();
 
         MTINFO( mtlog, "loose at <" << t_it.index() << ">" );
-
-        int t_old_cancel_state;
-        pthread_setcancelstate( PTHREAD_CANCEL_DISABLE, &t_old_cancel_state );
 
         //start acquisition
         if( start() == false )
@@ -591,12 +588,11 @@ namespace mantis
             }
             //MTINFO( mtlog, "record count: " << f_record_count );
 
-            // slow things down a bit, since this is for testing purposes, after all
-            usleep( 100 );
         }
 
         return;
     }
+
     void digitizer_roach::cancel()
     {
         //cout << "CANCELLING DIGITIZER TEST" );
@@ -608,6 +604,7 @@ namespace mantis
         //cout << "  digitizer_roach is done canceling" );
         return;
     }
+
     void digitizer_roach::finalize( response* a_response )
     {
         //MTINFO( mtlog, "calculating statistics..." );
@@ -626,48 +623,49 @@ namespace mantis
     {
         return true;
     }
+
     bool digitizer_roach::acquire( block* a_block, timespec& a_stamp_time )
     {
         //Katcp
-        int f_katcp_fd;
-        if(borph_read(f_katcp_cmdline, const_cast<char*>("snap64_bram_msb"), f_datax, f_RM_recordSize, f_RM_timeout) < 0)
+        if( borph_read( f_reg_name_msb, f_datax0, f_rm_half_record_size ) < 0 )
         {
-            MTERROR(mtlog,"Unable to read register 'snap64_bram_msb'");
-            return 2;
+            MTERROR( mtlog,"Unable to read register 'snap64_bram_msb'" );
+            return false;
         }
-        else
+        //else
+        //{
+        //    MTINFO(mtlog,"Read - 'snap64_bram_msb'");
+        //}
+        //printf("%d \n",(uint8_t)(f_datax0[1]));
+
+        if( borph_read( f_reg_name_lsb, f_datax1, f_rm_half_record_size ) < 0 )
         {
-            //MTINFO(mtlog,"Read - 'snap64_bram_msb'");
-        }
-        //printf("%d \n",(uint8_t)(f_datax[1]));
-    
-        if(borph_read(f_katcp_cmdline, const_cast<char*>("snap64_bram_lsb"), f_datax1, f_RM_recordSize, f_RM_timeout) < 0)
-        {
-            MTERROR(mtlog,"Unable to read register 'snap64_bram_lsb'");
-            return 2;
+            MTERROR( mtlog,"Unable to read register 'snap64_bram_lsb'" );
+            return false;
         }   
-        else
+        //else
+        //{
+        //    MTINFO(mtlog,"Read - 'snap64_bram_lsb'");
+        //}
+
+        // merge datax and datax1 into datay
+        for( unsigned rm_index = 0; rm_index < f_rm_half_record_size; rm_index += 2 )
         {
-            //MTINFO(mtlog,"Read - 'snap64_bram_lsb'");
-        }
-        for(int RM_count = 0; RM_count<(f_RM_recordSize); RM_count+=2)
-        {
-            f_datay[RM_count*2] = (uint8_t)(f_datax[RM_count]);
-            f_datay[(RM_count*2)+1] = (uint8_t)(f_datax1[RM_count]);
+            a_block->data_bytes()[ rm_index*2     ] = f_datax0[ rm_index ];
+            a_block->data_bytes()[ rm_index*2 + 1 ] = f_datax1[ rm_index ];
         }
         //End:Katcp
-        
+
         a_block->set_record_id( f_record_count );
         a_block->set_acquisition_id( f_acquisition_count );
         get_time_monotonic( &a_stamp_time );
         a_block->set_timestamp( time_to_nsec( a_stamp_time ) );
-        ::memcpy( a_block->data_bytes(), f_datay, f_buffer->record_size() );
         ++f_record_count;
         return true;
     }
+
     bool digitizer_roach::stop()
     {
-        ++f_acquisition_count;
         return true;
     }
 
@@ -707,6 +705,7 @@ namespace mantis
     {
         if( f_triggered ) return true;
         delete [] f_data;
+        f_triggered = true;
         return true;
     }
 
