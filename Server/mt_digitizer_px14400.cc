@@ -212,7 +212,7 @@ namespace mantis
     }
     void digitizer_px14400::execute()
     {
-        typed_iterator< data_type > t_it( f_buffer );
+        iterator t_it( f_buffer );
 
         timespec t_live_start_time;
         timespec t_live_stop_time;
@@ -268,7 +268,7 @@ namespace mantis
 
             t_it->set_acquiring();
 
-            if( acquire( t_it.typed_object(), t_stamp_time ) == false )
+            if( acquire( t_it.object(), t_stamp_time ) == false )
             {
                 //mark the block as written
                 t_it->set_written();
@@ -370,14 +370,14 @@ namespace mantis
 
         return true;
     }
-    bool digitizer_px14400::acquire( typed_block< data_type >* a_block, timespec& a_stamp_time )
+    bool digitizer_px14400::acquire( block* a_block, timespec& a_stamp_time )
     {
         a_block->set_record_id( f_record_count );
         a_block->set_acquisition_id( f_acquisition_count );
         get_time_monotonic( &a_stamp_time );
         a_block->set_timestamp( time_to_nsec( a_stamp_time ) );
 
-        int t_result = GetPciAcquisitionDataFastPX14( f_handle, f_buffer->record_size(), a_block->data(), 0 );
+        int t_result = GetPciAcquisitionDataFastPX14( f_handle, f_buffer->record_size(), reinterpret_cast< data_type* >( a_block->data_bytes() ), 0 );
         if( t_result != SIG_SUCCESS )
         {
             DumpLibErrorPX14( t_result, "failed to acquire dma data over pci: " );

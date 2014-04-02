@@ -63,7 +63,7 @@ namespace mantis
             condition f_cancel_condition;
 
             bool start();
-            bool acquire( typed_block< data_type >* a_block, timespec& a_time_stamp );
+            bool acquire( block* a_block, timespec& a_time_stamp );
             bool stop();
     };
 

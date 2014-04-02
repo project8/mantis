@@ -95,6 +95,7 @@ namespace mantis
             for( unsigned int index = 0; index < f_buffer->size(); ++index )
             {
                 block* t_new_block = block::allocate_block< data_type >( f_buffer->record_size() );
+                t_new_block->set_cleanup( new block_cleanup_test16( t_new_block->data_bytes() ) );
                 f_buffer->set_block( index, t_new_block );
             }
         }
@@ -383,4 +384,22 @@ namespace mantis
         return;
     }
 
+
+    //**********************************
+    // Block Cleanup -- Test16 Digitizer
+    //**********************************
+
+    block_cleanup_test16::block_cleanup_test16( byte_type* a_data ) :
+            block_cleanup(),
+            f_triggered( false ),
+            f_data( a_data )
+    {}
+    block_cleanup_test16::~block_cleanup_test16()
+    {}
+    bool block_cleanup_test16::delete_data()
+    {
+        if( f_triggered ) return true;
+        delete [] f_data;
+        return true;
+    }
 }

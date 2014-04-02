@@ -100,22 +100,39 @@ namespace mantis
 
             byte_type** handle();
 
+            void set_cleanup( block_cleanup* a_cleanup );
+
         protected:
             block_header f_header;
 
             byte_type* f_data_bytes;
             unsigned f_data_nbytes;
 
+            block_cleanup* f_cleanup;
     };
 
     template< typename DataType >
     block* block::allocate_block( unsigned a_size )
     {
         block* t_new_block = new block();
+        t_new_block->set_data_size( a_size );
         t_new_block->f_data_nbytes = a_size * sizeof( DataType );
         t_new_block->f_data_bytes = new byte_type [ t_new_block->f_data_nbytes ];
         return t_new_block;
     }
+
+
+    //**************************************************
+    // block_cleanup
+    //**************************************************
+
+    class block_cleanup
+    {
+        public:
+            block_cleanup() {}
+            virtual ~block_cleanup() {}
+            virtual bool delete_data() = 0;
+    };
 
 
     //**************************************************

@@ -5,7 +5,8 @@ namespace mantis
     block::block() :
             f_header(),
             f_data_bytes( NULL ),
-            f_data_nbytes( 0 )
+            f_data_nbytes( 0 ),
+            f_cleanup( NULL )
     {
         f_header.set_state( block_header_state_t_unused );
         f_header.set_acquisition_id( 0 );
@@ -16,7 +17,8 @@ namespace mantis
 
     block::~block()
     {
-        delete [] f_data_bytes;
+        if( f_cleanup != NULL ) f_cleanup->delete_data();
+        delete f_cleanup;
     }
 
     block_header_state_t block::get_state() const
@@ -165,4 +167,10 @@ namespace mantis
         return &f_data_bytes;
     }
 
+    void block::set_cleanup( block_cleanup* a_cleanup )
+    {
+        delete f_cleanup;
+        f_cleanup = a_cleanup;
+        return;
+    }
 }
