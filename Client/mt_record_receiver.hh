@@ -17,6 +17,8 @@ namespace mantis
     class response;
     class server;
 
+    class block_cleanup_rr;
+
     class record_receiver :
         public callable
     {
@@ -63,16 +65,25 @@ namespace mantis
         for( unsigned int index = 0; index < f_buffer->size(); index++ )
         {
             block* t_new_block = block::allocate_block< DataType >( f_buffer->record_size() );
-            /*
-            typed_block< DataType >* t_new_block = new typed_block< DataType >();
-            *( t_new_block->handle() ) = new DataType[ f_buffer->record_size() ];
-            t_new_block->set_data_size( f_buffer->record_size() );
-            t_new_block->set_cleanup( new block_cleanup_rr< DataType >( t_new_block->data() ) );
-            */
+            t_new_block->set_cleanup( new block_cleanup_rr( t_new_block->data_bytes() ) );
             f_buffer->set_block( index, t_new_block );
         }
         return;
     }
+
+
+    class block_cleanup_rr : public block_cleanup
+    {
+        public:
+            block_cleanup_rr( byte_type* a_data );
+            virtual ~block_cleanup_rr();
+            virtual bool delete_data();
+        private:
+            bool f_triggered;
+            byte_type* f_data;
+    };
+
+
 
 }
 

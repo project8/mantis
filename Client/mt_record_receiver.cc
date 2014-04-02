@@ -239,4 +239,25 @@ namespace mantis
     }
 
 
+
+    //**********************************
+    // Block Cleanup -- Request Receiver
+    //**********************************
+
+    block_cleanup_rr::block_cleanup_rr( byte_type* a_data ) :
+        f_triggered( false ),
+        f_data( a_data )
+    {}
+
+    block_cleanup_rr::~block_cleanup_rr()
+    {}
+
+    bool block_cleanup_rr::delete_data()
+    {
+        if( f_triggered ) return true;
+        delete [] f_data;
+        f_triggered = true;
+        return true;
+    }
+
 }
