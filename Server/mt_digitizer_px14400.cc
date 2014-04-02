@@ -425,6 +425,31 @@ namespace mantis
 
 
     //***********************************
+    // Block Cleanup px14400
+    //***********************************
+
+    block_cleanup_px14400::block_cleanup_px14400( byte_type* a_data, HPX14* a_dig_ptr ) :
+                f_triggered( false ),
+                f_data( a_data ),
+                f_dig_ptr( a_dig_ptr )
+    {}
+    block_cleanup_px14400::~block_cleanup_px14400()
+    {}
+    bool block_cleanup_px14400::delete_data()
+    {
+        if( f_triggered ) return true;
+        int t_result = FreeDmaBufferPX14( reinterpret_cast< digitizer_px14400::data_type* >( *f_dig_ptr ), f_data );
+        if( t_result != SIG_SUCCESS )
+        {
+            DumpLibErrorPX14( t_result, "failed to deallocate dma memory: " );
+            return false;
+        }
+        f_triggered = true;
+        return true;
+    }
+
+
+    //***********************************
     // test_digitizer_px14400
     //***********************************
 

@@ -365,6 +365,7 @@ namespace mantis
     {
         if( f_triggered ) return true;
         delete [] f_data;
+        f_triggered = true;
         return true;
     }
 

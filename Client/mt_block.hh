@@ -10,14 +10,7 @@ namespace mantis
      @class block
      @author D. Furse, N. Oblath
 
-     @brief Single-record data class for mantis buffers; this base class provides the byte-type access functions
-    */
-
-    /*!
-     @class empty_block
-     @author N. Oblath
-
-     @brief Block with no data
+     @brief Single-record data class for mantis buffers
     */
 
     /*!
@@ -28,13 +21,6 @@ namespace mantis
     */
 
     /*!
-     @class typed_block
-     @author N. Oblath
-
-     @brief Single-record data class for mantis buffers; this templated derived class contains the actual data array
-    */
-
-    /*!
      @class block_view
      @author N. Oblath
 
@@ -42,6 +28,7 @@ namespace mantis
     */
 
 
+    class block_cleanup;
 
     //**************************************************
     // block
