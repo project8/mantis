@@ -59,18 +59,6 @@ namespace mantis
 
     };
 
-    template< typename DataType >
-    void record_receiver::allocate_buffer()
-    {
-        for( unsigned int index = 0; index < f_buffer->size(); index++ )
-        {
-            block* t_new_block = block::allocate_block< DataType >( f_buffer->record_size() );
-            t_new_block->set_cleanup( new block_cleanup_rr( t_new_block->data_bytes() ) );
-            f_buffer->set_block( index, t_new_block );
-        }
-        return;
-    }
-
 
     class block_cleanup_rr : public block_cleanup
     {
@@ -84,6 +72,17 @@ namespace mantis
     };
 
 
+    template< typename DataType >
+    void record_receiver::allocate_buffer()
+    {
+        for( unsigned int index = 0; index < f_buffer->size(); index++ )
+        {
+            block* t_new_block = block::allocate_block< DataType >( f_buffer->record_size() );
+            t_new_block->set_cleanup( new block_cleanup_rr( t_new_block->data_bytes() ) );
+            f_buffer->set_block( index, t_new_block );
+        }
+        return;
+    }
 
 }
 
