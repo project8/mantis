@@ -85,7 +85,7 @@ namespace mantis
         // until an incoming connection is received
         t_record_dist->set_connection( f_server->get_connection() );
 
-        iterator t_it( f_buffer );
+        iterator t_it( f_buffer, "rec-receiver" );
 
         timespec t_live_start_time;
         timespec t_live_stop_time;

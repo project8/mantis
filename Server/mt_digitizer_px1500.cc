@@ -192,7 +192,7 @@ namespace mantis
     }
     void digitizer_px1500::execute()
     {
-        iterator t_it( f_buffer );
+        iterator t_it( f_buffer, "dig-px1500" );
 
         timespec t_live_start_time;
         timespec t_live_stop_time;

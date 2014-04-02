@@ -212,7 +212,7 @@ namespace mantis
     }
     void digitizer_px14400::execute()
     {
-        iterator t_it( f_buffer );
+        iterator t_it( f_buffer, "dig-px14400" );
 
         timespec t_live_start_time;
         timespec t_live_stop_time;
