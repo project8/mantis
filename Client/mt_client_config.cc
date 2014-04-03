@@ -29,7 +29,7 @@ namespace mantis
 
         add( "file", client_value << "mantis_client_out.egg" );
 
-        add( "rate", client_value << 250.0 );
+        add( "rate", client_value << 200.0 );
 
         add( "duration", client_value << 500 );
 
