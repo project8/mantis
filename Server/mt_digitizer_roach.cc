@@ -271,7 +271,7 @@ namespace mantis
             return -1;
 
         /* use above function to send request */
-        if( dispatch_client( const_cast<char*>("!write"), 1 ) < 0 )
+        if( dispatch_client( f_write_end , 1 ) < 0 )
             return -1;
 
         /* clean up request for next call */
