@@ -15,6 +15,7 @@
 #include "document.h"
 #include "filestream.h"
 #include "prettywriter.h"
+#include "stringbuffer.h"
 
 #include <deque>
 #include <map>
@@ -385,8 +386,10 @@ namespace mantis
     class param_output_json
     {
         public:
-            typedef rapidjson::Writer< rapidjson::FileStream, rapidjson::UTF8<>, rapidjson::MemoryPoolAllocator<> > rj_writer;
-            typedef rapidjson::PrettyWriter< rapidjson::FileStream, rapidjson::UTF8<>, rapidjson::MemoryPoolAllocator<> > rj_pretty_writer;
+            typedef rapidjson::Writer< rapidjson::FileStream, rapidjson::UTF8<>, rapidjson::MemoryPoolAllocator<> > rj_file_writer;
+            typedef rapidjson::PrettyWriter< rapidjson::FileStream, rapidjson::UTF8<>, rapidjson::MemoryPoolAllocator<> > rj_pretty_file_writer;
+            typedef rapidjson::Writer< rapidjson::StringBuffer, rapidjson::UTF8<>, rapidjson::MemoryPoolAllocator<> > rj_string_writer;
+            typedef rapidjson::PrettyWriter< rapidjson::StringBuffer, rapidjson::UTF8<>, rapidjson::MemoryPoolAllocator<> > rj_pretty_string_writer;
 
             enum json_writing_style
             {
@@ -399,13 +402,89 @@ namespace mantis
             virtual ~param_output_json();
 
             static bool write_file( const param& a_to_write, const std::string& a_filename, json_writing_style a_style );
-            static bool write_param( const param& a_to_write, rj_writer* a_writer );
-            static bool write_param_null( const param& a_to_write, rj_writer* a_writer );
-            static bool write_param_value( const param_value& a_to_write, rj_writer* a_writer );
-            static bool write_param_array( const param_array& a_to_write, rj_writer* a_writer );
-            static bool write_param_node( const param_node& a_to_write, rj_writer* a_writer );
+            static bool write_string( const param& a_to_write, std::string& a_string, json_writing_style a_style );
+            template< class XWriter >
+            static bool write_param( const param& a_to_write, XWriter* a_writer );
+            template< class XWriter >
+            static bool write_param_null( const param& a_to_write, XWriter* a_writer );
+            template< class XWriter >
+            static bool write_param_value( const param_value& a_to_write, XWriter* a_writer );
+            template< class XWriter >
+            static bool write_param_array( const param_array& a_to_write, XWriter* a_writer );
+            template< class XWriter >
+            static bool write_param_node( const param_node& a_to_write, XWriter* a_writer );
 
     };
+
+    template< class XWriter >
+    bool param_output_json::write_param( const param& a_to_write, XWriter* a_writer )
+    {
+        if( a_to_write.is_null() )
+        {
+            return param_output_json::write_param_null( a_to_write, a_writer );
+        }
+        if( a_to_write.is_value() )
+        {
+            return param_output_json::write_param_value( a_to_write.as_value(), a_writer );
+        }
+        if( a_to_write.is_array() )
+        {
+            return param_output_json::write_param_array( a_to_write.as_array(), a_writer );
+        }
+        if( a_to_write.is_node() )
+        {
+            return param_output_json::write_param_node( a_to_write.as_node(), a_writer );
+        }
+        MTWARN( mtlog_p, "parameter not written: <" << a_to_write << ">" );
+        return false;
+    }
+    template< class XWriter >
+    bool param_output_json::write_param_null( const param& a_to_write, XWriter* a_writer )
+    {
+        //MTWARN( mtlog_p, "writing null" );
+        a_writer->Null();
+        return true;
+    }
+    template< class XWriter >
+    bool param_output_json::write_param_value( const param_value& a_to_write, XWriter* a_writer )
+    {
+        //MTWARN( mtlog_p, "writing value" );
+        a_writer->String(a_to_write.to_string().c_str());
+        return true;
+    }
+    template< class XWriter >
+    bool param_output_json::write_param_array( const param_array& a_to_write, XWriter* a_writer )
+    {
+        //MTWARN( mtlog_p, "writing array" );
+        a_writer->StartArray();
+        for( param_array::const_iterator it = a_to_write.begin(); it != a_to_write.end(); ++it )
+        {
+            if( ! param_output_json::write_param( *(*it), a_writer ) )
+            {
+                MTERROR( mtlog_p, "Error while writing parameter array" );
+                return false;
+            }
+        }
+        a_writer->EndArray();
+        return true;
+    }
+    template< class XWriter >
+    bool param_output_json::write_param_node( const param_node& a_to_write, XWriter* a_writer )
+    {
+        //MTWARN( mtlog_p, "writing node" );
+        a_writer->StartObject();
+        for( param_node::const_iterator it = a_to_write.begin(); it != a_to_write.end(); ++it )
+        {
+            a_writer->String( it->first.c_str() );
+            if( ! param_output_json::write_param( *(it->second), a_writer ) )
+            {
+                MTERROR( mtlog_p, "Error while writing parameter node" );
+                return false;
+            }
+        }
+        a_writer->EndObject();
+        return true;
+    }
 
 
 } /* namespace mantis */

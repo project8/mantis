@@ -31,7 +31,7 @@ namespace mantis
 
         add( "rate", client_value << 250.0 );
 
-        add( "duration", client_value << 1000 );
+        add( "duration", client_value << 500 );
 
         add( "mode", client_value << 0 );
 

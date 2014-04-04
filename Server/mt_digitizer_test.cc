@@ -94,10 +94,8 @@ namespace mantis
         {
             for( unsigned int index = 0; index < f_buffer->size(); ++index )
             {
-                typed_block< data_type >* t_new_block = new typed_block< data_type >();
-                *( t_new_block->handle() ) = new data_type [ f_buffer->record_size() ];
-                t_new_block->set_data_size( f_buffer->record_size() );
-                t_new_block->set_cleanup( new block_cleanup_test( t_new_block->data() ) );
+                block* t_new_block = block::allocate_block< data_type >( f_buffer->record_size() );
+                t_new_block->set_cleanup( new block_cleanup_test( t_new_block->data_bytes() ) );
                 f_buffer->set_block( index, t_new_block );
             }
         }
@@ -134,7 +132,7 @@ namespace mantis
     }
     void digitizer_test::execute()
     {
-        iterator t_it( f_buffer );
+        iterator t_it( f_buffer, "dig_test" );
 
         timespec t_live_start_time;
         timespec t_live_stop_time;
@@ -351,11 +349,12 @@ namespace mantis
         return;
     }
 
+
     //********************************
     // Block Cleanup -- Test Digitizer
     //********************************
 
-    block_cleanup_test::block_cleanup_test( digitizer_test::data_type* a_data ) :
+    block_cleanup_test::block_cleanup_test( byte_type* a_data ) :
             block_cleanup(),
             f_triggered( false ),
             f_data( a_data )
@@ -366,6 +365,7 @@ namespace mantis
     {
         if( f_triggered ) return true;
         delete [] f_data;
+        f_triggered = true;
         return true;
     }
 

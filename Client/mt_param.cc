@@ -14,9 +14,6 @@ using std::string;
 using std::stringstream;
 
 
-// for the config maker
-#include "filestream.h"
-
 #include <cstdio>
 using std::string;
 
@@ -870,108 +867,67 @@ namespace mantis
     param_output_json::~param_output_json()
     {}
 
-    bool param_output_json::write_file( const param& a_to_write, const std::string& aFilename, json_writing_style aStyle )
+    bool param_output_json::write_file( const param& a_to_write, const std::string& a_filename, json_writing_style a_style )
     {
-        if( aFilename.empty() )
+        if( a_filename.empty() )
         {
             MTERROR( mtlog, "Filename cannot be an empty string" );
             return false;
         }
 
-        FILE* file = fopen( aFilename.c_str(), "w" );
+        FILE* file = fopen( a_filename.c_str(), "w" );
         if( file == NULL )
         {
-            MTERROR( mtlog, "Unable to open file: " << aFilename );
+            MTERROR( mtlog, "Unable to open file: " << a_filename );
             return false;
         }
 
-        rapidjson::FileStream fileStream( file );
+        rapidjson::FileStream t_filestream( file );
 
-        rj_writer* t_writer = NULL;
-        if( aStyle == k_compact )
+        bool t_result = false;
+        if( a_style == k_compact )
         {
-            MTDEBUG( mtlog, "Printing JSON with compact writer" );
-            t_writer = new rj_writer( fileStream );
+            rj_file_writer t_writer( t_filestream );
+            t_result = param_output_json::write_param( a_to_write, &t_writer );
         }
         else
         {
-            MTDEBUG( mtlog, "Printing JSON with pretty writer" );
-            t_writer = new rj_pretty_writer( fileStream );
+            rj_pretty_file_writer t_writer( t_filestream );
+            t_result = param_output_json::write_param( a_to_write, &t_writer );
         }
 
-        if (! param_output_json::write_param( a_to_write, t_writer ) )
+        if (! t_result )
         {
             MTERROR( mtlog, "Error while writing file" );
-            delete t_writer;
             return false;
         }
 
-        delete t_writer;
+        return true;
+    }
+    bool param_output_json::write_string( const param& a_to_write, std::string& a_string, json_writing_style a_style )
+    {
+        rapidjson::StringBuffer t_str_buff;
 
-        return true;
-    }
-    bool param_output_json::write_param( const param& a_to_write, rj_writer* a_writer )
-    {
-        if( a_to_write.is_null() )
+        bool t_result = false;
+        if( a_style == k_compact )
         {
-            return param_output_json::write_param_null( a_to_write, a_writer );
+            rj_string_writer t_writer( t_str_buff );
+            t_result = param_output_json::write_param( a_to_write, &t_writer );
         }
-        if( a_to_write.is_value() )
+        else
         {
-            return param_output_json::write_param_value( a_to_write.as_value(), a_writer );
+            rj_pretty_string_writer t_writer( t_str_buff );
+            t_result = param_output_json::write_param( a_to_write, &t_writer );
         }
-        if( a_to_write.is_array() )
+
+        if (! t_result )
         {
-            return param_output_json::write_param_array( a_to_write.as_array(), a_writer );
+            MTERROR( mtlog, "Error while writing string" );
+            return false;
         }
-        if( a_to_write.is_node() )
-        {
-            return param_output_json::write_param_node( a_to_write.as_node(), a_writer );
-        }
-        MTWARN( mtlog, "parameter not written: <" << a_to_write << ">" );
-        return false;
-    }
-    bool param_output_json::write_param_null( const param& a_to_write, rj_writer* a_writer )
-    {
-        //MTWARN( mtlog, "writing null" );
-        a_writer->Null();
-        return true;
-    }
-    bool param_output_json::write_param_value( const param_value& a_to_write, rj_writer* a_writer )
-    {
-        //MTWARN( mtlog, "writing value" );
-        a_writer->String(a_to_write.to_string().c_str());
-        return true;
-    }
-    bool param_output_json::write_param_array( const param_array& a_to_write, rj_writer* a_writer )
-    {
-        //MTWARN( mtlog, "writing array" );
-        a_writer->StartArray();
-        for( param_array::const_iterator it = a_to_write.begin(); it != a_to_write.end(); ++it )
-        {
-            if( ! param_output_json::write_param( *(*it), a_writer ) )
-            {
-                MTERROR( mtlog, "Error while writing parameter array" );
-                return false;
-            }
-        }
-        a_writer->EndArray();
-        return true;
-    }
-    bool param_output_json::write_param_node( const param_node& a_to_write, rj_writer* a_writer )
-    {
-        //MTWARN( mtlog, "writing node" );
-        a_writer->StartObject();
-        for( param_node::const_iterator it = a_to_write.begin(); it != a_to_write.end(); ++it )
-        {
-            a_writer->String( it->first.c_str() );
-            if( ! param_output_json::write_param( *(it->second), a_writer ) )
-            {
-                MTERROR( mtlog, "Error while writing parameter node" );
-                return false;
-            }
-        }
-        a_writer->EndObject();
+
+        a_string.assign( t_str_buff.GetString() );
+
         return true;
     }
 
