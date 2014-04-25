@@ -3,6 +3,8 @@
 
 #include "mt_callable.hh"
 
+#include "mt_param.hh"
+
 #include <cstddef>
 
 namespace mantis
@@ -15,7 +17,7 @@ namespace mantis
     class request_receiver : public callable
     {
         public:
-            request_receiver( server* a_server, run_queue* a_run_queue, condition* a_condition );
+            request_receiver( const param_node* a_config, server* a_server, run_queue* a_run_queue, condition* a_condition, const std::string& a_exe_name = "unknown" );
             virtual ~request_receiver();
 
             void execute();
@@ -43,9 +45,11 @@ namespace mantis
             void set_voltage_range( double v_range );
 
         private:
+            param_node f_config;
             server* f_server;
             run_queue* f_run_queue;
             condition* f_condition;
+            std::string f_exe_name;
 
             size_t f_buffer_size;
             size_t f_record_size;
