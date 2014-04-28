@@ -27,6 +27,14 @@ private slots:
     void on_buttonSave_clicked();
     void on_buttonSaveAs_clicked();
 
+    void on_EggFilenameDialogButton_clicked();
+    void open_simple_egg_filename_dialog();
+    void open_full_egg_filename_dialog();
+
+    void on_DescriptionButton_toggled(bool checked);
+
+    void on_runEnabledButton_stateChanged(int state);
+
     void on_runButton_clicked();
 
     void set_file_edited();
@@ -43,6 +51,8 @@ private:
 
     QString f_default_filename_text;
     bool f_config_edited;
+
+    bool f_use_simple_egg_filename_dialog;
 };
 
 #endif // MTQ_CLIENT_EXE_GUI_HH

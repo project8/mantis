@@ -40,24 +40,29 @@ else( Qt5Widgets_FOUND )
 endif( Qt5Widgets_FOUND )
 
 set( client_gui_SOURCES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/main.cc  
-    ${CMAKE_CURRENT_SOURCE_DIR}/mtq_client_exe_gui.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/mtq_run_client.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/mtq_signaling_streambuf.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/mtq_single_client_window.cc
+    main.cc  
+    mtq_client_exe_gui.cc
+    mtq_full_file_dialog.cc
+    mtq_run_client.cc
+    mtq_signaling_streambuf.cc
+    mtq_simple_file_dialog.cc
+    mtq_single_client_window.cc
 )
 set( client_gui_HEADERS
-    ${CMAKE_CURRENT_SOURCE_DIR}/mtq_client_exe_gui.hh
-    ${CMAKE_CURRENT_SOURCE_DIR}/mtq_run_client.hh
-    ${CMAKE_CURRENT_SOURCE_DIR}/mtq_signaling_streambuf.hh
-    ${CMAKE_CURRENT_SOURCE_DIR}/mtq_single_client_window.hh
+    mtq_client_exe_gui.hh
+    mtq_full_file_dialog.hh
+    mtq_run_client.hh
+    mtq_signaling_streambuf.hh
+    mtq_simple_File_dialog.hh
+    mtq_single_client_window.hh
 )
 set( client_gui_FORMS
-    ${CMAKE_CURRENT_SOURCE_DIR}/client_exe_gui.ui
-    ${CMAKE_CURRENT_SOURCE_DIR}/single_client_window.ui
+    client_exe_gui.ui
+    filename_dialog.ui
+    single_client_window.ui
 )
 set( client_RESOURCES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/mantis-gui.qrc 
+    mantis-gui.qrc 
 )
 
 QT4_WRAP_CPP( client_gui_HEADERS_MOC ${client_gui_HEADERS} )
@@ -108,10 +113,34 @@ if( APPLE )
     )
 endif( APPLE )
 
+set( plugin_dest_dir ${BIN_INSTALL_SUBDIR} )
+set( qtconf_dest_dir ${BIN_INSTALL_SUBDIR} )
+set( APPS "\${CMAKE_INSTALL_PREFIX}/${BIN_INSTALL_SUBDIR}/mantis_client_gui" )
+if( APPLE )
+    set( plugin_dest_dir ${BIN_INSTALL_SUBDIR}/MTClient.app/Contents/MacOS )
+    set( qtconf_dest_dir ${BIN_INSTALL_SUBDIR}/MTClient.app/Contents/Resources )
+    set( APPS "\${CMAKE_INSTALL_PREFIX}/${BIN_INSTALL_SUBDIR}/MTClient.app" )
+endif( APPLE )
+
 install( TARGETS mantis_client_gui 
-    RUNTIME DESTINATION ${BIN_INSTALL_DIR} 
-    BUNDLE DESTINATION ${BIN_INSTALL_DIR}
+    RUNTIME DESTINATION ${BIN_INSTALL_DIR} COMPONENT Runtime
+    BUNDLE DESTINATION ${BIN_INSTALL_DIR} COMPONENT Runtime
 )
+
+install( DIRECTORY "${QT_PLUGINS_DIR}/imageformats" DESTINATION ${plugin_dest_dir}/plugins COMPONENT Runtime )
+
+install( CODE "
+    file(WRITE \"\${CMAKE_INSTALL_PREFIX}/${qtconf_dest_dir}/qt.conf\" \"\")
+    " COMPONENT Runtime )
+    
+set( DIRS ${QT_LIBRARY_DIRS} )
+
+install( CODE "
+    file( GLOB_RECURSE QTPLUGINS
+      \"\${CMAKE_INSTALL_PREFIX}/${plugin_dest_dir}/plugins/*${CMAKE_SHARED_LIBRARY_SUFFIX}\" )
+    include( BundleUtilities )
+    fixup_bundle( \"${APPS}\" \"\${QTPLUGINS}\" \"${DIRS}\" )
+    " COMPONENT Runtime )
 
 if( UNIX )
     # install a desktop file so CMake appears in the application start menu
@@ -134,19 +163,19 @@ if( APPLE )
     #            WORKING_DIRECTORY \$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/bin)")
 endif( APPLE )
 
-if( APPLE )
+if( APPLE OR WIN32 )
     # install rules for including 3rd party libs such as Qt
     # if a system Qt is used (e.g. installed in /usr/lib/), it will not be included in the installation
-    #set(fixup_exe "\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/bin/cmake-gui${CMAKE_EXECUTABLE_SUFFIX}")
+    #set(fixup_exe "\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/bin/mantis_client_gui${CMAKE_EXECUTABLE_SUFFIX}")
     #if(APPLE)
-    #  set(fixup_exe "\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/MacOS/CMake")
+    #  set(fixup_exe "\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/MacOS/MTClient")
     #endif()
     #install(CODE "
     #    include(\"${CMake_SOURCE_DIR}/Modules/BundleUtilities.cmake\")
     #    set(BU_CHMOD_BUNDLE_ITEMS ON)
     #    fixup_bundle(\"${fixup_exe}\" \"\" \"${QT_LIBRARY_DIR};${QT_BINARY_DIR}\")
     #")
-endif( APPLE )
+endif( APPLE OR WIN32 )
 
 set( CMAKE_PACKAGE_QTGUI TRUE )
 configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/QtDialogCPack.cmake.in"
