@@ -296,7 +296,7 @@ namespace mantis
                 logger::Private::sMutex.lock();
                 logger::Private::getTimeAbsoluteStr();
                 if (logger::Private::fColored)
-                    (*fErr) << color << logger::Private::sTimeBuff <<  " [" << setw(5) << level << "] " << setw(16) << fLogger << ": " << message << skMTEndColor << endl;
+                    (*fErr) << color << logger::Private::sTimeBuff << " [" << setw(5) << level << "] " << setw(16) << fLogger << ": " << message << skMTEndColor << endl;
                 else
                     (*fErr) << logger::Private::sTimeBuff <<  " [" << setw(5) << level << "] " << setw(16) << fLogger << ": " << message << endl;
                 logger::Private::sMutex.unlock();
@@ -315,7 +315,6 @@ namespace mantis
     tm* logger::Private::sProcessedTime;
     char logger::Private::sTimeBuff[512];
 
-
     logger::logger(const char* name) : fPrivate(new Private())
     {
         if (name == 0)
@@ -327,12 +326,14 @@ namespace mantis
             const char* logName = strrchr(name, '/') ? strrchr(name, '/') + 1 : name;
             fPrivate->fLogger = logName;
         }
+        fPrivate->fColored = true;
         sprintf(logger::Private::sDateTimeFormat,  "%%FT%%TZ");
     }
 
     logger::logger(const std::string& name) : fPrivate(new Private())
     {
         fPrivate->fLogger = name.c_str();
+        fPrivate->fColored = true;
         sprintf(logger::Private::sDateTimeFormat,  "%%FT%%TZ");
     }
 

@@ -37,7 +37,7 @@ int main( int argc, char** argv )
         client_config t_cc;
         configurator t_configurator( argc, argv, &t_cc );
 
-        run_client the_client( t_configurator.config() );
+        run_client the_client( t_configurator.config(), t_configurator.exe_name() );
 
         the_client.execute();
 

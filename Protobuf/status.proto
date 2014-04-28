@@ -39,5 +39,16 @@ message status
     
     //voltage range of the digitizer
     optional double voltage_range = 8;
+    
+    //error message
+    optional string error_message = 9 [default = ""];
+    
+    //server software info
+    optional string server_exe = 10 [default = "unknown"];
+    optional string server_version = 11 [default = "unknown"];
+    optional string server_commit = 12 [default = "unknown"];
+    
+    //server config (JSON formatted)
+    optional string server_config = 13 [default = "{}"];
 
 }

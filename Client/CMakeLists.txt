@@ -1,0 +1,78 @@
+# CMakeLists.txt for Mantis/Client
+# Author: N. Oblath
+# Created: Mar 20, 2014
+
+set( MANTIS_CLIENT_HEADERFILES
+    mt_atomic.hh
+    mt_block.hh
+    mt_buffer.hh
+    mt_callable.hh
+    mt_client_config.hh
+    mt_client_file_writing.hh
+    mt_client_worker.hh
+    mt_client.hh
+    mt_condition.hh
+    mt_configurator.hh    
+    mt_connection.hh
+    mt_distribution.hh
+    mt_exception.hh
+    mt_file_writer.hh
+    mt_iterator.hh
+    mt_logger.hh
+    mt_mutex.hh
+    mt_param.hh
+    mt_parser.hh
+    mt_record_dist.hh
+    mt_record_receiver.hh
+    mt_run_client.hh
+    mt_run_context_dist.hh
+    mt_run_description.hh
+    mt_server.hh    
+    mt_signal_handler.hh
+    mt_thread.hh
+    mt_writer.hh
+)
+
+set( MANTIS_CLIENT_SOURCEFILES
+    mt_block.cc
+    mt_buffer.cc
+    mt_callable.cc
+    mt_client_config.cc
+    mt_client_file_writing.cc
+    mt_client_worker.cc
+    mt_client.cc
+    mt_condition.cc
+    mt_configurator.cc    
+    mt_connection.cc
+    mt_distribution.cc
+    mt_exception.cc
+    mt_file_writer.cc
+    mt_iterator.cc
+    mt_logger.cc
+    mt_mutex.cc
+    mt_param.cc
+    mt_parser.cc
+    mt_record_dist.cc
+    mt_record_receiver.cc
+    mt_run_client.cc
+    mt_run_context_dist.cc
+    mt_run_description.cc
+    mt_server.cc    
+    mt_signal_handler.cc
+    mt_thread.cc
+    mt_version.cc
+    mt_writer.cc
+)
+
+configure_file( mt_version.hh.in ${CMAKE_CURRENT_BINARY_DIR}/mt_version.hh )
+set( MANTIS_CLIENT_HEADERFILES
+    ${MANTIS_CLIENT_HEADERFILES}
+    ${CMAKE_CURRENT_BINARY_DIR}/mt_version.hh
+)
+
+add_library( MantisClient ${MANTIS_CLIENT_SOURCEFILES} )
+target_link_libraries( MantisClient MantisProto ${EXTERNAL_LIBRARIES} )
+
+pbuilder_install_headers( ${MANTIS_CLIENT_HEADERFILES} )
+pbuilder_install_libraries( MantisClient )
+

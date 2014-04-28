@@ -14,8 +14,31 @@ namespace mantis
 {
     class param_node;
 
-    class writer :
-        public callable
+    /*!
+     @class writer
+     @author D. Furse, N. Oblath
+
+     @brief Base class for writers
+
+     @details
+     This base class defines the generic writer interface.  Typical usage of a writer proceeds as follows:
+      1. Create the writer
+      2. Set the buffer and buffer condition (writer::set_buffer)
+      3. Configure the writer (writer::configure)
+      4. Initialize the writer (writer::initialize); writer is now ready for use
+      5. Execute the buffer (typically done by starting a thread, via writer::execute)
+      6. Finish up (writer::finalize)
+
+     Subclasses of writer must implement the configure and initialize_derived functions to properly prepare
+     the writer for use.  They also must implement the private function write to perform the action
+     of the writer.
+
+     Some writers may have specific actions that must be taken to properly prepare the writer for use.  These
+     writers cannot be used in a completely generic way (e.g. file_writer).
+
+     Be sure to check each writer's documentation for any necessary usage details.
+    */
+    class writer : public callable
     {
         public:
             writer();

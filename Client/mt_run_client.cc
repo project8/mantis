@@ -15,8 +15,8 @@
 #include "mt_run_context_dist.hh"
 #include "mt_signal_handler.hh"
 #include "mt_thread.hh"
+#include "mt_version.hh"
 #include "thorax.hh"
-using namespace mantis;
 
 #include <algorithm> // for min
 #include <string>
@@ -28,8 +28,9 @@ namespace mantis
 {
     MTLOGGER( mtlog, "run_client" );
 
-    run_client::run_client( const param_node* a_node ) :
+    run_client::run_client( const param_node* a_node, const string& a_exe_name ) :
             f_config( *a_node ),
+            f_exe_name( a_exe_name ),
             f_canceled( false ),
             f_return( 0 )
     {
@@ -74,6 +75,12 @@ namespace mantis
         t_request->set_rate( f_config.get_value< double >( "rate" ) );
         t_request->set_duration( t_duration );
         t_request->set_file_write_mode( request_file_write_mode_t_local );
+        t_request->set_client_exe( f_exe_name );
+        t_request->set_client_version( TOSTRING(Mantis_VERSION) );
+        t_request->set_client_commit( TOSTRING(Mantis_GIT_COMMIT) );
+        string t_config_as_string;
+        param_output_json::write_string( f_config, t_config_as_string, param_output_json::k_compact );
+        t_request->set_client_config( t_config_as_string );
         if( t_client_writes_file )
         {
             t_request->set_file_write_mode( request_file_write_mode_t_remote );
@@ -136,6 +143,8 @@ namespace mantis
         thread t_setup_loop_thread( &t_setup_loop );
         t_sig_hand.push_thread( & t_setup_loop_thread );
         t_setup_loop_thread.start();
+        // wait briefly to allow server to respond
+        usleep( 1000 );
         t_setup_loop_thread.join();
         if( ! t_sig_hand.got_exit_signal() )
         {
@@ -320,16 +329,19 @@ namespace mantis
     run_client::setup_loop::setup_loop( run_context_dist* a_run_context ) :
             f_run_context( a_run_context ),
             f_canceled( false ),
-            f_return( 0 )
+            f_return( RETURN_ERROR )
     {}
     run_client::setup_loop::~setup_loop()
     {}
 
     void run_client::setup_loop::execute()
     {
+        f_run_context->wait_for_status();
         while( ! f_canceled.load() )
         {
-            status_state_t t_state = f_run_context->lock_status_in()->state();
+            status* t_status = f_run_context->lock_status_in();
+            status_state_t t_state = t_status->state();
+            string t_error_msg = t_status->error_message();
             f_run_context->unlock_inbound();
 
             if( t_state == status_state_t_acknowledged )
@@ -340,13 +352,13 @@ namespace mantis
             }
             else if( t_state == status_state_t_error )
             {
-                MTERROR( mtlog, "error reported; run was not acknowledged\n" );
+                MTERROR( mtlog, "error reported: " << t_error_msg << "\n" );
                 f_return = RETURN_ERROR;
                 break;
             }
             else if( t_state == status_state_t_revoked )
             {
-                MTINFO( mtlog, "request revoked; run did not take place\n" );
+                MTINFO( mtlog, "request revoked: " << t_error_msg << "\n" );
                 f_return = RETURN_ERROR;
                 break;
             }
@@ -383,16 +395,19 @@ namespace mantis
             f_run_context( a_run_context ),
             f_file_writing( a_file_writing ),
             f_canceled( false ),
-            f_return( 0 )
+            f_return( RETURN_ERROR )
     {}
     run_client::run_loop::~run_loop()
     {}
 
     void run_client::run_loop::execute()
     {
+        f_run_context->wait_for_status();
         while( ! f_canceled.load() )
         {
-            status_state_t t_state = f_run_context->lock_status_in()->state();
+            status* t_status = f_run_context->lock_status_in();
+            status_state_t t_state = t_status->state();
+            string t_error_msg = t_status->error_message();
             f_run_context->unlock_inbound();
 
             if( t_state == status_state_t_waiting )
@@ -418,13 +433,13 @@ namespace mantis
             }
             else if( t_state == status_state_t_error )
             {
-                MTINFO( mtlog, "error reported; run did not complete\n" );
+                MTINFO( mtlog, "error reported: " << t_error_msg << "\n" );
                 f_return = RETURN_ERROR;
                 break;
             }
             else if( t_state == status_state_t_canceled )
             {
-                MTINFO( mtlog, "cancellation reported; some data may have been written\n" );
+                MTINFO( mtlog, "cancellation reported: " << t_error_msg << ";\n\t some data may have been written\n" );
                 f_return = RETURN_CANCELED;
                 break;
             }

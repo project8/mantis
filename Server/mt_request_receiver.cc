@@ -6,18 +6,23 @@
 #include "mt_run_context_dist.hh"
 #include "mt_run_queue.hh"
 #include "mt_server.hh"
+#include "mt_version.hh"
 
 #include <cstddef>
+
+using std::string;
 
 
 namespace mantis
 {
     MTLOGGER( mtlog, "request_receiver" );
 
-    request_receiver::request_receiver( server* a_server, run_queue* a_run_queue, condition* a_condition ) :
+    request_receiver::request_receiver( const param_node* a_config, server* a_server, run_queue* a_run_queue, condition* a_condition, const string& a_exe_name ) :
+            f_config( *a_config ),
             f_server( a_server ),
             f_run_queue( a_run_queue ),
             f_condition( a_condition ),
+            f_exe_name( a_exe_name ),
             f_buffer_size( 512 ),
             f_record_size( 419304 ),
             f_data_chunk_size( 1024 ),
@@ -52,7 +57,38 @@ namespace mantis
                 if( ! t_run_context->pull_request( MSG_WAITALL ) )
                 {
                     MTERROR( mtlog, "unable to pull run request; sending server status <error>" );
-                    t_run_context->lock_status_out()->set_state( status_state_t_error );
+                    status* t_status = t_run_context->lock_status_out();
+                    t_status->set_state( status_state_t_error );
+                    t_status->set_error_message( "unable to pull run request" );
+                    t_run_context->push_status_no_mutex();
+                    t_run_context->unlock_outbound();
+                    delete t_run_context->get_connection();
+                    delete t_run_context;
+                    continue;
+                }
+
+                // check version of client
+                // major and minor versions must match
+                unsigned t_server_major_ver = Mantis_VERSION_MAJOR;
+                unsigned t_server_minor_ver = Mantis_VERSION_MINOR;
+                //MTDEBUG( mtlog, "server major ver: " << t_server_major_ver << "; minor ver: " << t_server_minor_ver );
+                request* t_request = t_run_context->lock_request_in();
+                t_run_context->unlock_inbound();
+                version t_client_version( t_request->client_version() );
+                unsigned t_client_major_ver = t_client_version.major_version();
+                unsigned t_client_minor_ver = t_client_version.minor_version();
+                //MTDEBUG( mtlog, "client major ver: " << t_client_major_ver << "; minor ver: " << t_client_minor_ver );
+
+                if( t_server_major_ver != t_client_major_ver || t_server_minor_ver != t_client_minor_ver )
+                {
+                    MTERROR( mtlog, "client and server software versions do not match:\n" <<
+                            "\tServer: " << TOSTRING(Mantis_VERSION) << '\n' <<
+                            "\tClient: " << t_client_version.version_str());
+                    status* t_status = t_run_context->lock_status_out();
+                    t_status->set_state( status_state_t_error );
+                    std::stringstream t_error_msg;
+                    t_error_msg << "client (" << t_client_version.version_str() << ") and server (" << TOSTRING(Mantis_VERSION) << ") software versions do not match";
+                    t_status->set_error_message( t_error_msg.str() );
                     t_run_context->push_status_no_mutex();
                     t_run_context->unlock_outbound();
                     delete t_run_context->get_connection();
@@ -71,6 +107,13 @@ namespace mantis
                 t_status->set_bit_depth( f_bit_depth );
                 t_status->set_voltage_min( f_voltage_min );
                 t_status->set_voltage_range( f_voltage_range );
+                t_status->set_server_exe( f_exe_name );
+                t_status->set_server_version( "Mantis_VERSION" );
+                t_status->set_server_commit( "Mantis_GIT_COMMIT" );
+                string t_config_as_string;
+                param_output_json::write_string( f_config, t_config_as_string, param_output_json::k_compact );
+                t_status->set_server_config( t_config_as_string );
+
                 t_run_context->push_status_no_mutex();
                 t_run_context->unlock_outbound();
 
@@ -79,7 +122,9 @@ namespace mantis
                 if( ! t_run_context->pull_client_status( MSG_WAITALL ) )
                 {
                     MTERROR( mtlog, "unable to pull client status; sending server status <error>" );
-                    t_run_context->lock_status_out()->set_state( status_state_t_error );
+                    status* t_status = t_run_context->lock_status_out();
+                    t_status->set_state( status_state_t_error );
+                    t_status->set_error_message( "unable to pull client status" );
                     t_run_context->push_status_no_mutex();
                     t_run_context->unlock_outbound();
                     delete t_run_context->get_connection();
@@ -91,7 +136,9 @@ namespace mantis
                 if( ! t_client_state == client_status_state_t_ready )
                 {
                     MTERROR( mtlog, "client did not get ready; sending server status <error>" );
-                    t_run_context->lock_status_out()->set_state( status_state_t_error );
+                    status* t_status = t_run_context->lock_status_out();
+                    t_status->set_state( status_state_t_error );
+                    t_status->set_error_message( "client is not ready" );
                     t_run_context->push_status_no_mutex();
                     t_run_context->unlock_outbound();
                     delete t_run_context->get_connection();

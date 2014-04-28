@@ -23,6 +23,8 @@ namespace mantis
             configurator( int an_argc, char** an_argv, param_node* a_default = NULL );
             virtual ~configurator();
 
+            const std::string& exe_name() const;
+
             param_node* config();
             const param_node* config() const;
 
@@ -33,6 +35,8 @@ namespace mantis
             XReturnType get( const std::string& a_name, XReturnType a_default ) const;
 
         private:
+            std::string f_exe_name; // the name of the executable being used
+
             param_node* f_master_config;
 
             mutable param* f_param_buffer;

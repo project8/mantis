@@ -39,4 +39,12 @@ message request
 	   remote = 1;
 	}
 	required file_write_mode_t file_write_mode = 9;
+	
+	//client software info
+	optional string client_exe = 10 [default = "unknown"];
+	optional string client_version = 11 [default = "unknown"];
+	optional string client_commit = 12 [default = "unknown"];
+	
+	//client config (JSON-formatted)
+    optional string client_config = 13 [default = "{}"];
 }

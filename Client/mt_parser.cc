@@ -15,6 +15,13 @@ namespace mantis
 
     void parser::parse( int an_argc, char** an_argv )
     {
+        if( an_argc > 0)
+        {
+            param_value* exe_value = new param_value();
+            *exe_value << an_argv[ 0 ];
+            this->replace( "executable", exe_value );
+        }
+
         for( int t_index = 1; t_index < an_argc; t_index++ )
         {
             //t_argument.assign( an_argv[ t_index ] );
