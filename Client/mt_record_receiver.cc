@@ -85,7 +85,7 @@ namespace mantis
         // until an incoming connection is received
         t_record_dist->set_connection( f_server->get_connection() );
 
-        iterator t_it( f_buffer );
+        iterator t_it( f_buffer, "rec-receiver" );
 
         timespec t_live_start_time;
         timespec t_live_stop_time;
@@ -238,5 +238,26 @@ namespace mantis
         return a_dist->pull_record( a_block, MSG_WAITALL );
     }
 
+
+
+    //**********************************
+    // Block Cleanup -- Request Receiver
+    //**********************************
+
+    block_cleanup_rr::block_cleanup_rr( byte_type* a_data ) :
+        f_triggered( false ),
+        f_data( a_data )
+    {}
+
+    block_cleanup_rr::~block_cleanup_rr()
+    {}
+
+    bool block_cleanup_rr::delete_data()
+    {
+        if( f_triggered ) return true;
+        delete [] f_data;
+        f_triggered = true;
+        return true;
+    }
 
 }

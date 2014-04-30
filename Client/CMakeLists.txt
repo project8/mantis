@@ -4,6 +4,7 @@
 
 set( MANTIS_CLIENT_HEADERFILES
     mt_atomic.hh
+    mt_bit_shift_modifier.hh
     mt_block.hh
     mt_buffer.hh
     mt_callable.hh
@@ -18,7 +19,9 @@ set( MANTIS_CLIENT_HEADERFILES
     mt_exception.hh
     mt_file_writer.hh
     mt_iterator.hh
+    mt_iterator_timer.hh
     mt_logger.hh
+    mt_modifier.hh
     mt_mutex.hh
     mt_param.hh
     mt_parser.hh
@@ -34,6 +37,7 @@ set( MANTIS_CLIENT_HEADERFILES
 )
 
 set( MANTIS_CLIENT_SOURCEFILES
+    #mt_bit_shift_modifier.cc
     mt_block.cc
     mt_buffer.cc
     mt_callable.cc
@@ -48,7 +52,9 @@ set( MANTIS_CLIENT_SOURCEFILES
     mt_exception.cc
     mt_file_writer.cc
     mt_iterator.cc
+    mt_iterator_timer.cc
     mt_logger.cc
+    mt_modifier.cc
     mt_mutex.cc
     mt_param.cc
     mt_parser.cc

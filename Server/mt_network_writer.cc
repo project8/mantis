@@ -58,7 +58,7 @@ namespace mantis
     void network_writer::finalize( response* a_response )
     {
         // push empty block to indicate end of run
-        empty_block t_block;
+        block t_block;
         if(! f_record_dist->push_record( &t_block ) )
         {
             MTERROR( mtlog, "there was an error pushing the end-of-run block" );

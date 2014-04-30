@@ -11,7 +11,7 @@ list( APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR} )
 
 include( PackageBuilder.cmake )
 pbuilder_prepare_project( 2 6 1 )
-include_directories( 
+include_directories( BEFORE 
     ${PROJECT_SOURCE_DIR}/Client
     ${PROJECT_SOURCE_DIR}/Server
     ${PROJECT_BINARY_DIR}/Client
@@ -25,6 +25,14 @@ include_directories(
 set( Mantis_BUILD_SERVER FALSE CACHE BOOL "Flag to enable building of the server library and applications" )
 set( Mantis_INCLUDE_PX1500_SERVER TRUE CACHE BOOL "Flag to include the px1500 server; ignored unless the build-server flag is enabled" )
 set( Mantis_INCLUDE_PX14400_SERVER FALSE CACHE BOOL "Flag to include the px14400 server; ignored unless the build-server flag is enabled" )
+
+# add an option to perform iterator time profiling
+set( Mantis_ENABLE_ITERATOR_TIMING FALSE CACHE BOOL "Flag to enable iterator time profiling" )
+if( Mantis_ENABLE_ITERATOR_TIMING )
+    add_definitions( -DENABLE_ITERATOR_TIMING )
+else( Mantis_ENABLE_ITERATOR_TIMING )
+    remove_definitions( -DENABLE_ITERATOR_TIMING )
+endif( Mantis_ENABLE_ITERATOR_TIMING )
 
 # add an option to build the validation tests
 option (Mantis_ENABLE_TESTING "Build the validation tests and enable CMake testing" OFF)
@@ -53,7 +61,7 @@ endif( GIT_FOUND )
 # RapidJSON (as included with Mantis)
 ############
 
-include_directories ("${PROJECT_SOURCE_DIR}/RapidJSON")
+include_directories( BEFORE ${PROJECT_SOURCE_DIR}/RapidJSON )
 
 
 ##########
@@ -67,7 +75,7 @@ list( FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${Monarch_LIBRARY_DIR}" isS
 if( "${isSystemDir}" STREQUAL "-1" )
    list( APPEND CMAKE_INSTALL_RPATH ${Monarch_LIBRARY_DIR} )
 endif( "${isSystemDir}" STREQUAL "-1" )
-include_directories( 
+include_directories( BEFORE 
     ${PROJECT_SOURCE_DIR}/Monarch/Source
     ${PROJECT_SOURCE_DIR}/Monarch/libthorax/cpp
     ${PROJECT_SOURCE_DIR}/Monarch/libthorax
@@ -126,7 +134,7 @@ endif( Mantis_BUILD_SERVER )
 find_package( Protobuf )
 include_directories( ${PROTOBUF_INCLUDE_DIR} )
 pbuilder_add_ext_libraries( ${PROTOBUF_LIBRARIES} )
-include_directories( ${CMAKE_CURRENT_BINARY_DIR}/Protobuf )
+include_directories( BEFORE ${CMAKE_CURRENT_BINARY_DIR}/Protobuf )
 add_subdirectory( Protobuf )
 
 
@@ -142,7 +150,7 @@ pbuilder_add_ext_libraries( ${CMAKE_THREAD_LIBS_INIT} )
 # Boost as included with mantis
 ########
 
-include_directories (
+include_directories ( BEFORE 
     ${PROJECT_SOURCE_DIR}
 )
 

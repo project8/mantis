@@ -1,10 +1,11 @@
 #ifndef MT_ITERATOR_HH_
 #define MT_ITERATOR_HH_
 
+#include "mt_block.hh"
 #include "mt_buffer.hh"
 #include "mt_mutex.hh"
-#include "mt_block.hh"
 #include "mt_exception.hh"
+#include "mt_iterator_timer.hh"
 
 namespace mantis
 {
@@ -12,24 +13,40 @@ namespace mantis
     class iterator
     {
         public:
-            iterator( buffer* a_buffer );
+            iterator( buffer* a_buffer, const std::string& a_name = "default" );
             virtual ~iterator();
 
-            unsigned int index();
+            const std::string& name() const;
+
+            /// returns the index of the current block in the buffer
+            unsigned int index() const;
+            /// returns a pointer to the current block
             block* object();
 
+            /// returns a reference to the current block
             block& operator*();
+            /// returns a pointer to the current block
             block* operator->();
 
+            /// move to the next block; blocks thread if the next block is locked
             void operator++();
+            /// try to move to the next block; fails if the next block's mutex is locked
             bool operator+();
+            /// move to the previous block; blocks thread if the next block is locked
             void operator--();
+            /// try to move to the previous block;
             bool operator-();
+
+            /// remove iterator from buffer
+            void release();
 
         protected:
             iterator();
             iterator( const iterator& );
 
+            std::string f_name;
+
+            buffer* f_buffer;
             block** f_blocks;
             mutex* f_mutexes;
             unsigned int f_size;
@@ -39,8 +56,13 @@ namespace mantis
             unsigned int f_previous_index;
             unsigned int f_current_index;
             unsigned int f_next_index;
+
+            bool f_released;
+
+            IT_TIMER_DECLARE
     };
 
+    /*
     template< typename DataType >
     class typed_iterator : public iterator
     {
@@ -86,7 +108,7 @@ namespace mantis
     {
         return *static_cast< typed_block< DataType >* >( f_blocks[ f_current_index ] );
     }
-
+*/
 
 }
 
