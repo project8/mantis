@@ -167,6 +167,24 @@ namespace mantis
             void SetLevel(ELevel level) const;
 
             /**
+             * Set whether colored text will be used
+             * @param flag Bool determining whether colored text will be used
+             */
+            static void SetColored(bool flag);
+
+            /**
+             * Set the ostream pointer used for standard output messages
+             * @param stream Stream object for standard output
+             */
+            static void SetOutStream(std::ostream* stream);
+
+            /**
+             * Set the ostream pointer used for standard error messages
+             * @param stream Stream object for standard errors
+             */
+            static void SetErrStream(std::ostream* stream);
+
+            /**
              * Log a message with the specified level.
              * Use the macro LOG(logger, level, message).
              * @param level The log level.

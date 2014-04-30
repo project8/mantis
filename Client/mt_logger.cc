@@ -245,7 +245,11 @@ namespace mantis
 
 
             const char* fLogger;
-            bool fColored;
+
+            static bool fColored;
+
+            static std::ostream* fOut;
+            static std::ostream* fErr;
 
             static const char* level2Str(ELevel level)
             {
@@ -280,10 +284,10 @@ namespace mantis
             {
                 logger::Private::sMutex.lock();
                 logger::Private::getTimeAbsoluteStr();
-                if (fColored)
-                    cout << color << logger::Private::sTimeBuff << " [" << setw(5) << level << "] " << setw(16) << fLogger << ": " << message << skMTEndColor << endl;
+                if (logger::Private::fColored)
+                    (*fOut) << color << logger::Private::sTimeBuff << " [" << setw(5) << level << "] " << setw(16) << fLogger << ": " << message << skMTEndColor << endl;
                 else
-                    cout << logger::Private::sTimeBuff << " [" << setw(5) << level << "] " << setw(16) << fLogger << ": " << message << endl;
+                    (*fOut) << logger::Private::sTimeBuff << " [" << setw(5) << level << "] " << setw(16) << fLogger << ": " << message << endl;
                 logger::Private::sMutex.unlock();
             }
 
@@ -291,10 +295,10 @@ namespace mantis
             {
                 logger::Private::sMutex.lock();
                 logger::Private::getTimeAbsoluteStr();
-                if (fColored)
-                    cerr << color << logger::Private::sTimeBuff <<  " [" << setw(5) << level << "] " << setw(16) << fLogger << ": " << message << skMTEndColor << endl;
+                if (logger::Private::fColored)
+                    (*fErr) << color << logger::Private::sTimeBuff << " [" << setw(5) << level << "] " << setw(16) << fLogger << ": " << message << skMTEndColor << endl;
                 else
-                    cerr << logger::Private::sTimeBuff <<  " [" << setw(5) << level << "] " << setw(16) << fLogger << ": " << message << endl;
+                    (*fErr) << logger::Private::sTimeBuff <<  " [" << setw(5) << level << "] " << setw(16) << fLogger << ": " << message << endl;
                 logger::Private::sMutex.unlock();
             }
     };
@@ -305,6 +309,11 @@ namespace mantis
     time_t logger::Private::sRawTime;
     tm* logger::Private::sProcessedTime;
     char logger::Private::sTimeBuff[512];
+
+    bool logger::Private::fColored = true;
+
+    std::ostream* logger::Private::fOut = &cout;
+    std::ostream* logger::Private::fErr = &cerr;
 
 
     logger::logger(const char* name) : fPrivate(new Private())
@@ -347,6 +356,24 @@ namespace mantis
     void logger::SetLevel(ELevel /*level*/) const
     {
         // TODO: implement levels for fallback logger
+    }
+
+    void logger::SetColored(bool flag)
+    {
+        logger::Private::fColored = flag;
+        return;
+    }
+
+    void logger::SetOutStream(std::ostream* stream)
+    {
+        logger::Private::fOut = stream;
+        return;
+    }
+
+    void logger::SetErrStream(std::ostream* stream)
+    {
+        logger::Private::fErr = stream;
+        return;
     }
 
     void logger::Log(ELevel level, const string& message, const Location& loc)
