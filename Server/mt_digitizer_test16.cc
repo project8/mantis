@@ -345,8 +345,6 @@ namespace mantis
     {
         a_block->set_record_id( f_record_count );
         a_block->set_acquisition_id( f_acquisition_count );
-        get_time_monotonic( &a_stamp_time );
-        a_block->set_timestamp( time_to_nsec( a_stamp_time ) - f_start_time );
 
         MTWARN( mtlog, "acquiring to: " << a_block->data_bytes() );
         ::memcpy( a_block->data_bytes(), (byte_type*)f_master_record, a_block->get_data_nbytes() );
@@ -354,6 +352,12 @@ namespace mantis
         //{
         //    MTERROR( mtlog, ((data_type*)(a_block->data_bytes()))[index]);
         //}
+
+        // the timestamp is acquired after the data is transferred to avoid the problem on the px1500 where
+        // the first record can take unusually long to be acquired.
+        // it's done here too for consistency
+        get_time_monotonic( &a_stamp_time );
+        a_block->set_timestamp( time_to_nsec( a_stamp_time ) - f_start_time );
 
         ++f_record_count;
 

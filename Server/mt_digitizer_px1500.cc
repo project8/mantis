@@ -365,9 +365,10 @@ namespace mantis
             return false;
         }
 
+        // the timestamp is acquired after the data is transferred to avoid the problem on the px1500 where
+        // the first record can take unusually long to be acquired.
         get_time_monotonic( &a_stamp_time );
         a_block->set_timestamp( time_to_nsec( a_stamp_time ) - f_start_time );
-        MTWARN( mtlog, "acq time: " << a_block->get_timestamp() );
 
         ++f_record_count;
 
