@@ -34,6 +34,7 @@ namespace mantis
             f_condition( NULL ),
             f_allocated( false ),
             f_handle(),
+            f_start_time( 0 ),
             f_record_last( 0 ),
             f_record_count( 0 ),
             f_acquisition_count( 0 ),
@@ -215,6 +216,7 @@ namespace mantis
 
         //start timing
         get_time_monotonic( &t_live_start_time );
+        f_start_time = time_to_nsec( t_live_start_time );
 
         //go go go go
         while( true )
@@ -355,7 +357,7 @@ namespace mantis
         a_block->set_record_id( f_record_count );
         a_block->set_acquisition_id( f_acquisition_count );
         get_time_monotonic( &a_stamp_time );
-        a_block->set_timestamp( time_to_nsec( a_stamp_time ) );
+        a_block->set_timestamp( time_to_nsec( a_stamp_time ) - f_start_time );
 
         int t_result = GetPciAcquisitionDataFastPX4( f_handle, f_buffer->record_size(), a_block->data_bytes(), 0 );
         if( t_result != SIG_SUCCESS )
