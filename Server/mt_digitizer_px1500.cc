@@ -356,8 +356,6 @@ namespace mantis
     {
         a_block->set_record_id( f_record_count );
         a_block->set_acquisition_id( f_acquisition_count );
-        get_time_monotonic( &a_stamp_time );
-        a_block->set_timestamp( time_to_nsec( a_stamp_time ) - f_start_time );
 
         int t_result = GetPciAcquisitionDataFastPX4( f_handle, f_buffer->record_size(), a_block->data_bytes(), 0 );
         if( t_result != SIG_SUCCESS )
@@ -366,6 +364,10 @@ namespace mantis
             t_result = EndBufferedPciAcquisitionPX4( f_handle );
             return false;
         }
+
+        get_time_monotonic( &a_stamp_time );
+        a_block->set_timestamp( time_to_nsec( a_stamp_time ) - f_start_time );
+        MTWARN( mtlog, "acq time: " << a_block->get_timestamp() );
 
         ++f_record_count;
 
