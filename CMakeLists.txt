@@ -10,13 +10,9 @@ cmake_policy (SET CMP0011 NEW)
 list( APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR} )
 
 include( PackageBuilder.cmake )
-<<<<<<< HEAD
-pbuilder_prepare_project( 2 5 1 )
-include_directories( 
-=======
 pbuilder_prepare_project( 2 6 3 )
 include_directories( BEFORE 
->>>>>>> master
+
     ${PROJECT_SOURCE_DIR}/Client
     ${PROJECT_SOURCE_DIR}/Server
     ${PROJECT_BINARY_DIR}/Client
