@@ -59,6 +59,8 @@ namespace mantis
             buffer* f_buffer;
             condition* f_condition;
 
+            time_nsec_type f_start_time;
+
             record_id_type f_record_last;
             record_id_type f_record_count;
             acquisition_id_type f_acquisition_count;

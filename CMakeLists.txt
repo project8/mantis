@@ -10,8 +10,13 @@ cmake_policy (SET CMP0011 NEW)
 list( APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR} )
 
 include( PackageBuilder.cmake )
+<<<<<<< HEAD
 pbuilder_prepare_project( 2 5 1 )
 include_directories( 
+=======
+pbuilder_prepare_project( 2 6 3 )
+include_directories( BEFORE 
+>>>>>>> master
     ${PROJECT_SOURCE_DIR}/Client
     ${PROJECT_SOURCE_DIR}/Server
     ${PROJECT_BINARY_DIR}/Client
@@ -62,7 +67,7 @@ endif( GIT_FOUND )
 # RapidJSON (as included with Mantis)
 ############
 
-include_directories ("${PROJECT_SOURCE_DIR}/RapidJSON")
+include_directories( BEFORE ${PROJECT_SOURCE_DIR}/RapidJSON )
 
 
 ##########
@@ -76,7 +81,7 @@ list( FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${Monarch_LIBRARY_DIR}" isS
 if( "${isSystemDir}" STREQUAL "-1" )
    list( APPEND CMAKE_INSTALL_RPATH ${Monarch_LIBRARY_DIR} )
 endif( "${isSystemDir}" STREQUAL "-1" )
-include_directories( 
+include_directories( BEFORE 
     ${PROJECT_SOURCE_DIR}/Monarch/Source
     ${PROJECT_SOURCE_DIR}/Monarch/libthorax/cpp
     ${PROJECT_SOURCE_DIR}/Monarch/libthorax
@@ -146,7 +151,7 @@ endif( Mantis_BUILD_SERVER )
 find_package( Protobuf )
 include_directories( ${PROTOBUF_INCLUDE_DIR} )
 pbuilder_add_ext_libraries( ${PROTOBUF_LIBRARIES} )
-include_directories( ${CMAKE_CURRENT_BINARY_DIR}/Protobuf )
+include_directories( BEFORE ${CMAKE_CURRENT_BINARY_DIR}/Protobuf )
 add_subdirectory( Protobuf )
 
 
@@ -162,7 +167,7 @@ pbuilder_add_ext_libraries( ${CMAKE_THREAD_LIBS_INIT} )
 # Boost as included with mantis
 ########
 
-include_directories (
+include_directories ( BEFORE 
     ${PROJECT_SOURCE_DIR}
 )
 
