@@ -35,6 +35,7 @@ namespace mantis
             f_allocated( false ),
             f_buffer( NULL ),
             f_condition( NULL ),
+            f_start_time( 0 ),
             f_record_last( 0 ),
             f_record_count( 0 ),
             f_acquisition_count( 0 ),
@@ -94,10 +95,8 @@ namespace mantis
         {
             for( unsigned int index = 0; index < f_buffer->size(); ++index )
             {
-                typed_block< data_type >* t_new_block = new typed_block< data_type >();
-                *( t_new_block->handle() ) = new data_type [ f_buffer->record_size() ];
-                t_new_block->set_data_size( f_buffer->record_size() );
-                t_new_block->set_cleanup( new block_cleanup_test( t_new_block->data() ) );
+                block* t_new_block = block::allocate_block< data_type >( f_buffer->record_size() );
+                t_new_block->set_cleanup( new block_cleanup_test( t_new_block->data_bytes() ) );
                 f_buffer->set_block( index, t_new_block );
             }
         }
@@ -134,7 +133,7 @@ namespace mantis
     }
     void digitizer_test::execute()
     {
-        iterator t_it( f_buffer );
+        iterator t_it( f_buffer, "dig_test" );
 
         timespec t_live_start_time;
         timespec t_live_stop_time;
@@ -157,10 +156,11 @@ namespace mantis
             return;
         }
 
+        MTINFO( mtlog, "planning on " << f_record_last << " records" );
+
         //start timing
         get_time_monotonic( &t_live_start_time );
-
-        MTINFO( mtlog, "planning on " << f_record_last << " records" );
+        f_start_time = time_to_nsec( t_live_start_time );
 
         //go go go go
         while( true )
@@ -315,10 +315,14 @@ namespace mantis
     {
         a_block->set_record_id( f_record_count );
         a_block->set_acquisition_id( f_acquisition_count );
-        get_time_monotonic( &a_stamp_time );
-        a_block->set_timestamp( time_to_nsec( a_stamp_time ) );
 
         ::memcpy( a_block->data_bytes(), f_master_record, f_buffer->record_size() );
+
+        // the timestamp is acquired after the data is transferred to avoid the problem on the px1500 where
+        // the first record can take unusually long to be acquired.
+        // it's done here too for consistency
+        get_time_monotonic( &a_stamp_time );
+        a_block->set_timestamp( time_to_nsec( a_stamp_time ) - f_start_time );
 
         ++f_record_count;
 
@@ -351,11 +355,12 @@ namespace mantis
         return;
     }
 
+
     //********************************
     // Block Cleanup -- Test Digitizer
     //********************************
 
-    block_cleanup_test::block_cleanup_test( digitizer_test::data_type* a_data ) :
+    block_cleanup_test::block_cleanup_test( byte_type* a_data ) :
             block_cleanup(),
             f_triggered( false ),
             f_data( a_data )
@@ -366,6 +371,7 @@ namespace mantis
     {
         if( f_triggered ) return true;
         delete [] f_data;
+        f_triggered = true;
         return true;
     }
 

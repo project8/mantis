@@ -1,11 +1,13 @@
 #include "mt_digitizer_test16.hh"
 
+#include "mt_bit_shift_modifier.hh"
 #include "mt_buffer.hh"
 #include "mt_condition.hh"
 #include "mt_exception.hh"
 #include "mt_factory.hh"
 #include "mt_iterator.hh"
 #include "mt_logger.hh"
+#include "mt_thread.hh"
 
 #include "response.pb.h"
 
@@ -22,7 +24,7 @@ namespace mantis
     MT_REGISTER_DIGITIZER( digitizer_test16, "test16" );
     MT_REGISTER_TEST_DIGITIZER( test_digitizer_test16, "test16" );
 
-    const unsigned digitizer_test16::s_data_type_size = sizeof( digitizer_test16::data_type );
+    const unsigned digitizer_test16::s_data_type_size = 14; //sizeof( digitizer_test16::data_type );
     unsigned digitizer_test16::data_type_size_test()
     {
         return digitizer_test16::s_data_type_size;
@@ -34,6 +36,7 @@ namespace mantis
             f_allocated( false ),
             f_buffer( NULL ),
             f_condition( NULL ),
+            f_start_time( 0 ),
             f_record_last( 0 ),
             f_record_count( 0 ),
             f_acquisition_count( 0 ),
@@ -92,10 +95,8 @@ namespace mantis
         {
             for( unsigned int index = 0; index < f_buffer->size(); ++index )
             {
-                typed_block< data_type >* t_new_block = new typed_block< data_type >();
-                *( t_new_block->handle() ) = new data_type [ f_buffer->record_size() ];
-                t_new_block->set_data_size( f_buffer->record_size() );
-                t_new_block->set_cleanup( new block_cleanup_test16( t_new_block->data() ) );
+                block* t_new_block = block::allocate_block< data_type >( f_buffer->record_size() );
+                t_new_block->set_cleanup( new block_cleanup_test16( t_new_block->data_bytes() ) );
                 f_buffer->set_block( index, t_new_block );
             }
         }
@@ -112,8 +113,8 @@ namespace mantis
         f_master_record = new data_type [f_buffer->record_size()];
         for( unsigned index = 0; index < f_buffer->record_size(); ++index )
         {
-            f_master_record[ index ] = index % f_params.levels;
-            //if( index < 2000 ) MTDEBUG( mtlog, f_master_record[index] );
+            f_master_record[ index ] = (index % f_params.levels) << 2;
+            //if( index < 100 ) MTDEBUG( mtlog, "setting master record [" << index << "]: " << f_master_record[index] );
         }
 
         f_allocated = true;
@@ -134,7 +135,7 @@ namespace mantis
     }
     void digitizer_test16::execute()
     {
-        iterator t_it( f_buffer );
+        iterator t_it( f_buffer, "dig_test16" );
 
         timespec t_live_start_time;
         timespec t_live_stop_time;
@@ -142,14 +143,25 @@ namespace mantis
         timespec t_dead_stop_time;
         timespec t_stamp_time;
 
-        //MTINFO( mtlog, "waiting" );
 
+
+        // bit shift modifier
+        bit_shift_modifier< digitizer_test16::data_type > t_bs_mod;
+        t_bs_mod.set_bit_shift( 2 );
+        t_bs_mod.set_buffer( f_buffer, f_condition );
+        thread t_bs_mod_thread( &t_bs_mod );
+        t_bs_mod_thread.start();
+
+
+
+        MTINFO( mtlog, "waiting for buffer readiness" );
         f_condition->wait();
 
         MTINFO( mtlog, "loose at <" << t_it.index() << ">" );
 
-        int t_old_cancel_state;
-        pthread_setcancelstate( PTHREAD_CANCEL_DISABLE, &t_old_cancel_state );
+        // why was cancel disabled? -- Noah, 3/27/14
+        //int t_old_cancel_state;
+        //pthread_setcancelstate( PTHREAD_CANCEL_DISABLE, &t_old_cancel_state );
 
         //start acquisition
         if( start() == false )
@@ -157,10 +169,11 @@ namespace mantis
             return;
         }
 
+        MTINFO( mtlog, "planning on " << f_record_last << " records" );
+
         //start timing
         get_time_monotonic( &t_live_start_time );
-
-        MTINFO( mtlog, "planning on " << f_record_last << " records" );
+        f_start_time = time_to_nsec( t_live_start_time );
 
         //go go go go
         while( true )
@@ -176,6 +189,9 @@ namespace mantis
 
                 f_live_time += time_to_nsec( t_live_stop_time ) - time_to_nsec( t_live_start_time );
 
+                // remove the iterator from the buffer
+                t_it.release();
+
                 //halt the pci acquisition
                 stop();
 
@@ -184,10 +200,15 @@ namespace mantis
                 {
                     MTINFO( mtlog, "was canceled mid-run" );
                     f_cancel_condition.release();
+                    MTDEBUG( mtlog, "canceling bs_mod thread" );
+                    t_bs_mod_thread.cancel();
                 }
                 else
                 {
                     MTINFO( mtlog, "finished normally" );
+                    MTDEBUG( mtlog, "waiting for bs_mod thread to finish" );
+                    t_bs_mod_thread.join();
+                    MTDEBUG( mtlog, "bs_mod thread done" );
                 }
                 return;
             }
@@ -202,6 +223,9 @@ namespace mantis
                 //get the time and update the number of live microseconds
                 f_live_time += time_to_nsec( t_live_stop_time ) - time_to_nsec( t_live_start_time );
 
+                // remove the iterator from the buffer
+                t_it.release();
+
                 //halt the pci acquisition
                 stop();
 
@@ -213,6 +237,9 @@ namespace mantis
 
                 //GET OUT
                 MTINFO( mtlog, "finished abnormally because acquisition failed" );
+
+                MTDEBUG( mtlog, "canceling bs_mod thread" );
+                t_bs_mod_thread.cancel();
 
                 return;
             }
@@ -234,6 +261,8 @@ namespace mantis
                 {
                     //GET OUT
                     MTINFO( mtlog, "finished abnormally because halting streaming failed" );
+                    MTDEBUG( mtlog, "canceling bs_mod thread" );
+                    t_bs_mod_thread.cancel();
                     return;
                 }
 
@@ -260,6 +289,10 @@ namespace mantis
 
                     //GET OUT
                     MTINFO( mtlog, "finished abnormally because starting streaming failed" );
+
+                    MTDEBUG( mtlog, "canceling bs_mod thread" );
+                    t_bs_mod_thread.cancel();
+
                     return;
                 }
 
@@ -312,14 +345,19 @@ namespace mantis
     {
         a_block->set_record_id( f_record_count );
         a_block->set_acquisition_id( f_acquisition_count );
-        get_time_monotonic( &a_stamp_time );
-        a_block->set_timestamp( time_to_nsec( a_stamp_time ) );
 
-        ::memcpy( a_block->data_bytes(), f_master_record, f_buffer->record_size() * s_data_type_size );
+        MTWARN( mtlog, "acquiring to: " << a_block->data_bytes() );
+        ::memcpy( a_block->data_bytes(), (byte_type*)f_master_record, a_block->get_data_nbytes() );
         //for(unsigned index = 1000; index < 1050; ++index)
         //{
         //    MTERROR( mtlog, ((data_type*)(a_block->data_bytes()))[index]);
         //}
+
+        // the timestamp is acquired after the data is transferred to avoid the problem on the px1500 where
+        // the first record can take unusually long to be acquired.
+        // it's done here too for consistency
+        get_time_monotonic( &a_stamp_time );
+        a_block->set_timestamp( time_to_nsec( a_stamp_time ) - f_start_time );
 
         ++f_record_count;
 
@@ -352,11 +390,12 @@ namespace mantis
         return;
     }
 
+
     //**********************************
     // Block Cleanup -- Test16 Digitizer
     //**********************************
 
-    block_cleanup_test16::block_cleanup_test16( digitizer_test16::data_type* a_data ) :
+    block_cleanup_test16::block_cleanup_test16( byte_type* a_data ) :
             block_cleanup(),
             f_triggered( false ),
             f_data( a_data )
@@ -367,7 +406,7 @@ namespace mantis
     {
         if( f_triggered ) return true;
         delete [] f_data;
+        f_triggered = true;
         return true;
     }
-
 }

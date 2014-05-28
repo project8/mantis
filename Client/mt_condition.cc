@@ -42,7 +42,8 @@ namespace mantis
     {
         pthread_mutex_lock( &f_mutex );
         f_state = false;
-        pthread_cond_signal( &f_condition );
+        //pthread_cond_signal( &f_condition );
+        pthread_cond_broadcast( &f_condition );
         pthread_mutex_unlock( &f_mutex );
         return;
     }

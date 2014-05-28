@@ -34,6 +34,7 @@ namespace mantis
             f_condition( NULL ),
             f_allocated( false ),
             f_handle(),
+            f_start_time( 0 ),
             f_record_last( 0 ),
             f_record_count( 0 ),
             f_acquisition_count( 0 ),
@@ -122,7 +123,7 @@ namespace mantis
         {
             for( unsigned int index = 0; index < f_buffer->size(); index++ )
             {
-                typed_block< data_type >* t_new_block = new typed_block< data_type >();
+                block* t_new_block = new block();
                 t_result = AllocateDmaBufferPX4( f_handle, f_buffer->record_size(), t_new_block->handle() );
                 if( t_result != SIG_SUCCESS )
                 {
@@ -132,7 +133,7 @@ namespace mantis
                     return false;
                 }
                 t_new_block->set_data_size( f_buffer->record_size() );
-                t_new_block->set_cleanup( new block_cleanup_px1500( t_new_block->data(), &f_handle ) );
+                t_new_block->set_data_nbytes( f_buffer->record_size() );
                 f_buffer->set_block( index, t_new_block );
             }
         }
@@ -192,7 +193,7 @@ namespace mantis
     }
     void digitizer_px1500::execute()
     {
-        typed_iterator< data_type > t_it( f_buffer );
+        iterator t_it( f_buffer, "dig-px1500" );
 
         timespec t_live_start_time;
         timespec t_live_stop_time;
@@ -215,6 +216,7 @@ namespace mantis
 
         //start timing
         get_time_monotonic( &t_live_start_time );
+        f_start_time = time_to_nsec( t_live_start_time );
 
         //go go go go
         while( true )
@@ -248,7 +250,7 @@ namespace mantis
 
             t_it->set_acquiring();
 
-            if( acquire( t_it.typed_object(), t_stamp_time ) == false )
+            if( acquire( t_it.object(), t_stamp_time ) == false )
             {
                 //mark the block as written
                 t_it->set_written();
@@ -350,20 +352,23 @@ namespace mantis
 
         return true;
     }
-    bool digitizer_px1500::acquire( typed_block< data_type >* a_block, timespec& a_stamp_time )
+    bool digitizer_px1500::acquire( block* a_block, timespec& a_stamp_time )
     {
         a_block->set_record_id( f_record_count );
         a_block->set_acquisition_id( f_acquisition_count );
-        get_time_monotonic( &a_stamp_time );
-        a_block->set_timestamp( time_to_nsec( a_stamp_time ) );
 
-        int t_result = GetPciAcquisitionDataFastPX4( f_handle, f_buffer->record_size(), a_block->data(), 0 );
+        int t_result = GetPciAcquisitionDataFastPX4( f_handle, f_buffer->record_size(), a_block->data_bytes(), 0 );
         if( t_result != SIG_SUCCESS )
         {
             DumpLibErrorPX4( t_result, "failed to acquire dma data over pci: " );
             t_result = EndBufferedPciAcquisitionPX4( f_handle );
             return false;
         }
+
+        // the timestamp is acquired after the data is transferred to avoid the problem on the px1500 where
+        // the first record can take unusually long to be acquired.
+        get_time_monotonic( &a_stamp_time );
+        a_block->set_timestamp( time_to_nsec( a_stamp_time ) - f_start_time );
 
         ++f_record_count;
 
@@ -408,7 +413,7 @@ namespace mantis
     // Block Cleanup px1500
     //***********************************
 
-    block_cleanup_px1500::block_cleanup_px1500( digitizer_px1500::data_type* a_data, HPX4* a_dig_ptr ) :
+    block_cleanup_px1500::block_cleanup_px1500( byte_type* a_data, HPX4* a_dig_ptr ) :
         f_triggered( false ),
         f_data( a_data ),
         f_dig_ptr( a_dig_ptr )
@@ -418,12 +423,13 @@ namespace mantis
     bool block_cleanup_px1500::delete_data()
     {
         if( f_triggered ) return true;
-        int t_result = FreeDmaBufferPX4( *f_dig_ptr, f_data );
+        int t_result = FreeDmaBufferPX4( *f_dig_ptr, reinterpret_cast< digitizer_px1500::data_type* >( f_data ) );
         if( t_result != SIG_SUCCESS )
         {
             DumpLibErrorPX4( t_result, "failed to deallocate dma memory: " );
             return false;
         }
+        f_triggered = true;
         return true;
     }
 
@@ -459,13 +465,13 @@ namespace mantis
 
         MTDEBUG( mtlog, "allocating dma buffer..." );
 
-        typed_block< digitizer_px1500::data_type >* t_block = NULL;
+        block* t_block = NULL;
         // this is the minimum record size for the px1500
         unsigned t_rec_size = 16384;
 
         try
         {
-            t_block = new typed_block< digitizer_px1500::data_type >();
+            t_block = new block();
             t_result = AllocateDmaBufferPX4( f_handle, t_rec_size, t_block->handle() );
             if( t_result != SIG_SUCCESS )
             {
@@ -473,7 +479,7 @@ namespace mantis
                 return false;
             }
             t_block->set_data_size( t_rec_size );
-            t_block->set_cleanup( new block_cleanup_px1500( t_block->data(), &f_handle ) );
+            t_block->set_data_nbytes( t_rec_size );
         }
         catch( exception& e )
         {
@@ -521,7 +527,7 @@ namespace mantis
 
         MTDEBUG( mtlog, "acquiring a record" );
 
-        t_result = GetPciAcquisitionDataFastPX4( f_handle, t_rec_size, t_block->data(), 0 );
+        t_result = GetPciAcquisitionDataFastPX4( f_handle, t_rec_size, t_block->data_bytes(), 0 );
         if( t_result != SIG_SUCCESS )
         {
             DumpLibErrorPX4( t_result, "failed to acquire dma data over pci: " );
@@ -541,9 +547,9 @@ namespace mantis
         std::stringstream t_str_buff;
         for( unsigned i = 0; i < 99; ++i )
         {
-            t_str_buff << t_block->data()[ i ] << ", ";
+            t_str_buff << t_block->data_bytes()[ i ] << ", ";
         }
-        t_str_buff << t_block->data()[ 99 ];
+        t_str_buff << t_block->data_bytes()[ 99 ];
         MTDEBUG( mtlog, "the first 100 samples taken:\n" << t_str_buff.str() );
 
         MTINFO( mtlog, "run complete!\n" );

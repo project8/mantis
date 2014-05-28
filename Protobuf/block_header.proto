@@ -9,8 +9,9 @@ message block_header
         unused = 0;
         acquiring = 1;
         acquired = 2;
-        writing = 3;
-        written = 4;
+        processing = 3;
+        writing = 4;
+        written = 5;
 	}
 	
 	required state_t state = 1;

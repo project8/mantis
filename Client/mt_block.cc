@@ -3,9 +3,12 @@
 namespace mantis
 {
     block::block() :
-            f_header()
+            f_header(),
+            f_data_bytes( NULL ),
+            f_data_nbytes( 0 ),
+            f_cleanup( NULL )
     {
-        f_header.set_state( block_header_state_t_written );
+        f_header.set_state( block_header_state_t_unused );
         f_header.set_acquisition_id( 0 );
         f_header.set_record_id( 0 );
         f_header.set_timestamp( 0 );
@@ -14,6 +17,8 @@ namespace mantis
 
     block::~block()
     {
+        if( f_cleanup != NULL ) f_cleanup->delete_data();
+        delete f_cleanup;
     }
 
     block_header_state_t block::get_state() const
@@ -26,13 +31,19 @@ namespace mantis
         return;
     }
 
+    bool block::is_unused() const
+    {
+        return f_header.state() == block_header_state_t_unused;
+    }
+    void block::set_unused()
+    {
+        f_header.set_state( block_header_state_t_unused );
+        return;
+    }
+
     bool block::is_acquiring() const
     {
-        if( f_header.state() == block_header_state_t_acquiring )
-        {
-            return true;
-        }
-        return false;
+        return f_header.state() == block_header_state_t_acquiring;
     }
     void block::set_acquiring()
     {
@@ -42,11 +53,7 @@ namespace mantis
 
     bool block::is_acquired() const
     {
-        if( f_header.state() == block_header_state_t_acquired )
-        {
-            return true;
-        }
-        return false;
+        return f_header.state() == block_header_state_t_acquired;
     }
     void block::set_acquired()
     {
@@ -54,13 +61,19 @@ namespace mantis
         return;
     }
 
+    bool block::is_processing() const
+    {
+        return f_header.state() == block_header_state_t_processing;
+    }
+    void block::set_processing()
+    {
+        f_header.set_state( block_header_state_t_processing );
+        return;
+    }
+
     bool block::is_writing() const
     {
-        if( f_header.state() == block_header_state_t_writing )
-        {
-            return true;
-        }
-        return false;
+        return f_header.state() == block_header_state_t_writing;
     }
     void block::set_writing()
     {
@@ -70,11 +83,7 @@ namespace mantis
 
     bool block::is_written() const
     {
-        if( f_header.state() == block_header_state_t_written )
-        {
-            return true;
-        }
-        return false;
+        return f_header.state() == block_header_state_t_written;
     }
     void block::set_written()
     {
@@ -86,7 +95,7 @@ namespace mantis
     {
         return f_header.acquisition_id();
     }
-    void block::set_acquisition_id( const acquisition_id_type& an_id )
+    void block::set_acquisition_id( acquisition_id_type an_id )
     {
         f_header.set_acquisition_id( an_id );
         return;
@@ -96,7 +105,7 @@ namespace mantis
     {
         return f_header.record_id();
     }
-    void block::set_record_id( const record_id_type& an_id )
+    void block::set_record_id( record_id_type an_id )
     {
         f_header.set_record_id( an_id );
         return;
@@ -106,7 +115,7 @@ namespace mantis
     {
         return f_header.timestamp();
     }
-    void block::set_timestamp( const time_nsec_type& a_timestamp )
+    void block::set_timestamp( time_nsec_type a_timestamp )
     {
         f_header.set_timestamp( a_timestamp );
         return;
@@ -116,7 +125,7 @@ namespace mantis
     {
         return f_header.data_size();
     }
-    void block::set_data_size( const size_t& a_size )
+    void block::set_data_size( size_t a_size )
     {
         f_header.set_data_size( a_size );
         return;
@@ -132,28 +141,36 @@ namespace mantis
         return &f_header;
     }
 
-
-    empty_block::empty_block() :
-            block()
+    byte_type* block::data_bytes()
     {
-        set_data_size( 0 );
-    }
-    empty_block::~empty_block()
-    {
+        return f_data_bytes;
     }
 
-    size_t empty_block::get_data_nbytes() const
+    const byte_type* block::data_bytes() const
     {
-        return 0;
+        return f_data_bytes;
     }
 
-    byte_type* empty_block::data_bytes()
+    size_t block::get_data_nbytes() const
     {
-        return NULL;
-    }
-    const byte_type* empty_block::data_bytes() const
-    {
-        return NULL;
+        return f_data_nbytes;
     }
 
+    void block::set_data_nbytes( size_t a_nbytes )
+    {
+        f_data_nbytes = a_nbytes;
+        return;
+    }
+
+    byte_type** block::handle()
+    {
+        return &f_data_bytes;
+    }
+
+    void block::set_cleanup( block_cleanup* a_cleanup )
+    {
+        delete f_cleanup;
+        f_cleanup = a_cleanup;
+        return;
+    }
 }

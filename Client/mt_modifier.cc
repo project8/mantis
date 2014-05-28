@@ -1,4 +1,4 @@
-#include "mt_writer.hh"
+#include "mt_modifier.hh"
 
 #include "mt_iterator.hh"
 #include "mt_logger.hh"
@@ -8,9 +8,9 @@ using std::stringstream;
 
 namespace mantis
 {
-    MTLOGGER( mtlog, "writer" );
+    MTLOGGER( mtlog, "modifier" );
 
-    writer::writer() :
+    modifier::modifier() :
             f_buffer( NULL ),
             f_condition( NULL ),
             f_canceled( false ),
@@ -20,11 +20,11 @@ namespace mantis
             f_live_time( 0 )
     {
     }
-    writer::~writer()
+    modifier::~modifier()
     {
     }
 
-    bool writer::initialize( request* a_request )
+    bool modifier::initialize( request* a_request )
     {
         f_canceled = false;
 
@@ -36,9 +36,9 @@ namespace mantis
 
         return initialize_derived( a_request );
     }
-    void writer::execute()
+    void modifier::execute()
     {
-        iterator t_it( f_buffer, "writer" );
+        iterator t_it( f_buffer, "modifier" );
 
         timespec t_start_time;
         timespec t_stop_time;
@@ -47,6 +47,7 @@ namespace mantis
         while( +t_it == true )
             ;
         IT_TIMER_UNSET_IGNORE_INCR( t_it )
+        MTDEBUG( mtlog, "iterator <" << t_it.name() << "> beginning loop at " << t_it.index() );
 
         //start live timing
         get_time_monotonic( &t_start_time );
@@ -55,15 +56,20 @@ namespace mantis
         while( true )
         {
             //try to advance
+            //blocks if it runs up against the iterator in front of it
+            ++t_it;
+            /*
             if( +t_it == false )
             {
+                // if other threads are waiting on the buffer, we should do that too
                 if( f_condition->is_waiting() == true )
                 {
-                    MTINFO( mtlog, "releasing buffer" );
-                    f_condition->release();
+                    MTINFO( mtlog, "waiting for buffer readiness" );
+                    f_condition->wait();
                 }
                 ++t_it;
             }
+            */
 
             //if the block we're on is unused, skip it
             if( t_it->is_unused() == true )
@@ -94,13 +100,13 @@ namespace mantis
                 return;
             }
 
-            //write the block
-            t_it->set_writing();
+            //process the block
+            t_it->set_processing();
 
-            //MTDEBUG( mtlog, "writer:" );
+            //MTDEBUG( mtlog, "modifier:" );
             //f_buffer->print_states();
 
-            if( write( t_it.object() ) == false )
+            if( modify( t_it.object() ) == false )
             {
                 // to make sure we don't deadlock anything
                 if( f_cancel_condition.is_waiting() )
@@ -119,15 +125,13 @@ namespace mantis
             }
             f_record_count++;
 
-            t_it->set_written();
-
             //MTINFO( mtlog, "records written: " << f_record_count );
 
         }
 
         return;
     }
-    void writer::cancel()
+    void modifier::cancel()
     {
         //cout << "CANCELING WRITER" );
         if( ! f_canceled.load() )
@@ -135,35 +139,35 @@ namespace mantis
             f_canceled.store( true );
             f_cancel_condition.wait();
         }
-        //cout << "  writer has finished canceling" );
+        //cout << "  modifier has finished canceling" );
         return;
     }
-    void writer::finalize( response* a_response )
+    void modifier::finalize( response* a_response )
     {
         //MTINFO( mtlog, "calculating statistics..." );
-
-        a_response->set_writer_records( f_record_count );
-        a_response->set_writer_acquisitions( f_acquisition_count );
-        a_response->set_writer_live_time( (double) (f_live_time) * SEC_PER_NSEC );
-        a_response->set_writer_megabytes( (double) (4 * f_record_count) );
-        a_response->set_writer_rate( a_response->writer_megabytes() / a_response->writer_live_time() );
-
+        /*
+        a_response->set_modifier_records( f_record_count );
+        a_response->set_modifier_acquisitions( f_acquisition_count );
+        a_response->set_modifier_live_time( (double) (f_live_time) * SEC_PER_NSEC );
+        a_response->set_modifier_megabytes( (double) (4 * f_record_count) );
+        a_response->set_modifier_rate( a_response->modifier_megabytes() / a_response->modifier_live_time() );
+        */
         return;
     }
 
-    void writer::set_buffer( buffer* a_buffer, condition* a_condition )
+    void modifier::set_buffer( buffer* a_buffer, condition* a_condition )
     {
         f_buffer = a_buffer;
         f_condition = a_condition;
         return;
     }
 
-    bool writer::get_canceled()
+    bool modifier::get_canceled()
     {
         return f_canceled.load();
     }
 
-    void writer::set_canceled( bool a_flag )
+    void modifier::set_canceled( bool a_flag )
     {
         f_canceled.store( a_flag );
         return;
