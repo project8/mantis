@@ -99,18 +99,18 @@ namespace mantis
                 if (fColored)
                 {
                     //cout << color << KTLogger::Private::sTimeBuff << " [" << setw(5) << level << "] " << setw(16) << left << loc.fFileName << "(" << loc.fLineNumber  << "): " << message << skKTEndColor << endl;
-                    cout << Private::level2Color(level) << logger::Private::sTimeBuff << " [" << setw(5) << Private::level2Str(level) << "] ";
-                    copy(loc.fFileName.end() - std::min< int >(loc.fFileName.size(), 16), loc.fFileName.end(), ostream_iterator<char>(cout));
-                    cout << "(" << loc.fLineNumber  << "): ";
-                    cout << message << EndColor() << endl;
+                    (*fOut) << Private::level2Color(level) << logger::Private::sTimeBuff << " [" << setw(5) << Private::level2Str(level) << "] ";
+                    copy(loc.fFileName.end() - std::min< int >(loc.fFileName.size(), 16), loc.fFileName.end(), ostream_iterator<char>(*fOut));
+                    (*fOut) << "(" << loc.fLineNumber  << "): ";
+                    (*fOut) << message << EndColor() << endl;
                 }
                 else
                 {
                     //cout << KTLogger::Private::sTimeBuff << " [" << setw(5) << level << "] " << setw(16) << left << loc.fFileName << "(" << loc.fLineNumber  << "): " << message << endl;
-                    cout << logger::Private::sTimeBuff << " [" << setw(5) << level << "] ";
-                    copy(loc.fFileName.end() - std::min< int >(loc.fFileName.size(), 16), loc.fFileName.end(), ostream_iterator<char>(cout));
-                    cout << "(" << loc.fLineNumber  << "): ";
-                    cout << message << endl;
+                    (*fOut) << logger::Private::sTimeBuff << " [" << setw(5) << level << "] ";
+                    copy(loc.fFileName.end() - std::min< int >(loc.fFileName.size(), 16), loc.fFileName.end(), ostream_iterator<char>(*fOut));
+                    (*fOut) << "(" << loc.fLineNumber  << "): ";
+                    (*fOut) << message << endl;
                 }
                 logger::Private::sMutex.unlock();
             }
@@ -122,18 +122,18 @@ namespace mantis
                 if (fColored)
                 {
                     //cout << color << KTLogger::Private::sTimeBuff << " [" << setw(5) << level << "] " << setw(16) << left << loc.fFileName << "(" << loc.fLineNumber  << "): " << message << skKTEndColor << endl;
-                    cout << Private::level2Color(level) << logger::Private::sTimeBuff << " [" << setw(5) << Private::level2Str(level) << "] ";
-                    copy(loc.fFileName.end() - std::min< int >(loc.fFileName.size(), 16), loc.fFileName.end(), ostream_iterator<char>(cout));
-                    cout << "(" << loc.fLineNumber  << "): ";
-                    cout << message << EndColor() << endl;
+                    (*fErr) << Private::level2Color(level) << logger::Private::sTimeBuff << " [" << setw(5) << Private::level2Str(level) << "] ";
+                    copy(loc.fFileName.end() - std::min< int >(loc.fFileName.size(), 16), loc.fFileName.end(), ostream_iterator<char>(*fErr));
+                    (*fErr) << "(" << loc.fLineNumber  << "): ";
+                    (*fErr) << message << EndColor() << endl;
                 }
                 else
                 {
                     //cout << KTLogger::Private::sTimeBuff << " [" << setw(5) << level << "] " << setw(16) << left << loc.fFileName << "(" << loc.fLineNumber  << "): " << message << endl;
-                    cout << logger::Private::sTimeBuff << " [" << setw(5) << Private::level2Str(level) << "] ";
-                    copy(loc.fFileName.end() - std::min< int >(loc.fFileName.size(), 16), loc.fFileName.end(), ostream_iterator<char>(cout));
-                    cout << "(" << loc.fLineNumber  << "): ";
-                    cout << message << endl;
+                    (*fErr) << logger::Private::sTimeBuff << " [" << setw(5) << Private::level2Str(level) << "] ";
+                    copy(loc.fFileName.end() - std::min< int >(loc.fFileName.size(), 16), loc.fFileName.end(), ostream_iterator<char>(*fErr));
+                    (*fErr) << "(" << loc.fLineNumber  << "): ";
+                    (*fErr) << message << endl;
                 }
                 logger::Private::sMutex.unlock();
             }
