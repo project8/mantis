@@ -114,12 +114,43 @@ namespace mantis
                 param_output_json::write_string( f_config, t_config_as_string, param_output_json::k_compact );
                 t_status->set_server_config( t_config_as_string );
 
-                t_run_context->push_status_no_mutex();
+                //t_run_context->push_status_no_mutex();
                 t_run_context->unlock_outbound();
 
-                MTINFO( mtlog, "waiting for client readiness..." );
+                unsigned t_timeout_sec = 5;
+                if( ! t_run_context->set_pull_timeout( t_timeout_sec ) )
+                {
+                    MTWARN( mtlog, "unable to set pull timeout" );
+                }
+                unsigned t_push_status_attempts = 1;
+                unsigned t_max_push_status_attempts = 3;
+                int t_ret_errno = 0;
+                bool t_ret_val = false, t_try_again = true;
+                while( t_try_again )
+                {
+                    t_run_context->push_status();
+                    ++t_push_status_attempts;
 
-                if( ! t_run_context->pull_client_status( MSG_WAITALL ) )
+                    MTINFO( mtlog, "waiting for client readiness..." );
+
+                    t_ret_val = t_run_context->pull_client_status( MSG_WAITALL, t_ret_errno );
+                    if( ! t_ret_val &&
+                            t_push_status_attempts < t_max_push_status_attempts &&
+                            (t_ret_errno == EWOULDBLOCK || t_ret_errno == EAGAIN) )
+                    {
+                        t_try_again = true;
+                    }
+                    else
+                    {
+                        t_try_again = false;
+                    }
+                }
+                // reset the timeout
+                if( ! t_run_context->set_pull_timeout( 0 ) )
+                {
+                    MTWARN( mtlog, "unable to reset pull timeout" )
+                }
+                if( ! t_ret_val )
                 {
                     MTERROR( mtlog, "unable to pull client status; sending server status <error>" );
                     status* t_status = t_run_context->lock_status_out();
