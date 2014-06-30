@@ -42,38 +42,45 @@ namespace mantis
             int pull_next_message( int flags = 0 );
 
             request* lock_request_out();
-            bool push_request( int flags = 0 );
-            bool push_request_no_mutex( int flags = 0 );
+            bool push_request( int flags = 0, int& ret_errno = f_last_errno );
+            bool push_request_no_mutex( int flags = 0, int& ret_errno = f_last_errno );
             request* lock_request_in();
-            bool pull_request( int flags = 0 );
-            bool pull_request_no_mutex( int flags = 0 );
+            bool pull_request( int flags = 0, int& ret_errno = f_last_errno );
+            bool pull_request_no_mutex( int flags = 0, int& ret_errno = f_last_errno );
 
             status* lock_status_out();
-            bool push_status( int flags = 0 );
-            bool push_status_no_mutex( int flags = 0 );
+            bool push_status( int flags = 0, int& ret_errno = f_last_errno );
+            bool push_status_no_mutex( int flags = 0, int& ret_errno = f_last_errno );
             status* lock_status_in();
-            bool pull_status( int flags = 0 );
-            bool pull_status_no_mutex( int flags = 0 );
+            bool pull_status( int flags = 0, int& ret_errno = f_last_errno );
+            bool pull_status_no_mutex( int flags = 0, int& ret_errno = f_last_errno );
 
             client_status* lock_client_status_out();
-            bool push_client_status( int flags = 0 );
-            bool push_client_status_no_mutex( int flags = 0 );
+            bool push_client_status( int flags = 0, int& ret_errno = f_last_errno );
+            bool push_client_status_no_mutex( int flags = 0, int& ret_errno = f_last_errno );
             client_status* lock_client_status_in();
-            bool pull_client_status( int flags = 0 );
-            bool pull_client_status_no_mutex( int flags = 0 );
+            bool pull_client_status( int flags = 0, int& ret_errno = f_last_errno );
+            bool pull_client_status_no_mutex( int flags = 0, int& ret_errno = f_last_errno );
 
             response* lock_response_out();
-            bool push_response( int flags = 0 );
-            bool push_response_no_mutex( int flags = 0 );
+            bool push_response( int flags = 0, int& ret_errno = f_last_errno );
+            bool push_response_no_mutex( int flags = 0, int& ret_errno = f_last_errno );
             response* lock_response_in();
-            bool pull_response( int flags = 0 );
-            bool pull_response_no_mutex( int flags = 0 );
+            bool pull_response( int flags = 0, int& ret_errno = f_last_errno );
+            bool pull_response_no_mutex( int flags = 0, int& ret_errno = f_last_errno );
 
             void unlock_outbound();
             void unlock_inbound();
 
+            bool set_pull_timeout( unsigned sec, unsigned usec = 0, int& ret_errno = f_last_errno );
+            bool set_push_timeout( unsigned sec, unsigned usec = 0, int& ret_errno = f_last_errno );
+
+            static int get_last_errno();
+
         private:
-            bool verify_message_type( message_id_type a_type_wanted, message_id_type& a_type_found, int flags = 0 );
+            bool verify_message_type( message_id_type a_type_wanted, message_id_type& a_type_found, int flags = 0, int& ret_errno = f_last_errno );
+
+            static int f_last_errno;
 
             request f_request_out;
             request f_request_in;
