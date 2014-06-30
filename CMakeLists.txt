@@ -7,10 +7,11 @@ cmake_minimum_required( VERSION 2.8 )
 project( Mantis )
 cmake_policy (SET CMP0011 NEW)
 
-list( APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR} )
+list( APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/Scarab/cmake )
 
-include( PackageBuilder.cmake )
-pbuilder_prepare_project( 2 6 6 )
+include( GetVersion )
+include( PackageBuilder )
+pbuilder_prepare_project( ${PROJECT_VERSION_MAJOR} ${PROJECT_VERSION_MINOR} ${PROJECT_REVISION} )
 include_directories( BEFORE 
     ${PROJECT_SOURCE_DIR}/Client
     ${PROJECT_SOURCE_DIR}/Server
