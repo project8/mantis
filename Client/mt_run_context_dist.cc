@@ -19,6 +19,7 @@ namespace mantis
     const run_context_dist::message_id_type run_context_dist::f_client_status_id = 3;
     const run_context_dist::message_id_type run_context_dist::f_response_id = 4;
 
+    int run_context_dist::f_last_errno = 0;
 
     run_context_dist::run_context_dist() :
             f_request_out(),
@@ -148,15 +149,15 @@ namespace mantis
     }
 
 
-    bool run_context_dist::push_request( int flags )
+    bool run_context_dist::push_request( int flags, int& ret_errno )
     {
         bool t_return = false;
         f_outbound_mutex.lock();
-        t_return = push_request_no_mutex( flags );
+        t_return = push_request_no_mutex( flags, ret_errno );
         f_outbound_mutex.unlock();
         return t_return;
     }
-    bool run_context_dist::push_request_no_mutex( int flags )
+    bool run_context_dist::push_request_no_mutex( int flags, int& ret_errno )
     {
         size_t t_request_size = reset_buffer_out( f_request_out.ByteSize() );
         if( ! f_request_out.SerializeToArray( f_buffer_out, t_request_size ) )
@@ -167,9 +168,9 @@ namespace mantis
         try
         {
             //cout << "attempting to send type " << f_request_id << " for request" );
-            f_connection->send_type( f_request_id, flags );
+            f_connection->send_type( f_request_id, flags, ret_errno );
             //cout << "sending request" );
-            f_connection->send( f_buffer_out, t_request_size, flags );
+            f_connection->send( f_buffer_out, t_request_size, flags, ret_errno );
             //cout << "request sent" );
         }
         catch( closed_connection& cc )
@@ -185,28 +186,28 @@ namespace mantis
         }
         return true;
     }
-    bool run_context_dist::pull_request( int flags )
+    bool run_context_dist::pull_request( int flags, int& ret_errno )
     {
         bool t_return = false;
         f_inbound_mutex_read.lock();
-        t_return = pull_request_no_mutex( flags );
+        t_return = pull_request_no_mutex( flags, ret_errno );
         f_inbound_mutex_read.unlock();
         return t_return;
     }
-    bool run_context_dist::pull_request_no_mutex( int flags )
+    bool run_context_dist::pull_request_no_mutex( int flags, int& ret_errno )
     {
         f_inbound_mutex_write.lock();
         size_t t_request_size = f_buffer_in_size;
         try
         {
             message_id_type t_msg_type = f_unknown_id;
-            if( ! verify_message_type( f_request_id, t_msg_type, flags ) )
+            if( ! verify_message_type( f_request_id, t_msg_type, flags, ret_errno ) )
             {
                 MTERROR( mtlog, "message type <" << t_msg_type << "> is not request (" << f_request_id << ")" );
                 f_inbound_mutex_write.unlock();
                 return false;
             }
-            t_request_size = f_connection->recv_type< size_t >( flags );
+            t_request_size = f_connection->recv_type< size_t >( flags, ret_errno );
             if( t_request_size == 0 )
             {
                 MTERROR( mtlog, "request message size was 0" );
@@ -214,7 +215,7 @@ namespace mantis
                 return false;
             }
             reset_buffer_in( t_request_size );
-            ssize_t recv_ret = f_connection->recv( f_buffer_in, t_request_size, flags );
+            ssize_t recv_ret = f_connection->recv( f_buffer_in, t_request_size, flags, ret_errno );
             if( recv_ret <= 0 )
             {
                 MTERROR( mtlog, "(request) connection read length was: " << recv_ret );
@@ -252,15 +253,15 @@ namespace mantis
     }
 
 
-    bool run_context_dist::push_status( int flags )
+    bool run_context_dist::push_status( int flags, int& ret_errno )
     {
         bool t_return = false;
         f_outbound_mutex.lock();
-        t_return = push_status_no_mutex( flags );
+        t_return = push_status_no_mutex( flags, ret_errno );
         f_outbound_mutex.unlock();
         return t_return;
     }
-    bool run_context_dist::push_status_no_mutex( int flags )
+    bool run_context_dist::push_status_no_mutex( int flags, int& ret_errno )
     {
         size_t t_status_size = reset_buffer_out( f_status_out.ByteSize() );
         if( ! f_status_out.SerializeToArray( f_buffer_out, t_status_size ) )
@@ -271,9 +272,9 @@ namespace mantis
         try
         {
             //cout << "attempting to send type " << f_status_id << " for status" );
-            f_connection->send_type( f_status_id, flags );
+            f_connection->send_type( f_status_id, flags, ret_errno );
             //cout << "sending status" );
-            f_connection->send( f_buffer_out, t_status_size, flags );
+            f_connection->send( f_buffer_out, t_status_size, flags, ret_errno );
         }
         catch( closed_connection& cc )
         {
@@ -288,28 +289,28 @@ namespace mantis
         }
         return true;
     }
-    bool run_context_dist::pull_status( int flags )
+    bool run_context_dist::pull_status( int flags, int& ret_errno )
     {
         bool t_return = false;
         f_inbound_mutex_read.lock();
-        t_return = pull_status_no_mutex( flags );
+        t_return = pull_status_no_mutex( flags, ret_errno );
         f_inbound_mutex_read.unlock();
         return t_return;
     }
-    bool run_context_dist::pull_status_no_mutex( int flags )
+    bool run_context_dist::pull_status_no_mutex( int flags, int& ret_errno )
     {
         f_inbound_mutex_write.lock();
         size_t t_status_size = f_buffer_in_size;
         try
         {
             message_id_type t_msg_type = f_unknown_id;
-            if( ! verify_message_type( f_status_id, t_msg_type, flags ) )
+            if( ! verify_message_type( f_status_id, t_msg_type, flags, ret_errno ) )
             {
                 MTERROR( mtlog, "message type <" << t_msg_type << "> is not status (" << f_status_id << ")" );
                 f_inbound_mutex_write.unlock();
                 return false;
             }
-            t_status_size = f_connection->recv_type< size_t >( flags );
+            t_status_size = f_connection->recv_type< size_t >( flags, ret_errno );
             if( t_status_size == 0 )
             {
                 MTERROR( mtlog, "status message size was 0" );
@@ -317,7 +318,7 @@ namespace mantis
                 return false;
             }
             reset_buffer_in( t_status_size );
-            ssize_t recv_ret = f_connection->recv( f_buffer_in, t_status_size, flags );
+            ssize_t recv_ret = f_connection->recv( f_buffer_in, t_status_size, flags, ret_errno );
             if( recv_ret <= 0 )
             {
                 MTERROR( mtlog, "(status) the connection read length was: " << recv_ret );
@@ -354,15 +355,15 @@ namespace mantis
         return &f_status_in;
     }
 
-    bool run_context_dist::push_client_status( int flags )
+    bool run_context_dist::push_client_status( int flags, int& ret_errno )
     {
         bool t_return = false;
         f_outbound_mutex.lock();
-        t_return = push_client_status_no_mutex( flags );
+        t_return = push_client_status_no_mutex( flags, ret_errno );
         f_outbound_mutex.unlock();
         return t_return;
     }
-    bool run_context_dist::push_client_status_no_mutex( int flags )
+    bool run_context_dist::push_client_status_no_mutex( int flags, int& ret_errno )
     {
         size_t t_client_status_size = reset_buffer_out( f_client_status_out.ByteSize() );
         if( ! f_client_status_out.SerializeToArray( f_buffer_out, t_client_status_size ) )
@@ -373,9 +374,9 @@ namespace mantis
         try
         {
             //cout << "attempting to send type " << f_client_status_id << " for client_status" );
-            f_connection->send_type( f_client_status_id, flags );
+            f_connection->send_type( f_client_status_id, flags, ret_errno );
             //cout << "sending client_status" );
-            f_connection->send( f_buffer_out, t_client_status_size, flags );
+            f_connection->send( f_buffer_out, t_client_status_size, flags, ret_errno );
         }
         catch( closed_connection& cc )
         {
@@ -390,28 +391,28 @@ namespace mantis
         }
         return true;
     }
-    bool run_context_dist::pull_client_status( int flags )
+    bool run_context_dist::pull_client_status( int flags, int& ret_errno )
     {
         bool t_return = false;
         f_inbound_mutex_read.lock();
-        t_return = pull_client_status_no_mutex( flags );
+        t_return = pull_client_status_no_mutex( flags, ret_errno );
         f_inbound_mutex_read.unlock();
         return t_return;
     }
-    bool run_context_dist::pull_client_status_no_mutex( int flags )
+    bool run_context_dist::pull_client_status_no_mutex( int flags, int& ret_errno )
     {
         f_inbound_mutex_write.lock();
         size_t t_client_status_size = f_buffer_in_size;
         try
         {
             message_id_type t_msg_type = f_unknown_id;
-            if( ! verify_message_type( f_client_status_id, t_msg_type, flags ) )
+            if( ! verify_message_type( f_client_status_id, t_msg_type, flags, ret_errno ) )
             {
                 MTERROR( mtlog, "message type <" << t_msg_type << "> is not client_status (" << f_client_status_id << ")" );
                 f_inbound_mutex_write.unlock();
                 return false;
             }
-            t_client_status_size = f_connection->recv_type< size_t >( flags );
+            t_client_status_size = f_connection->recv_type< size_t >( flags, ret_errno );
             if( t_client_status_size == 0 )
             {
                 MTERROR( mtlog, "client_status message size was 0" );
@@ -419,7 +420,7 @@ namespace mantis
                 return false;
             }
             reset_buffer_in( t_client_status_size );
-            ssize_t recv_ret = f_connection->recv( f_buffer_in, t_client_status_size, flags );
+            ssize_t recv_ret = f_connection->recv( f_buffer_in, t_client_status_size, flags, ret_errno );
             if( recv_ret <= 0 )
             {
                 MTERROR( mtlog, "(client_status) the connection read length was: " << recv_ret );
@@ -456,15 +457,15 @@ namespace mantis
         return &f_client_status_in;
     }
 
-    bool run_context_dist::push_response( int flags )
+    bool run_context_dist::push_response( int flags, int& ret_errno )
     {
         bool t_return = false;
         f_outbound_mutex.lock();
-        t_return = push_response_no_mutex( flags );
+        t_return = push_response_no_mutex( flags, ret_errno );
         f_outbound_mutex.unlock();
         return t_return;
     }
-    bool run_context_dist::push_response_no_mutex( int flags )
+    bool run_context_dist::push_response_no_mutex( int flags, int& ret_errno )
     {
         size_t t_response_size = reset_buffer_out( f_response_out.ByteSize() );
         if( ! f_response_out.SerializeToArray( f_buffer_out, t_response_size ) )
@@ -475,9 +476,9 @@ namespace mantis
         try
         {
             //cout << "attempting to send type " << f_response_id << " for response" );
-            f_connection->send_type( f_response_id, flags );
+            f_connection->send_type( f_response_id, flags, ret_errno );
             //cout << "sending response" );
-            f_connection->send( f_buffer_out, t_response_size, flags );
+            f_connection->send( f_buffer_out, t_response_size, flags, ret_errno );
         }
         catch( closed_connection& cc )
         {
@@ -492,28 +493,28 @@ namespace mantis
         }
         return true;
     }
-    bool run_context_dist::pull_response( int flags )
+    bool run_context_dist::pull_response( int flags, int& ret_errno )
     {
         bool t_return = false;
         f_inbound_mutex_read.lock();
-        t_return = pull_response_no_mutex( flags );
+        t_return = pull_response_no_mutex( flags, ret_errno );
         f_inbound_mutex_read.unlock();
         return t_return;
     }
-    bool run_context_dist::pull_response_no_mutex( int flags )
+    bool run_context_dist::pull_response_no_mutex( int flags, int& ret_errno )
     {
         f_inbound_mutex_write.lock();
         size_t t_response_size = f_buffer_in_size;
         try
         {
             message_id_type t_msg_type = f_unknown_id;
-            if( ! verify_message_type( f_response_id, t_msg_type, flags ) )
+            if( ! verify_message_type( f_response_id, t_msg_type, flags, ret_errno ) )
             {
                 MTERROR( mtlog, "message type <" << t_msg_type << "> is not response (" << f_response_id << ")" );
                 f_inbound_mutex_write.unlock();
                 return false;
             }
-            t_response_size = f_connection->recv_type< size_t >( flags );
+            t_response_size = f_connection->recv_type< size_t >( flags, ret_errno );
             if( t_response_size == 0 )
             {
                 MTERROR( mtlog, "response message size was 0" );
@@ -521,7 +522,7 @@ namespace mantis
                 return false;
             }
             reset_buffer_in( t_response_size );
-            ssize_t recv_ret = f_connection->recv( f_buffer_in, t_response_size, flags );
+            ssize_t recv_ret = f_connection->recv( f_buffer_in, t_response_size, flags, ret_errno );
             if( recv_ret <= 0 )
             {
                 MTERROR( mtlog, "(response) the connection read length was: " << recv_ret );
@@ -558,12 +559,12 @@ namespace mantis
         return &f_response_in;
     }
 
-    bool run_context_dist::verify_message_type( run_context_dist::message_id_type a_type_wanted, run_context_dist::message_id_type& a_type_found, int flags )
+    bool run_context_dist::verify_message_type( run_context_dist::message_id_type a_type_wanted, run_context_dist::message_id_type& a_type_found, int flags, int& ret_errno )
     {
         // private function; appropriate mutexes should already be set
 
         // peek at the message type, without marking that data as read
-        a_type_found = f_connection->recv_type< message_id_type >( flags | MSG_PEEK );
+        a_type_found = f_connection->recv_type< message_id_type >( flags | MSG_PEEK, ret_errno );
         if( a_type_found != a_type_wanted )
         {
             return false;
@@ -616,6 +617,31 @@ namespace mantis
             return false;
         f_response_condition.wait();
         return true;
+    }
+
+    bool run_context_dist::set_pull_timeout( unsigned sec, unsigned usec, int& ret_errno )
+    {
+        if( ! f_connection->set_recv_timeout( sec, usec, ret_errno ) )
+        {
+            MTERROR( mtlog, "Unable to set pull timeout" );
+            return false;
+        }
+        return true;
+    }
+
+    bool run_context_dist::set_push_timeout( unsigned sec, unsigned usec, int& ret_errno )
+    {
+        if( ! f_connection->set_send_timeout( sec, usec, ret_errno ) )
+        {
+            MTERROR( mtlog, "Unable to set push timeout: " << strerror( ret_errno ) );
+            return false;
+        }
+        return true;
+    }
+
+    int run_context_dist::get_last_errno()
+    {
+        return f_last_errno;
     }
 
 }
