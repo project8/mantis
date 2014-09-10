@@ -452,10 +452,13 @@ namespace mantis
 
         MTDEBUG( mtlog, "connecting to digitizer card..." );
 
-        ViString options = "";
+        ViString options;
+        strcpy( options, "" );
         // for a simulated device:
-        //ViString options = "simulate=1";
-        t_result = Acqrs_InitWithOptions( "PCI::INSTR0", VI_FALSE, VI_FALSE, options, &f_handle );
+        //strcpy( "simulate=1" );
+        ViRsrc resource;
+        strcpy( resource, "PCI::INSTR0" );
+        t_result = Acqrs_InitWithOptions( resource, VI_FALSE, VI_FALSE, options, &f_handle );
         if( t_result != VI_SUCCESS )
         {
             PrintU1084AError( f_handle, t_result, "failed to connect to digitizer card: " );
