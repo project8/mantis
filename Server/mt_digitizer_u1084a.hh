@@ -1,5 +1,5 @@
-#ifndef MT_DIGITIZER_U1082A_HH_
-#define MT_DIGITIZER_U1082A_HH_
+#ifndef MT_DIGITIZER_U1084A_HH_
+#define MT_DIGITIZER_U1084A_HH_
 
 #include "mt_digitizer.hh"
 
@@ -13,20 +13,20 @@
 
 namespace mantis
 {
-    void PrintU1082AError( ViSession a_handle, ViStatus a_status, const std::string& a_prepend_msg );
+    void PrintU1084AError( ViSession a_handle, ViStatus a_status, const std::string& a_prepend_msg );
 
-    class block_cleanup_u1082a;
+    class block_cleanup_u1084a;
 
-    class digitizer_u1082a : public digitizer
+    class digitizer_u1084a : public digitizer
     {
         public:
             typedef ViInt8 data_type;
 
-            static unsigned data_type_size_u1082a();
+            static unsigned data_type_size_u1084a();
 
         public:
-            digitizer_u1082a();
-            virtual ~digitizer_u1082a();
+            digitizer_u1084a();
+            virtual ~digitizer_u1084a();
 
             bool allocate( buffer* a_buffer, condition* a_condition );
             bool initialize( request* a_request );
@@ -71,24 +71,23 @@ namespace mantis
     };
 
 
-    class block_cleanup_u1082a : public block_cleanup
+    class block_cleanup_u1084a : public block_cleanup
     {
         public:
-            block_cleanup_u1082a( byte_type* a_data, ViSession a_handle );
-            virtual ~block_cleanup_u1082a();
+            block_cleanup_u1084a( byte_type* a_data );
+            virtual ~block_cleanup_u1084a();
             virtual bool delete_data();
         private:
             bool f_triggered;
             byte_type* f_data;
-            ViSession f_handle;
     };
 
 
-    class test_digitizer_u1082a : public test_digitizer
+    class test_digitizer_u1084a : public test_digitizer
     {
         public:
-            test_digitizer_u1082a() {}
-            virtual ~test_digitizer_u1082a() {}
+            test_digitizer_u1084a() {}
+            virtual ~test_digitizer_u1084a() {}
     
             bool run_test();
 

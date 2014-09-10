@@ -1,4 +1,4 @@
-#include "mt_digitizer_u1082a.hh"
+#include "mt_digitizer_u1084a.hh"
 
 #include "mt_buffer.hh"
 #include "mt_condition.hh"
@@ -19,18 +19,18 @@
 
 namespace mantis
 {
-    MTLOGGER( mtlog, "digitizer_u1082a" );
+    MTLOGGER( mtlog, "digitizer_u1084a" );
 
-    MT_REGISTER_DIGITIZER( digitizer_u1082a, "u1082a" );
-    MT_REGISTER_TEST_DIGITIZER( test_digitizer_u1082a, "u1082a" );
+    MT_REGISTER_DIGITIZER( digitizer_u1084a, "u1084a" );
+    MT_REGISTER_TEST_DIGITIZER( test_digitizer_u1084a, "u1084a" );
 
-    const unsigned digitizer_u1082a::s_data_type_size = sizeof( digitizer_u1082a::data_type );
-    unsigned digitizer_u1082a::data_type_size_u1082a()
+    const unsigned digitizer_u1084a::s_data_type_size = sizeof( digitizer_u1084a::data_type );
+    unsigned digitizer_u1084a::data_type_size_u1084a()
     {
-        return digitizer_u1082a::s_data_type_size;
+        return digitizer_u1084a::s_data_type_size;
     }
 
-    void PrintU1082AError( ViSession a_handle, ViStatus a_status, const std::string& a_prepend_msg )
+    void PrintU1084AError( ViSession a_handle, ViStatus a_status, const std::string& a_prepend_msg )
     {
         static char t_buff[512];
         Acqrs_errorMessage( a_handle, a_status, t_buff, 512 );
@@ -38,7 +38,7 @@ namespace mantis
         return;
     }
 
-    digitizer_u1082a::digitizer_u1082a() :
+    digitizer_u1084a::digitizer_u1084a() :
             //f_semaphore( NULL ),
             f_buffer( NULL ),
             f_condition( NULL ),
@@ -53,15 +53,15 @@ namespace mantis
             f_canceled( false ),
             f_cancel_condition()
     {
-        get_calib_params( u1082a_bits, s_data_type_size, u1082a_min_val, u1082a_range, &f_params );
+        get_calib_params( u1084a_bits, s_data_type_size, u1084a_min_val, u1084a_range, &f_params );
         /*
         errno = 0;
-        f_semaphore = sem_open( "/digitizer_u1082a", O_CREAT | O_EXCL );
+        f_semaphore = sem_open( "/digitizer_u1084a", O_CREAT | O_EXCL );
         if( f_semaphore == SEM_FAILED )
         {
             if( errno == EEXIST )
             {
-                throw exception() << "digitizer_u1082a is already in use";
+                throw exception() << "digitizer_u1084a is already in use";
             }
             else
             {
@@ -71,12 +71,12 @@ namespace mantis
         */
     }
 
-    digitizer_u1082a::~digitizer_u1082a()
+    digitizer_u1084a::~digitizer_u1084a()
     {
         if( f_allocated )
         {
             ViStatus t_result;
-
+/*
             MTINFO( mtlog, "deallocating dma buffer..." );
 
             iterator t_it( f_buffer );
@@ -90,9 +90,10 @@ namespace mantis
             t_result = DisconnectFromDevicePX4( f_handle );
             if( t_result != VI_SUCCESS )
             {
-                PrintU1082AError( f_handle, t_result, "failed to disconnect from digitizer card: " );
+                PrintU1084AError( f_handle, t_result, "failed to disconnect from digitizer card: " );
                 exit( -1 );
             }
+            */
         }
         /*
         if( f_semaphore != SEM_FAILED )
@@ -102,19 +103,19 @@ namespace mantis
         */
     }
 
-    bool digitizer_u1082a::allocate( buffer* a_buffer, condition* a_condition )
+    bool digitizer_u1084a::allocate( buffer* a_buffer, condition* a_condition )
     {
         f_buffer = a_buffer;
         f_condition = a_condition;
 
         ViStatus t_result;
-
+/*
         MTINFO( mtlog, "connecting to digitizer card..." );
 
         t_result = ConnectToDevicePX4( &f_handle, 1 );
         if( t_result != VI_SUCCESS )
         {
-            PrintU1082AError( f_handle, t_result, "failed to connect to digitizer card: " );
+            PrintU1084AError( f_handle, t_result, "failed to connect to digitizer card: " );
             return false;
         }
 
@@ -123,7 +124,7 @@ namespace mantis
         t_result = SetPowerupDefaultsPX4( f_handle );
         if( t_result != VI_SUCCESS )
         {
-            PrintU1082AError( f_handle, t_result, "failed to enter default state: " );
+            PrintU1084AError( f_handle, t_result, "failed to enter default state: " );
             return false;
         }
 
@@ -139,7 +140,7 @@ namespace mantis
                 {
                     std::stringstream t_buff;
                     t_buff << "failed to allocate dma memory for block " << index <<": ";
-                    PrintU1082AError( f_handle, t_result, t_buff.str().c_str() );
+                    PrintU1084AError( f_handle, t_result, t_buff.str().c_str() );
                     return false;
                 }
                 t_new_block->set_data_size( f_buffer->record_size() );
@@ -152,14 +153,14 @@ namespace mantis
             MTERROR( mtlog, "unable to allocate buffer: " << e.what() );
             return false;
         }
-
+*/
         f_allocated = true;
         return true;
     }
-    bool digitizer_u1082a::initialize( request* a_request )
+    bool digitizer_u1084a::initialize( request* a_request )
     {
         ViStatus t_result;
-
+/*
         //MTINFO( mtlog, "resetting counters..." );
 
         f_record_last = (record_id_type) (ceil( (double) (a_request->rate() * a_request->duration() * 1.e3) / (double) (f_buffer->record_size()) ));
@@ -175,7 +176,7 @@ namespace mantis
             t_result = SetActiveChannelsPX4( f_handle, PX4CHANSEL_SINGLE_CH1 );
             if( t_result != VI_SUCCESS )
             {
-                PrintU1082AError( f_handle, t_result, "failed to activate channel 1: " );
+                PrintU1084AError( f_handle, t_result, "failed to activate channel 1: " );
                 return false;
             }
 
@@ -185,7 +186,7 @@ namespace mantis
             t_result = SetActiveChannelsPX4( f_handle, PX4CHANSEL_DUAL_1_2 );
             if( t_result != VI_SUCCESS )
             {
-                PrintU1082AError( f_handle, t_result, "failed to activate channels 1 and 2: " );
+                PrintU1084AError( f_handle, t_result, "failed to activate channels 1 and 2: " );
                 return false;
             }
         }
@@ -195,15 +196,15 @@ namespace mantis
         t_result = SetInternalAdcClockRatePX4( f_handle, a_request->rate() );
         if( t_result != VI_SUCCESS )
         {
-            PrintU1082AError( f_handle, t_result, "failed to set clock rate: " );
+            PrintU1084AError( f_handle, t_result, "failed to set clock rate: " );
             return false;
         }
-
+*/
         return true;
     }
-    void digitizer_u1082a::execute()
+    void digitizer_u1084a::execute()
     {
-        iterator t_it( f_buffer, "dig-u1082a" );
+        iterator t_it( f_buffer, "dig-u1084a" );
 
         timespec t_live_start_time;
         timespec t_live_stop_time;
@@ -212,7 +213,7 @@ namespace mantis
         timespec t_stamp_time;
 
         //MTINFO( mtlog, "waiting" );
-
+/*
         f_condition->wait();
 
         MTINFO( mtlog, "loose at <" << t_it.index() << ">" );
@@ -325,10 +326,10 @@ namespace mantis
                 MTINFO( mtlog, "loose at <" << t_it.index() << ">" );
             }
         }
-
+*/
         return;
     }
-    void digitizer_u1082a::cancel()
+    void digitizer_u1084a::cancel()
     {
         if( ! f_canceled.load() )
         {
@@ -337,7 +338,7 @@ namespace mantis
         }
         return;
     }
-    void digitizer_u1082a::finalize( response* a_response )
+    void digitizer_u1084a::finalize( response* a_response )
     {
         //MTINFO( mtlog, "calculating statistics..." );
 
@@ -351,31 +352,31 @@ namespace mantis
         return;
     }
 
-    bool digitizer_u1082a::start()
-    {
+    bool digitizer_u1084a::start()
+    {/*
         ViStatus t_result = BeginBufferedPciAcquisitionPX4( f_handle, PX4_FREE_RUN );
         if( t_result != VI_SUCCESS )
         {
-            PrintU1082AError( f_handle, t_result, "failed to begin dma acquisition: " );
+            PrintU1084AError( f_handle, t_result, "failed to begin dma acquisition: " );
             return false;
         }
-
+*/
         return true;
     }
-    bool digitizer_u1082a::acquire( block* a_block, timespec& a_stamp_time )
+    bool digitizer_u1084a::acquire( block* a_block, timespec& a_stamp_time )
     {
         a_block->set_record_id( f_record_count );
         a_block->set_acquisition_id( f_acquisition_count );
-
+/*
         ViStatus t_result = GetPciAcquisitionDataFastPX4( f_handle, f_buffer->record_size(), a_block->data_bytes(), 0 );
         if( t_result != VI_SUCCESS )
         {
-            PrintU1082AError( f_handle, t_result, "failed to acquire dma data over pci: " );
+            PrintU1084AError( f_handle, t_result, "failed to acquire dma data over pci: " );
             t_result = EndBufferedPciAcquisitionPX4( f_handle );
             return false;
         }
-
-        // the timestamp is acquired after the data is transferred to avoid the problem on the u1082a where
+*/
+        // the timestamp is acquired after the data is transferred to avoid the problem on the u1084a where
         // the first record can take unusually long to be acquired.
         get_time_monotonic( &a_stamp_time );
         a_block->set_timestamp( time_to_nsec( a_stamp_time ) - f_start_time );
@@ -384,35 +385,35 @@ namespace mantis
 
         return true;
     }
-    bool digitizer_u1082a::stop()
-    {
+    bool digitizer_u1084a::stop()
+    {/*
         ViStatus t_result = EndBufferedPciAcquisitionPX4( f_handle );
         if( t_result != VI_SUCCESS )
         {
-            PrintU1082AError( f_handle, t_result, "failed to end dma acquisition: " );
+            PrintU1084AError( f_handle, t_result, "failed to end dma acquisition: " );
             return false;
         }
-        ++f_acquisition_count;
+        ++f_acquisition_count;*/
         return true;
     }
 
-    bool digitizer_u1082a::write_mode_check( request_file_write_mode_t mode )
+    bool digitizer_u1084a::write_mode_check( request_file_write_mode_t mode )
     {
         return true;
     }
 
-    unsigned digitizer_u1082a::data_type_size()
+    unsigned digitizer_u1084a::data_type_size()
     {
-        return digitizer_u1082a::s_data_type_size;
+        return digitizer_u1084a::s_data_type_size;
     }
 
 
-    bool digitizer_u1082a::get_canceled()
+    bool digitizer_u1084a::get_canceled()
     {
         return f_canceled.load();
     }
 
-    void digitizer_u1082a::set_canceled( bool a_flag )
+    void digitizer_u1084a::set_canceled( bool a_flag )
     {
         f_canceled.store( a_flag );
         return;
@@ -420,35 +421,29 @@ namespace mantis
 
 
     //***********************************
-    // Block Cleanup u1082a
+    // Block Cleanup u1084a
     //***********************************
 
-    block_cleanup_u1082a::block_cleanup_u1082a( byte_type* a_data, ViSession a_handle ) :
+    block_cleanup_u1084a::block_cleanup_u1084a( byte_type* a_data ) :
         f_triggered( false ),
-        f_data( a_data ),
-        f_handle( a_handle )
+        f_data( a_data )
     {}
-    block_cleanup_u1082a::~block_cleanup_u1082a()
+    block_cleanup_u1084a::~block_cleanup_u1084a()
     {}
-    bool block_cleanup_u1082a::delete_data()
+    bool block_cleanup_u1084a::delete_data()
     {
         if( f_triggered ) return true;
-        ViStatus t_result = FreeDmaBufferPX4( f_handle, reinterpret_cast< digitizer_u1082a::data_type* >( f_data ) );
-        if( t_result != VI_SUCCESS )
-        {
-            PrintU1082AError( f_handle, t_result, "failed to deallocate dma memory: " );
-            return false;
-        }
+        delete [] f_data;
         f_triggered = true;
         return true;
     }
 
 
     //***********************************
-    // test_digitizer_u1082a
+    // test_digitizer_u1084a
     //***********************************
 
-    bool test_digitizer_u1082a::run_test()
+    bool test_digitizer_u1084a::run_test()
     {
         ViStatus t_result;
         ViSession f_handle;
@@ -457,37 +452,26 @@ namespace mantis
 
         MTDEBUG( mtlog, "connecting to digitizer card..." );
 
-        t_result = ConnectToDevicePX4( f_handle, 1 );
+        ViString options = "";
+        // for a simulated device:
+        //ViString options = "simulate=1";
+        t_result = Acqrs_InitWithOptions( "PCI::INSTR0", VI_FALSE, VI_FALSE, options, &f_handle );
         if( t_result != VI_SUCCESS )
         {
-            PrintU1082AError( f_handle, t_result, "failed to connect to digitizer card: " );
+            PrintU1084AError( f_handle, t_result, "failed to connect to digitizer card: " );
             return false;
         }
 
-        MTDEBUG( mtlog, "setting power up defaults..." );
-
-        t_result = SetPowerupDefaultsPX4( f_handle );
-        if( t_result != VI_SUCCESS )
-        {
-            PrintU1082AError( f_handle, t_result, "failed to enter default state: " );
-            return false;
-        }
-
-        MTDEBUG( mtlog, "allocating dma buffer..." );
+        MTDEBUG( mtlog, "allocating memory buffer..." );
 
         block* t_block = NULL;
-        // this is the minimum record size for the u1082a
+        // prog guide, pg 24: should be multiple of 32 (16) for single (dual) channel acquisition
         unsigned t_rec_size = 16384;
 
         try
         {
-            t_block = new block();
-            t_result = AllocateDmaBufferPX4( f_handle, t_rec_size, t_block->handle() );
-            if( t_result != VI_SUCCESS )
-            {
-                PrintU1082AError( f_handle, t_result, "failed to allocate dma memory: " );
-                return false;
-            }
+            // the +16 in the block size is recommended in the programmer's reference, pg
+            t_block = block::allocate_block< digitizer_u1084a::data_type >( t_rec_size + 16 );
             t_block->set_data_size( t_rec_size );
             t_block->set_data_nbytes( t_rec_size );
         }
@@ -499,25 +483,74 @@ namespace mantis
 
         MTINFO( mtlog, "allocation complete!\n" );
 
-
-
         MTINFO( mtlog, "beginning initialization phase" );
 
-        MTDEBUG( mtlog, "setting run mode..." );
+        // acquisition mode: 7 == SSR (Sustained Sequential Recording) mode
+        ViInt32 acqMode = 7;
 
-        t_result = SetActiveChannelsPX4( f_handle, PX4CHANSEL_SINGLE_CH1 );
+        // must set everything in the readParams
+        AqReadParameters readParams;
+        readParams.dataType = 0; // 1 byte, signed
+        readParams.readMode = acqMode; // gated data from an SSR
+        readParams.firstSegment = 0; //
+        readParams.nbrSegments = 1; //
+        readParams.firstSampleInSeg = 0; // typically 0
+        readParams.nbrSamplesInSeg = t_rec_size; // requested number of samples
+        readParams.segmentOffset = 0; // not used for readMode == 7
+        readParams.dataArraySize = t_rec_size; // # of bytes in the output array
+        readParams.segDescArraySize = sizeof( AqSegmentDescriptor ); // # of bytes in the segDescArray
+        readParams.flags = 0; // with bit 2 == 0, data is reset after being read
+        readParams.reserved = readParams.reserved2 = readParams.reserved3 = 0;
+
+        MTDEBUG( mtlog, "setting run configuration..." );
+
+        double clock_rate = 200.; // clock rate in MHz
+        double sample_interval = 1. / ( clock_rate * 1.e6 ); // sampling interval in seconds
+        t_result = AcqrsD1_configHorizontal( f_handle, sample_interval, 0 ); // delay time (last param) is overwritten later
         if( t_result != VI_SUCCESS )
         {
-            PrintU1082AError( f_handle, t_result, "failed to activate channel 1: " );
+            PrintU1084AError( f_handle, t_result, "failed to set horizontal settings: " );
             return false;
         }
 
-        MTDEBUG( mtlog, "setting clock rate..." );
+        t_result = AcqrsD1_configVertical( f_handle, 1, u1084a_range, fabs(u1084a_min_val), 0, 0 );
 
-        t_result = SetInternalAdcClockRatePX4( f_handle, 200. );
+        ViInt32 flags = 0; // pg 91 of the programmer's guide; maybe should be 10?
+        t_result = AcqrsD1_configMode( f_handle, acqMode, 0 /*unused*/, 0 );
         if( t_result != VI_SUCCESS )
         {
-            PrintU1082AError( f_handle, t_result, "failed to set clock rate: " );
+            PrintU1084AError( f_handle, t_result, "failed to set acquisition mode: " );
+            return false;
+        }
+
+        t_result = AcqrsD1_configAvgConfig( f_handle, 0, "NbrSamples", &(readParams.nbrSamplesInSeg) );
+        if( t_result != VI_SUCCESS )
+        {
+            PrintU1084AError( f_handle, t_result, "failed to set number of samples: " );
+            return false;
+        }
+
+        t_result = AcqrsD1_configAvgConfig( f_handle, 0, "NbrSegments", &(readParams.nbrSegments) );
+        if( t_result != VI_SUCCESS )
+        {
+            PrintU1084AError( f_handle, t_result, "failed to set number of segments: " );
+            return false;
+        }
+
+        ViInt32 startDelay = 32; // prog guide, pg 24: should be multiple of 32 (16) for single (dual) channel acquisition
+                                 // if 0, then the first 10 (5) samples will be 0
+        t_result = AcqrsD1_configAvgConfig( f_handle, 0, "StartDelay", &startDelay );
+        if( t_result != VI_SUCCESS )
+        {
+            PrintU1084AError( f_handle, t_result, "failed to set start delay: " );
+            return false;
+        }
+
+        ViInt32 stopDelay = 0;
+        t_result = AcqrsD1_configAvgConfig( f_handle, 0, "StopDelay", &stopDelay );
+        if( t_result != VI_SUCCESS )
+        {
+            PrintU1084AError( f_handle, t_result, "failed to set stop delay: " );
             return false;
         }
 
@@ -528,29 +561,35 @@ namespace mantis
 
         MTDEBUG( mtlog, "beginning acquisition" );
 
-        t_result = BeginBufferedPciAcquisitionPX4( f_handle, PX4_FREE_RUN );
+        t_result = AcqrsD1_acquire( f_handle );
         if( t_result != VI_SUCCESS )
         {
-            PrintU1082AError( f_handle, t_result, "failed to begin dma acquisition: " );
+            PrintU1084AError( f_handle, t_result, "failed to begin acquisition: " );
             return false;
         }
 
         MTDEBUG( mtlog, "acquiring a record" );
 
-        t_result = GetPciAcquisitionDataFastPX4( f_handle, t_rec_size, t_block->data_bytes(), 0 );
+        ViInt32 timeout = 1000; // ms
+        AqDataDescriptor dataDesc; // data descriptor
+        AqSegmentDescriptor segDesc[1]; // segment descriptor
+
+        t_result = AcqrsD1_processData( f_handle, 0, 1 );
+        t_result = AcqrsD1_waitForEndOfProcessing( f_handle, timeout );
+        t_result = AcqrsD1_readData( f_handle, 1, &readParams, t_block->data_bytes(), &dataDesc, segDesc );
         if( t_result != VI_SUCCESS )
         {
-            PrintU1082AError( f_handle, t_result, "failed to acquire dma data over pci: " );
-            t_result = EndBufferedPciAcquisitionPX4( f_handle );
+            PrintU1084AError( f_handle, t_result, "failed to acquire dma data over pci: " );
+            t_result = AcqrsD1_stopAcquisition( f_handle );
             return false;
         }
 
         MTDEBUG( mtlog, "ending acquisition..." );
 
-        t_result = EndBufferedPciAcquisitionPX4( f_handle );
+        t_result = AcqrsD1_stopAcquisition( f_handle );
         if( t_result != VI_SUCCESS )
         {
-            PrintU1082AError( f_handle, t_result, "failed to end dma acquisition: " );
+            PrintU1084AError( f_handle, t_result, "failed to end dma acquisition: " );
             return false;
         }
 
