@@ -7,6 +7,7 @@
 #include "mt_block.hh"
 #include "mt_condition.hh"
 
+#define _LINUX 1
 #include "AgMD1Fundamental.h"
 
 //#include <semaphore.h>
