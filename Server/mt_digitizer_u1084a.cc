@@ -17,6 +17,9 @@
 //#include <fcntl.h> // for O_CREAT and O_EXCL
 #include <sstream>
 
+// to disable the "conversion from string literals to char* is deprecated" warning
+#pragma GCC diagnostic ignored "-Wwrite-strings"
+
 namespace mantis
 {
     MTLOGGER( mtlog, "digitizer_u1084a" );
@@ -34,7 +37,7 @@ namespace mantis
     {
         static char t_buff[512];
         Acqrs_errorMessage( a_handle, a_status, t_buff, 512 );
-        MTERROR( mtlog, a_prepend_msg << t_buff );
+        MTERROR( mtlog, a_prepend_msg << t_buff << " (status code: " << a_status << ")");
         return;
     }
 
@@ -452,12 +455,12 @@ namespace mantis
 
         MTDEBUG( mtlog, "connecting to digitizer card..." );
 
-        ViString options;
-        strcpy( options, "" );
-        // for a simulated device:
-        //strcpy( "simulate=1" );
-        ViRsrc resource;
-        strcpy( resource, "PCI::INSTR0" );
+        ViString options = "";
+        ViRsrc resource = "PCI::INSTR0";
+        // for a simulated device
+        //ViString options = "simulate=TRUE";
+        //ViRsrc resource = "PCI::AP240";
+        t_result = Acqrs_setSimulationOptions("");
         t_result = Acqrs_InitWithOptions( resource, VI_FALSE, VI_FALSE, options, &f_handle );
         if( t_result != VI_SUCCESS )
         {
@@ -507,11 +510,20 @@ namespace mantis
 
         MTDEBUG( mtlog, "setting run configuration..." );
 
-        double clock_rate = 200.; // clock rate in MHz
-        double sample_interval = 1. / ( clock_rate * 1.e6 ); // sampling interval in seconds
-        t_result = AcqrsD1_configHorizontal( f_handle, sample_interval, 0 ); // delay time (last param) is overwritten later
+        double clock_rate = 20.; // clock rate in MHz
+        ViReal64 sample_interval = 1. / ( clock_rate * 1.e6 ); // sampling interval in seconds
+        t_result = AcqrsD1_configHorizontal( f_handle, sample_interval, 0. ); // delay time (last param) is overwritten later
         if( t_result != VI_SUCCESS )
         {
+	  if( t_result > 0 )
+	    {
+	      PrintU1084AError( f_handle, t_result, "warning when making horizontal settings: " );
+	      MTWARN( mtlog, "tried to set: " << sample_interval << ", 0" );
+	      ViReal64 set_si, set_delay;
+	      AcqrsD1_getHorizontal( f_handle, &set_si, &set_delay );
+	      MTWARN( mtlog, "setting applied: " << set_si << ", " << set_delay );
+	      return false;
+	    }
             PrintU1084AError( f_handle, t_result, "failed to set horizontal settings: " );
             return false;
         }
@@ -595,6 +607,7 @@ namespace mantis
             PrintU1084AError( f_handle, t_result, "failed to end dma acquisition: " );
             return false;
         }
+        Acqrs_closeAll();
 
         std::stringstream t_str_buff;
         for( unsigned i = 0; i < 99; ++i )
@@ -609,7 +622,7 @@ namespace mantis
 
         MTINFO( mtlog, "beginning finalization phase" );
 
-        MTDEBUG( mtlog, "deallocating dma buffer" );
+        MTDEBUG( mtlog, "deallocating memory buffer" );
 
         delete t_block;
 
