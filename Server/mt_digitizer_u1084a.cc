@@ -37,7 +37,14 @@ namespace mantis
     {
         static char t_buff[512];
         Acqrs_errorMessage( a_handle, a_status, t_buff, 512 );
-        MTERROR( mtlog, a_prepend_msg << t_buff << " (status code: " << a_status << ")");
+        if( a_status > 0 )
+	{
+            MTWARN( mtlog, a_prepend_msg << t_buff << " (status code: " << a_status << ")" );
+        }
+        else
+        {
+            MTERROR( mtlog, a_prepend_msg << t_buff << " (status code: " << a_status << ")" );
+        }
         return;
     }
 
@@ -491,8 +498,10 @@ namespace mantis
 
         MTINFO( mtlog, "beginning initialization phase" );
 
-        // acquisition mode: 7 == SSR (Sustained Sequential Recording) mode
-        ViInt32 acqMode = 7;
+        // acquisition mode: 0 = normal mode
+        ViInt32 acqMode = 2;
+        // acquisition flag: 10 = SAR, dual-bank
+        ViInt32 acqFlag = 10;
 
         // must set everything in the readParams
         AqReadParameters readParams;
@@ -510,31 +519,36 @@ namespace mantis
 
         MTDEBUG( mtlog, "setting run configuration..." );
 
-        double clock_rate = 20.; // clock rate in MHz
+        double clock_rate = 250.; // clock rate in MHz
         ViReal64 sample_interval = 1. / ( clock_rate * 1.e6 ); // sampling interval in seconds
         t_result = AcqrsD1_configHorizontal( f_handle, sample_interval, 0. ); // delay time (last param) is overwritten later
         if( t_result != VI_SUCCESS )
         {
-	  if( t_result > 0 )
+	  PrintU1084AError( f_handle, t_result, "failed when making horizontal settings: " );
+
+	  if( t_result == ACQIRIS_WARN_SETUP_ADAPTED )
 	    {
-	      PrintU1084AError( f_handle, t_result, "warning when making horizontal settings: " );
 	      MTWARN( mtlog, "tried to set: " << sample_interval << ", 0" );
 	      ViReal64 set_si, set_delay;
 	      AcqrsD1_getHorizontal( f_handle, &set_si, &set_delay );
 	      MTWARN( mtlog, "setting applied: " << set_si << ", " << set_delay );
-	      return false;
 	    }
-            PrintU1084AError( f_handle, t_result, "failed to set horizontal settings: " );
-            return false;
+          return false;
         }
 
         t_result = AcqrsD1_configVertical( f_handle, 1, u1084a_range, fabs(u1084a_min_val), 0, 0 );
 
-        ViInt32 flags = 0; // pg 91 of the programmer's guide; maybe should be 10?
-        t_result = AcqrsD1_configMode( f_handle, acqMode, 0 /*unused*/, 0 );
+        t_result = AcqrsD1_configMode( f_handle, acqMode, 0 /*unused*/, acqFlag );
         if( t_result != VI_SUCCESS )
         {
             PrintU1084AError( f_handle, t_result, "failed to set acquisition mode: " );
+            if( t_result == ACQIRIS_WARN_SETUP_ADAPTED )
+	      {
+		MTWARN( mtlog, "tried to set: " << acqMode << ", 0, " << acqFlag );
+		ViInt32 set_mode, set_modifier, set_flags;
+		AcqrsD1_getMode( f_handle, &set_mode, &set_modifier, &set_flags );
+		MTWARN( mtlog, "setting applied: " << set_mode << ", " << set_modifier << ", " << set_flags );
+	      }
             return false;
         }
 
