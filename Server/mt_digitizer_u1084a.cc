@@ -479,7 +479,7 @@ namespace mantis
 
         block* t_block = NULL;
         // prog guide, pg 24: should be multiple of 32 (16) for single (dual) channel acquisition
-        unsigned t_rec_size = 16384;
+        unsigned t_rec_size = 8024;
 
         try
         {
@@ -499,9 +499,9 @@ namespace mantis
         MTINFO( mtlog, "beginning initialization phase" );
 
         // acquisition mode: 0 = normal mode
-        ViInt32 acqMode = 2;
+        ViInt32 acqMode = 0;
         // acquisition flag: 10 = SAR, dual-bank
-        ViInt32 acqFlag = 10;
+        ViInt32 acqFlag = 0;
 
         // must set everything in the readParams
         AqReadParameters readParams;
@@ -516,7 +516,15 @@ namespace mantis
         readParams.segDescArraySize = sizeof( AqSegmentDescriptor ); // # of bytes in the segDescArray
         readParams.flags = 0; // with bit 2 == 0, data is reset after being read
         readParams.reserved = readParams.reserved2 = readParams.reserved3 = 0;
-
+	/*
+	ViChar t_info[1024];
+        t_result = Acqrs_getInstrumentInfo( f_handle, "LOGDEVHDRBLOCK1DEV1S name", t_info );
+        if( t_result != VI_SUCCESS )
+	  {
+	    PrintU1084AError( f_handle, t_result, "failed to get info: " );
+	    return false;
+	  }
+	*/
         MTDEBUG( mtlog, "setting run configuration..." );
 
         double clock_rate = 250.; // clock rate in MHz
@@ -556,6 +564,13 @@ namespace mantis
         if( t_result != VI_SUCCESS )
         {
             PrintU1084AError( f_handle, t_result, "failed to set number of samples: " );
+	    if( t_result == ACQIRIS_WARN_SETUP_ADAPTED )
+	      {
+		MTWARN( mtlog, "tried to set: " << readParams.nbrSamplesInSeg );
+		AqReadParameters setParams;
+		AcqrsD1_getAvgConfig( f_handle, 0, "NbrSamples", &(readParams.nbrSamplesInSeg) );
+		MTWARN( mtlog, "setting applied: " << setParams.nbrSamplesInSeg );
+	      }
             return false;
         }
 
@@ -563,6 +578,13 @@ namespace mantis
         if( t_result != VI_SUCCESS )
         {
             PrintU1084AError( f_handle, t_result, "failed to set number of segments: " );
+	    if( t_result == ACQIRIS_WARN_SETUP_ADAPTED )
+	      {
+		MTWARN( mtlog, "tried to set: " << readParams.nbrSegments );
+		AqReadParameters setParams;
+		AcqrsD1_getAvgConfig( f_handle, 0, "NbrSegments", &(setParams.nbrSegments) );
+		MTWARN( mtlog, "setting applied: " << setParams.nbrSegments );
+	      }
             return false;
         }
 
