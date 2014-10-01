@@ -9,6 +9,7 @@
 
 #define _LINUX 1
 #include "AgMD1.h"
+#include "AgMD1Fundamental.h"
 
 //#include <semaphore.h>
 

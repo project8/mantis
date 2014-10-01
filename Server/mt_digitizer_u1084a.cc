@@ -516,23 +516,86 @@ namespace mantis
 
         // Setup acquisition - Records must be 1 for Channel.Measurement methods.
         // For multiple records use Channel.MutiRecordMeasurement methods.
+
+        // Config timebase
         double t_clock_rate = 250.; // clock rate in MHz
         ViReal64 t_sample_interval = 1. / ( t_clock_rate * 1.e6 ); // sampling interval in seconds
-        t_result = AgMD1_ConfigureAcquisition( f_handle, 1, t_rec_size, t_sample_interval ); // Records, PointsPerRecord, SampleRate
+        t_result = AcqrsD1_configHorizontal( f_handle, t_sample_interval, 0.0 );
+        if ( t_result )
+        {
+            ViChar errMsg[512] = "";
+            Acqrs_errorMessage(VI_NULL, t_result, errMsg, 512);
+            MTERROR( mtlog, "horizontal conf error: " << errMsg << "\n" );
+        }
+
+        // Config for SAR
+        t_result = AcqrsD1_configMode( f_handle, 0, 0, 10); //10 -> SAR
+        if ( t_result )
+        {
+            ViChar errMsg[512] = "";
+            Acqrs_errorMessage(VI_NULL, t_result, errMsg, 512);
+            MTERROR( mtlog, "horizontal conf error: " << errMsg << "\n" );
+        }
+
+        // Config sampling
+        ViInt32 t_number_samples = 25000000;
+        ViInt32 t_number_segments = 1;
+        ViInt32 t_number_banks = 2; // must be 2 for the u1084a in SAR
+        t_result = AcqrsD1_configMemoryEx( f_handle, 0, t_number_samples, t_number_segments, t_number_banks, 0);
+        if ( t_result )
+        {
+            ViChar errMsg[512] = "";
+            Acqrs_errorMessage(VI_NULL, t_result, errMsg, 512);
+            MTERROR( mtlog, "horizontal conf error: " << errMsg << "\n" );
+        }
+
+        // Config vertical settings Ch 1
+        ViReal64 t_full_scale = 1.0; // volts
+        ViReal64 t_offset = 0.0; // volts
+        ViInt32 t_coupling = 3; // 3 is for DC coupling
+        ViInt32 t_bandwidth = 0; // o is for no limit
+        t_result = AcqrsD1_configVertical( f_handle, 1, t_full_scale, t_offset, t_coupling, t_bandwidth);
+        if ( t_result )
+        {
+            ViChar errMsg[512] = "";
+            Acqrs_errorMessage(VI_NULL, t_result, errMsg, 512);
+            MTERROR( mtlog, "horizontal conf error: " << errMsg << "\n" );
+        }
+
+        // Config a trigger as edge on channel 1
+        t_result = AcqrsD1_configTrigClass(f_handle, 0, 0x00000001, 0, 0, 0.0, 0.0);
+        if ( t_result )
+        {
+            ViChar errMsg[512] = "";
+            Acqrs_errorMessage(VI_NULL, t_result, errMsg, 512);
+            MTERROR( mtlog, "horizontal conf error: " << errMsg << "\n" );
+        }
+        // Config trigger conditions
+        ViInt32 t_trigger_coupling = 0; //0 for DC
+        ViInt32 t_trigger_slope = 0; //0 for positive
+        ViReal64 t_trigger_level = 0.0; //in % of full vertical scale
+        t_result = AcqrsD1_configTrigSource(f_handle, 1, t_trigger_coupling, t_trigger_slope, t_trigger_level, 0.0);
+        if ( t_result )
+        {
+            ViChar errMsg[512] = "";
+            Acqrs_errorMessage(VI_NULL, t_result, errMsg, 512);
+            MTERROR( mtlog, "horizontal conf error: " << errMsg << "\n" );
+        }
+
+/*        t_result = AgMD1_ConfigureAcquisition( f_handle, 1, t_rec_size, t_sample_interval ); // Records, PointsPerRecord, SampleRate
         if( t_result != AGMD1_SUCCESS )
         {
             PrintU1084AError( f_handle, t_result, "failed when making acquisition settings: " );
-            /*
+            / *
             if( t_result == ACQIRIS_WARN_SETUP_ADAPTED )
             {
                 MTWARN( mtlog, "tried to set: " << sample_interval << ", 0" );
                 ViReal64 set_si, set_delay;
                 AcqrsD1_getHorizontal( f_handle, &set_si, &set_delay );
                 MTWARN( mtlog, "setting applied: " << set_si << ", " << set_delay );
-            }*/
+            }* /
             return false;
         }
-
         t_result = AgMD1_ConfigureChannel( f_handle, "Channel1", 2.0, 0.0, AGMD1_VAL_TRIGGER_COUPLING_DC, VI_TRUE ); // Range, Offset, Coupling, Enabled
         //t_result = AgMD1_ConfigureChannel(f_handle, "Channel1", u1084a_range, fabs(u1084a_min_val), AGMD1_VAL_TRIGGER_COUPLING_DC, VI_TRUE); // Range, Offset, Coupling, Enabled
         if( t_result != AGMD1_SUCCESS )
@@ -556,6 +619,7 @@ namespace mantis
             return false;
         }
 
+*/
         MTINFO( mtlog, "initialization complete!\n" );
 
         MTDEBUG( mtlog, "allocating memory buffer..." );
