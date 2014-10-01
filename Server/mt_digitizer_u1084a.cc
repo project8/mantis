@@ -458,6 +458,8 @@ namespace mantis
         ViStatus t_result;
         ViSession f_handle;
 
+
+/*
         // Edit resource and options as needed.  resource is ignored if option Simulate=true
         char resource[] = "PCI::INSTR0";
 
@@ -476,10 +478,44 @@ namespace mantis
             return false;
         }
         MTINFO( mtlog, "Driver initialized" );
+*/
 
-        // Note: status should be checked after each driver call but is omitted here for clarity.
+        ViInt32 numInstr; // Number of instruments
+        t_result = AcqrsD1_multiInstrAutoDefine("", &numInstr);
+        if (t_result)
+        {
+            ViChar errMsg[512] = "";
+            Acqrs_errorMessage(VI_NULL, t_result, errMsg, 512);
+            MTERROR( mtlog, "autoDefine error: " << errMsg );
+        }
+        if (numInstr < 1)
+        {
+            MTERROR( mtlog, "found no instruments!");
+            return false;
+        }
+        ViChar rscStr[16] = "PCI::INSTR0"; // resource string
+        ViChar options[32] = ""; //no options needed
 
+        MTDEBUG( mtlog, "found " << numInstr << " devices" );
+
+        // prog guide, pg 24: should be multiple of 32 (16) for single (dual) channel acquisition
+        unsigned t_rec_size = 8024;
+        // the +16 in the block size is recommended in the programmer's reference, pg
+        unsigned t_dig_pts = t_rec_size + 16;
+
+
+        MTINFO( mtlog, "beginning initialization phase" );
+        t_result = Acqrs_InitWithOptions(rscStr, VI_FALSE, VI_FALSE, options, &f_handle);
+        if (t_result)
+        {
+            ViChar errMsg[512] = "";
+            Acqrs_errorMessage(VI_NULL, t_result, errMsg, 512);
+            MTERROR( mtlog, "Init with options error: " << errMsg << "\n" );
+            return false;
+        }
+/*
         // Read and output a few attributes
+        // Note: status should be checked after each driver call but is omitted here for clarity.
         ViChar t_str_buff[128];
         ViBoolean t_simulate;
         t_result = AgMD1_GetAttributeViString(f_handle, "", AGMD1_ATTR_SPECIFIC_DRIVER_PREFIX, 127, t_str_buff );
@@ -503,14 +539,7 @@ namespace mantis
         {
             MTINFO( mtlog, "SIMULATE:           False\n\n");
         }
-
-
-        // prog guide, pg 24: should be multiple of 32 (16) for single (dual) channel acquisition
-        unsigned t_rec_size = 8024;
-        // the +16 in the block size is recommended in the programmer's reference, pg
-        unsigned t_dig_pts = t_rec_size + 16;
-
-        MTINFO( mtlog, "beginning initialization phase" );
+*/
 
         MTDEBUG( mtlog, "setting run configuration..." );
 
@@ -526,6 +555,7 @@ namespace mantis
             ViChar errMsg[512] = "";
             Acqrs_errorMessage(VI_NULL, t_result, errMsg, 512);
             MTERROR( mtlog, "horizontal conf error: " << errMsg << "\n" );
+            return false;
         }
 
         // Config for SAR
@@ -535,6 +565,7 @@ namespace mantis
             ViChar errMsg[512] = "";
             Acqrs_errorMessage(VI_NULL, t_result, errMsg, 512);
             MTERROR( mtlog, "problem setting SAR: " << errMsg << "\n" );
+            return false;
         }
 
         // Config sampling
@@ -547,6 +578,7 @@ namespace mantis
             ViChar errMsg[512] = "";
             Acqrs_errorMessage(VI_NULL, t_result, errMsg, 512);
             MTERROR( mtlog, "problem config memory: " << errMsg << "\n" );
+            return false;
         }
 
         // Config vertical settings Ch 1
@@ -560,6 +592,7 @@ namespace mantis
             ViChar errMsg[512] = "";
             Acqrs_errorMessage(VI_NULL, t_result, errMsg, 512);
             MTERROR( mtlog, "vertical conf error: " << errMsg << "\n" );
+            return false;
         }
 
         // Config a trigger as edge on channel 1
@@ -569,6 +602,7 @@ namespace mantis
             ViChar errMsg[512] = "";
             Acqrs_errorMessage(VI_NULL, t_result, errMsg, 512);
             MTERROR( mtlog, "trig class conf error: " << errMsg << "\n" );
+            return false;
         }
         // Config trigger conditions
         ViInt32 t_trigger_coupling = 0; //0 for DC
@@ -580,6 +614,7 @@ namespace mantis
             ViChar errMsg[512] = "";
             Acqrs_errorMessage(VI_NULL, t_result, errMsg, 512);
             MTERROR( mtlog, "trig source conf error: " << errMsg << "\n" );
+            return false;
         }
 
 /*        t_result = AgMD1_ConfigureAcquisition( f_handle, 1, t_rec_size, t_sample_interval ); // Records, PointsPerRecord, SampleRate
@@ -648,6 +683,7 @@ namespace mantis
 
 
         // Calibrate, initiate measurement, and read the waveform data
+        /*
         MTINFO( mtlog, "Calibrating...");
         t_result = AgMD1_SelfCalibrate(f_handle);
         if( t_result != AGMD1_SUCCESS )
@@ -655,8 +691,9 @@ namespace mantis
             PrintU1084AError( f_handle, t_result, "failed calibration: " );
             delete t_block;
             return false;
-        }
+        }*/
 
+    /*
         ViInt64 ActualPoints;
         ViInt64 FirstValidPoint;
         ViReal64 InitialXOffset;
@@ -665,6 +702,15 @@ namespace mantis
         ViReal64 XIncrement;
         ViReal64 ScaleFactor;
         ViReal64 ScaleOffset;
+    */
+        t_result = AcqrsD1_acquire( f_handle );
+        if (t_result)
+        {
+            ViChar errMsg[512] = "";
+            Acqrs_errorMessage(VI_NULL, t_result, errMsg, 512);
+            MTERROR( mtlog, "start acquisition error: " << errMsg << "\n" );
+            return false;
+        }
 
         MTINFO( mtlog, "Measuring Waveform on Channel1...");
         ViInt32 t_timeout = 1000; // ms
@@ -677,7 +723,10 @@ namespace mantis
             t_result = AcqrsD1_forceTrigEx( f_handle, 1, 0, 0 ); //SAR requires type 1
             if (t_result)
             {
-                MTWARN( mtlog, "force trigger failed");
+                ViChar errMsg[512] = "";
+                Acqrs_errorMessage(VI_NULL, t_result, errMsg, 512);
+                MTERROR( mtlog, "force trig error: " << errMsg << "\n" );
+                return false;
             }
             t_result = AcqrsD1_waitForEndOfAcquisition( f_handle, t_timeout );
             if (t_result)
@@ -711,6 +760,7 @@ namespace mantis
             ViChar errMsg[512] = "";
             Acqrs_errorMessage(VI_NULL, t_result, errMsg, 512);
             MTERROR( mtlog, "read data error: " << errMsg << "\n" );
+            return false;
         }
 /*        t_result = AgMD1_ReadWaveformInt8( f_handle, "Channel1", t_timeout, t_dig_pts, (char*)(t_block->data_bytes()), &ActualPoints, &FirstValidPoint,
                 &InitialXOffset, &InitialXTimeSeconds, &InitialXTimeFraction, &XIncrement, &ScaleFactor, &ScaleOffset );
@@ -727,6 +777,7 @@ namespace mantis
             ViChar errMsg[512] = "";
             Acqrs_errorMessage(VI_NULL, t_result, errMsg, 512);
             MTERROR( mtlog, "free bank error: " << errMsg << "\n" );
+            return false;
         }
         
         MTDEBUG( mtlog, "ending acquisition..." );
@@ -736,6 +787,7 @@ namespace mantis
             ViChar errMsg[512] = "";
             Acqrs_errorMessage(VI_NULL, t_result, errMsg, 512);
             MTERROR( mtlog, "problem ending acquisition: " << errMsg << "\n" );
+            return false;
         }
 
 /*
@@ -754,9 +806,10 @@ namespace mantis
         for( unsigned i = 0; i < 99; ++i )
         {
             //t_block_str << t_block->data_bytes()[ i ] << ", ";
-            t_block_str << adcArrayP[ i ] << ", ";
+            t_block_str << int(adcArrayP[ i ]) << ", ";
         }
-        t_block_str << t_block->data_bytes()[ 99 ];
+        //t_block_str << t_block->data_bytes()[ 99 ];
+        t_block_str << int(adcArrayP[ 99 ]);
         MTDEBUG( mtlog, "the first 100 samples taken:\n" << t_block_str.str() );
 
         MTINFO( mtlog, "run complete!\n" );
