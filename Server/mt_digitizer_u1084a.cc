@@ -534,7 +534,7 @@ namespace mantis
         {
             ViChar errMsg[512] = "";
             Acqrs_errorMessage(VI_NULL, t_result, errMsg, 512);
-            MTERROR( mtlog, "horizontal conf error: " << errMsg << "\n" );
+            MTERROR( mtlog, "problem setting SAR: " << errMsg << "\n" );
         }
 
         // Config sampling
@@ -546,7 +546,7 @@ namespace mantis
         {
             ViChar errMsg[512] = "";
             Acqrs_errorMessage(VI_NULL, t_result, errMsg, 512);
-            MTERROR( mtlog, "horizontal conf error: " << errMsg << "\n" );
+            MTERROR( mtlog, "problem config memory: " << errMsg << "\n" );
         }
 
         // Config vertical settings Ch 1
@@ -559,7 +559,7 @@ namespace mantis
         {
             ViChar errMsg[512] = "";
             Acqrs_errorMessage(VI_NULL, t_result, errMsg, 512);
-            MTERROR( mtlog, "horizontal conf error: " << errMsg << "\n" );
+            MTERROR( mtlog, "vertical conf error: " << errMsg << "\n" );
         }
 
         // Config a trigger as edge on channel 1
@@ -568,7 +568,7 @@ namespace mantis
         {
             ViChar errMsg[512] = "";
             Acqrs_errorMessage(VI_NULL, t_result, errMsg, 512);
-            MTERROR( mtlog, "horizontal conf error: " << errMsg << "\n" );
+            MTERROR( mtlog, "trig class conf error: " << errMsg << "\n" );
         }
         // Config trigger conditions
         ViInt32 t_trigger_coupling = 0; //0 for DC
@@ -579,7 +579,7 @@ namespace mantis
         {
             ViChar errMsg[512] = "";
             Acqrs_errorMessage(VI_NULL, t_result, errMsg, 512);
-            MTERROR( mtlog, "horizontal conf error: " << errMsg << "\n" );
+            MTERROR( mtlog, "trig source conf error: " << errMsg << "\n" );
         }
 
 /*        t_result = AgMD1_ConfigureAcquisition( f_handle, 1, t_rec_size, t_sample_interval ); // Records, PointsPerRecord, SampleRate
@@ -668,7 +668,51 @@ namespace mantis
 
         MTINFO( mtlog, "Measuring Waveform on Channel1...");
         ViInt32 t_timeout = 1000; // ms
-        t_result = AgMD1_ReadWaveformInt8( f_handle, "Channel1", t_timeout, t_dig_pts, (char*)(t_block->data_bytes()), &ActualPoints, &FirstValidPoint,
+
+        // ensure there was a trigger and that acquisition is complete
+        t_result = AcqrsD1_waitForEndOfAcquisition( f_handle, t_timeout );
+        if (t_result != VI_SUCCESS)
+        {
+            MTWARN( mtlog, "acquisition never triggered, forcing" );
+            t_result = AcqrsD1_forceTrigEx( f_handle, 1, 0, 0 ); //SAR requires type 1
+            if (t_result)
+            {
+                MTWARN( mtlog, "force trigger failed");
+            }
+            t_result = AcqrsD1_waitForEndOfAcquisition( f_handle, t_timeout );
+            if (t_result)
+            {
+                MTWARN( mtlog, "acquisition still times out after forced trigger");
+            }
+        }
+
+        //setup read
+        AqReadParameters readPar;
+        readPar.dataType = ReadInt8; //8bit, raw ADC values data type
+        readPar.readMode = ReadModeStdW; // Single-segment read mode
+        readPar.firstSegment = 0;
+        readPar.nbrSegments = 1;
+        readPar.firstSampleInSeg = 0;
+        readPar.nbrSamplesInSeg = t_number_samples;
+        readPar.segmentOffset = 0;
+        readPar.dataArraySize = (t_number_samples + 32) * sizeof(ViInt8); //Array size in bytes
+        readPar.segDescArraySize = sizeof(AqSegmentDescriptor);
+        readPar.flags = 0;
+        readPar.reserved = 0;
+        readPar.reserved2 = 0;
+        readPar.reserved3 = 0;
+        AqDataDescriptor dataDesc;
+        AqSegmentDescriptor segDesc;
+        ViInt8 *adcArrayP = new ViInt8[readPar.dataArraySize];
+
+        t_result = AcqrsD1_readData( f_handle, 1, &readPar, adcArrayP, &dataDesc, &segDesc);
+        if (t_result)
+        {
+            ViChar errMsg[512] = "";
+            Acqrs_errorMessage(VI_NULL, t_result, errMsg, 512);
+            MTERROR( mtlog, "read data error: " << errMsg << "\n" );
+        }
+/*        t_result = AgMD1_ReadWaveformInt8( f_handle, "Channel1", t_timeout, t_dig_pts, (char*)(t_block->data_bytes()), &ActualPoints, &FirstValidPoint,
                 &InitialXOffset, &InitialXTimeSeconds, &InitialXTimeFraction, &XIncrement, &ScaleFactor, &ScaleOffset );
         if( t_result != AGMD1_SUCCESS )
         {
@@ -676,9 +720,25 @@ namespace mantis
             delete t_block;
             return false;
         }
-
+*/
+        t_result = AcqrsD1_freeBank( f_handle, 0 );
+        if (t_result)
+        {
+            ViChar errMsg[512] = "";
+            Acqrs_errorMessage(VI_NULL, t_result, errMsg, 512);
+            MTERROR( mtlog, "free bank error: " << errMsg << "\n" );
+        }
+        
         MTDEBUG( mtlog, "ending acquisition..." );
+        t_result = AcqrsD1_stopAcquisition( f_handle);
+        if (t_result)
+        {
+            ViChar errMsg[512] = "";
+            Acqrs_errorMessage(VI_NULL, t_result, errMsg, 512);
+            MTERROR( mtlog, "problem ending acquisition: " << errMsg << "\n" );
+        }
 
+/*
         // Close the driver
         t_result = AgMD1_close( f_handle );
         if( t_result != AGMD1_SUCCESS )
@@ -687,13 +747,14 @@ namespace mantis
             delete t_block;
             return false;
         }
-
+*/
 
 
         std::stringstream t_block_str;
         for( unsigned i = 0; i < 99; ++i )
         {
-            t_block_str << t_block->data_bytes()[ i ] << ", ";
+            //t_block_str << t_block->data_bytes()[ i ] << ", ";
+            t_block_str << adcArrayP[ i ] << ", ";
         }
         t_block_str << t_block->data_bytes()[ 99 ];
         MTDEBUG( mtlog, "the first 100 samples taken:\n" << t_block_str.str() );
