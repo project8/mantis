@@ -716,6 +716,7 @@ namespace mantis
         ViInt32 t_timeout = 1000; // ms
 
         // ensure there was a trigger and that acquisition is complete
+        MTDEBUG( mtlog, "first wait for acquisition to complete");
         t_result = AcqrsD1_waitForEndOfAcquisition( f_handle, t_timeout );
         if (t_result != VI_SUCCESS)
         {
@@ -754,7 +755,10 @@ namespace mantis
         AqSegmentDescriptor segDesc;
         ViInt8 *adcArrayP = new ViInt8[readPar.dataArraySize];
 
+        //t_result = AcqrsD1_readData( f_handle, 1, &readPar, adcArrayP, &dataDesc, &segDesc);
+        MTDEBUG (mtlog, "then read data");
         t_result = AcqrsD1_readData( f_handle, 1, &readPar, adcArrayP, &dataDesc, &segDesc);
+        //t_result = AcqrsD1_readData( f_handle, 1, &readPar, reinterpret_cast< ViInt8* > (t_block->data_bytes()), &dataDesc, &segDesc);
         if (t_result)
         {
             ViChar errMsg[512] = "";
@@ -771,6 +775,7 @@ namespace mantis
             return false;
         }
 */
+/*        MTDEBUG( mtlog, "and free the bank");
         t_result = AcqrsD1_freeBank( f_handle, 0 );
         if (t_result)
         {
@@ -778,7 +783,7 @@ namespace mantis
             Acqrs_errorMessage(VI_NULL, t_result, errMsg, 512);
             MTERROR( mtlog, "free bank error: " << errMsg << "\n" );
             return false;
-        }
+        }*/
         
         MTDEBUG( mtlog, "ending acquisition..." );
         t_result = AcqrsD1_stopAcquisition( f_handle);
@@ -803,14 +808,16 @@ namespace mantis
 
 
         std::stringstream t_block_str;
+        std::stringstream adc_str;
         for( unsigned i = 0; i < 99; ++i )
         {
-            //t_block_str << t_block->data_bytes()[ i ] << ", ";
-            t_block_str << int(adcArrayP[ i ]) << ", ";
+            t_block_str << int(t_block->data_bytes()[ i ]) << ", ";
+            adc_str << int(adcArrayP[ i ]) << ", ";
         }
-        //t_block_str << t_block->data_bytes()[ 99 ];
-        t_block_str << int(adcArrayP[ 99 ]);
-        MTDEBUG( mtlog, "the first 100 samples taken:\n" << t_block_str.str() );
+        t_block_str << t_block->data_bytes()[ 99 ];
+        adc_str << int(adcArrayP[ 99 ]);
+        MTDEBUG( mtlog, "the first 100 samples taken (in t_block):\n" << t_block_str.str() );
+        MTDEBUG( mtlog, "the first 100 samples taken (in ViInt8):\n" << adc_str.str() );
 
         MTINFO( mtlog, "run complete!\n" );
 
