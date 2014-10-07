@@ -95,6 +95,17 @@ namespace mantis
             {
                 return true;
             }
+
+            bool allocate()
+            {
+                return true;
+            }
+
+            bool initialize( request* a_request )
+            {
+                return true;
+            }
+
     };
 
 }

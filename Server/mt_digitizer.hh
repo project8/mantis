@@ -43,6 +43,8 @@ namespace mantis
             test_digitizer() {}
             virtual ~test_digitizer() {}
 
+            virtual bool allocate() = 0;
+            virtual bool initialize( request* a_request ) = 0;
             virtual bool run_test() = 0;
     };
 

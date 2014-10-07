@@ -67,6 +67,7 @@ namespace mantis
             atomic_bool f_canceled;
             condition f_cancel_condition;
 
+            bool allocate();
             bool start();
             bool acquire( block* a_block, timespec& a_time_stamp );
             bool stop();
@@ -91,10 +92,21 @@ namespace mantis
             test_digitizer_test() {}
             virtual ~test_digitizer_test() {}
 
+            bool allocate()
+            {
+                return true;
+            }
+
+            bool initialize( request* a_request )
+            {
+                return true;
+            }
+            
             bool run_test()
             {
                 return true;
             }
+
     };
 
 }

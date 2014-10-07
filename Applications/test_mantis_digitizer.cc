@@ -10,6 +10,8 @@
 #include "mt_factory.hh"
 #include "mt_logger.hh"
 
+#include "request.pb.h"
+
 #include <string>
 using std::string;
 
@@ -17,6 +19,14 @@ using namespace mantis;
 
 MTLOGGER( mtlog, "test_mantis_digitizer" );
 
+
+bool method_test(test_digitizer* t_digitizer)
+{
+    request* a_request;
+
+    t_digitizer->allocate();
+    t_digitizer->initialize( a_request );
+}
 
 int main( int argc, char** argv )
 {
@@ -62,13 +72,27 @@ int main( int argc, char** argv )
         return -1;
     }
 
-    if( ! t_digitizer->run_test() )
+    string t_test_type;
+    t_test_type = t_config->get< string >( "testtype", "" );
+    if (t_test_type == "method" )
     {
-        MTERROR( mtlog, "test was unsuccessful!" );
-        return -1;
+        MTDEBUG( mtlog, "testing by call standard methods" );
+        if( ! method_test(t_digitizer) )
+        {
+            MTERROR( mtlog, "test was unsuccessful!" );
+            return -1;
+        }
+    }
+    else
+    {
+        MTDEBUG( mtlog, "testing with solid block of code" );
+        if( ! t_digitizer->run_test() )
+        {
+            MTERROR( mtlog, "test was unsuccessful!" );
+            return -1;
+        }
     }
 
     MTINFO( mtlog, "congratulations, digitizer <" << t_dig_name << "> passed the test!" );
     return 0;
 }
-

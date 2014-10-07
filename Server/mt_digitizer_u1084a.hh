@@ -91,6 +91,8 @@ namespace mantis
             test_digitizer_u1084a() {}
             virtual ~test_digitizer_u1084a() {}
     
+            bool allocate() {return true;};
+            bool initialize( request* a_request ) {return true;};
             bool run_test();
 
     };
