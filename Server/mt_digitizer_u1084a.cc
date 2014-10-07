@@ -755,10 +755,9 @@ namespace mantis
         AqSegmentDescriptor segDesc;
         ViInt8 *adcArrayP = new ViInt8[readPar.dataArraySize];
 
-        //t_result = AcqrsD1_readData( f_handle, 1, &readPar, adcArrayP, &dataDesc, &segDesc);
         MTDEBUG (mtlog, "then read data");
-        t_result = AcqrsD1_readData( f_handle, 1, &readPar, adcArrayP, &dataDesc, &segDesc);
-        //t_result = AcqrsD1_readData( f_handle, 1, &readPar, reinterpret_cast< ViInt8* > (t_block->data_bytes()), &dataDesc, &segDesc);
+        //t_result = AcqrsD1_readData( f_handle, 1, &readPar, adcArrayP, &dataDesc, &segDesc);
+        t_result = AcqrsD1_readData( f_handle, 1, &readPar, reinterpret_cast< ViInt8* > (t_block->data_bytes()), &dataDesc, &segDesc);
         if (t_result)
         {
             ViChar errMsg[512] = "";
