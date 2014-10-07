@@ -203,6 +203,34 @@ namespace mantis
     bool digitizer_u1084a::initialize( request* a_request )
     {
         ViStatus t_result;
+
+        //interval must be 0.5 ns or larger in "binary" steps (N*min?)
+        //it may be good to add something here that checks for that and
+        //returns an error suggesting a better value, for now we just take it
+        MTDEBUG( mtlog, "timebase" );
+        double t_clock_rate = a_request->rate(); //MHz
+        ViReal64 t_sample_interval = 1. / (t_clock_rate * 1.e6);//seconds
+        t_result = AcqrsD1_configHorizontal( f_handle, t_sample_interval, 0.0 );
+        PrintU1084AError( f_handle, t_result, "Config timebase:");
+
+        //also config memory
+        // it would be ideal if number_samples came from the record size and number_segments from duration... SAR isn't working that well yet though.
+        MTDEBUG( mtlog, "memory" );
+        ViInt32 t_number_samples = int(a_request->duration() / t_sample_interval);
+        ViInt32 t_number_segments = 1;
+        ViInt32 t_number_banks = 2;
+        t_result = AcqrsD1_configMemoryEx( f_handle, 0, t_number_samples, t_number_segments, t_number_banks, 0);
+        PrintU1084AError( f_handle, t_result, "Config memory:" );
+
+        //config vertical settings, do we want to expose a user interface?
+        MTDEBUG( mtlog, "vertical" );
+        ViReal64 t_full_scale = 1.0; // volts
+        ViReal64 t_offset = 0.0; // volts
+        ViInt32 t_coupling = 3; // 3 is DC coupling
+        ViInt32 t_bandwidth = 0; // 0 is for no limit
+        t_result = AcqrsD1_configVertical( f_handle, 1, t_full_scale, t_offset, t_coupling, t_bandwidth );
+        PrintU1084AError( f_handle, t_result, "Config Vert. Scale:" );
+
         /*
         //MTINFO( mtlog, "resetting counters..." );
 
@@ -608,7 +636,7 @@ namespace mantis
         ViReal64 t_full_scale = 1.0; // volts
         ViReal64 t_offset = 0.0; // volts
         ViInt32 t_coupling = 3; // 3 is for DC coupling
-        ViInt32 t_bandwidth = 0; // o is for no limit
+        ViInt32 t_bandwidth = 0; // 0 is for no limit
         t_result = AcqrsD1_configVertical( f_handle, 1, t_full_scale, t_offset, t_coupling, t_bandwidth);
         if ( t_result )
         {
