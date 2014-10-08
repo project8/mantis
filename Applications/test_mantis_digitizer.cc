@@ -40,20 +40,6 @@ enum test_type
     k_insitu
 };
 
-bool method_test(digitizer* t_digitizer)
-{
-    buffer* a_buffer;
-    condition* a_condition;
-    
-    request* a_request;
-    a_request->set_rate( 250.0 ); // MHz
-    a_request->set_duration( 100.0 ); // ms
-    
-    MTDEBUG( mtlog, "call to allocate" );
-    t_digitizer->allocate(a_buffer, a_condition);
-    MTDEBUG( mtlog, "call to initialize" );
-    t_digitizer->initialize( a_request );
-}
 
 int main( int argc, char** argv )
 {
@@ -67,9 +53,6 @@ int main( int argc, char** argv )
         MTERROR( mtlog, "unable to configure test_mantis_digitizer: " << e.what() );
         return -1;
     }
-    string t_test_type;
-    t_test_type = t_config->get< string >( "testtype", "" );
-    typedef std::conditional<(t_test_type == "method"), digitizer, test_digitizer>::type DIGITIZERTYPE;
 
     string t_dig_name;
     try
@@ -128,24 +111,12 @@ int main( int argc, char** argv )
         t_status = t_digitizer->run_insitu_test();
     }
 
-    if( ! t_status )
+    if ( ! t_status )
     {
-        MTDEBUG( mtlog, "testing by call standard methods" );
-        if( ! method_test(t_digitizer) )
-        {
-            MTERROR( mtlog, "test was unsuccessful!" );
-            return -1;
-        }
+        MTWARN( mtlog, "test failed" );
+        return -1;
     }
-    else
-    {
-        MTDEBUG( mtlog, "testing with solid block of code" );
-        if( ! t_digitizer->run_test() )
-        {
-            MTERROR( mtlog, "test was unsuccessful!" );
-            return -1;
-        }
-    }
+
 
     MTINFO( mtlog, "congratulations, digitizer <" << t_dig_name << "> passed the test!" );
     return 0;
