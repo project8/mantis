@@ -22,5 +22,9 @@ namespace mantis
         return f_params;
     }
 
+    bool digitizer::run_insitu_test()
+    {
+
+    }
 
 }
