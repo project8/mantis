@@ -34,8 +34,13 @@ namespace mantis
 
     void PrintU1084AError( ViSession a_handle, ViStatus a_status, const std::string& a_prepend_msg )
     {
-        static char t_buff[512];
-        AgMD1_error_message( a_handle, a_status, t_buff );
+        if ( a_status == 0 )
+        {
+            return;
+        }
+        const int t_buff_size = 512;
+        static char t_buff[t_buff_size];
+        Acqrs_errorMessage( a_handle, a_status, t_buff, t_buff_size );
         if( a_status > 0 )
         {
             MTWARN( mtlog, a_prepend_msg << t_buff << " (status code: " << a_status << ")" );
@@ -112,12 +117,36 @@ namespace mantis
          */
     }
 
+    // This is maybe a bit of a misnomer, or something to restructure
+    // Anything that happens once when the server starts goes here
+    // Anything that happens once per run will go in initialize
     bool digitizer_u1084a::allocate( buffer* a_buffer, condition* a_condition )
     {
         f_buffer = a_buffer;
         f_condition = a_condition;
 
         ViStatus t_result;
+
+        // ensure there is a digitizer
+        ViInt32 numInstr;
+        t_result = AcqrsD1_multiInstrAutoDefine("", &numInstr);
+        PrintU1084AError( f_handle, t_result, "autoDef failed");
+        if (numInstr < 1)
+        {
+            MTERROR( mtlog, "found no instruments!" );
+            return false;
+        }
+
+        // initialize the digitizer
+        ViChar rscStr[16] = "PCI::INSTR0"; // resource string
+        ViChar options[32] = ""; //no options needed
+        t_result = Acqrs_InitWithOptions(rscStr, VI_FALSE, VI_FALSE, options, &f_handle);
+        PrintU1084AError( f_handle, t_result, "InitWithOptions:" );
+
+        // configure for SAR mode
+        t_result = AcqrsD1_configMode( f_handle, 0, 0, 10); // 10 -> SAR
+        PrintU1084AError( f_handle, t_result, "Config as SAR:");
+
         /*
         MTINFO( mtlog, "connecting to digitizer card..." );
 
@@ -166,9 +195,41 @@ namespace mantis
         f_allocated = true;
         return true;
     }
+
+    // This is maybe a bit of a misnomer, or something to restructure
+    // Anything that happens once when the server starts goes in allocate
+    // Anything that happens once per run will go here
     bool digitizer_u1084a::initialize( request* a_request )
     {
         ViStatus t_result;
+
+        //interval must be 0.5 ns or larger in "binary" steps (N*min?)
+        //it may be good to add something here that checks for that and
+        //returns an error suggesting a better value, for now we just take it
+        MTDEBUG( mtlog, "timebase" );
+        double t_clock_rate = a_request->rate(); //MHz
+        ViReal64 t_sample_interval = 1. / (t_clock_rate * 1.e6);//seconds
+        t_result = AcqrsD1_configHorizontal( f_handle, t_sample_interval, 0.0 );
+        PrintU1084AError( f_handle, t_result, "Config timebase:");
+
+        //also config memory
+        // it would be ideal if number_samples came from the record size and number_segments from duration... SAR isn't working that well yet though.
+        MTDEBUG( mtlog, "memory" );
+        ViInt32 t_number_samples = int(a_request->duration() / t_sample_interval);
+        ViInt32 t_number_segments = 1;
+        ViInt32 t_number_banks = 2;
+        t_result = AcqrsD1_configMemoryEx( f_handle, 0, t_number_samples, t_number_segments, t_number_banks, 0);
+        PrintU1084AError( f_handle, t_result, "Config memory:" );
+
+        //config vertical settings, do we want to expose a user interface?
+        MTDEBUG( mtlog, "vertical" );
+        ViReal64 t_full_scale = 1.0; // volts
+        ViReal64 t_offset = 0.0; // volts
+        ViInt32 t_coupling = 3; // 3 is DC coupling
+        ViInt32 t_bandwidth = 0; // 0 is for no limit
+        t_result = AcqrsD1_configVertical( f_handle, 1, t_full_scale, t_offset, t_coupling, t_bandwidth );
+        PrintU1084AError( f_handle, t_result, "Config Vert. Scale:" );
+
         /*
         //MTINFO( mtlog, "resetting counters..." );
 
@@ -458,12 +519,7 @@ namespace mantis
 
         ViInt32 numInstr; // Number of instruments
         t_result = AcqrsD1_multiInstrAutoDefine("", &numInstr);
-        if (t_result)
-        {
-            ViChar errMsg[512] = "";
-            Acqrs_errorMessage(VI_NULL, t_result, errMsg, 512);
-            MTERROR( mtlog, "autoDefine error: " << errMsg );
-        }
+        PrintU1084AError( f_handle, t_result, "autDefine failure:" );
         if (numInstr < 1)
         {
             MTERROR( mtlog, "found no instruments!");
@@ -477,18 +533,13 @@ namespace mantis
         // prog guide, pg 24: should be multiple of 32 (16) for single (dual) channel acquisition
         unsigned t_rec_size = 8024;
         // the +16 in the block size is recommended in the programmer's reference, pg
-        unsigned t_dig_pts = t_rec_size + 16;
+        // should actually be nbrSamplesInSegment+32 for AcqrsD1_readData()
+        unsigned t_dig_pts = t_rec_size + 32;
 
 
         MTINFO( mtlog, "beginning initialization phase" );
         t_result = Acqrs_InitWithOptions(rscStr, VI_FALSE, VI_FALSE, options, &f_handle);
-        if (t_result)
-        {
-            ViChar errMsg[512] = "";
-            Acqrs_errorMessage(VI_NULL, t_result, errMsg, 512);
-            MTERROR( mtlog, "Init with options error: " << errMsg << "\n" );
-            return false;
-        }
+        PrintU1084AError( f_handle, t_result, "InitWithOptions" );
 /*
         // Read and output a few attributes
         // Note: status should be checked after each driver call but is omitted here for clarity.
@@ -545,7 +596,7 @@ namespace mantis
         }
 
         // Config sampling
-        ViInt32 t_number_samples = 25000000;
+        ViInt32 t_number_samples = 8024;
         ViInt32 t_number_segments = 1;
         ViInt32 t_number_banks = 2; // must be 2 for the u1084a in SAR
         t_result = AcqrsD1_configMemoryEx( f_handle, 0, t_number_samples, t_number_segments, t_number_banks, 0);
@@ -561,7 +612,7 @@ namespace mantis
         ViReal64 t_full_scale = 1.0; // volts
         ViReal64 t_offset = 0.0; // volts
         ViInt32 t_coupling = 3; // 3 is for DC coupling
-        ViInt32 t_bandwidth = 0; // o is for no limit
+        ViInt32 t_bandwidth = 0; // 0 is for no limit
         t_result = AcqrsD1_configVertical( f_handle, 1, t_full_scale, t_offset, t_coupling, t_bandwidth);
         if ( t_result )
         {
@@ -729,7 +780,7 @@ namespace mantis
         readPar.reserved3 = 0;
         AqDataDescriptor dataDesc;
         AqSegmentDescriptor segDesc;
-        ViInt8 *adcArrayP = new ViInt8[readPar.dataArraySize];
+        //ViInt8 *adcArrayP = new ViInt8[readPar.dataArraySize];
 
         MTDEBUG (mtlog, "then read data");
         //t_result = AcqrsD1_readData( f_handle, 1, &readPar, adcArrayP, &dataDesc, &segDesc);
@@ -750,7 +801,7 @@ namespace mantis
             return false;
         }
 */
-/*        MTDEBUG( mtlog, "and free the bank");
+        MTDEBUG( mtlog, "and free the bank");
         t_result = AcqrsD1_freeBank( f_handle, 0 );
         if (t_result)
         {
@@ -758,7 +809,7 @@ namespace mantis
             Acqrs_errorMessage(VI_NULL, t_result, errMsg, 512);
             MTERROR( mtlog, "free bank error: " << errMsg << "\n" );
             return false;
-        }*/
+        }
         
         MTDEBUG( mtlog, "ending acquisition..." );
         t_result = AcqrsD1_stopAcquisition( f_handle);
@@ -783,16 +834,16 @@ namespace mantis
 
 
         std::stringstream t_block_str;
-        std::stringstream adc_str;
+        //std::stringstream adc_str;
         for( unsigned i = 0; i < 99; ++i )
         {
             t_block_str << int(t_block->data_bytes()[ i ]) << ", ";
-            adc_str << int(adcArrayP[ i ]) << ", ";
+            //adc_str << int(adcArrayP[ i ]) << ", ";
         }
         t_block_str << t_block->data_bytes()[ 99 ];
-        adc_str << int(adcArrayP[ 99 ]);
+        //adc_str << int(adcArrayP[ 99 ]);
         MTDEBUG( mtlog, "the first 100 samples taken (in t_block):\n" << t_block_str.str() );
-        MTDEBUG( mtlog, "the first 100 samples taken (in ViInt8):\n" << adc_str.str() );
+        //MTDEBUG( mtlog, "the first 100 samples taken (in ViInt8):\n" << adc_str.str() );
 
         MTINFO( mtlog, "run complete!\n" );
 

@@ -70,6 +70,7 @@ namespace mantis
             atomic_bool f_canceled;
             condition f_cancel_condition;
 
+            bool allocate();
             bool start();
             bool acquire( block* a_block, timespec& a_time_stamp );
             bool stop();
