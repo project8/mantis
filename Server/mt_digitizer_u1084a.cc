@@ -25,7 +25,6 @@ namespace mantis
     MTLOGGER( mtlog, "digitizer_u1084a" );
 
     MT_REGISTER_DIGITIZER( digitizer_u1084a, "u1084a" );
-    MT_REGISTER_TEST_DIGITIZER( test_digitizer_u1084a, "u1084a" );
 
     const unsigned digitizer_u1084a::s_data_type_size = sizeof( digitizer_u1084a::data_type );
     unsigned digitizer_u1084a::data_type_size_u1084a()
@@ -491,30 +490,7 @@ namespace mantis
     }
 
 
-    //***********************************
-    // Block Cleanup u1084a
-    //***********************************
-
-    block_cleanup_u1084a::block_cleanup_u1084a( byte_type* a_data ) :
-                f_triggered( false ),
-                f_data( a_data )
-    {}
-    block_cleanup_u1084a::~block_cleanup_u1084a()
-    {}
-    bool block_cleanup_u1084a::delete_data()
-    {
-        if( f_triggered ) return true;
-        delete [] f_data;
-        f_triggered = true;
-        return true;
-    }
-
-
-    //***********************************
-    // test_digitizer_u1084a
-    //***********************************
-
-    bool test_digitizer_u1084a::run_test()
+    bool digitizer_u1084a::run_basic_test()
     {
         ViStatus t_result;
         ViSession f_handle;
@@ -881,6 +857,25 @@ namespace mantis
         MTINFO( mtlog, "finalization complete!\n" );
 
 
+        return true;
+    }
+
+
+    //***********************************
+    // Block Cleanup u1084a
+    //***********************************
+
+    block_cleanup_u1084a::block_cleanup_u1084a( byte_type* a_data ) :
+                f_triggered( false ),
+                f_data( a_data )
+    {}
+    block_cleanup_u1084a::~block_cleanup_u1084a()
+    {}
+    bool block_cleanup_u1084a::delete_data()
+    {
+        if( f_triggered ) return true;
+        delete [] f_data;
+        f_triggered = true;
         return true;
     }
 }

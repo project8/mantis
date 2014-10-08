@@ -20,7 +20,6 @@ namespace mantis
     MTLOGGER( mtlog, "digitizer_test" );
 
     MT_REGISTER_DIGITIZER( digitizer_test, "test" );
-    MT_REGISTER_TEST_DIGITIZER( test_digitizer_test, "test" );
 
 
     const unsigned digitizer_test::s_data_type_size = sizeof( digitizer_test::data_type );
@@ -353,6 +352,12 @@ namespace mantis
     {
         f_canceled.store( a_flag );
         return;
+    }
+
+    bool digitizer_test::run_basic_test()
+    {
+        MTWARN( mtlog, "Basic test for digitizer_test has not been implemented" );
+        return false;
     }
 
 

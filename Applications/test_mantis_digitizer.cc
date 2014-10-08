@@ -3,6 +3,19 @@
  *
  *  Created on: Feb 10, 2014
  *      Author: nsoblath
+ *
+ *  Usage: test_mantis_digitizer digitizer=[name] testtype=[type]
+ *
+ *    digitizer: the name of the digitizer you want to test (e.g. px1500, u1084a)
+ *    testtype: (optional; default = basic) either "basic" or "insitu"
+ *
+ *  Examples:
+ *
+ *    test_mantis_digitizer digitizer=px1500
+ *        -- will run the basic test on the px1500 digitizer
+ *
+ *    test_mantis_digitizer digitizer=u1084a testtype=insitu
+ *        -- will run the in-situ test on the u1084a digitizer
  */
 
 #include "mt_buffer.hh"
@@ -21,6 +34,11 @@ using namespace mantis;
 
 MTLOGGER( mtlog, "test_mantis_digitizer" );
 
+enum test_type
+{
+    k_basic,
+    k_insitu
+};
 
 bool method_test(digitizer* t_digitizer)
 {
@@ -64,26 +82,29 @@ int main( int argc, char** argv )
         return -1;
     }
 
+    string t_str_test_type = t_config->get< string >( "testtype", "basic" );
+    test_type t_test_type = k_basic;
+    if( t_str_test_type == "basic" )
+    {
+        t_test_type = k_basic;
+    }
+    else if( t_str_test_type == "insitu" )
+    {
+        t_test_type = k_insitu;
+    }
+    else
+    {
+        MTERROR( mtlog, "invalid test type: " << t_str_test_type );
+        return -1;
+    }
+
     MTINFO( mtlog, "testing digitizer <" << t_dig_name << ">" );
 
-    DIGITIZERTYPE* t_digitizer = NULL;
-    factory< DIGITIZERTYPE >* t_dig_factory = NULL;
-/*    if (t_test_type == "method" )
-    {
-        digitizer* t_digitizer = NULL;
-        factory< digitizer >* t_dig_factory = NULL;
-    } else {
-        test_digitizer* t_digitizer = NULL;
-        factory< test_digitizer >* t_dig_factory = NULL;
-    }*/
+    factory< digitizer >* t_dig_factory = NULL;
+    digitizer* t_digitizer = NULL;
     try
     {
-        if (t_test_type == "method" )
-        {
-            t_dig_factory = factory< digitizer >::get_instance();
-        } else {
-            t_dig_factory = factory< test_digitizer >::get_instance();
-        }
+        t_dig_factory = factory< digitizer >::get_instance();
         t_digitizer = t_dig_factory->create( t_dig_name );
         if( t_digitizer == NULL )
         {
@@ -97,7 +118,17 @@ int main( int argc, char** argv )
         return -1;
     }
 
-    if (t_test_type == "method" )
+    bool t_status = false;
+    if( t_test_type == k_basic )
+    {
+        t_status = t_digitizer->run_basic_test();
+    }
+    else
+    {
+        t_status = t_digitizer->run_insitu_test();
+    }
+
+    if( ! t_status )
     {
         MTDEBUG( mtlog, "testing by call standard methods" );
         if( ! method_test(t_digitizer) )

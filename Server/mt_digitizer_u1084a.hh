@@ -45,6 +45,9 @@ namespace mantis
             // thread-safe setter
             void set_canceled( bool a_flag );
 
+        public:
+            bool run_basic_test();
+
         private:
             static const unsigned s_data_type_size;
 
@@ -84,18 +87,6 @@ namespace mantis
             byte_type* f_data;
     };
 
-
-    class test_digitizer_u1084a : public test_digitizer
-    {
-        public:
-            test_digitizer_u1084a() {}
-            virtual ~test_digitizer_u1084a() {}
-    
-            bool allocate() {return true;};
-            bool initialize( request* a_request ) {return true;};
-            bool run_test();
-
-    };
 
 }
 
