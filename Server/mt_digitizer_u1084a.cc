@@ -65,7 +65,9 @@ namespace mantis
                     f_live_time( 0 ),
                     f_dead_time( 0 ),
                     f_canceled( false ),
-                    f_cancel_condition()
+                    f_cancel_condition(),
+                    f_number_samples( 0 ),
+                    f_block( NULL )
     {
         get_calib_params( u1084a_bits, s_data_type_size, u1084a_min_val, u1084a_range, &f_params );
         /*
@@ -147,6 +149,23 @@ namespace mantis
         t_result = AcqrsD1_configMode( f_handle, 0, 0, 10); // 10 -> SAR
         PrintU1084AError( f_handle, t_result, "Config as SAR:");
 
+        // TODO!!!!!!!!
+        // There should be some smart buffer things happening here
+        // I just want to digitize, so I'm going to require 1 record digitization and not do circular buffer stuff yet.
+        // hopefully this will get fixed soonish
+        try
+        {
+            f_block = block::allocate_block< digitizer_u1084a::data_type >( f_number_samples + 32 );
+            f_block->set_data_size( f_number_samples );
+            f_block->set_data_nbytes( f_number_samples );
+        }
+        catch( exception &e )
+        {
+            MTERROR( mtlog, "unable to allocate buffer: " << e.what() );
+            return false;
+        }
+
+
         /*
         MTINFO( mtlog, "connecting to digitizer card..." );
 
@@ -215,14 +234,10 @@ namespace mantis
         //also config memory
         // it would be ideal if number_samples came from the record size and number_segments from duration... SAR isn't working that well yet though.
         MTDEBUG( mtlog, "configuring memory" );
-        ViInt32 t_number_samples = int(a_request->duration() * 1.e-3 / t_sample_interval);
-        MTDEBUG( mtlog, "duration: " << a_request->duration() * 1.e-3);
-        MTDEBUG( mtlog, "interval: " << t_sample_interval );
-        MTDEBUG( mtlog, "quotient: " << (a_request->duration() / t_sample_interval));
-        MTDEBUG( mtlog, "number samples: " << t_number_samples );
+        f_number_samples = int(a_request->duration() * 1.e-3 / t_sample_interval);
         ViInt32 t_number_segments = 1;
         ViInt32 t_number_banks = 2;
-        t_result = AcqrsD1_configMemoryEx( f_handle, 0, t_number_samples, t_number_segments, t_number_banks, 0);
+        t_result = AcqrsD1_configMemoryEx( f_handle, 0, f_number_samples, t_number_segments, t_number_banks, 0);
         PrintU1084AError( f_handle, t_result, "Config memory:" );
 
         //config vertical settings, do we want to expose a user interface?
@@ -233,6 +248,17 @@ namespace mantis
         ViInt32 t_bandwidth = 0; // 0 is for no limit
         t_result = AcqrsD1_configVertical( f_handle, 1, t_full_scale, t_offset, t_coupling, t_bandwidth );
         PrintU1084AError( f_handle, t_result, "Config Vert. Scale:" );
+
+        //config trigger
+        MTDEBUG( mtlog, "configuring trigger" );
+        t_result = AcqrsD1_configTrigClass( f_handle, 0, 0x00000001, 0, 0, 0.0, 0.0);
+        PrintU1084AError( f_handle, t_result, "trig type:");
+
+        ViInt32 t_trigger_coupling = 0; // 0 for DC
+        ViInt32 t_trigger_slope = 0; // 0 for positive
+        ViReal64 t_trigger_level = 0.0; // in % of full vertical scale
+        t_result = AcqrsD1_configTrigSource( f_handle, 1, t_trigger_coupling, t_trigger_slope, t_trigger_level, 0.0 );
+        PrintU1084AError( f_handle, t_result, "trig conditions:");
 
         /*
         //MTINFO( mtlog, "resetting counters..." );
