@@ -304,6 +304,7 @@ namespace mantis
     }
     void digitizer_u1084a::execute()
     {
+        ViStatus t_result;
         //iterator t_it( f_buffer, "dig-u1084a" );
 
         timespec t_live_start_time;
@@ -311,6 +312,21 @@ namespace mantis
         timespec t_dead_start_time;
         timespec t_dead_stop_time;
         timespec t_stamp_time;
+
+        t_result = AcqrsD1_acquire( f_handle );
+        PrintU1084AError( f_handle, t_result, "acquisition failure:" );
+
+        ViInt32 t_timeout = 10000; // ms
+        t_result = AcqrsD1_waitForEndOfAcquisition( f_handle, t_timeout );
+        if (t_result != VI_SUCCESS)
+        {
+            MTWARN( mtlog, "acquisition may not have auto-triggered, forcing" );
+            t_result = AcqrsD1_forceTrigEx( f_handle, 1, 0, 0 ); // SAR requires type 1
+            PrintU1084AError( f_handle, t_result, "force trig:");
+            t_result = AcqrsD1_waitForEndOfAcquisition( f_handle, t_timeout );
+            PrintU1084AError( f_handle, t_result, "wait for acq:");
+        }
+
 
         //MTINFO( mtlog, "waiting" );
         /*
