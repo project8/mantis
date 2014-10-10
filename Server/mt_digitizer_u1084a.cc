@@ -245,6 +245,7 @@ namespace mantis
 
         //also config memory
         // it would be ideal if number_samples came from the record size and number_segments from duration... SAR isn't working that well yet though.
+        // this is all moved into allocate()
         /*MTDEBUG( mtlog, "configuring memory" );
         ViInt32 t_number_segments = 1;
         ViInt32 t_number_banks = 2;
@@ -314,7 +315,7 @@ namespace mantis
         return true;
     }
     void digitizer_u1084a::execute()
-    {
+    {   
         ViStatus t_result;
         iterator t_it( f_buffer, "dig-u1084a" );
 
@@ -324,6 +325,7 @@ namespace mantis
         timespec t_dead_stop_time;
         timespec t_stamp_time;
 
+/* acquire and wait/force trigger goes in acquire()
         MTDEBUG( mtlog, "acquire" );
         t_result = AcqrsD1_acquire( f_handle );
         PrintU1084AError( f_handle, t_result, "acquisition failure:" );
@@ -339,7 +341,6 @@ namespace mantis
             t_result = AcqrsD1_waitForEndOfAcquisition( f_handle, t_timeout );
             PrintU1084AError( f_handle, t_result, "wait for acq:");
         }
-
 
 
         AqReadParameters readPar;
@@ -365,15 +366,14 @@ namespace mantis
         t_result = AcqrsD1_readData( f_handle, 1, &readPar, reinterpret_cast< ViInt8* > (t_it.object()->memblock_bytes()), &dataDesc, &segDesc);
         PrintU1084AError( f_handle, t_result, "read data:");
 
-        MTDEBUG( mtlog, __LINE__);
         MTDEBUG( mtlog, "free bank" );
         t_result = AcqrsD1_freeBank( f_handle, 0 );
         PrintU1084AError( f_handle, t_result, "free bank:");
-        MTDEBUG( mtlog, __LINE__);
 
+*/
 
         //MTINFO( mtlog, "waiting" );
-        /*
+        MTDEBUG( mtlog, "")
         f_condition->wait();
 
         MTINFO( mtlog, "loose at <" << t_it.index() << ">" );
@@ -486,7 +486,6 @@ namespace mantis
                 MTINFO( mtlog, "loose at <" << t_it.index() << ">" );
             }
         }
-         */
         return;
     }
     void digitizer_u1084a::cancel()
@@ -531,8 +530,55 @@ namespace mantis
     }
     bool digitizer_u1084a::acquire( block* a_block, timespec& a_stamp_time )
     {
+        ViStatus t_result;
+
         a_block->set_record_id( f_record_count );
         a_block->set_acquisition_id( f_acquisition_count );
+
+        MTDEBUG( mtlog, "acquire" );
+        t_result = AcqrsD1_acquire( f_handle );
+        PrintU1084AError( f_handle, t_result, "acquisition failure:" );
+
+        MTDEBUG( mtlog, "wait for acquisition" );
+        ViInt32 t_timeout = 10000; // ms
+        t_result = AcqrsD1_waitForEndOfAcquisition( f_handle, t_timeout );
+        if (t_result != VI_SUCCESS) // failed to acquire, probably didn't trigger
+        {
+            MTWARN( mtlog, "acquisition may not have auto-triggered, forcing" );
+            t_result = AcqrsD1_forceTrigEx( f_handle, 1, 0, 0 ); // SAR requires type 1
+            PrintU1084AError( f_handle, t_result, "force trig:");
+            t_result = AcqrsD1_waitForEndOfAcquisition( f_handle, t_timeout );
+            PrintU1084AError( f_handle, t_result, "wait for acq:");
+        }
+
+        AqReadParameters readPar;
+        readPar.dataType = ReadInt8; //8bit, raw ADC values data type
+        readPar.readMode = ReadModeStdW; // Single-segment read mode
+        readPar.firstSegment = 0;
+        readPar.nbrSegments = 1;
+        readPar.firstSampleInSeg = 0;
+        readPar.nbrSamplesInSeg = f_buffer->record_size();
+        readPar.segmentOffset = 0;
+        readPar.dataArraySize = (readPar.nbrSamplesInSeg + f_postfix_size) * sizeof(ViInt8); //Array size in bytes
+        readPar.segDescArraySize = sizeof(AqSegmentDescriptor);
+        readPar.flags = 0;
+        readPar.reserved = 0;
+        readPar.reserved2 = 0;
+        readPar.reserved3 = 0;
+        AqDataDescriptor dataDesc;
+        AqSegmentDescriptor segDesc;
+        //ViInt8 *adcArrayP = new ViInt8[readPar.dataArraySize];
+
+        MTDEBUG( mtlog, "then read data; for now just read the first block" );
+        //t_result = AcqrsD1_readData( f_handle, 1, &readPar, adcArrayP, &dataDesc, &segDesc);
+        t_result = AcqrsD1_readData( f_handle, 1, &readPar, reinterpret_cast< ViInt8* > (a_block->memblock_bytes()), &dataDesc, &segDesc);
+        PrintU1084AError( f_handle, t_result, "read data:");
+
+        MTDEBUG( mtlog, "free bank" );
+        t_result = AcqrsD1_freeBank( f_handle, 0 );
+        PrintU1084AError( f_handle, t_result, "free bank:");
+
+
         /*
         ViStatus t_result = GetPciAcquisitionDataFastPX4( f_handle, f_buffer->record_size(), a_block->data_bytes(), 0 );
         if( t_result != VI_SUCCESS )
