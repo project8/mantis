@@ -153,11 +153,13 @@ namespace mantis
         // There should be some smart buffer things happening here
         // I just want to digitize, so I'm going to require 1 record digitization and not do circular buffer stuff yet.
         // hopefully this will get fixed soonish
+        unsigned t_rec_size = f_number_samples;
+        unsigned t_dig_pts = t_rec_size + 32;
         try
         {
-            f_block = block::allocate_block< digitizer_u1084a::data_type >( f_number_samples + 32 );
-            f_block->set_data_size( f_number_samples );
-            f_block->set_data_nbytes( f_number_samples );
+            f_block = block::allocate_block< digitizer_u1084a::data_type >( t_dig_pts  );
+            f_block->set_data_size( t_rec_size );
+            f_block->set_data_nbytes( t_rec_size );
         }
         catch( exception &e )
         {
@@ -235,6 +237,7 @@ namespace mantis
         // it would be ideal if number_samples came from the record size and number_segments from duration... SAR isn't working that well yet though.
         MTDEBUG( mtlog, "configuring memory" );
         f_number_samples = int(a_request->duration() * 1.e-3 / t_sample_interval);
+        f_number_samples = 8024;
         ViInt32 t_number_segments = 1;
         ViInt32 t_number_banks = 2;
         t_result = AcqrsD1_configMemoryEx( f_handle, 0, f_number_samples, t_number_segments, t_number_banks, 0);
@@ -313,9 +316,11 @@ namespace mantis
         timespec t_dead_stop_time;
         timespec t_stamp_time;
 
+        MTDEBUG( mtlog, "acquire" );
         t_result = AcqrsD1_acquire( f_handle );
         PrintU1084AError( f_handle, t_result, "acquisition failure:" );
 
+        MTDEBUG( mtlog, "wait for acquisition" );
         ViInt32 t_timeout = 10000; // ms
         t_result = AcqrsD1_waitForEndOfAcquisition( f_handle, t_timeout );
         if (t_result != VI_SUCCESS)
@@ -326,6 +331,58 @@ namespace mantis
             t_result = AcqrsD1_waitForEndOfAcquisition( f_handle, t_timeout );
             PrintU1084AError( f_handle, t_result, "wait for acq:");
         }
+
+
+
+        AqReadParameters readPar;
+        readPar.dataType = ReadInt8; //8bit, raw ADC values data type
+        readPar.readMode = ReadModeStdW; // Single-segment read mode
+        readPar.firstSegment = 0;
+        readPar.nbrSegments = 1;
+        readPar.firstSampleInSeg = 0;
+        readPar.nbrSamplesInSeg = f_number_samples;
+        readPar.segmentOffset = 0;
+        readPar.dataArraySize = (f_number_samples + 32) * sizeof(ViInt8); //Array size in bytes
+        readPar.segDescArraySize = sizeof(AqSegmentDescriptor);
+        readPar.flags = 0;
+        readPar.reserved = 0;
+        readPar.reserved2 = 0;
+        readPar.reserved3 = 0;
+        AqDataDescriptor dataDesc;
+        AqSegmentDescriptor segDesc;
+        //ViInt8 *adcArrayP = new ViInt8[readPar.dataArraySize];
+
+        MTDEBUG (mtlog, "then read data");
+        //t_result = AcqrsD1_readData( f_handle, 1, &readPar, adcArrayP, &dataDesc, &segDesc);
+        t_result = AcqrsD1_readData( f_handle, 1, &readPar, reinterpret_cast< ViInt8* > (f_block->data_bytes()), &dataDesc, &segDesc);
+
+       /* MTDEBUG( mtlog, "read record" );
+        AqReadParameters readPar;
+        readPar.dataType = ReadInt8; //8bit, raw ADC values data type
+        readPar.readMode = ReadModeStdW; // Single-segment read mode
+        readPar.firstSegment = 0;
+        readPar.nbrSegments = 1;
+        readPar.firstSampleInSeg = 0;
+        readPar.nbrSamplesInSeg = f_number_samples;
+        readPar.segmentOffset = 0;
+        readPar.dataArraySize = (f_number_samples + 32) * sizeof(ViInt8); // Array size in bytes
+        readPar.segDescArraySize = sizeof(AqSegmentDescriptor);
+        readPar.flags = 0;
+        readPar.reserved = 0;
+        readPar.reserved2 = 0;
+        readPar.reserved3 = 0;
+        AqDataDescriptor dataDesc;
+        AqSegmentDescriptor segDesc;
+        MTDEBUG( mtlog, __LINE__);
+        t_result = AcqrsD1_readData( f_handle, 1, &readPar, reinterpret_cast< ViInt8* > (f_block->data_bytes()), &dataDesc, &segDesc);
+        */
+        PrintU1084AError( f_handle, t_result, "read data:");
+
+        MTDEBUG( mtlog, __LINE__);
+        MTDEBUG( mtlog, "free bank" );
+        t_result = AcqrsD1_freeBank( f_handle, 0 );
+        PrintU1084AError( f_handle, t_result, "free bank:");
+        MTDEBUG( mtlog, __LINE__);
 
 
         //MTINFO( mtlog, "waiting" );
@@ -456,6 +513,10 @@ namespace mantis
     }
     void digitizer_u1084a::finalize( response* a_response )
     {
+        ViStatus t_result;
+        t_result = AcqrsD1_stopAcquisition( f_handle );
+        PrintU1084AError( f_handle, t_result, "stop acquisition" );
+
         //MTINFO( mtlog, "calculating statistics..." );
 
         /*
