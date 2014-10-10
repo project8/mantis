@@ -32,26 +32,37 @@ namespace mantis
         unsigned t_record_size = 8192;
 
         MTDEBUG( mtlog, "calling allocate" );
-        buffer a_buffer( 1, t_record_size );
-        condition a_condition;
-        if( ! this->allocate( &a_buffer, &a_condition ) )
+        buffer t_buffer( 1, t_record_size );
+        condition t_condition;
+        if( ! this->allocate( &t_buffer, &t_condition ) )
         {
             MTERROR( mtlog, "failure during allocation" );
             return false;
         }
 
         MTDEBUG( mtlog, "calling initialize" );
-        request* a_request = new request();
-        a_request->set_rate( 250.0 ); // MHz
-        a_request->set_duration( 100.0 ); // ms
-        if ( ! this->initialize( a_request ) )
+        request t_request;
+        t_request.set_rate( 250.0 ); // MHz
+        t_request.set_duration( 100.0 ); // ms
+        if ( ! initialize( &t_request ) )
         {
             MTERROR( mtlog, "failure during initialize" );
             return false;
         }
 
+        thread t_digitizer_thread( this );
+
         MTDEBUG( mtlog, "calling execute");
-        execute();
+        t_digitizer_thread.start();
+
+        MTDEBUG( mtlog, "releasing" );
+        t_condition.release();
+
+        MTDEBUG( mtlog, "waiting" );
+        sleep(1);
+
+        MTDEBUG( mtlog, "canceling" );
+        t_digitizer_thread.cancel();
 
         MTDEBUG( mtlog, "calling finalize");
         response* a_response;
