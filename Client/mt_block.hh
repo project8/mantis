@@ -137,14 +137,14 @@ namespace mantis
         t_new_block->f_memblock_bytes = new byte_type [ t_total_size ];
 
         t_new_block->f_prefix_nbytes = a_prefix_size * t_data_type_size;
-        t_new_block->f_prefix_bytes = f_memblock_bytes;
+        t_new_block->f_prefix_bytes = t_new_block->f_memblock_bytes;
 
         t_new_block->set_data_size( a_data_size );
         t_new_block->f_data_nbytes = a_data_size * t_data_type_size;
-        t_new_block->f_data_bytes = f_prefix_bytes + f_prefix_nbytes;
+        t_new_block->f_data_bytes = t_new_block->f_prefix_bytes + t_new_block->f_prefix_nbytes;
 
         t_new_block->f_postfix_nbytes = a_postfix_size * t_data_type_size;
-        t_new_block->f_postfix_bytes = f_data_bytes + f_data_nbytes;
+        t_new_block->f_postfix_bytes = t_new_block->f_data_bytes + t_new_block->f_data_nbytes;
 
         return t_new_block;
     }
