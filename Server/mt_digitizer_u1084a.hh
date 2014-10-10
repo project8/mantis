@@ -55,6 +55,7 @@ namespace mantis
 
             ViSession f_handle;
             bool f_allocated;
+            unsigned f_postfix_size;
 
             buffer* f_buffer;
             condition* f_condition;
@@ -70,8 +71,8 @@ namespace mantis
             atomic_bool f_canceled;
             condition f_cancel_condition;
 
-            ViInt32 f_number_samples;
-            block* f_block;
+            //ViInt32 f_number_samples;
+            //block* f_block;
 
             bool start();
             bool acquire( block* a_block, timespec& a_time_stamp );
@@ -82,12 +83,12 @@ namespace mantis
     class block_cleanup_u1084a : public block_cleanup
     {
         public:
-            block_cleanup_u1084a( byte_type* a_data );
+            block_cleanup_u1084a( byte_type* a_memblock );
             virtual ~block_cleanup_u1084a();
-            virtual bool delete_data();
+            virtual bool delete_memblock();
         private:
             bool f_triggered;
-            byte_type* f_data;
+            byte_type* f_memblock;
     };
 
 

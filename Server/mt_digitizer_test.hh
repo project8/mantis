@@ -80,12 +80,12 @@ namespace mantis
     class block_cleanup_test : public block_cleanup
     {
         public:
-            block_cleanup_test( byte_type* a_data );
+            block_cleanup_test( byte_type* a_memblock );
             virtual ~block_cleanup_test();
-            virtual bool delete_data();
+            virtual bool delete_memblock();
         private:
             bool f_triggered;
-            byte_type* f_data;
+            byte_type* f_memblock;
     };
 
 }

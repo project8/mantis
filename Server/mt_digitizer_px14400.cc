@@ -434,17 +434,17 @@ namespace mantis
     // Block Cleanup px14400
     //***********************************
 
-    block_cleanup_px14400::block_cleanup_px14400( byte_type* a_data, HPX14* a_dig_ptr ) :
+    block_cleanup_px14400::block_cleanup_px14400( byte_type* a_memblock, HPX14* a_dig_ptr ) :
                 f_triggered( false ),
-                f_data( a_data ),
+                f_memblock( a_memblock ),
                 f_dig_ptr( a_dig_ptr )
     {}
     block_cleanup_px14400::~block_cleanup_px14400()
     {}
-    bool block_cleanup_px14400::delete_data()
+    bool block_cleanup_px14400::delete_memblock()
     {
         if( f_triggered ) return true;
-        int t_result = FreeDmaBufferPX14( *f_dig_ptr, reinterpret_cast< digitizer_px14400::data_type* >( f_data ) );
+        int t_result = FreeDmaBufferPX14( *f_dig_ptr, reinterpret_cast< digitizer_px14400::data_type* >( f_memblock ) );
         if( t_result != SIG_SUCCESS )
         {
             DumpLibErrorPX14( t_result, "failed to deallocate dma memory: " );

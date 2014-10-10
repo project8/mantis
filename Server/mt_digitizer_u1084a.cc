@@ -57,6 +57,7 @@ namespace mantis
                     f_buffer( NULL ),
                     f_condition( NULL ),
                     f_allocated( false ),
+                    f_postfix_size( 32 ),
                     f_handle(),
                     f_start_time( 0 ),
                     f_record_last( 0 ),
@@ -65,9 +66,9 @@ namespace mantis
                     f_live_time( 0 ),
                     f_dead_time( 0 ),
                     f_canceled( false ),
-                    f_cancel_condition(),
-                    f_number_samples( 0 ),
-                    f_block( NULL )
+                    f_cancel_condition()//,
+                    //f_number_samples( 0 ),
+                    //f_block( NULL )
     {
         get_calib_params( u1084a_bits, s_data_type_size, u1084a_min_val, u1084a_range, &f_params );
         /*
@@ -153,13 +154,17 @@ namespace mantis
         // There should be some smart buffer things happening here
         // I just want to digitize, so I'm going to require 1 record digitization and not do circular buffer stuff yet.
         // hopefully this will get fixed soonish
-        unsigned t_rec_size = f_number_samples;
-        unsigned t_dig_pts = t_rec_size + 32;
+        //unsigned t_rec_size = f_number_samples;
+        //unsigned t_dig_pts = t_rec_size + 32;
         try
         {
-            f_block = block::allocate_block< digitizer_u1084a::data_type >( t_dig_pts  );
-            f_block->set_data_size( t_rec_size );
-            f_block->set_data_nbytes( t_rec_size );
+            for( unsigned int index = 0; index < f_buffer->size(); index++ )
+            {
+                block* t_new_block = new block();
+                t_new_block = block::allocate_block< digitizer_u1084a::data_type >( f_buffer->record_size(), 0, f_postfix_size );
+                t_new_block->set_cleanup( new block_cleanup_u1084a( t_new_block->memblock_bytes() ) );
+                f_buffer->set_block( index, t_new_block );
+            }
         }
         catch( exception &e )
         {
@@ -236,11 +241,11 @@ namespace mantis
         //also config memory
         // it would be ideal if number_samples came from the record size and number_segments from duration... SAR isn't working that well yet though.
         MTDEBUG( mtlog, "configuring memory" );
-        f_number_samples = int(a_request->duration() * 1.e-3 / t_sample_interval);
-        f_number_samples = 8024;
+        //f_number_samples = int(a_request->duration() * 1.e-3 / t_sample_interval);
+        //f_number_samples = 8024;
         ViInt32 t_number_segments = 1;
         ViInt32 t_number_banks = 2;
-        t_result = AcqrsD1_configMemoryEx( f_handle, 0, f_number_samples, t_number_segments, t_number_banks, 0);
+        t_result = AcqrsD1_configMemoryEx( f_handle, 0, f_buffer->record_size(), t_number_segments, t_number_banks, 0);
         PrintU1084AError( f_handle, t_result, "Config memory:" );
 
         //config vertical settings, do we want to expose a user interface?
@@ -308,7 +313,7 @@ namespace mantis
     void digitizer_u1084a::execute()
     {
         ViStatus t_result;
-        //iterator t_it( f_buffer, "dig-u1084a" );
+        iterator t_it( f_buffer, "dig-u1084a" );
 
         timespec t_live_start_time;
         timespec t_live_stop_time;
@@ -340,9 +345,9 @@ namespace mantis
         readPar.firstSegment = 0;
         readPar.nbrSegments = 1;
         readPar.firstSampleInSeg = 0;
-        readPar.nbrSamplesInSeg = f_number_samples;
+        readPar.nbrSamplesInSeg = f_buffer->record_size();
         readPar.segmentOffset = 0;
-        readPar.dataArraySize = (f_number_samples + 32) * sizeof(ViInt8); //Array size in bytes
+        readPar.dataArraySize = (readPar.nbrSamplesInSeg + f_postfix_size) * sizeof(ViInt8); //Array size in bytes
         readPar.segDescArraySize = sizeof(AqSegmentDescriptor);
         readPar.flags = 0;
         readPar.reserved = 0;
@@ -352,9 +357,9 @@ namespace mantis
         AqSegmentDescriptor segDesc;
         //ViInt8 *adcArrayP = new ViInt8[readPar.dataArraySize];
 
-        MTDEBUG (mtlog, "then read data");
+        MTDEBUG( mtlog, "then read data; for now just read the first block" );
         //t_result = AcqrsD1_readData( f_handle, 1, &readPar, adcArrayP, &dataDesc, &segDesc);
-        t_result = AcqrsD1_readData( f_handle, 1, &readPar, reinterpret_cast< ViInt8* > (f_block->data_bytes()), &dataDesc, &segDesc);
+        t_result = AcqrsD1_readData( f_handle, 1, &readPar, reinterpret_cast< ViInt8* > (t_it.object()->memblock_bytes()), &dataDesc, &segDesc);
 
        /* MTDEBUG( mtlog, "read record" );
         AqReadParameters readPar;
@@ -974,16 +979,16 @@ namespace mantis
     // Block Cleanup u1084a
     //***********************************
 
-    block_cleanup_u1084a::block_cleanup_u1084a( byte_type* a_data ) :
+    block_cleanup_u1084a::block_cleanup_u1084a( byte_type* a_memblock ) :
                 f_triggered( false ),
-                f_data( a_data )
+                f_memblock( a_memblock )
     {}
     block_cleanup_u1084a::~block_cleanup_u1084a()
     {}
-    bool block_cleanup_u1084a::delete_data()
+    bool block_cleanup_u1084a::delete_memblock()
     {
         if( f_triggered ) return true;
-        delete [] f_data;
+        delete [] f_memblock;
         f_triggered = true;
         return true;
     }

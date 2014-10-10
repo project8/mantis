@@ -41,7 +41,7 @@ namespace mantis
             virtual ~block();
 
             template< typename DataType >
-            static block* allocate_block( unsigned a_size );
+            static block* allocate_block( unsigned a_data_size, unsigned a_prefix_size = 0, unsigned a_postfix_size = 0 );
 
             block_header_state_t get_state() const;
             void set_state( block_header_state_t a_state );
@@ -79,11 +79,29 @@ namespace mantis
             block_header* header();
             const block_header* header() const;
 
+            byte_type* memblock_bytes();
+            const byte_type* memblock_bytes() const;
+
+            size_t get_memblock_nbytes() const;
+            void set_memblock_nbytes( size_t a_nbytes );
+
+            byte_type* prefix_bytes();
+            const byte_type* prefix_bytes() const;
+
+            size_t get_prefix_nbytes() const;
+            void set_prefix_nbytes( size_t a_nbytes );
+
             byte_type* data_bytes();
             const byte_type* data_bytes() const;
 
             size_t get_data_nbytes() const;
             void set_data_nbytes( size_t a_nbytes );
+
+            byte_type* postfix_bytes();
+            const byte_type* postfix_bytes() const;
+
+            size_t get_postfix_nbytes() const;
+            void set_postfix_nbytes( size_t a_nbytes );
 
             byte_type** handle();
 
@@ -92,19 +110,42 @@ namespace mantis
         protected:
             block_header f_header;
 
+            byte_type* f_memblock_bytes;
+            unsigned f_memblock_nbytes;
+
+            byte_type* f_prefix_bytes;
+            unsigned f_prefix_nbytes;
+
             byte_type* f_data_bytes;
             unsigned f_data_nbytes;
+
+            byte_type* f_postfix_bytes;
+            unsigned f_postfix_nbytes;
 
             block_cleanup* f_cleanup;
     };
 
     template< typename DataType >
-    block* block::allocate_block( unsigned a_size )
+    block* block::allocate_block( unsigned a_data_size, unsigned a_prefix_size, unsigned a_postfix_size )
     {
+        size_t t_data_type_size = sizeof( DataType );
+
         block* t_new_block = new block();
-        t_new_block->set_data_size( a_size );
-        t_new_block->f_data_nbytes = a_size * sizeof( DataType );
-        t_new_block->f_data_bytes = new byte_type [ t_new_block->f_data_nbytes ];
+        unsigned t_total_size = a_prefix_size + a_data_size + a_postfix_size;
+
+        t_new_block->f_memblock_nbytes = t_total_size * t_data_type_size;
+        t_new_block->f_memblock_bytes = new byte_type [ t_total_size ];
+
+        t_new_block->f_prefix_nbytes = a_prefix_size * t_data_type_size;
+        t_new_block->f_prefix_bytes = f_memblock_bytes;
+
+        t_new_block->set_data_size( a_data_size );
+        t_new_block->f_data_nbytes = a_data_size * t_data_type_size;
+        t_new_block->f_data_bytes = f_prefix_bytes + f_prefix_nbytes;
+
+        t_new_block->f_postfix_nbytes = a_postfix_size * t_data_type_size;
+        t_new_block->f_postfix_bytes = f_data_bytes + f_data_nbytes;
+
         return t_new_block;
     }
 
@@ -118,7 +159,7 @@ namespace mantis
         public:
             block_cleanup() {}
             virtual ~block_cleanup() {}
-            virtual bool delete_data() = 0;
+            virtual bool delete_memblock() = 0;
     };
 
 

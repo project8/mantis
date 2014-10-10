@@ -400,17 +400,17 @@ namespace mantis
     // Block Cleanup -- Test16 Digitizer
     //**********************************
 
-    block_cleanup_test16::block_cleanup_test16( byte_type* a_data ) :
+    block_cleanup_test16::block_cleanup_test16( byte_type* a_memblock ) :
             block_cleanup(),
             f_triggered( false ),
-            f_data( a_data )
+            f_memblock( a_memblock )
     {}
     block_cleanup_test16::~block_cleanup_test16()
     {}
-    bool block_cleanup_test16::delete_data()
+    bool block_cleanup_test16::delete_memblock()
     {
         if( f_triggered ) return true;
-        delete [] f_data;
+        delete [] f_memblock;
         f_triggered = true;
         return true;
     }
