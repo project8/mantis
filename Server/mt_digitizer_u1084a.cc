@@ -150,6 +150,11 @@ namespace mantis
         t_result = AcqrsD1_configMode( f_handle, 0, 0, 10); // 10 -> SAR
         PrintU1084AError( f_handle, t_result, "Config as SAR:");
 
+        MTDEBUG( mtlog, "configuring memory" );
+        ViInt32 t_number_segments = 1;
+        ViInt32 t_number_banks = 2;
+        t_result = AcqrsD1_configMemoryEx( f_handle, 0, f_buffer->record_size(), t_number_segments, t_number_banks, 0);
+        PrintU1084AError( f_handle, t_result, "Config memory:" );
         // TODO!!!!!!!!
         // There should be some smart buffer things happening here
         // I just want to digitize, so I'm going to require 1 record digitization and not do circular buffer stuff yet.
@@ -240,14 +245,12 @@ namespace mantis
 
         //also config memory
         // it would be ideal if number_samples came from the record size and number_segments from duration... SAR isn't working that well yet though.
-        MTDEBUG( mtlog, "configuring memory" );
-        //f_number_samples = int(a_request->duration() * 1.e-3 / t_sample_interval);
-        //f_number_samples = 8024;
+        /*MTDEBUG( mtlog, "configuring memory" );
         ViInt32 t_number_segments = 1;
         ViInt32 t_number_banks = 2;
         t_result = AcqrsD1_configMemoryEx( f_handle, 0, f_buffer->record_size(), t_number_segments, t_number_banks, 0);
         PrintU1084AError( f_handle, t_result, "Config memory:" );
-
+*/
         //config vertical settings, do we want to expose a user interface?
         MTDEBUG( mtlog, "configuring vertical" );
         ViReal64 t_full_scale = 1.0; // volts
@@ -328,7 +331,7 @@ namespace mantis
         MTDEBUG( mtlog, "wait for acquisition" );
         ViInt32 t_timeout = 10000; // ms
         t_result = AcqrsD1_waitForEndOfAcquisition( f_handle, t_timeout );
-        if (t_result != VI_SUCCESS)
+        if (t_result != VI_SUCCESS) // failed to acquire, probably didn't trigger
         {
             MTWARN( mtlog, "acquisition may not have auto-triggered, forcing" );
             t_result = AcqrsD1_forceTrigEx( f_handle, 1, 0, 0 ); // SAR requires type 1
@@ -360,27 +363,6 @@ namespace mantis
         MTDEBUG( mtlog, "then read data; for now just read the first block" );
         //t_result = AcqrsD1_readData( f_handle, 1, &readPar, adcArrayP, &dataDesc, &segDesc);
         t_result = AcqrsD1_readData( f_handle, 1, &readPar, reinterpret_cast< ViInt8* > (t_it.object()->memblock_bytes()), &dataDesc, &segDesc);
-
-       /* MTDEBUG( mtlog, "read record" );
-        AqReadParameters readPar;
-        readPar.dataType = ReadInt8; //8bit, raw ADC values data type
-        readPar.readMode = ReadModeStdW; // Single-segment read mode
-        readPar.firstSegment = 0;
-        readPar.nbrSegments = 1;
-        readPar.firstSampleInSeg = 0;
-        readPar.nbrSamplesInSeg = f_number_samples;
-        readPar.segmentOffset = 0;
-        readPar.dataArraySize = (f_number_samples + 32) * sizeof(ViInt8); // Array size in bytes
-        readPar.segDescArraySize = sizeof(AqSegmentDescriptor);
-        readPar.flags = 0;
-        readPar.reserved = 0;
-        readPar.reserved2 = 0;
-        readPar.reserved3 = 0;
-        AqDataDescriptor dataDesc;
-        AqSegmentDescriptor segDesc;
-        MTDEBUG( mtlog, __LINE__);
-        t_result = AcqrsD1_readData( f_handle, 1, &readPar, reinterpret_cast< ViInt8* > (f_block->data_bytes()), &dataDesc, &segDesc);
-        */
         PrintU1084AError( f_handle, t_result, "read data:");
 
         MTDEBUG( mtlog, __LINE__);
