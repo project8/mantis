@@ -242,6 +242,7 @@ namespace mantis
         ViReal64 t_sample_interval = 1. / (t_clock_rate * 1.e6);//seconds
         t_result = AcqrsD1_configHorizontal( f_handle, t_sample_interval, 0.0 );
         PrintU1084AError( f_handle, t_result, "Config timebase:");
+        MTDEBUG( mtlog, "interval: "<<t_sample_interval );
 
         //also config memory
         // it would be ideal if number_samples came from the record size and number_segments from duration... SAR isn't working that well yet though.
@@ -272,7 +273,6 @@ namespace mantis
         t_result = AcqrsD1_configTrigSource( f_handle, 1, t_trigger_coupling, t_trigger_slope, t_trigger_level, 0.0 );
         PrintU1084AError( f_handle, t_result, "trig conditions:");
 
-        /*
         //MTINFO( mtlog, "resetting counters..." );
 
         f_record_last = (record_id_type) (ceil( (double) (a_request->rate() * a_request->duration() * 1.e3) / (double) (f_buffer->record_size()) ));
@@ -281,6 +281,7 @@ namespace mantis
         f_live_time = 0;
         f_dead_time = 0;
 
+        /*
         //MTINFO( mtlog, "setting run mode..." );
 
         if( a_request->mode() == request_mode_t_single )
@@ -325,53 +326,6 @@ namespace mantis
         timespec t_dead_stop_time;
         timespec t_stamp_time;
 
-/* acquire and wait/force trigger goes in acquire()
-        MTDEBUG( mtlog, "acquire" );
-        t_result = AcqrsD1_acquire( f_handle );
-        PrintU1084AError( f_handle, t_result, "acquisition failure:" );
-
-        MTDEBUG( mtlog, "wait for acquisition" );
-        ViInt32 t_timeout = 10000; // ms
-        t_result = AcqrsD1_waitForEndOfAcquisition( f_handle, t_timeout );
-        if (t_result != VI_SUCCESS) // failed to acquire, probably didn't trigger
-        {
-            MTWARN( mtlog, "acquisition may not have auto-triggered, forcing" );
-            t_result = AcqrsD1_forceTrigEx( f_handle, 1, 0, 0 ); // SAR requires type 1
-            PrintU1084AError( f_handle, t_result, "force trig:");
-            t_result = AcqrsD1_waitForEndOfAcquisition( f_handle, t_timeout );
-            PrintU1084AError( f_handle, t_result, "wait for acq:");
-        }
-
-
-        AqReadParameters readPar;
-        readPar.dataType = ReadInt8; //8bit, raw ADC values data type
-        readPar.readMode = ReadModeStdW; // Single-segment read mode
-        readPar.firstSegment = 0;
-        readPar.nbrSegments = 1;
-        readPar.firstSampleInSeg = 0;
-        readPar.nbrSamplesInSeg = f_buffer->record_size();
-        readPar.segmentOffset = 0;
-        readPar.dataArraySize = (readPar.nbrSamplesInSeg + f_postfix_size) * sizeof(ViInt8); //Array size in bytes
-        readPar.segDescArraySize = sizeof(AqSegmentDescriptor);
-        readPar.flags = 0;
-        readPar.reserved = 0;
-        readPar.reserved2 = 0;
-        readPar.reserved3 = 0;
-        AqDataDescriptor dataDesc;
-        AqSegmentDescriptor segDesc;
-        //ViInt8 *adcArrayP = new ViInt8[readPar.dataArraySize];
-
-        MTDEBUG( mtlog, "then read data; for now just read the first block" );
-        //t_result = AcqrsD1_readData( f_handle, 1, &readPar, adcArrayP, &dataDesc, &segDesc);
-        t_result = AcqrsD1_readData( f_handle, 1, &readPar, reinterpret_cast< ViInt8* > (t_it.object()->memblock_bytes()), &dataDesc, &segDesc);
-        PrintU1084AError( f_handle, t_result, "read data:");
-
-        MTDEBUG( mtlog, "free bank" );
-        t_result = AcqrsD1_freeBank( f_handle, 0 );
-        PrintU1084AError( f_handle, t_result, "free bank:");
-
-*/
-
         //MTINFO( mtlog, "waiting" );
         MTDEBUG( mtlog, "")
         f_condition->wait();
@@ -391,20 +345,27 @@ namespace mantis
 
         //go go go go
         while( true )
-        {
+        {   
+            MTDEBUG( mtlog, "got into loop" );
+            MTDEBUG( mtlog, "this:last("<<f_record_count<<":"<<f_record_last<<")" );
             //check if we've written enough
             if( f_record_count == f_record_last || f_canceled.load() )
             {
+                MTDEBUG( mtlog, "" );
                 //mark the block as written
                 t_it->set_written();
+                MTDEBUG( mtlog, "" );
 
                 //get the time and update the number of live nanoseconds
                 get_time_monotonic( &t_live_stop_time );		
+                MTDEBUG( mtlog, "" );
 
                 f_live_time += time_to_nsec( t_live_stop_time ) - time_to_nsec( t_live_start_time );
+                MTDEBUG( mtlog, "" );
 
                 //halt the pci acquisition
                 stop();
+                MTDEBUG( mtlog, "" );
 
                 //GET OUT
                 if( f_canceled.load() )
@@ -416,11 +377,15 @@ namespace mantis
                 {
                     MTINFO( mtlog, "finished normally" );
                 }
+                MTDEBUG( mtlog, "" );
                 return;
             }
+            //////////////////////
+            MTDEBUG( mtlog, "" );
 
             t_it->set_acquiring();
 
+            MTDEBUG( mtlog, "about to acquire" );
             if( acquire( t_it.object(), t_stamp_time ) == false )
             {
                 //mark the block as written
@@ -436,6 +401,7 @@ namespace mantis
                 MTINFO( mtlog, "finished abnormally because acquisition failed" );
                 return;
             }
+            MTDEBUG( mtlog, "" );
 
             t_it->set_acquired();
 
@@ -505,14 +471,12 @@ namespace mantis
 
         //MTINFO( mtlog, "calculating statistics..." );
 
-        /*
         a_response->set_digitizer_records( f_record_count );
         a_response->set_digitizer_acquisitions( f_acquisition_count );
         a_response->set_digitizer_live_time( (double) f_live_time * SEC_PER_NSEC );
         a_response->set_digitizer_dead_time( (double) f_dead_time * SEC_PER_NSEC );
         a_response->set_digitizer_megabytes( (double) (4 * f_record_count) );
         a_response->set_digitizer_rate( a_response->digitizer_megabytes() / a_response->digitizer_live_time() );
-        */
 
         return;
     }
