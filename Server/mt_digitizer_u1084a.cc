@@ -327,7 +327,6 @@ namespace mantis
         timespec t_stamp_time;
 
         //MTINFO( mtlog, "waiting" );
-        MTDEBUG( mtlog, "")
         f_condition->wait();
 
         MTINFO( mtlog, "loose at <" << t_it.index() << ">" );
@@ -351,21 +350,16 @@ namespace mantis
             //check if we've written enough
             if( f_record_count == f_record_last || f_canceled.load() )
             {
-                MTDEBUG( mtlog, "" );
                 //mark the block as written
                 t_it->set_written();
-                MTDEBUG( mtlog, "" );
 
                 //get the time and update the number of live nanoseconds
                 get_time_monotonic( &t_live_stop_time );		
-                MTDEBUG( mtlog, "" );
 
                 f_live_time += time_to_nsec( t_live_stop_time ) - time_to_nsec( t_live_start_time );
-                MTDEBUG( mtlog, "" );
 
                 //halt the pci acquisition
                 stop();
-                MTDEBUG( mtlog, "" );
 
                 //GET OUT
                 if( f_canceled.load() )
@@ -377,11 +371,8 @@ namespace mantis
                 {
                     MTINFO( mtlog, "finished normally" );
                 }
-                MTDEBUG( mtlog, "" );
                 return;
             }
-            //////////////////////
-            MTDEBUG( mtlog, "" );
 
             t_it->set_acquiring();
 
@@ -401,7 +392,6 @@ namespace mantis
                 MTINFO( mtlog, "finished abnormally because acquisition failed" );
                 return;
             }
-            MTDEBUG( mtlog, "" );
 
             t_it->set_acquired();
 
