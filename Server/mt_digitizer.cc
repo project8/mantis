@@ -3,6 +3,7 @@
 #include "mt_buffer.hh"
 #include "mt_condition.hh"
 #include "mt_logger.hh"
+#include "mt_thread.hh"
 
 namespace mantis
 {
