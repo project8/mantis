@@ -53,6 +53,18 @@ if( Mantis_BUILD_SERVER )
         )
     endif( Mantis_INCLUDE_PX14400_SERVER )
 
+    if( Mantis_INCLUDE_U1084A_SERVER )
+        set( MANTIS_SERVER_HEADERFILES
+            ${MANTIS_SERVER_HEADERFILES}
+            mt_digitizer_u1084a.hh
+        )
+        
+        set( MANTIS_SERVER_SOURCEFILES
+            ${MANTIS_SERVER_SOURCEFILES}
+            mt_digitizer_u1084a.cc
+        )
+    endif( Mantis_INCLUDE_U1084A_SERVER )
+
     add_library( MantisServer ${MANTIS_SERVER_SOURCEFILES} )
     target_link_libraries( MantisServer MantisClient MantisProto ${EXTERNAL_LIBRARIES} )
     

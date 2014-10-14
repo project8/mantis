@@ -72,12 +72,12 @@ namespace mantis
     class block_cleanup_px1500 : public block_cleanup
     {
         public:
-            block_cleanup_px1500( byte_type* a_data, HPX4* a_dig_ptr );
+            block_cleanup_px1500( byte_type* a_memblock, HPX4* a_dig_ptr );
             virtual ~block_cleanup_px1500();
-            virtual bool delete_data();
+            virtual bool delete_memblock();
         private:
             bool f_triggered;
-            byte_type* f_data;
+            byte_type* f_memblock;
             HPX4* f_dig_ptr;
     };
 
