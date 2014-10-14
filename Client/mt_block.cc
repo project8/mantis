@@ -4,8 +4,14 @@ namespace mantis
 {
     block::block() :
             f_header(),
+            f_memblock_bytes( NULL ),
+            f_memblock_nbytes( 0 ),
+            f_prefix_bytes( NULL ),
+            f_prefix_nbytes( 0 ),
             f_data_bytes( NULL ),
             f_data_nbytes( 0 ),
+            f_postfix_bytes( NULL ),
+            f_postfix_nbytes( 0 ),
             f_cleanup( NULL )
     {
         f_header.set_state( block_header_state_t_unused );
@@ -17,7 +23,7 @@ namespace mantis
 
     block::~block()
     {
-        if( f_cleanup != NULL ) f_cleanup->delete_data();
+        if( f_cleanup != NULL ) f_cleanup->delete_memblock();
         delete f_cleanup;
     }
 
@@ -141,6 +147,48 @@ namespace mantis
         return &f_header;
     }
 
+    byte_type* block::memblock_bytes()
+    {
+        return f_memblock_bytes;
+    }
+
+    const byte_type* block::memblock_bytes() const
+    {
+        return f_memblock_bytes;
+    }
+
+    size_t block::get_memblock_nbytes() const
+    {
+        return f_memblock_nbytes;
+    }
+
+    void block::set_memblock_nbytes( size_t a_nbytes )
+    {
+        f_memblock_nbytes = a_nbytes;
+        return;
+    }
+
+    byte_type* block::prefix_bytes()
+    {
+        return f_prefix_bytes;
+    }
+
+    const byte_type* block::prefix_bytes() const
+    {
+        return f_prefix_bytes;
+    }
+
+    size_t block::get_prefix_nbytes() const
+    {
+        return f_prefix_nbytes;
+    }
+
+    void block::set_prefix_nbytes( size_t a_nbytes )
+    {
+        f_prefix_nbytes = a_nbytes;
+        return;
+    }
+
     byte_type* block::data_bytes()
     {
         return f_data_bytes;
@@ -162,9 +210,30 @@ namespace mantis
         return;
     }
 
+    byte_type* block::postfix_bytes()
+    {
+        return f_postfix_bytes;
+    }
+
+    const byte_type* block::postfix_bytes() const
+    {
+        return f_postfix_bytes;
+    }
+
+    size_t block::get_postfix_nbytes() const
+    {
+        return f_postfix_nbytes;
+    }
+
+    void block::set_postfix_nbytes( size_t a_nbytes )
+    {
+        f_postfix_nbytes = a_nbytes;
+        return;
+    }
+
     byte_type** block::handle()
     {
-        return &f_data_bytes;
+        return &f_memblock_bytes;
     }
 
     void block::set_cleanup( block_cleanup* a_cleanup )
