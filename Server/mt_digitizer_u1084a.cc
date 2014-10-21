@@ -264,7 +264,14 @@ namespace mantis
 
         //config trigger
         MTDEBUG( mtlog, "configuring trigger" );
-        t_result = AcqrsD1_configTrigClass( f_handle, 0, 0x00000001, 0, 0, 0.0, 0.0);
+        //note that the 3rd argument is the channel:
+        //0x00000001 for CH1
+        //0x00000002 for CH2
+        //0x00000004 for CH3
+        //0x00000008 for CH4 etc
+        //0x80000000 for External 1
+        //0x40000000 for External 2
+        t_result = AcqrsD1_configTrigClass( f_handle, 0, 0x80000000, 0, 0, 0.0, 0.0);
         PrintU1084AError( f_handle, t_result, "trig type:");
 
         ViInt32 t_trigger_coupling = 0; // 0 for DC
