@@ -361,7 +361,7 @@ namespace mantis
                 t_it->set_written();
 
                 //get the time and update the number of live nanoseconds
-                get_time_monotonic( &t_live_stop_time );		
+                get_time_monotonic( &t_live_stop_time );
 
                 f_live_time += time_to_nsec( t_live_stop_time ) - time_to_nsec( t_live_start_time );
 
@@ -534,6 +534,10 @@ namespace mantis
         //t_result = AcqrsD1_readData( f_handle, 1, &readPar, adcArrayP, &dataDesc, &segDesc);
         t_result = AcqrsD1_readData( f_handle, 1, &readPar, reinterpret_cast< ViInt8* > (a_block->memblock_bytes()), &dataDesc, &segDesc);
         PrintU1084AError( f_handle, t_result, "read data:");
+        if( t_result != VI_SUCCESS )
+        {
+            return false;
+        }
 
         MTDEBUG( mtlog, "free bank" );
         t_result = AcqrsD1_freeBank( f_handle, 0 );
