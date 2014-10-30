@@ -57,6 +57,7 @@ if( Mantis_BUILD_SERVER )
         set( MANTIS_SERVER_HEADERFILES
             ${MANTIS_SERVER_HEADERFILES}
             mt_digitizer_roach.hh
+        )
 
         set( MANTIS_SERVER_SOURCEFILES
             ${MANTIS_SERVER_SOURCEFILES}
@@ -68,7 +69,6 @@ if( Mantis_BUILD_SERVER )
         set( MANTIS_SERVER_HEADERFILES
             ${MANTIS_SERVER_HEADERFILES}
             mt_digitizer_u1084a.hh
-
         )
         
         set( MANTIS_SERVER_SOURCEFILES
