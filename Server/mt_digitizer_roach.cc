@@ -1,10 +1,10 @@
 /////////////////////////////////////////////////
 // Program to make egg files from roach1 board //
 // Original Author: N.S.Oblath                 //
-//		            nsoblath@mit.edu           //
+//		    nsoblath@mit.edu           //
 // Modified by:     Prajwal Mohanmurthy        //
 //                  prajwal@mohanmurthy.com    //
-//		            MIT LNS                    //
+//		    MIT LNS                    //
 //                  03/ 2014                   //
 /////////////////////////////////////////////////
 #include "mt_digitizer_roach.hh"
@@ -15,8 +15,6 @@
 #include "mt_factory.hh"
 #include "mt_iterator.hh"
 #include "mt_logger.hh"
-
-#include "response.pb.h"
 
 #include <cmath> // for ceil()
 #include <cstdlib> // for exit()
@@ -63,7 +61,8 @@ namespace mantis
             f_live_time( 0 ),
             f_dead_time( 0 ),
             f_canceled( false ),
-            f_cancel_condition()
+            f_cancel_condition(),
+            fAcquireMode( request_mode_t_dual_interleaved )
     {
         get_calib_params( 8, s_data_type_size, -5.0, 10.0, &f_params );
 
@@ -408,7 +407,12 @@ namespace mantis
     bool digitizer_roach::initialize( request* a_request )
     {
         //MTINFO( mtlog, "resetting counters..." );
-
+        
+        if(a_request->mode() != request_mode_t_dual_interleaved)
+        {
+            fAcquireMode = a_request->mode(); //default to 'request_mode_t_dual_interleaved'
+        }
+        
         f_record_last = (record_id_type) (ceil( (double) (a_request->rate() * a_request->duration() * 1.e3) / (double) (f_buffer->record_size()) ));
         f_record_count = 0;
         f_acquisition_count = 0;
@@ -427,22 +431,22 @@ namespace mantis
 
         if( borph_write( f_reg_name_ctrl, 0, 00  ) < 0 )
         {
-            MTERROR( mtlog, "Unable to write to register - 'snap64_ctrl'" );
+            MTERROR( mtlog, "Unable to write to register - 'snap64_ctrl-00'" );
             return false;
         }
         else
         {
-            MTINFO(mtlog,"Wrote - 'snap64_ctrl'");
+            MTINFO(mtlog,"Wrote - 'snap64_ctrl-00'");
         }
 
         if( borph_write( f_reg_name_ctrl, 0, 0111 ) < 0 )
         {
-            MTERROR( mtlog,"Unable to write to register - 'snap64_ctrl'" );
+            MTERROR( mtlog,"Unable to write to register - 'snap64_ctrl-0111'" );
             return false;
         }
         else
         {
-            MTINFO(mtlog,"Wrote - 'snap64_ctrl'");
+            MTINFO(mtlog,"Wrote - 'snap64_ctrl-0111'");
         }
 
         return true;
@@ -648,12 +652,30 @@ namespace mantis
         //    MTINFO(mtlog,"Read - 'snap64_bram_lsb'");
         //}
 
+        //std::cout<<sizeof(f_datax0[100])<<"\n";
+        
         // merge datax and datax1 into datay
-        for( unsigned rm_index = 0; rm_index < f_rm_half_record_size; rm_index += 2 )
+        if(fAcquireMode == request_mode_t_dual_interleaved)
         {
-            a_block->data_bytes()[ rm_index*2     ] = f_datax0[ rm_index ];
-            a_block->data_bytes()[ rm_index*2 + 1 ] = f_datax1[ rm_index ];
+           for( unsigned rm_index = 0; rm_index < f_rm_half_record_size; rm_index++ )
+           {
+               a_block->data_bytes()[ rm_index*2     ] = f_datax0[ rm_index ];
+               a_block->data_bytes()[ rm_index*2 + 1 ] = f_datax1[ rm_index ];
+           }
         }
+        else if(fAcquireMode == request_mode_t_dual_separate)
+        {
+            for( unsigned rm_index = 0; rm_index < f_rm_half_record_size; rm_index++ )
+            {
+               a_block->data_bytes()[ rm_index ] = f_datax0[ rm_index ];
+            }
+            for( unsigned rm_index = f_rm_half_record_size; rm_index < 2*f_rm_half_record_size; rm_index ++ )
+            {
+               a_block->data_bytes()[ rm_index ] = f_datax1[ rm_index - f_rm_half_record_size ];
+            }
+             
+        }
+        
         //End:Katcp
 
         a_block->set_record_id( f_record_count );
