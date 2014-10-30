@@ -29,7 +29,6 @@ namespace mantis
     MTLOGGER( mtlog, "digitizer_roach" );
 
     MT_REGISTER_DIGITIZER( digitizer_roach, "roach" );
-    MT_REGISTER_TEST_DIGITIZER( test_digitizer_roach, "roach" );
 
 
     const unsigned digitizer_roach::s_data_type_size = sizeof( digitizer_roach::data_type );
@@ -716,17 +715,17 @@ namespace mantis
     // Block Cleanup -- Test Digitizer
     //********************************
 
-    block_cleanup_roach::block_cleanup_roach( digitizer_roach::data_type* a_data ) :
+    block_cleanup_roach::block_cleanup_roach( digitizer_roach::data_type* a_memblock ) :
             block_cleanup(),
             f_triggered( false ),
-            f_data( a_data )
+            f_memblock( a_memblock )
     {}
     block_cleanup_roach::~block_cleanup_roach()
     {}
-    bool block_cleanup_roach::delete_data()
+    bool block_cleanup_roach::delete_memblock()
     {
         if( f_triggered ) return true;
-        delete [] f_data;
+        delete [] f_memblock;
         f_triggered = true;
         return true;
     }

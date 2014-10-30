@@ -71,6 +71,13 @@ namespace mantis
             // thread-safe setter
             void set_canceled( bool a_flag );
 
+        public:
+            bool run_basic_test()
+            {
+                // TODO: implement basic test
+                return true;
+            }
+
         private:
             static const unsigned s_data_type_size;
             
@@ -126,25 +133,12 @@ namespace mantis
     class block_cleanup_roach : public block_cleanup
     {
         public:
-            block_cleanup_roach( digitizer_roach::data_type* a_data );
+            block_cleanup_roach( digitizer_roach::data_type* a_memblock );
             virtual ~block_cleanup_roach();
-            virtual bool delete_data();
+            virtual bool delete_memblock();
         private:
             bool f_triggered;
-            digitizer_roach::data_type* f_data;
-    };
-
-
-    class test_digitizer_roach : public test_digitizer
-    {
-        public:
-            test_digitizer_roach() {}
-            virtual ~test_digitizer_roach() {}
-
-            bool run_test()
-            {
-                return true;
-            }
+            digitizer_roach::data_type* f_memblock;
     };
 
 }
