@@ -22,7 +22,6 @@ namespace mantis
     MTLOGGER( mtlog, "digitizer_test16" );
 
     MT_REGISTER_DIGITIZER( digitizer_test16, "test16" );
-    MT_REGISTER_TEST_DIGITIZER( test_digitizer_test16, "test16" );
 
     const unsigned digitizer_test16::s_data_type_size = 14; //sizeof( digitizer_test16::data_type );
     unsigned digitizer_test16::data_type_size_test()
@@ -390,22 +389,28 @@ namespace mantis
         return;
     }
 
+    bool digitizer_test16::run_basic_test()
+    {
+        MTWARN( mtlog, "Basic test for digitizer_test16 has not been implemented" );
+        return false;
+    }
+
 
     //**********************************
     // Block Cleanup -- Test16 Digitizer
     //**********************************
 
-    block_cleanup_test16::block_cleanup_test16( byte_type* a_data ) :
+    block_cleanup_test16::block_cleanup_test16( byte_type* a_memblock ) :
             block_cleanup(),
             f_triggered( false ),
-            f_data( a_data )
+            f_memblock( a_memblock )
     {}
     block_cleanup_test16::~block_cleanup_test16()
     {}
-    bool block_cleanup_test16::delete_data()
+    bool block_cleanup_test16::delete_memblock()
     {
         if( f_triggered ) return true;
-        delete [] f_data;
+        delete [] f_memblock;
         f_triggered = true;
         return true;
     }

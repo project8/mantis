@@ -7,10 +7,11 @@ cmake_minimum_required( VERSION 2.8 )
 project( Mantis )
 cmake_policy (SET CMP0011 NEW)
 
-list( APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR} )
+list( APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/Scarab/cmake )
 
-include( PackageBuilder.cmake )
-pbuilder_prepare_project( 2 6 4 )
+include( GetVersion )
+include( PackageBuilder )
+pbuilder_prepare_project( ${PROJECT_VERSION_MAJOR} ${PROJECT_VERSION_MINOR} ${PROJECT_REVISION} )
 include_directories( BEFORE 
 
     ${PROJECT_SOURCE_DIR}/Client
@@ -27,6 +28,7 @@ set( Mantis_BUILD_SERVER FALSE CACHE BOOL "Flag to enable building of the server
 set( Mantis_INCLUDE_PX1500_SERVER TRUE CACHE BOOL "Flag to include the px1500 server; ignored unless the build-server flag is enabled" )
 set( Mantis_INCLUDE_PX14400_SERVER FALSE CACHE BOOL "Flag to include the px14400 server; ignored unless the build-server flag is enabled" )
 set( Mantis_INCLUDE_ROACH_SERVER FALSE CACHE BOOL "Flag to include the roach server; ignored unless the build-server flag is enabled" )
+set( Mantis_INCLUDE_U1084A_SERVER TRUE CACHE BOOL "Flag to include the u1084a server; ignored unless the build-server flag is enabled" )
 
 # add an option to perform iterator time profiling
 set( Mantis_ENABLE_ITERATOR_TIMING FALSE CACHE BOOL "Flag to enable iterator time profiling" )
@@ -135,6 +137,23 @@ if( Mantis_BUILD_SERVER )
         endif( "${isSystemDir}" STREQUAL "-1" )
         include_directories( ${PROJECT_SOURCE_DIR}/katcp_devel/katcp )
     endif( Mantis_INCLUDE_ROACH_SERVER )
+
+    if( Mantis_INCLUDE_U1084A_SERVER )
+        find_path( U1084A_INCLUDE_DIR AgMD1Fundamental.h PATHS ${U1084A_PREFIX} )
+        if( NOT U1084A_INCLUDE_DIR )
+            message( FATAL_ERROR "Did not find u1084a header (AgMD1Fundamental.h); set U1084A_PREFIX to suggest a path" )
+        endif( NOT U1084A_INCLUDE_DIR )
+        include_directories( ${U1084A_INCLUDE_DIR} )
+        link_directories( ${U1084A_PREFIX} )
+            
+        find_library( U1084A_LIBRARIES AgMD1 PATHS ${U1084A_PREFIX} )
+        if( NOT U1084A_LIBRARIES )
+            message( FATAL_ERROR "Did not find u1084a library; set U1084A_PREFIX to suggest a path" )
+        endif( NOT U1084A_LIBRARIES )
+        message( STATUS "Found u1084a library: ${U1084A_LIBRARIES}" )
+        pbuilder_add_ext_libraries( ${U1084A_LIBRARIES} )
+        message( STATUS "Will include the U1084A server" )
+    endif (Mantis_INCLUDE_U1084A_SERVER )
 else( Mantis_BUILD_SERVER )
     message( STATUS "Will perform a client-only build")
 endif( Mantis_BUILD_SERVER )

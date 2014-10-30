@@ -47,6 +47,9 @@ namespace mantis
             // thread-safe setter
             void set_canceled( bool a_flag );
 
+        public:
+            bool run_basic_test();
+
         private:
             static const unsigned s_data_type_size;
 
@@ -70,6 +73,7 @@ namespace mantis
             atomic_bool f_canceled;
             condition f_cancel_condition;
 
+            bool allocate();
             bool start();
             bool acquire( block* a_block, timespec& a_time_stamp );
             bool stop();
@@ -79,25 +83,12 @@ namespace mantis
     class block_cleanup_test : public block_cleanup
     {
         public:
-            block_cleanup_test( byte_type* a_data );
+            block_cleanup_test( byte_type* a_memblock );
             virtual ~block_cleanup_test();
-            virtual bool delete_data();
+            virtual bool delete_memblock();
         private:
             bool f_triggered;
-            byte_type* f_data;
-    };
-
-
-    class test_digitizer_test : public test_digitizer
-    {
-        public:
-            test_digitizer_test() {}
-            virtual ~test_digitizer_test() {}
-
-            bool run_test()
-            {
-                return true;
-            }
+            byte_type* f_memblock;
     };
 
 }

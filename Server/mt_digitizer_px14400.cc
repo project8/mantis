@@ -434,17 +434,17 @@ namespace mantis
     // Block Cleanup px14400
     //***********************************
 
-    block_cleanup_px14400::block_cleanup_px14400( byte_type* a_data, HPX14* a_dig_ptr ) :
+    block_cleanup_px14400::block_cleanup_px14400( byte_type* a_memblock, HPX14* a_dig_ptr ) :
                 f_triggered( false ),
-                f_data( a_data ),
+                f_memblock( a_memblock ),
                 f_dig_ptr( a_dig_ptr )
     {}
     block_cleanup_px14400::~block_cleanup_px14400()
     {}
-    bool block_cleanup_px14400::delete_data()
+    bool block_cleanup_px14400::delete_memblock()
     {
         if( f_triggered ) return true;
-        int t_result = FreeDmaBufferPX14( *f_dig_ptr, reinterpret_cast< digitizer_px14400::data_type* >( f_data ) );
+        int t_result = FreeDmaBufferPX14( *f_dig_ptr, reinterpret_cast< digitizer_px14400::data_type* >( f_memblock ) );
         if( t_result != SIG_SUCCESS )
         {
             DumpLibErrorPX14( t_result, "failed to deallocate dma memory: " );
@@ -486,21 +486,21 @@ namespace mantis
 
         MTDEBUG( mtlog, "allocating dma buffer..." );
 
-        typed_block< digitizer_px14400::data_type >* t_block = NULL;
+        block* t_block = NULL;
         // for the px14400, there is no minimum record size listed
         unsigned t_rec_size = 16384;
 
         try
         {
-            t_block = new typed_block< digitizer_px14400::data_type >();
-            t_result = AllocateDmaBufferPX14( f_handle, t_rec_size, t_block->handle() );
+            t_block = new block();
+            t_result = AllocateDmaBufferPX14( f_handle, t_rec_size, (digitizer_px14400::data_type**)t_block->handle() );
             if( t_result != SIG_SUCCESS )
             {
                 DumpLibErrorPX14( t_result, "failed to allocate dma memory: " );
                 return false;
             }
             t_block->set_data_size( t_rec_size );
-            t_block->set_cleanup( new block_cleanup_px14400( t_block->data(), &f_handle ) );
+            t_block->set_data_nbytes( t_rec_size * px14400_data_type_size );
         }
         catch( exception& e )
         {
@@ -548,7 +548,7 @@ namespace mantis
 
         MTDEBUG( mtlog, "acquiring a record" );
 
-        t_result = GetPciAcquisitionDataFastPX14( f_handle, t_rec_size, t_block->data(), 0 );
+        t_result = GetPciAcquisitionDataFastPX14( f_handle, t_rec_size, (digitizer_px14400::data_type*)t_block->data_bytes(), 0 );
         if( t_result != SIG_SUCCESS )
         {
             DumpLibErrorPX14( t_result, "failed to acquire dma data over pci: " );
@@ -565,12 +565,13 @@ namespace mantis
             return false;
         }
 
+        block_view< digitizer_px14400::data_type > t_block_view;
         std::stringstream t_str_buff;
         for( unsigned i = 0; i < 99; ++i )
         {
-            t_str_buff << t_block->data()[ i ] << ", ";
+            t_str_buff << t_block_view.data_view()[ i ] << ", ";
         }
-        t_str_buff << t_block->data()[ 99 ];
+        t_str_buff << t_block_view.data_view()[ 99 ];
         MTDEBUG( mtlog, "the first 100 samples taken:\n" << t_str_buff.str() );
 
         MTINFO( mtlog, "run complete!\n" );

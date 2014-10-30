@@ -63,12 +63,12 @@ namespace mantis
     class block_cleanup_rr : public block_cleanup
     {
         public:
-            block_cleanup_rr( byte_type* a_data );
+            block_cleanup_rr( byte_type* a_memblock );
             virtual ~block_cleanup_rr();
-            virtual bool delete_data();
+            virtual bool delete_memblock();
         private:
             bool f_triggered;
-            byte_type* f_data;
+            byte_type* f_memblock;
     };
 
 
@@ -78,7 +78,7 @@ namespace mantis
         for( unsigned int index = 0; index < f_buffer->size(); index++ )
         {
             block* t_new_block = block::allocate_block< DataType >( f_buffer->record_size() );
-            t_new_block->set_cleanup( new block_cleanup_rr( t_new_block->data_bytes() ) );
+            t_new_block->set_cleanup( new block_cleanup_rr( t_new_block->memblock_bytes() ) );
             f_buffer->set_block( index, t_new_block );
         }
         return;
