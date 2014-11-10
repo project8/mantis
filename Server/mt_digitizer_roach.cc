@@ -271,7 +271,7 @@ namespace mantis
         /* populate a request */
         if( append_string_katcl( f_katcp_cmdline, KATCP_FLAG_FIRST, f_write_start ) < 0)
             return -1;
-        if( append_string_katcl( f_katcp_cmdline, 0, f_write_end ) < 0)
+        if( append_string_katcl( f_katcp_cmdline, 0, const_cast< char* >( a_regname.c_str() ) ) < 0)
             return -1;
         if( append_unsigned_long_katcl( f_katcp_cmdline, 0, 0) < 0)
             return -1;
