@@ -131,7 +131,7 @@ namespace mantis
         char *ptr, *match;
         int prefix;
 
-        f_katcp_fd = fileno_katcl( f_katcp_cmdline );
+        int cmd_fileno = fileno_katcl( f_katcp_cmdline );
 
         if( msgname )
         {
@@ -162,18 +162,18 @@ namespace mantis
 
             if( match )
             { /* only look for data if we need it */
-                FD_SET( f_katcp_fd, &fsr );
+                FD_SET( cmd_fileno, &fsr );
             }
 
             if( flushing_katcl( f_katcp_cmdline ) )
             { /* only write data if we have some */
-                FD_SET( f_katcp_fd, &fsw );
+                FD_SET( cmd_fileno, &fsw );
             }
 
             tv.tv_sec  = f_rm_timeout / 1000;
             tv.tv_usec = ( f_rm_timeout % 1000 ) * 1000;
 
-            result = select( f_katcp_fd + 1, &fsr, &fsw, NULL, &tv );
+            result = select( cmd_fileno + 1, &fsr, &fsw, NULL, &tv );
             switch(result)
             {
                 case -1 :
@@ -194,7 +194,7 @@ namespace mantis
                     return -1;
             }
 
-            if( FD_ISSET( f_katcp_fd, &fsw ) )
+            if( FD_ISSET( cmd_fileno, &fsw ) )
             {
                 result = write_katcl( f_katcp_cmdline );
                 if( result < 0 )
@@ -208,7 +208,7 @@ namespace mantis
                 }
             }
 
-            if( FD_ISSET( f_katcp_fd, &fsr ) )
+            if( FD_ISSET( cmd_fileno, &fsr ) )
             {
                 result = read_katcl( f_katcp_cmdline );
                 if( result )
@@ -218,7 +218,7 @@ namespace mantis
                 }
             }
 
-            while( have_katcl( f_katcp_cmdline ) > 0)
+            while( have_katcl( cmd_line ) > 0)
             {
                 ptr = arg_string_katcl( f_katcp_cmdline, 0 );
                 if( ptr )
