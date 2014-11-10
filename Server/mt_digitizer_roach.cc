@@ -659,7 +659,7 @@ namespace mantis
         //}
 
         // merge datax and datax1 into datay
-        for( unsigned rm_index = 0; rm_index < f_rm_half_record_size; rm_index += 2 )
+        for( unsigned rm_index = 0; rm_index < f_rm_half_record_size; ++rm_index )
         {
             a_block->data_bytes()[ rm_index*2     ] = f_datax0[ rm_index ];
             a_block->data_bytes()[ rm_index*2 + 1 ] = f_datax1[ rm_index ];
