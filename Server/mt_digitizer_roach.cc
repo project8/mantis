@@ -231,9 +231,9 @@ namespace mantis
                         case KATCP_INFORM :
                             break;
                         case KATCP_REPLY  :
-                            if(match)
+                            if( match )
                             {
-                                if(strncmp( match, ptr + 1, prefix ) ||
+                                if( strncmp( match, ptr + 1, prefix ) ||
                                         ( ( ptr[prefix + 1] != '\0' ) && ( ptr[prefix + 1] != ' ') ) )
                                 {
                                     MTERROR( mtlog, "dispatch: warning, encountered reply " << ptr << " not match " << match );
