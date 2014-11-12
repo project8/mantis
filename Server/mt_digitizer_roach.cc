@@ -132,17 +132,19 @@ namespace mantis
 
         f_katcp_fd = fileno_katcl( f_katcp_cmdline );
 
-        if(msgname)
+        if( msgname )
         {
-            switch(msgname[0])
+            switch( msgname[0] )
             {
-                case '!' :
-                case '?' : prefix = strlen(msgname + 1);
-                match = msgname + 1;
-                break;
-                default  : prefix = strlen(msgname);
-                match = msgname;
-                break;
+                case '!':
+                case '?':
+                    prefix = strlen(msgname + 1);
+                    match = msgname + 1;
+                    break;
+                default:
+                    prefix = strlen(msgname);
+                    match = msgname;
+                    break;
             }
         } 
         else
@@ -154,98 +156,107 @@ namespace mantis
         for(;;)
         {
 
-            FD_ZERO(&fsr);
-            FD_ZERO(&fsw);
+            FD_ZERO( &fsr );
+            FD_ZERO( &fsw );
 
-            if(match)
+            if( match )
             { /* only look for data if we need it */
-                FD_SET(f_katcp_fd, &fsr);
+                FD_SET( f_katcp_fd, &fsr );
             }
 
-            if(flushing_katcl(f_katcp_cmdline))
+            if( flushing_katcl( f_katcp_cmdline ) )
             { /* only write data if we have some */
-                FD_SET(f_katcp_fd, &fsw);
+                FD_SET( f_katcp_fd, &fsw );
             }
 
             tv.tv_sec  = f_rm_timeout / 1000;
-            tv.tv_usec = (f_rm_timeout % 1000) * 1000;
+            tv.tv_usec = ( f_rm_timeout % 1000 ) * 1000;
 
-            result = select(f_katcp_fd + 1, &fsr, &fsw, NULL, &tv);
+            result = select( f_katcp_fd + 1, &fsr, &fsw, NULL, &tv );
             switch(result)
             {
-                case -1 : switch(errno)
-                {
-                    case EAGAIN :
-                    case EINTR  : continue; /* WARNING */
-                    default     : return -1;
-                }
-                break;
-                    case  0 : if(verbose)
+                case -1 :
+                    switch (errno )
                     {
-                        MTERROR(mtlog,"dispatch: no io activity within "<<f_rm_timeout<<" ms");
+                        case EAGAIN :
+                        case EINTR  :
+                            continue; /* WARNING */
+                        default     :
+                            return -1;
+                    }
+                    break;
+                case  0 :
+                    if(verbose)
+                    {
+                        MTERROR( mtlog, "dispatch: no io activity within " << f_rm_timeout << " ms" );
                     }
                     return -1;
             }
 
-            if(FD_ISSET(f_katcp_fd, &fsw))
+            if( FD_ISSET( f_katcp_fd, &fsw ) )
             {
-                result = write_katcl(f_katcp_cmdline);
-                if(result < 0)
+                result = write_katcl( f_katcp_cmdline );
+                if( result < 0 )
                 {
-                    MTERROR(mtlog,"dispatch: write failed:"<<strerror(error_katcl(f_katcp_cmdline)));
+                    MTERROR( mtlog, "dispatch: write failed:" << strerror( error_katcl( f_katcp_cmdline ) ) );
                     return -1;
                 }
-                if((result > 0) && (match == NULL))
+                if( ( result > 0 ) && ( match == NULL ) )
                 { /* if we finished writing and don't expect a match then quit */
                     return 0;
                 }
             }
 
-            if(FD_ISSET(f_katcp_fd, &fsr))
+            if( FD_ISSET( f_katcp_fd, &fsr ) )
             {
-                result = read_katcl(f_katcp_cmdline);
-                if(result)
+                result = read_katcl( f_katcp_cmdline );
+                if( result )
                 {
-                    MTERROR(mtlog,"dispatch: read failed : "<<strerror(error_katcl(f_katcp_cmdline))<<" : connection terminated");
+                    MTERROR( mtlog, "dispatch: read failed : " << strerror( error_katcl( f_katcp_cmdline) ) << " : connection terminated" );
                     return -1;
                 }
             }
 
-            while(have_katcl(f_katcp_cmdline) > 0)
+            while( have_katcl( f_katcp_cmdline ) > 0)
             {
-                ptr = arg_string_katcl(f_katcp_cmdline, 0);
-                if(ptr)
+                ptr = arg_string_katcl( f_katcp_cmdline, 0 );
+                if( ptr )
                 {
 #ifdef DEBUG
-                    MTERROR(mtlog,"dispatch: got back "<<ptr);
+                    MTERROR( mtlog, "dispatch: got back " << ptr );
 #endif
-                    switch(ptr[0])
+                    switch( ptr[0] )
                     {
-                        case KATCP_INFORM : break;
-                        case KATCP_REPLY  : if(match)
-                        {
-                            if(strncmp(match, ptr + 1, prefix) || ((ptr[prefix + 1] != '\0') && (ptr[prefix + 1] != ' ')))
+                        case KATCP_INFORM :
+                            break;
+                        case KATCP_REPLY  :
+                            if( match )
                             {
-                                MTERROR(mtlog,"dispatch: warning, encountered reply "<<ptr<<" not match "<<match);
-                            }
-                            else
-                            {
-                                ptr = arg_string_katcl(f_katcp_cmdline, 1);
-                                if(ptr && !strcmp(ptr, KATCP_OK))
+                                if( strncmp( match, ptr + 1, prefix ) ||
+                                        ( ( ptr[prefix + 1] != '\0' ) && ( ptr[prefix + 1] != ' ') ) )
                                 {
-                                    return 0;
+                                    MTERROR( mtlog, "dispatch: warning, encountered reply " << ptr << " not match " << match );
                                 }
                                 else
                                 {
-                                    return -1;
+                                    ptr = arg_string_katcl( f_katcp_cmdline, 1 );
+                                    if( ptr && ! strcmp( ptr, KATCP_OK ) )
+                                    {
+                                        return 0;
+                                    }
+                                    else
+                                    {
+                                        return -1;
+                                    }
                                 }
                             }
-                        }
-                        break;
-                        case KATCP_REQUEST : MTERROR(mtlog,"dispatch: warning, encountered an unanswerable request "<<ptr);
-                        break;
-                        default : MTERROR(mtlog,"dispatch: read malformed message "<<ptr);
-                        break;
+                            break;
+                        case KATCP_REQUEST :
+                            MTERROR( mtlog, "dispatch: warning, encountered an unanswerable request " << ptr );
+                            break;
+                        default :
+                            MTERROR(mtlog,"dispatch: read malformed message "<<ptr);
+                            break;
                     }
                 }
             }
@@ -340,7 +351,7 @@ namespace mantis
         f_buffer = a_buffer;
         f_condition = a_condition;
 
-        if(f_buffer->record_size() > 65536*4*2)
+        if( f_buffer->record_size() > 65536*4*2 )
         {
             MTERROR( mtlog, "Record size must be <= 65536*4*2 = 524288" );
             return false;   
@@ -663,16 +674,17 @@ namespace mantis
            }
         }
         else if(fAcquireMode == request_mode_t_dual_separate)
-        {
-            for( unsigned rm_index = 0; rm_index < f_rm_half_record_size; rm_index++ )
+            for( unsigned rm_index = 0; rm_index < f_rm_half_record_size; ++rm_index )
             {
-               a_block->data_bytes()[ rm_index ] = f_datax0[ rm_index ];
+                for( unsigned rm_index = 0; rm_index < f_rm_half_record_size; rm_index++ )
+                {
+                   a_block->data_bytes()[ rm_index ] = f_datax0[ rm_index ];
+                }
+                for( unsigned rm_index = f_rm_half_record_size; rm_index < 2*f_rm_half_record_size; rm_index ++ )
+                {
+                   a_block->data_bytes()[ rm_index ] = f_datax1[ rm_index - f_rm_half_record_size ];
+                }
             }
-            for( unsigned rm_index = f_rm_half_record_size; rm_index < 2*f_rm_half_record_size; rm_index ++ )
-            {
-               a_block->data_bytes()[ rm_index ] = f_datax1[ rm_index - f_rm_half_record_size ];
-            }
-             
         }
         
         //End:Katcp
