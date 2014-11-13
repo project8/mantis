@@ -66,7 +66,7 @@ if( Mantis_BUILD_SERVER )
     endif( Mantis_INCLUDE_U1084A_SERVER )
 
     add_library( MantisServer ${MANTIS_SERVER_SOURCEFILES} )
-    target_link_libraries( MantisServer MantisClient MantisProto ${EXTERNAL_LIBRARIES} )
+    target_link_libraries( MantisServer MantisCommon MantisProto ${EXTERNAL_LIBRARIES} )
     
     pbuilder_install_headers( ${MANTIS_SERVER_HEADERFILES} )
     pbuilder_install_libraries( MantisServer )

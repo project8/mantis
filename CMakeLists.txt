@@ -13,20 +13,24 @@ include( GetVersion )
 include( PackageBuilder )
 pbuilder_prepare_project( ${PROJECT_VERSION_MAJOR} ${PROJECT_VERSION_MINOR} ${PROJECT_REVISION} )
 include_directories( BEFORE 
+    ${PROJECT_SOURCE_DIR}/Common
     ${PROJECT_SOURCE_DIR}/Client
     ${PROJECT_SOURCE_DIR}/Server
-    ${PROJECT_BINARY_DIR}/Client
+    ${PROJECT_BINARY_DIR}/Common
 )
 
 ##################
 # mantis options #
 ##################
 
-# Option for a non-px1500 build, which includes only the client application
+# Option to build the client library and executables
+set( Mantis_BUILD_CLIENT TRUE CACHE BOOL "Flag to enable building of the client library and applications" )
+
+# Option to build the server library and executables, and options to build different servers
 set( Mantis_BUILD_SERVER FALSE CACHE BOOL "Flag to enable building of the server library and applications" )
-set( Mantis_INCLUDE_PX1500_SERVER TRUE CACHE BOOL "Flag to include the px1500 server; ignored unless the build-server flag is enabled" )
+set( Mantis_INCLUDE_PX1500_SERVER FALSE CACHE BOOL "Flag to include the px1500 server; ignored unless the build-server flag is enabled" )
 set( Mantis_INCLUDE_PX14400_SERVER FALSE CACHE BOOL "Flag to include the px14400 server; ignored unless the build-server flag is enabled" )
-set( Mantis_INCLUDE_U1084A_SERVER TRUE CACHE BOOL "Flag to include the u1084a server; ignored unless the build-server flag is enabled" )
+set( Mantis_INCLUDE_U1084A_SERVER FALSE CACHE BOOL "Flag to include the u1084a server; ignored unless the build-server flag is enabled" )
 
 # add an option to perform iterator time profiling
 set( Mantis_ENABLE_ITERATOR_TIMING FALSE CACHE BOOL "Flag to enable iterator time profiling" )
@@ -182,6 +186,7 @@ pbuilder_add_ext_libraries( boost_atomic )
 # Build Mantis #
 ################
 
+add_subdirectory( Common )
 add_subdirectory( Client )
 add_subdirectory( Server )
 add_subdirectory( Applications )
