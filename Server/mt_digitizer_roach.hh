@@ -1,10 +1,10 @@
 /////////////////////////////////////////////////
 // Program to make egg files from roach1 board //
 // Original Author: N.S.Oblath                 //
-//		            nsoblath@mit.edu           //
+//		    nsoblath@mit.edu           //
 // Modified by:     Prajwal Mohanmurthy        //
 //                  prajwal@mohanmurthy.com    //
-//		            MIT LNS                    //
+//		    MIT LNS                    //
 /////////////////////////////////////////////////
 #ifndef MT_DIGITIZER_ROACH_HH_
 #define MT_DIGITIZER_ROACH_HH_
@@ -17,6 +17,9 @@
 #include "mt_mutex.hh"
 #include "request.pb.h"
 #include "mt_param.hh"
+
+#include "MonarchTypes.hpp"
+#include "response.pb.h"
 
 #include <stdint.h>
 
@@ -77,6 +80,8 @@ namespace mantis
 
         private:
             static const unsigned s_data_type_size;
+            
+            monarch::FormatModeType fAcquireMode;
 
             int dispatch_client( char *msgname, int verbose);
             int borph_write( const std::string& regname, int buffer, int len);
