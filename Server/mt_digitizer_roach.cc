@@ -351,9 +351,15 @@ namespace mantis
         f_buffer = a_buffer;
         f_condition = a_condition;
 
-        if( f_buffer->record_size() > 65536*4*2 )
+        /* note on the number of channels:
+        this should be the 65536*4*n_channels, once we are ready to do multiple channels
+        when copied to the buffer, the channels will be uninterleaved
+        btw, what's the 65536*4 limit from in the first place?
+        -- Noah, 11/12/14
+        */
+        if( f_buffer->record_size() > 65536*4 )
         {
-            MTERROR( mtlog, "Record size must be <= 65536*4*2 = 524288" );
+            MTERROR( mtlog, "Record size must be <= 65536*4 = 262144" );
             return false;   
         }
 
@@ -404,11 +410,7 @@ namespace mantis
             return false;
         }
 
-        MTINFO( mtlog, "allocating katcp memory..." );
-
         f_rm_half_record_size = f_buffer->record_size() / 2;
-        f_datax0 = new data_type [f_rm_half_record_size];
-        f_datax1 = new data_type [f_rm_half_record_size];
 
         f_allocated = true;
         return true;
@@ -641,52 +643,20 @@ namespace mantis
     bool digitizer_roach::acquire( block* a_block, timespec& a_stamp_time )
     {
         //Katcp
-        if( borph_read( f_reg_name_msb, f_datax0, f_rm_half_record_size ) < 0 )
+        if( borph_read( f_reg_name_msb, a_block->data_bytes(), f_rm_half_record_size ) < 0 )
         {
             MTERROR( mtlog,"Unable to read register 'snap64_bram_msb'" );
             return false;
         }
-        //else
-        //{
-        //    MTINFO(mtlog,"Read - 'snap64_bram_msb'");
-        //}
-        //printf("%d \n",(uint8_t)(f_datax0[1]));
-
-        if( borph_read( f_reg_name_lsb, f_datax1, f_rm_half_record_size ) < 0 )
+        
+/* ENABLE FOR SECOND CHANNEL
+        if( borph_read( f_reg_name_lsb, a_block->data_bytes() + f_rm_half_record_size, f_rm_half_record_size ) < 0 )
         {
             MTERROR( mtlog,"Unable to read register 'snap64_bram_lsb'" );
             return false;
         }   
-        //else
-        //{
-        //    MTINFO(mtlog,"Read - 'snap64_bram_lsb'");
-        //}
+*/
 
-        //std::cout<<sizeof(f_datax0[100])<<"\n";
-        
-        // merge datax and datax1 into datay
-        if(fAcquireMode == request_mode_t_dual_interleaved)
-        {
-           for( unsigned rm_index = 0; rm_index < f_rm_half_record_size; rm_index++ )
-           {
-               a_block->data_bytes()[ rm_index*2     ] = f_datax0[ rm_index ];
-               a_block->data_bytes()[ rm_index*2 + 1 ] = f_datax1[ rm_index ];
-           }
-        }
-        else if(fAcquireMode == request_mode_t_dual_separate)
-            for( unsigned rm_index = 0; rm_index < f_rm_half_record_size; ++rm_index )
-            {
-                for( unsigned rm_index = 0; rm_index < f_rm_half_record_size; rm_index++ )
-                {
-                   a_block->data_bytes()[ rm_index ] = f_datax0[ rm_index ];
-                }
-                for( unsigned rm_index = f_rm_half_record_size; rm_index < 2*f_rm_half_record_size; rm_index ++ )
-                {
-                   a_block->data_bytes()[ rm_index ] = f_datax1[ rm_index - f_rm_half_record_size ];
-                }
-            }
-        }
-        
         //End:Katcp
 
         a_block->set_record_id( f_record_count );
