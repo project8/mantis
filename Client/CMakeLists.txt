@@ -8,7 +8,6 @@ if( Mantis_BUILD_CLIENT )
         mt_client_config.hh
         mt_client_file_writing.hh
         mt_client_worker.hh
-        mt_client.hh
         mt_run_client.hh
     )
     
@@ -16,7 +15,6 @@ if( Mantis_BUILD_CLIENT )
         mt_client_config.cc
         mt_client_file_writing.cc
         mt_client_worker.cc
-        mt_client.cc
         mt_run_client.cc
     )
     

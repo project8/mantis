@@ -8,6 +8,7 @@ set( MANTIS_COMMON_HEADERFILES
     mt_block.hh
     mt_buffer.hh
     mt_callable.hh
+    mt_client.hh
     mt_condition.hh
     mt_configurator.hh    
     mt_connection.hh
@@ -36,6 +37,7 @@ set( MANTIS_COMMON_SOURCEFILES
     mt_block.cc
     mt_buffer.cc
     mt_callable.cc
+    mt_client.cc
     mt_condition.cc
     mt_configurator.cc    
     mt_connection.cc
