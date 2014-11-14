@@ -217,7 +217,7 @@ namespace mantis
                 }
             }
 
-            while( have_katcl( cmd_line ) > 0)
+            while( have_katcl( f_katcp_cmdline ) > 0)
             {
                 ptr = arg_string_katcl( f_katcp_cmdline, 0 );
                 if( ptr )

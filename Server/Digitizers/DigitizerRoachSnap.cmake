@@ -2,14 +2,14 @@
 # Find libraries, include directories, etc
 ##########################################
 if( NOT KATCP_FOUND )
-    add_subdirectory( katcp_devel )
+    add_subdirectory( Digitizers/katcp_devel )
     pbuilder_add_ext_libraries( ${katcp_devel_LIBRARIES} dl )
     # add to the RPATH to be used when installing, but only if it's not a system directory
     list( FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${katcp_devel_LIBRARIES}" isSystemDir )
     if( "${isSystemDir}" STREQUAL "-1" )
         list( APPEND CMAKE_INSTALL_RPATH ${katcp_devel_LIBRARIES} )
     endif( "${isSystemDir}" STREQUAL "-1" )
-    include_directories( ${PROJECT_SOURCE_DIR}/katcp_devel/katcp )
+    include_directories( Digitizers/katcp_devel/katcp )
     set( KATCP_FOUND TRUE )
 endif( NOT KATCP_FOUND )
 
