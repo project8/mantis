@@ -11,22 +11,25 @@ list( APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/Scarab/cmake )
 
 include( GetVersion )
 include( PackageBuilder )
+
 pbuilder_prepare_project( ${PROJECT_VERSION_MAJOR} ${PROJECT_VERSION_MINOR} ${PROJECT_REVISION} )
+
 include_directories( BEFORE 
+    ${PROJECT_SOURCE_DIR}/Common
     ${PROJECT_SOURCE_DIR}/Client
     ${PROJECT_SOURCE_DIR}/Server
-    ${PROJECT_BINARY_DIR}/Client
+    ${PROJECT_BINARY_DIR}/Common
 )
 
 ##################
 # mantis options #
 ##################
 
-# Option for a non-px1500 build, which includes only the client application
+# Option to build the client library and executables
+set( Mantis_BUILD_CLIENT TRUE CACHE BOOL "Flag to enable building of the client library and applications" )
+
+# Option to build the server library and executables, and options to build different servers
 set( Mantis_BUILD_SERVER FALSE CACHE BOOL "Flag to enable building of the server library and applications" )
-set( Mantis_INCLUDE_PX1500_SERVER TRUE CACHE BOOL "Flag to include the px1500 server; ignored unless the build-server flag is enabled" )
-set( Mantis_INCLUDE_PX14400_SERVER FALSE CACHE BOOL "Flag to include the px14400 server; ignored unless the build-server flag is enabled" )
-set( Mantis_INCLUDE_U1084A_SERVER TRUE CACHE BOOL "Flag to include the u1084a server; ignored unless the build-server flag is enabled" )
 
 # add an option to perform iterator time profiling
 set( Mantis_ENABLE_ITERATOR_TIMING FALSE CACHE BOOL "Flag to enable iterator time profiling" )
@@ -86,66 +89,6 @@ include_directories( BEFORE
 )
 
 
-#############
-# Digitizers
-#############
-
-if( Mantis_BUILD_SERVER )
-    if( Mantis_INCLUDE_PX1500_SERVER )
-        find_path( PX1500_INCLUDE_DIR px1500.h PATHS ${PX1500_PREFIX} )
-        if( NOT PX1500_INCLUDE_DIR )
-            message( FATAL_ERROR "Did not find px1500 header; set PX1500_PREFIX to suggest a path" )
-        endif( NOT PX1500_INCLUDE_DIR )
-        include_directories( ${PX1500_INCLUDE_DIR} )
-        link_directories( ${PX1500_PREFIX} )
-            
-        find_library( PX1500_LIBRARIES sig_px1500 PATHS ${PX1500_PREFIX} )
-        if( NOT PX1500_LIBRARIES )
-            message( FATAL_ERROR "Did not find px1500 library; set PX1500_PREFIX to suggest a path" )
-        endif( NOT PX1500_LIBRARIES )
-        message( STATUS "Found px1500 library: ${PX1500_LIBRARIES}" )
-        pbuilder_add_ext_libraries( ${PX1500_LIBRARIES} )
-        message( STATUS "Will include the PX1500 server" )
-    endif (Mantis_INCLUDE_PX1500_SERVER)
-
-    if( Mantis_INCLUDE_PX14400_SERVER )
-        find_path( PX14400_INCLUDE_DIR px14.h PATHS ${PX14400_PREFIX} )
-        if( NOT PX14400_INCLUDE_DIR )
-            message( FATAL_ERROR "Did not find px14400 header; set PX14400_PREFIX to suggest a path" )
-        endif( NOT PX14400_INCLUDE_DIR )
-        include_directories( ${PX14400_INCLUDE_DIR} )
-        link_directories( ${PX14400_PREFIX} )
-            
-        find_library( PX14400_LIBRARIES sig_px14400 PATHS ${PX14400_PREFIX} )
-        if( NOT PX14400_LIBRARIES )
-            message( FATAL_ERROR "Did not find px1500 library; set PX14400_PREFIX to suggest a path" )
-        endif( NOT PX14400_LIBRARIES )
-        message( STATUS "Found px14400 library: ${PX14400_LIBRARIES}" )
-        pbuilder_add_ext_libraries( ${PX14400_LIBRARIES} )
-        message( STATUS "Will include the PX14400 server" )
-    endif (Mantis_INCLUDE_PX14400_SERVER)
-
-    if( Mantis_INCLUDE_U1084A_SERVER )
-        find_path( U1084A_INCLUDE_DIR AgMD1Fundamental.h PATHS ${U1084A_PREFIX} )
-        if( NOT U1084A_INCLUDE_DIR )
-            message( FATAL_ERROR "Did not find u1084a header (AgMD1Fundamental.h); set U1084A_PREFIX to suggest a path" )
-        endif( NOT U1084A_INCLUDE_DIR )
-        include_directories( ${U1084A_INCLUDE_DIR} )
-        link_directories( ${U1084A_PREFIX} )
-            
-        find_library( U1084A_LIBRARIES AgMD1 PATHS ${U1084A_PREFIX} )
-        if( NOT U1084A_LIBRARIES )
-            message( FATAL_ERROR "Did not find u1084a library; set U1084A_PREFIX to suggest a path" )
-        endif( NOT U1084A_LIBRARIES )
-        message( STATUS "Found u1084a library: ${U1084A_LIBRARIES}" )
-        pbuilder_add_ext_libraries( ${U1084A_LIBRARIES} )
-        message( STATUS "Will include the U1084A server" )
-    endif (Mantis_INCLUDE_U1084A_SERVER )
-else( Mantis_BUILD_SERVER )
-    message( STATUS "Will perform a client-only build")
-endif( Mantis_BUILD_SERVER )
-
-
 ###########
 # Protobuf
 ###########
@@ -182,6 +125,7 @@ pbuilder_add_ext_libraries( boost_atomic )
 # Build Mantis #
 ################
 
+add_subdirectory( Common )
 add_subdirectory( Client )
 add_subdirectory( Server )
 add_subdirectory( Applications )
