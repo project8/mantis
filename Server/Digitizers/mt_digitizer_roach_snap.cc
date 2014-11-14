@@ -7,7 +7,7 @@
 //		    MIT LNS                    //
 //                  03/ 2014                   //
 /////////////////////////////////////////////////
-#include "mt_digitizer_roach.hh"
+#include "mt_digitizer_roach_snap.hh"
 
 #include "mt_buffer.hh"
 #include "mt_condition.hh"
@@ -26,19 +26,19 @@ using std::string;
 
 namespace mantis
 {
-    MTLOGGER( mtlog, "digitizer_roach" );
+    MTLOGGER( mtlog, "digitizer_roach_snap" );
 
-    MT_REGISTER_DIGITIZER( digitizer_roach, "roach" );
+    MT_REGISTER_DIGITIZER( digitizer_roach_snap, "roach-snap" );
 
 
-    const unsigned digitizer_roach::s_data_type_size = sizeof( digitizer_roach::data_type );
+    const unsigned digitizer_roach_snap::s_data_type_size = sizeof( digitizer_roach_snap::data_type );
 
-    unsigned digitizer_roach::data_type_size_roach()
+    unsigned digitizer_roach_snap::data_type_size_roach()
     {
-        return digitizer_roach::s_data_type_size;
+        return digitizer_roach_snap::s_data_type_size;
     }
 
-    digitizer_roach::digitizer_roach() :
+    digitizer_roach_snap::digitizer_roach_snap() :
             f_katcp_server(),
             f_katcp_cmdline( NULL ),
             f_katcp_fd( 0 ),
@@ -74,12 +74,12 @@ namespace mantis
 
         /*
         errno = 0;
-        f_semaphore = sem_open( "/digitizer_roach", O_CREAT | O_EXCL );
+        f_semaphore = sem_open( "/digitizer_roach_snap", O_CREAT | O_EXCL );
         if( f_semaphore == SEM_FAILED )
         {
             if( errno == EEXIST )
             {
-                throw exception() << "digitizer_roach is already in use";
+                throw exception() << "digitizer_roach_snap is already in use";
             }
             else
             {
@@ -89,7 +89,7 @@ namespace mantis
          */
     }
 
-    digitizer_roach::~digitizer_roach()
+    digitizer_roach_snap::~digitizer_roach_snap()
     {
         if( f_allocated )
         {
@@ -114,7 +114,7 @@ namespace mantis
          */
     }
 
-    void digitizer_roach::configure( const param_node* config )
+    void digitizer_roach_snap::configure( const param_node* config )
     {
         f_katcp_server = config->get_value("roach-host");
         f_bof_file = config->get_value("roach-boffile");
@@ -122,7 +122,7 @@ namespace mantis
     }
 
     //From Katcp Stuff:
-    int digitizer_roach::dispatch_client( char *msgname, int verbose )
+    int digitizer_roach_snap::dispatch_client( char *msgname, int verbose )
     {
         fd_set fsr, fsw;
         struct timeval tv;
@@ -265,7 +265,7 @@ namespace mantis
     }
     /////
 
-    int digitizer_roach::borph_write( const string& a_regname, int buffer, int len )
+    int digitizer_roach_snap::borph_write( const string& a_regname, int buffer, int len )
     {
         /* populate a request */
         if( append_string_katcl( f_katcp_cmdline, KATCP_FLAG_FIRST, f_write_start ) < 0)
@@ -291,7 +291,7 @@ namespace mantis
 
     ///////
 
-    int digitizer_roach::borph_prog( const string& a_bof_file )
+    int digitizer_roach_snap::borph_prog( const string& a_bof_file )
     {   
         /* populate a request */
         if( append_string_katcl( f_katcp_cmdline, KATCP_FLAG_FIRST, f_prog_start ) < 0 )
@@ -311,7 +311,7 @@ namespace mantis
 
     ///////
 
-    int digitizer_roach::borph_read( const string& a_regname, void* a_buffer, int a_len )
+    int digitizer_roach_snap::borph_read( const string& a_regname, void* a_buffer, int a_len )
     {
         if( append_string_katcl( f_katcp_cmdline, KATCP_FLAG_FIRST, f_read_start ) < 0 )
             return -1;
@@ -346,7 +346,7 @@ namespace mantis
 
     //////End:Katcp Desc.//////////
 
-    bool digitizer_roach::allocate( buffer* a_buffer, condition* a_condition )
+    bool digitizer_roach_snap::allocate( buffer* a_buffer, condition* a_condition )
     {
         f_buffer = a_buffer;
         f_condition = a_condition;
@@ -416,7 +416,7 @@ namespace mantis
         return true;
     }
 
-    bool digitizer_roach::initialize( request* a_request )
+    bool digitizer_roach_snap::initialize( request* a_request )
     {
         //MTINFO( mtlog, "resetting counters..." );
         
@@ -464,7 +464,7 @@ namespace mantis
         return true;
     }
 
-    void digitizer_roach::execute()
+    void digitizer_roach_snap::execute()
     {
         iterator t_it( f_buffer, "dig-roach" );
 
@@ -609,7 +609,7 @@ namespace mantis
         return;
     }
 
-    void digitizer_roach::cancel()
+    void digitizer_roach_snap::cancel()
     {
         //cout << "CANCELLING DIGITIZER TEST" );
         if( ! f_canceled.load() )
@@ -617,11 +617,11 @@ namespace mantis
             f_canceled.store( true );
             f_cancel_condition.wait();
         }
-        //cout << "  digitizer_roach is done canceling" );
+        //cout << "  digitizer_roach_snap is done canceling" );
         return;
     }
 
-    void digitizer_roach::finalize( response* a_response )
+    void digitizer_roach_snap::finalize( response* a_response )
     {
         //MTINFO( mtlog, "calculating statistics..." );
 
@@ -635,12 +635,12 @@ namespace mantis
         return;
     }
 
-    bool digitizer_roach::start()
+    bool digitizer_roach_snap::start()
     {
         return true;
     }
 
-    bool digitizer_roach::acquire( block* a_block, timespec& a_stamp_time )
+    bool digitizer_roach_snap::acquire( block* a_block, timespec& a_stamp_time )
     {
         //Katcp
         if( borph_read( f_reg_name_msb, a_block->data_bytes(), f_rm_half_record_size ) < 0 )
@@ -667,27 +667,27 @@ namespace mantis
         return true;
     }
 
-    bool digitizer_roach::stop()
+    bool digitizer_roach_snap::stop()
     {
         return true;
     }
 
-    bool digitizer_roach::write_mode_check( request_file_write_mode_t )
+    bool digitizer_roach_snap::write_mode_check( request_file_write_mode_t )
     {
         return true;
     }
 
-    unsigned digitizer_roach::data_type_size()
+    unsigned digitizer_roach_snap::data_type_size()
     {
-        return digitizer_roach::s_data_type_size;
+        return digitizer_roach_snap::s_data_type_size;
     }
 
-    bool digitizer_roach::get_canceled()
+    bool digitizer_roach_snap::get_canceled()
     {
         return f_canceled.load();
     }
 
-    void digitizer_roach::set_canceled( bool a_flag )
+    void digitizer_roach_snap::set_canceled( bool a_flag )
     {
         f_canceled.store( a_flag );
         return;
@@ -697,7 +697,7 @@ namespace mantis
     // Block Cleanup -- Test Digitizer
     //********************************
 
-    block_cleanup_roach::block_cleanup_roach( digitizer_roach::data_type* a_memblock ) :
+    block_cleanup_roach::block_cleanup_roach( digitizer_roach_snap::data_type* a_memblock ) :
             block_cleanup(),
             f_triggered( false ),
             f_memblock( a_memblock )

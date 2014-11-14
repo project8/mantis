@@ -19,11 +19,11 @@ endif( NOT KATCP_FOUND )
 #############################
 
 add_digitizer_header_files(
-    mt_digitzer_roach.hh
+    mt_digitzer_roach_snap.hh
 )
 
 add_digitizer_source_files(
-    mt_digitizer_roach.cc
+    mt_digitizer_roach_snap.cc
 )
 
 

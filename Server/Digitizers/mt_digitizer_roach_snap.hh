@@ -6,8 +6,8 @@
 //                  prajwal@mohanmurthy.com    //
 //		    MIT LNS                    //
 /////////////////////////////////////////////////
-#ifndef MT_DIGITIZER_ROACH_HH_
-#define MT_DIGITIZER_ROACH_HH_
+#ifndef MT_DIGITIZER_ROACH_SNAP_HH_
+#define MT_DIGITIZER_ROACH_SNAP_HH_
 
 #include "mt_digitizer.hh"
 
@@ -42,7 +42,7 @@ namespace mantis
 {
     class block_cleanup_roach;
 
-    class digitizer_roach : public digitizer
+    class digitizer_roach_snap : public digitizer
     {
         public:
             typedef uint8_t data_type;
@@ -50,11 +50,11 @@ namespace mantis
             static unsigned data_type_size_roach();
 
         public:
-            digitizer_roach();
+            digitizer_roach_snap();
 
             virtual void configure( const param_node* config );
 
-            virtual ~digitizer_roach();
+            virtual ~digitizer_roach_snap();
 
             bool allocate( buffer* a_buffer, condition* a_condition );
             bool initialize( request* a_request );
@@ -133,12 +133,12 @@ namespace mantis
     class block_cleanup_roach : public block_cleanup
     {
         public:
-            block_cleanup_roach( digitizer_roach::data_type* a_memblock );
+            block_cleanup_roach( digitizer_roach_snap::data_type* a_memblock );
             virtual ~block_cleanup_roach();
             virtual bool delete_memblock();
         private:
             bool f_triggered;
-            digitizer_roach::data_type* f_memblock;
+            digitizer_roach_snap::data_type* f_memblock;
     };
 
 }
