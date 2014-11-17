@@ -40,7 +40,7 @@
 
 namespace mantis
 {
-    class block_cleanup_roach;
+    class block_cleanup_roach_snap;
 
     class digitizer_roach_snap : public digitizer
     {
@@ -130,11 +130,11 @@ namespace mantis
 
     };
 
-    class block_cleanup_roach : public block_cleanup
+    class block_cleanup_roach_snap : public block_cleanup
     {
         public:
-            block_cleanup_roach( digitizer_roach_snap::data_type* a_memblock );
-            virtual ~block_cleanup_roach();
+            block_cleanup_roach_snap( digitizer_roach_snap::data_type* a_memblock );
+            virtual ~block_cleanup_roach_snap();
             virtual bool delete_memblock();
         private:
             bool f_triggered;

@@ -400,7 +400,7 @@ namespace mantis
             for( unsigned int index = 0; index < f_buffer->size(); ++index )
             {
                 block* t_new_block = block::allocate_block< data_type >( f_buffer->record_size() );
-                t_new_block->set_cleanup( new block_cleanup_roach( t_new_block->data_bytes() ) );
+                t_new_block->set_cleanup( new block_cleanup_roach_snap( t_new_block->data_bytes() ) );
                 f_buffer->set_block( index, t_new_block );
             }
         }
@@ -693,18 +693,18 @@ namespace mantis
         return;
     }
 
-    //********************************
-    // Block Cleanup -- Test Digitizer
-    //********************************
+    //**************************************
+    // Block Cleanup -- ROACH-Snap Digitizer
+    //**************************************
 
-    block_cleanup_roach::block_cleanup_roach( digitizer_roach_snap::data_type* a_memblock ) :
+    block_cleanup_roach_snap::block_cleanup_roach_snap( digitizer_roach_snap::data_type* a_memblock ) :
             block_cleanup(),
             f_triggered( false ),
             f_memblock( a_memblock )
     {}
-    block_cleanup_roach::~block_cleanup_roach()
+    block_cleanup_roach_snap::~block_cleanup_roach_snap()
     {}
-    bool block_cleanup_roach::delete_memblock()
+    bool block_cleanup_roach_snap::delete_memblock()
     {
         if( f_triggered ) return true;
         delete [] f_memblock;
