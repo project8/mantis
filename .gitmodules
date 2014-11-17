@@ -4,3 +4,6 @@
 [submodule "Scarab"]
 	path = Scarab
 	url = https://github.com/project8/scarab.git
+[submodule "Server/Devices/katcp_devel"]
+	path = Server/Devices/katcp_devel
+	url = https://github.com/project8/katcp_devel
