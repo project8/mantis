@@ -31,4 +31,4 @@ add_digitizer_source_files(
 # Done
 ######
 
-message( STATUS "Including the RoachSnap digitizer" )
+message( STATUS "Including the Roach digitizers" )
