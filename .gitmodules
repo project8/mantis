@@ -1,8 +1,8 @@
 [submodule "Monarch"]
 	path = Monarch
 	url = git://github.com/project8/monarch
-[submodule "katcp_devel"]
-	path = katcp_devel
+[submodule "Server/Digitizers/katcp_devel"]
+	path = Server/Digitizers/katcp_devel
 	url = https://github.com/project8/katcp_devel
 [submodule "Scarab"]
 	path = Scarab
