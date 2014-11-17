@@ -28,7 +28,7 @@ namespace mantis
 {
     MTLOGGER( mtlog, "digitizer_roach_10gbe" );
 
-    MT_REGISTER_DIGITIZER( digitizer_roach_10gbe, "roach-snap" );
+    MT_REGISTER_DIGITIZER( digitizer_roach_10gbe, "roach-10gbe" );
 
 
     const unsigned digitizer_roach_10gbe::s_data_type_size = sizeof( digitizer_roach_10gbe::data_type );
@@ -45,8 +45,6 @@ namespace mantis
             f_rm_half_record_size( 0 ),
             f_rm_timeout( 5000 ),
             f_bof_file(),
-            f_datax0( NULL ),
-            f_datax1( NULL ),
             f_reg_name_msb( "snap64_bram_msb" ),
             f_reg_name_lsb( "snap64_bram_lsb" ),
             f_reg_name_ctrl( "snap64_ctrl" ),
@@ -100,8 +98,6 @@ namespace mantis
                 f_buffer->delete_block( index );
             }
 
-            delete [] f_datax0;
-            delete [] f_datax1;
         }
 
         destroy_katcl(f_katcp_cmdline, 1);

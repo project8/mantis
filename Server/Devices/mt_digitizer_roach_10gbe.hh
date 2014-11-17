@@ -98,10 +98,6 @@ namespace mantis
             unsigned f_rm_timeout; // = 5000; /*Time out in ms*/
             std::string f_bof_file; //= const_cast<char*>("adc.bof");
 
-            // arrays for reading data
-            data_type* f_datax0;
-            data_type* f_datax1;
-
             // hard-coded command strings
             char f_write_start[32],  f_write_end[32];
             char f_prog_start[32],   f_prog_end[32];
