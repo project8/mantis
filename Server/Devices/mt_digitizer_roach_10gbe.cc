@@ -13,6 +13,7 @@
 #include "mt_condition.hh"
 #include "mt_exception.hh"
 #include "mt_factory.hh"
+#include "mt_katcp.hh"
 #include "mt_iterator.hh"
 #include "mt_logger.hh"
 
@@ -39,15 +40,8 @@ namespace mantis
     }
 
     digitizer_roach_10gbe::digitizer_roach_10gbe() :
-            f_katcp_server(),
-            f_katcp_cmdline( NULL ),
-            f_katcp_fd( 0 ),
-            f_rm_half_record_size( 0 ),
-            f_rm_timeout( 5000 ),
+            f_katcp_client(),
             f_bof_file(),
-            f_reg_name_msb( "snap64_bram_msb" ),
-            f_reg_name_lsb( "snap64_bram_lsb" ),
-            f_reg_name_ctrl( "snap64_ctrl" ),
             //f_semaphore( NULL ),
             f_allocated( false ),
             f_buffer( NULL ),
@@ -62,13 +56,6 @@ namespace mantis
             fAcquireMode( request_mode_t_dual_interleaved )
     {
         get_calib_params( 8, s_data_type_size, -5.0, 10.0, &f_params );
-
-        strcpy( f_write_start,   "?write" );
-        strcpy( f_write_end,     "!write" );
-        strcpy( f_prog_start,    "?progdev" );
-        strcpy( f_prog_end,      "!progdev" );
-        strcpy( f_read_start,    "?read" );
-        strcpy( f_read_end,      "!read" );
 
         /*
         errno = 0;
@@ -100,8 +87,6 @@ namespace mantis
 
         }
 
-        destroy_katcl(f_katcp_cmdline, 1);
-
         /*
         if( f_semaphore != SEM_FAILED )
         {
@@ -112,235 +97,11 @@ namespace mantis
 
     void digitizer_roach_10gbe::configure( const param_node* config )
     {
-        f_katcp_server = config->get_value("roach-host");
-        f_bof_file = config->get_value("roach-boffile");
+        f_katcp_client.set_server_ip( config->get_value( "roach-host" ) );
+        f_katcp_client.set_timeout( config->get_value( "roach-timeout", f_katcp_client.get_timeout() ) );
+        f_bof_file = config->get_value("roach-boffile", f_bof_file );
         return;
     }
-
-    //From Katcp Stuff:
-    int digitizer_roach_10gbe::dispatch_client( char *msgname, int verbose )
-    {
-        fd_set fsr, fsw;
-        struct timeval tv;
-        int result;
-        char *ptr, *match;
-        int prefix;
-
-        int cmd_fileno = fileno_katcl( f_katcp_cmdline );
-
-        if( msgname )
-        {
-            switch( msgname[0] )
-            {
-                case '!':
-                case '?':
-                    prefix = strlen(msgname + 1);
-                    match = msgname + 1;
-                    break;
-                default:
-                    prefix = strlen(msgname);
-                    match = msgname;
-                    break;
-            }
-        } 
-        else
-        {
-            prefix = 0;
-            match = NULL;
-        }
-
-        for(;;)
-        {
-
-            FD_ZERO( &fsr );
-            FD_ZERO( &fsw );
-
-            if( match )
-            { /* only look for data if we need it */
-                FD_SET( cmd_fileno, &fsr );
-            }
-
-            if( flushing_katcl( f_katcp_cmdline ) )
-            { /* only write data if we have some */
-                FD_SET( cmd_fileno, &fsw );
-            }
-
-            tv.tv_sec  = f_rm_timeout / 1000;
-            tv.tv_usec = ( f_rm_timeout % 1000 ) * 1000;
-
-            result = select( cmd_fileno + 1, &fsr, &fsw, NULL, &tv );
-            switch(result)
-            {
-                case -1 :
-                    switch (errno )
-                    {
-                        case EAGAIN :
-                        case EINTR  :
-                            continue; /* WARNING */
-                        default     :
-                            return -1;
-                    }
-                    break;
-                case  0 :
-                    if(verbose)
-                    {
-                        MTERROR( mtlog, "dispatch: no io activity within " << f_rm_timeout << " ms" );
-                    }
-                    return -1;
-            }
-
-            if( FD_ISSET( cmd_fileno, &fsw ) )
-            {
-                result = write_katcl( f_katcp_cmdline );
-                if( result < 0 )
-                {
-                    MTERROR( mtlog, "dispatch: write failed:" << strerror( error_katcl( f_katcp_cmdline ) ) );
-                    return -1;
-                }
-                if( ( result > 0 ) && ( match == NULL ) )
-                { /* if we finished writing and don't expect a match then quit */
-                    return 0;
-                }
-            }
-
-            if( FD_ISSET( cmd_fileno, &fsr ) )
-            {
-                result = read_katcl( f_katcp_cmdline );
-                if( result )
-                {
-                    MTERROR( mtlog, "dispatch: read failed : " << strerror( error_katcl( f_katcp_cmdline) ) << " : connection terminated" );
-                    return -1;
-                }
-            }
-
-            while( have_katcl( f_katcp_cmdline ) > 0)
-            {
-                ptr = arg_string_katcl( f_katcp_cmdline, 0 );
-                if( ptr )
-                {
-#ifdef DEBUG
-                    MTERROR( mtlog, "dispatch: got back " << ptr );
-#endif
-                    switch( ptr[0] )
-                    {
-                        case KATCP_INFORM :
-                            break;
-                        case KATCP_REPLY  :
-                            if( match )
-                            {
-                                if( strncmp( match, ptr + 1, prefix ) ||
-                                        ( ( ptr[prefix + 1] != '\0' ) && ( ptr[prefix + 1] != ' ') ) )
-                                {
-                                    MTERROR( mtlog, "dispatch: warning, encountered reply " << ptr << " not match " << match );
-                                }
-                                else
-                                {
-                                    ptr = arg_string_katcl( f_katcp_cmdline, 1 );
-                                    if( ptr && ! strcmp( ptr, KATCP_OK ) )
-                                    {
-                                        return 0;
-                                    }
-                                    else
-                                    {
-                                        return -1;
-                                    }
-                                }
-                            }
-                            break;
-                        case KATCP_REQUEST :
-                            MTERROR( mtlog, "dispatch: warning, encountered an unanswerable request " << ptr );
-                            break;
-                        default :
-                            MTERROR(mtlog,"dispatch: read malformed message "<<ptr);
-                            break;
-                    }
-                }
-            }
-        }
-        return 0;
-    }
-    /////
-
-    int digitizer_roach_10gbe::borph_write( const string& a_regname, int buffer, int len )
-    {
-        /* populate a request */
-        if( append_string_katcl( f_katcp_cmdline, KATCP_FLAG_FIRST, f_write_start ) < 0)
-            return -1;
-        if( append_string_katcl( f_katcp_cmdline, 0, const_cast< char* >( a_regname.c_str() ) ) < 0)
-            return -1;
-        if( append_unsigned_long_katcl( f_katcp_cmdline, 0, 0) < 0)
-            return -1;
-        if( append_unsigned_long_katcl( f_katcp_cmdline, 0, buffer) < 0)
-            return -1;
-        if( append_unsigned_long_katcl( f_katcp_cmdline, KATCP_FLAG_LAST, len) < 0 )
-            return -1;
-
-        /* use above function to send request */
-        if( dispatch_client( f_write_end , 1 ) < 0 )
-            return -1;
-
-        /* clean up request for next call */
-        have_katcl( f_katcp_cmdline );
-
-        return 0;
-    }
-
-    ///////
-
-    int digitizer_roach_10gbe::borph_prog( const string& a_bof_file )
-    {   
-        /* populate a request */
-        if( append_string_katcl( f_katcp_cmdline, KATCP_FLAG_FIRST, f_prog_start ) < 0 )
-            return -1;
-        if( append_string_katcl( f_katcp_cmdline, KATCP_FLAG_LAST, const_cast< char* >( a_bof_file.c_str() ) ) < 0 )
-            return -1;
-
-        /* use above function to send request */
-        if( dispatch_client( f_prog_end, 1 ) < 0 )
-            return -1;
-
-        /* clean up request for next call */
-        have_katcl( f_katcp_cmdline );
-
-        return 0;
-    }
-
-    ///////
-
-    int digitizer_roach_10gbe::borph_read( const string& a_regname, void* a_buffer, int a_len )
-    {
-        if( append_string_katcl( f_katcp_cmdline, KATCP_FLAG_FIRST, f_read_start ) < 0 )
-            return -1;
-        if( append_string_katcl( f_katcp_cmdline, 0, const_cast< char* >( a_regname.c_str() ) ) < 0 )
-            return -1;
-        if( append_unsigned_long_katcl( f_katcp_cmdline, 0, 0 ) < 0 )
-            return -1;
-        if( append_unsigned_long_katcl( f_katcp_cmdline, KATCP_FLAG_LAST, a_len ) < 0 )
-            return -1;
-
-        if( dispatch_client( f_read_end, 1 ) < 0 )
-            return -1;
-
-        int t_count = arg_count_katcl( f_katcp_cmdline );
-        if( t_count < 2 )
-        {
-            MTERROR( mtlog,"insufficient arguments in reply" );
-            return -1;
-        }
-
-        int t_got = arg_buffer_katcl( f_katcp_cmdline, 2, a_buffer, a_len );
-        if( t_got < a_len )
-        {
-            MTERROR( mtlog,"partial data, wanted "<< a_len <<", got "<< t_got );
-            return -1;
-        }
-
-        have_katcl( f_katcp_cmdline );
-
-        return a_len;
-    }
-
-    //////End:Katcp Desc.//////////
 
     bool digitizer_roach_10gbe::allocate( buffer* a_buffer, condition* a_condition )
     {

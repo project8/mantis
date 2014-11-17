@@ -21,26 +21,10 @@
 #include "MonarchTypes.hpp"
 #include "response.pb.h"
 
-#include <stdint.h>
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <errno.h>
-#include <string.h>
-#include <ctype.h>
-#include <stdint.h>
-
-#include <sys/select.h>
-#include <sys/time.h>
-
-#include "netc.h"
-#include "katcp.h"
-#include "katcl.h"
-
 namespace mantis
 {
     class block_cleanup_roach_10gbe;
+    class katcp;
 
     class digitizer_roach_10gbe : public digitizer
     {
@@ -83,26 +67,8 @@ namespace mantis
             
             monarch::FormatModeType fAcquireMode;
 
-            int dispatch_client( char *msgname, int verbose);
-            int borph_write( const std::string& regname, int buffer, int len);
-            int borph_prog( const std::string& a_bof_file );
-            int borph_read( const std::string& regname, void *buffer, int len );
-
-            // katcp communication
-            std::string f_katcp_server;
-            struct katcl_line *f_katcp_cmdline;
-            int f_katcp_fd;
-
-            //Place to set vitals
-            unsigned f_rm_half_record_size; // must be = 65536*4
-            unsigned f_rm_timeout; // = 5000; /*Time out in ms*/
-            std::string f_bof_file; //= const_cast<char*>("adc.bof");
-
-            // hard-coded command strings
-            char f_write_start[32],  f_write_end[32];
-            char f_prog_start[32],   f_prog_end[32];
-            char f_read_start[32],   f_read_end[32];
-            std::string f_reg_name_msb, f_reg_name_lsb, f_reg_name_ctrl;
+            katcp f_katcp_client;
+            std::string f_bof_file;
 
             //sem_t* f_semaphore;
 
