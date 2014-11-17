@@ -1,10 +1,10 @@
 set( DIGITIZER_HEADERFILES )
 set( DIGITIZER_SOURCEFILES )
-set( DIGITIZER_DIR ${PROJECT_SOURCE_DIR}/Server/Digitizers )
+set( DIGITIZER_DIR ${PROJECT_SOURCE_DIR}/Server/Devices )
 
 macro( add_digitizer DIGITIZER_NAME )
 	# Macro to add a digitizer to the Mantis server.
-	# The CMake configuration will expect a file in Server/Digitizers called Digitizer[DIGITIZER_NAME].cmake .
+	# The CMake configuration will expect a file in Server/Devices called Digitizer[DIGITIZER_NAME].cmake .
 	# A cached CMake variable called Mantis_INCLUDE_[DIGITIZER_NAME]_DIGITIZER will be created with the default value FALSE.
 	# If you want to change the default value of that variable, give "TRUE" as a second argument to this macro (not including the quotes).
 

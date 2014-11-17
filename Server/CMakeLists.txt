@@ -2,7 +2,7 @@
 # Author: N. Oblath
 # Created: Mar 20, 2014
 
-list( APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/Server/Digitizers )
+list( APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/Server/Devices )
 include( DigitizerConfig )
 
 ####################################################
@@ -21,7 +21,6 @@ if( Mantis_BUILD_SERVER )
     set( MANTIS_SERVER_HEADERFILES
         mt_destroyer.hh
         mt_digitizer.hh
-        #mt_digitizer_test16.hh
         mt_factory.hh
         mt_network_writer.hh
         mt_run_queue.hh
@@ -34,7 +33,6 @@ if( Mantis_BUILD_SERVER )
     
     set( MANTIS_SERVER_SOURCEFILES
         mt_digitizer.cc
-        #mt_digitizer_test16.cc
         mt_network_writer.cc
         mt_run_queue.cc
         mt_request_receiver.cc
