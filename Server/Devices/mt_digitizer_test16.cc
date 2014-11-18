@@ -94,7 +94,7 @@ namespace mantis
         {
             for( unsigned int index = 0; index < f_buffer->size(); ++index )
             {
-                block* t_new_block = block::allocate_block< data_type >( f_buffer->record_size() );
+                block* t_new_block = block::allocate_block< data_type >( f_buffer->block_size() );
                 t_new_block->set_cleanup( new block_cleanup_test16( t_new_block->data_bytes() ) );
                 f_buffer->set_block( index, t_new_block );
             }
@@ -109,8 +109,8 @@ namespace mantis
 
         MTDEBUG( mtlog, "n levels: " << f_params.levels );
         if( f_master_record != NULL ) delete [] f_master_record;
-        f_master_record = new data_type [f_buffer->record_size()];
-        for( unsigned index = 0; index < f_buffer->record_size(); ++index )
+        f_master_record = new data_type [f_buffer->block_size()];
+        for( unsigned index = 0; index < f_buffer->block_size(); ++index )
         {
             f_master_record[ index ] = (index % f_params.levels) << 2;
             //if( index < 100 ) MTDEBUG( mtlog, "setting master record [" << index << "]: " << f_master_record[index] );
@@ -124,7 +124,7 @@ namespace mantis
     {
         //MTINFO( mtlog, "resetting counters..." );
 
-        f_record_last = (record_id_type) (ceil( (double) (a_request->rate() * a_request->duration() * 1.e3) / (double) (f_buffer->record_size()) ));
+        f_record_last = (record_id_type) (ceil( (double) (a_request->rate() * a_request->duration() * 1.e3) / (double) (f_buffer->block_size()) ));
         f_record_count = 0;
         f_acquisition_count = 0;
         f_live_time = 0;

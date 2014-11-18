@@ -61,7 +61,8 @@ settings from the previous stages:
     - `digitizer` (string; required) -- name of the digitizer to use:
         - `px1500` -- Signatec PX1500
     - `buffer-size` (integer; required) -- the number of records that make up the DAQ buffer
-    - `record-size` (integer; required) -- the number of samples in each record
+    - `block-size` (integer; required) -- the number of samples in each block; record_size = block-size / n_channels
+    - `record-size` (integer; deprecated) -- this setting is deprecated, and currently maintained for backwards compatibility; NOTE that it actually sets the block size, not the record size!
 
 - Client
     - `file-writer` (string; required) -- specify whether the client or server writes the files
