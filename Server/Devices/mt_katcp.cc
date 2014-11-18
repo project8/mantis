@@ -8,6 +8,9 @@
 
 #include <errno.h>
 #include <sys/time.h>
+#include <vector>
+
+using std::string;
 
 namespace mantis
 {
@@ -57,7 +60,7 @@ namespace mantis
         return true;
     }
 
-    int katcp::program_bof( const std::string& a_bof_file )
+    int katcp::program_bof( const string& a_bof_file )
     {
         /* populate a request */
         if( append_string_katcl( f_cmd_line, KATCP_FLAG_FIRST, "?progdev" ) < 0 )
@@ -75,9 +78,9 @@ namespace mantis
         return 0;
     }
 
-    int katcp::write_to_reg( const std::string& a_regname, int a_buffer, int a_length)
+    int katcp::write_uint_to_reg( const string& a_regname, uint a_buffer, int a_length)
     {
-        /* populate a request */
+        // populate a request
         if( append_string_katcl( f_cmd_line, KATCP_FLAG_FIRST, "?write" ) < 0)
             return -1;
         if( append_string_katcl( f_cmd_line, 0, const_cast< char* >( a_regname.c_str() ) ) < 0)
@@ -89,18 +92,19 @@ namespace mantis
         if( append_unsigned_long_katcl( f_cmd_line, KATCP_FLAG_LAST, a_length) < 0 )
             return -1;
 
-        /* use above function to send request */
+        // send the request
         if( dispatch_client( "!write" , 1 ) < 0 )
             return -1;
 
-        /* clean up request for next call */
+        // clean up the command line for the next call
         have_katcl( f_cmd_line );
 
         return 0;
     }
 
-    int katcp::read_from_reg( const std::string& a_regname, void* a_buffer, int a_length )
+    int katcp::read_from_reg( const string& a_regname, void* a_buffer, int a_length )
     {
+        // populate a request
         if( append_string_katcl( f_cmd_line, KATCP_FLAG_FIRST, "?read" ) < 0 )
             return -1;
         if( append_string_katcl( f_cmd_line, 0, const_cast< char* >( a_regname.c_str() ) ) < 0 )
@@ -110,9 +114,11 @@ namespace mantis
         if( append_unsigned_long_katcl( f_cmd_line, KATCP_FLAG_LAST, a_length ) < 0 )
             return -1;
 
+        // send the request
         if( dispatch_client( "!read", 1 ) < 0 )
             return -1;
 
+        // check that a response was received
         int t_count = arg_count_katcl( f_cmd_line );
         if( t_count < 2 )
         {
@@ -120,6 +126,7 @@ namespace mantis
             return -1;
         }
 
+        // get the data out; make sure it's the correct length
         int t_got = arg_buffer_katcl( f_cmd_line, 2, a_buffer, a_length );
         if( t_got < a_length )
         {
@@ -127,10 +134,39 @@ namespace mantis
             return -1;
         }
 
+        // clean up the command line for the next call
         have_katcl( f_cmd_line );
 
         return a_length;
     }
+
+    int katcp::tap_start( const string& a_device, const string& a_device_mac, const string& a_device_ip, uint16_t a_device_port )
+    {
+        // prepare a request
+        if( append_string_katcl( f_cmd_line, KATCP_FLAG_FIRST, "?tap-start" ) < 0 )
+            return -1;
+        if( append_string_katcl( f_cmd_line, 0, const_cast< char* >( a_device.c_str() ) ) < 0 )
+            return -1;
+        if( append_string_katcl( f_cmd_line, 0, const_cast< char* >( a_device_mac.c_str() ) ) < 0 )
+            return -1;
+        if( append_string_katcl( f_cmd_line, 0, const_cast< char* >( a_device_ip.c_str() ) ) < 0 )
+            return -1;
+        //if( append_args_katcl( f_cmd_line, 0, const_cast< char* >( katcp::mac_string_to_int( a_device_mac ).c_str() ),
+        //                                      const_cast< char* >( katcp::ip_string_to_int(  a_device_ip  ).c_str() ) ) < 0)
+            return -1;
+        if( append_unsigned_long_katcl( f_cmd_line, KATCP_FLAG_LAST, a_device_port ) < 0 )
+            return -1;
+
+        // send the request
+        if( dispatch_client( "!tap-start" , 1 ) < 0 )
+            return -1;
+
+        // clean up the command line for the next call
+        have_katcl( f_cmd_line );
+
+        return 0;
+    }
+
 
     int katcp::dispatch_client( const char* a_msgname, int a_verbose )
     {
@@ -274,12 +310,13 @@ namespace mantis
         return 0;
     }
 
-    const std::string& katcp::get_server_ip() const
+
+    const string& katcp::get_server_ip() const
     {
         return f_server_ip;
     }
 
-    void katcp::set_server_ip( const std::string& a_ip )
+    void katcp::set_server_ip( const string& a_ip )
     {
         f_server_ip = a_ip;
         return;
