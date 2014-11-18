@@ -153,7 +153,7 @@ namespace mantis
         MTDEBUG( mtlog, "configuring memory" );
         ViInt32 t_number_segments = 1;
         ViInt32 t_number_banks = 2;
-        t_result = AcqrsD1_configMemoryEx( f_handle, 0, f_buffer->record_size(), t_number_segments, t_number_banks, 0);
+        t_result = AcqrsD1_configMemoryEx( f_handle, 0, f_buffer->block_size(), t_number_segments, t_number_banks, 0);
         PrintU1084AError( f_handle, t_result, "Config memory:" );
         // TODO!!!!!!!!
         // There should be some smart buffer things happening here
@@ -166,7 +166,7 @@ namespace mantis
             for( unsigned int index = 0; index < f_buffer->size(); index++ )
             {
                 block* t_new_block = new block();
-                t_new_block = block::allocate_block< digitizer_u1084a::data_type >( f_buffer->record_size(), 0, f_postfix_size );
+                t_new_block = block::allocate_block< digitizer_u1084a::data_type >( f_buffer->block_size(), 0, f_postfix_size );
                 t_new_block->set_cleanup( new block_cleanup_u1084a( t_new_block->memblock_bytes() ) );
                 f_buffer->set_block( index, t_new_block );
             }
@@ -204,7 +204,7 @@ namespace mantis
             for( unsigned int index = 0; index < f_buffer->size(); index++ )
             {
                 block* t_new_block = new block();
-                t_result = AllocateDmaBufferPX4( f_handle, f_buffer->record_size(), t_new_block->handle() );
+                t_result = AllocateDmaBufferPX4( f_handle, f_buffer->block_size(), t_new_block->handle() );
                 if( t_result != VI_SUCCESS )
                 {
                     std::stringstream t_buff;
@@ -212,8 +212,8 @@ namespace mantis
                     PrintU1084AError( f_handle, t_result, t_buff.str().c_str() );
                     return false;
                 }
-                t_new_block->set_data_size( f_buffer->record_size() );
-                t_new_block->set_data_nbytes( f_buffer->record_size() );
+                t_new_block->set_data_size( f_buffer->block_size() );
+                t_new_block->set_data_nbytes( f_buffer->block_size() );
                 f_buffer->set_block( index, t_new_block );
             }
         }
@@ -250,7 +250,7 @@ namespace mantis
         /*MTDEBUG( mtlog, "configuring memory" );
         ViInt32 t_number_segments = 1;
         ViInt32 t_number_banks = 2;
-        t_result = AcqrsD1_configMemoryEx( f_handle, 0, f_buffer->record_size(), t_number_segments, t_number_banks, 0);
+        t_result = AcqrsD1_configMemoryEx( f_handle, 0, f_buffer->block_size(), t_number_segments, t_number_banks, 0);
         PrintU1084AError( f_handle, t_result, "Config memory:" );
 */
         //config vertical settings, do we want to expose a user interface?
@@ -275,7 +275,7 @@ namespace mantis
 
         //MTINFO( mtlog, "resetting counters..." );
 
-        f_record_last = (record_id_type) (ceil( (double) (a_request->rate() * a_request->duration() * 1.e3) / (double) (f_buffer->record_size()) ));
+        f_record_last = (record_id_type) (ceil( (double) (a_request->rate() * a_request->duration() * 1.e3) / (double) (f_buffer->block_size()) ));
         f_record_count = 0;
         f_acquisition_count = 0;
         f_live_time = 0;
@@ -511,7 +511,7 @@ namespace mantis
         readPar.firstSegment = 0;
         readPar.nbrSegments = 1;
         readPar.firstSampleInSeg = 0;
-        readPar.nbrSamplesInSeg = f_buffer->record_size();
+        readPar.nbrSamplesInSeg = f_buffer->block_size();
         readPar.segmentOffset = 0;
         readPar.dataArraySize = (readPar.nbrSamplesInSeg + f_postfix_size) * sizeof(ViInt8); //Array size in bytes
         readPar.segDescArraySize = sizeof(AqSegmentDescriptor);
@@ -534,7 +534,7 @@ namespace mantis
 
 
         /*
-        ViStatus t_result = GetPciAcquisitionDataFastPX4( f_handle, f_buffer->record_size(), a_block->data_bytes(), 0 );
+        ViStatus t_result = GetPciAcquisitionDataFastPX4( f_handle, f_buffer->block_size(), a_block->data_bytes(), 0 );
         if( t_result != VI_SUCCESS )
         {
             PrintU1084AError( f_handle, t_result, "failed to acquire dma data over pci: " );

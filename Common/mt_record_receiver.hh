@@ -77,7 +77,7 @@ namespace mantis
     {
         for( unsigned int index = 0; index < f_buffer->size(); index++ )
         {
-            block* t_new_block = block::allocate_block< DataType >( f_buffer->record_size() );
+            block* t_new_block = block::allocate_block< DataType >( f_buffer->block_size() );
             t_new_block->set_cleanup( new block_cleanup_rr( t_new_block->memblock_bytes() ) );
             f_buffer->set_block( index, t_new_block );
         }

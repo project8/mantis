@@ -26,8 +26,8 @@ namespace mantis
             size_t get_buffer_size() const;
             void set_buffer_size( size_t size );
 
-            size_t get_record_size() const;
-            void set_record_size( size_t size );
+            size_t get_block_size() const;
+            void set_block_size( size_t size );
 
             size_t get_data_chunk_size() const;
             void set_data_chunk_size( size_t size );
@@ -52,7 +52,7 @@ namespace mantis
             std::string f_exe_name;
 
             size_t f_buffer_size;
-            size_t f_record_size;
+            size_t f_block_size;
             size_t f_data_chunk_size;
             size_t f_data_type_size;
             size_t f_bit_depth;
