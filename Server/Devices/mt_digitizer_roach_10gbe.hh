@@ -68,10 +68,9 @@ namespace mantis
 
             static const unsigned s_data_type_size;
             
-            monarch::FormatModeType fAcquireMode;
-
             katcp f_katcp_client; /// KATCP communication client object (for setting registers, etc)
             std::string f_bof_file; /// bof file name for programming the FPGA
+            std::string f_reg_block_size; /// ROACH register name for setting the block size
             std::string f_reg_enable; /// ROACH register name for enabling sending data via 10Gbe
             std::string f_reg_10gbe_ip; /// ROACH register name for the 10Gbe IP address (must match what's in the bof file)
             std::string f_reg_10gbe_port; /// ROACH register name for the 10Gbe communication port (must match what's in the bof file)

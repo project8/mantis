@@ -43,6 +43,7 @@ namespace mantis
     digitizer_roach_10gbe::digitizer_roach_10gbe() :
             f_katcp_client(),
             f_bof_file(),
+            f_reg_block_size( "block_size" ),
             f_reg_enable( "enable" ),
             f_reg_10gbe_ip( "dest_ip" ),
             f_reg_10gbe_port( "dest_port" ),
@@ -62,8 +63,7 @@ namespace mantis
             f_live_time( 0 ),
             f_dead_time( 0 ),
             f_canceled( false ),
-            f_cancel_condition(),
-            fAcquireMode( request_mode_t_dual_interleaved )
+            f_cancel_condition()
     {
         get_calib_params( 8, s_data_type_size, -5.0, 10.0, &f_params );
 
@@ -109,11 +109,19 @@ namespace mantis
     {
         f_katcp_client.set_server_ip( config->get_value( "roach-ip" ) );
         f_katcp_client.set_timeout( config->get_value( "timeout", f_katcp_client.get_timeout() ) );
+
         f_bof_file = config->get_value( "bof-file", f_bof_file );
+        f_reg_block_size = config->get_value( "reg-block-size", f_reg_block_size );
+        f_reg_enable = config->get_value( "reg-enable", f_reg_enable ),
+        f_reg_10gbe_ip = config->get_value( "reg-dest_ip", f_reg_10gbe_ip ),
+        f_reg_10gbe_port = config->get_value( "reg-dest-port", f_reg_10gbe_port ),
+
         f_10gbe_device = config->get_value( "10gbe-device", f_10gbe_device );
         f_10gbe_device_mac = config->get_value( "10gbe-device-mac", f_10gbe_device_mac );
         f_10gbe_device_ip = config->get_value( "10gbe-device-ip", f_10gbe_device_ip );
+
         f_10gbe_host_ip = config->get_value( "10gbe-host-ip" );
+
         f_10gbe_port = config->get_value( "10gbe-port", f_10gbe_port );
         return;
     }
@@ -174,7 +182,7 @@ namespace mantis
         if( f_katcp_client.write_uint_to_reg( f_reg_10gbe_port, f_10gbe_port) < 0 ||
                 f_katcp_client.write_uint_to_reg( f_reg_10gbe_ip, digitizer_roach_10gbe::ip_to_uint( f_10gbe_host_ip ) ) < 0 )
         {
-            MTERROR( mtlog, "Unable to program the 10Gbe device with the server host IP address and port");
+            MTERROR( mtlog, "Unable to program the 10Gbe device with the server host IP address and port" );
             delete f_10gbe_server;
             f_10gbe_server = NULL;
             return false;
@@ -207,10 +215,7 @@ namespace mantis
     {
         //MTINFO( mtlog, "resetting counters..." );
         
-        if( a_request->mode() != request_mode_t_dual_interleaved )
-        {
-            fAcquireMode = a_request->mode(); //default to 'request_mode_t_dual_interleaved'
-        }
+        //TODO: deal with number of channels here
         
         f_record_last = (record_id_type) (ceil( (double) (a_request->rate() * a_request->duration() * 1.e3) / (double) (f_buffer->block_size()) ));
         f_record_count = 0;
@@ -218,7 +223,13 @@ namespace mantis
         f_live_time = 0;
         f_dead_time = 0;
 
-        //TODO: set rate (?) and record length
+        //TODO: set rate (?)
+        if( f_katcp_client.write_uint_to_reg( f_reg_block_size, f_buffer->block_size() ) < 0 )
+        {
+            MTERROR( mtlog, "Unable to set register <" << f_reg_block_size << "> with the block size (" << f_buffer->block_size() << ")" );
+            return false;
+        }
+
 
         return true;
     }
@@ -396,7 +407,11 @@ namespace mantis
 
     bool digitizer_roach_10gbe::start()
     {
-        //TODO: set enable to 1
+        if( f_katcp_client.write_uint_to_reg( f_reg_enable, 1 ) < 0 )
+        {
+            MTERROR( mtlog, "Unable to set register <" << f_reg_enable << "> to 1" );
+            return false;
+        }
         return true;
     }
 
@@ -430,7 +445,11 @@ namespace mantis
 
     bool digitizer_roach_10gbe::stop()
     {
-        //TODO: set enable to 0
+        if( f_katcp_client.write_uint_to_reg( f_reg_enable, 0 ) < 0 )
+        {
+            MTERROR( mtlog, "Unable to set register <" << f_reg_enable << "> to 0" );
+            return false;
+        }
         return true;
     }
 
