@@ -25,6 +25,7 @@ namespace mantis
 {
     class block_cleanup_roach_10gbe;
     class katcp;
+    class server;
 
     class digitizer_roach_10gbe : public digitizer
     {
@@ -63,14 +64,24 @@ namespace mantis
             }
 
         private:
+            static unsigned long ip_to_uint( std::string& a_ip );
+
             static const unsigned s_data_type_size;
             
             monarch::FormatModeType fAcquireMode;
 
-            katcp f_katcp_client;
-            std::string f_bof_file;
-            std::string f_10gbe_host_ip;
-            unsigned f_10gbe_host_port;
+            katcp f_katcp_client; /// KATCP communication client object (for setting registers, etc)
+            std::string f_bof_file; /// bof file name for programming the FPGA
+            std::string f_reg_enable; /// ROACH register name for enabling sending data via 10Gbe
+            std::string f_reg_10gbe_ip; /// ROACH register name for the 10Gbe IP address (must match what's in the bof file)
+            std::string f_reg_10gbe_port; /// ROACH register name for the 10Gbe communication port (must match what's in the bof file)
+            std::string f_10gbe_device; /// ROACH 10Gbe device name (e.g. gbe0)
+            std::string f_10gbe_device_mac; /// MAC address to assign to the ROACH 10Gbe device
+            std::string f_10gbe_device_ip; /// IP address to assign to the ROACH 10Gbe device
+            std::string f_10gbe_host_ip; /// IP address of the 10Gbe server (i.e. this digitizer object)
+            unsigned f_10gbe_port; /// Port to use for 10Gbe communication
+
+            server* f_10gbe_server;
 
             //sem_t* f_semaphore;
 

@@ -16,6 +16,7 @@
 #include "mt_katcp.hh"
 #include "mt_iterator.hh"
 #include "mt_logger.hh"
+#include "mt_server.hh"
 
 #include <cmath> // for ceil()
 #include <cstdlib> // for exit()
@@ -42,8 +43,15 @@ namespace mantis
     digitizer_roach_10gbe::digitizer_roach_10gbe() :
             f_katcp_client(),
             f_bof_file(),
+            f_reg_enable( "enable" ),
+            f_reg_10gbe_ip( "dest_ip" ),
+            f_reg_10gbe_port( "dest_port" ),
+            f_10gbe_device( "gbe0" ),
+            f_10gbe_device_mac( "00:02:0A:00:00:1E" ),
+            f_10gbe_device_ip( "10.0.0.200" ),
             f_10gbe_host_ip(),
-            f_10gbe_host_port( 60000 ),
+            f_10gbe_port( 60000 ),
+            f_10gbe_server( NULL ),
             //f_semaphore( NULL ),
             f_allocated( false ),
             f_buffer( NULL ),
@@ -102,8 +110,11 @@ namespace mantis
         f_katcp_client.set_server_ip( config->get_value( "roach-ip" ) );
         f_katcp_client.set_timeout( config->get_value( "timeout", f_katcp_client.get_timeout() ) );
         f_bof_file = config->get_value( "bof-file", f_bof_file );
+        f_10gbe_device = config->get_value( "10gbe-device", f_10gbe_device );
+        f_10gbe_device_mac = config->get_value( "10gbe-device-mac", f_10gbe_device_mac );
+        f_10gbe_device_ip = config->get_value( "10gbe-device-ip", f_10gbe_device_ip );
         f_10gbe_host_ip = config->get_value( "10gbe-host-ip" );
-        f_10gbe_host_port = config->get_value( "10gbe-host-port", f_10gbe_host_port );
+        f_10gbe_port = config->get_value( "10gbe-port", f_10gbe_port );
         return;
     }
 
@@ -112,19 +123,33 @@ namespace mantis
         f_buffer = a_buffer;
         f_condition = a_condition;
 
-        //TODO: setup UDP server
+        MTDEBUG( mtlog, "setting up the 10Gbe server" );
+        delete f_10gbe_server;
+        try
+        {
+            f_10gbe_server = new server( f_10gbe_port, k_dgram );
+        }
+        catch( exception& e )
+        {
+            MTERROR( mtlog, "unable to setup the 10Gbe server" );
+            return false;
+        }
 
         MTINFO( mtlog, "connecting to the ROACH board via katcp" );
 
         if( ! f_katcp_client.connect() )
         {
             MTERROR( mtlog, "unable to connect to the ROACH board" );
+            delete f_10gbe_server;
+            f_10gbe_server = NULL;
             return false;
         }
 
         if( f_katcp_client.program_bof( f_bof_file ) < 0 )
         {
-            MTERROR( mtlog,"Unable to program FPGA with bof file <" << f_bof_file << ">" );
+            MTERROR( mtlog, "Unable to program FPGA with bof file <" << f_bof_file << ">" );
+            delete f_10gbe_server;
+            f_10gbe_server = NULL;
             return false;
         }
         else
@@ -132,11 +157,28 @@ namespace mantis
             MTINFO( mtlog,"FPGA programmed with bof file <"<< f_bof_file << ">" );
         }
 
-        //TODO: check 10gbe connection
+        MTDEBUG( mtlog, "Starting the 10Gbe driver" );
+        if( f_katcp_client.tap_start( f_10gbe_device, f_10gbe_device_mac, f_10gbe_device_ip, f_10gbe_port ) < 0 )
+        {
+            MTERROR( mtlog, "Unable to start the 10Gbe driver; configuration:" <<
+                    "\tDevice: " << f_10gbe_device << '\n' <<
+                    "\tDevice MAC address: " << f_10gbe_device_mac << '\n' <<
+                    "\tDevice IP address: " << f_10gbe_device_ip << '\n' <<
+                    "\tPort: " << f_10gbe_port);
+            delete f_10gbe_server;
+            f_10gbe_server = NULL;
+            return false;
+        }
 
-        //TODO: start 10gbe driver
-
-        //TODO: write 10Gbe host ip address and port
+        MTDEBUG( mtlog, "Sending the 10Gbe server host IP address and port" );
+        if( f_katcp_client.write_uint_to_reg( f_reg_10gbe_port, f_10gbe_port) < 0 ||
+                f_katcp_client.write_uint_to_reg( f_reg_10gbe_ip, digitizer_roach_10gbe::ip_to_uint( f_10gbe_host_ip ) ) < 0 )
+        {
+            MTERROR( mtlog, "Unable to program the 10Gbe device with the server host IP address and port");
+            delete f_10gbe_server;
+            f_10gbe_server = NULL;
+            return false;
+        }
 
         MTINFO( mtlog, "allocating buffer..." );
 
@@ -152,6 +194,8 @@ namespace mantis
         catch( exception& e )
         {
             MTERROR( mtlog, "unable to allocate buffer: " << e.what() );
+            delete f_10gbe_server;
+            f_10gbe_server = NULL;
             return false;
         }
 
@@ -163,7 +207,7 @@ namespace mantis
     {
         //MTINFO( mtlog, "resetting counters..." );
         
-        if(a_request->mode() != request_mode_t_dual_interleaved)
+        if( a_request->mode() != request_mode_t_dual_interleaved )
         {
             fAcquireMode = a_request->mode(); //default to 'request_mode_t_dual_interleaved'
         }
@@ -175,28 +219,6 @@ namespace mantis
         f_dead_time = 0;
 
         //TODO: set rate (?) and record length
-
-        //TODO: do we do these following things?
-
-        if( borph_write( f_reg_name_ctrl, 0, 00  ) < 0 )
-        {
-            MTERROR( mtlog, "Unable to write to register - 'snap64_ctrl-00'" );
-            return false;
-        }
-        else
-        {
-            MTINFO(mtlog,"Wrote - 'snap64_ctrl-00'");
-        }
-
-        if( borph_write( f_reg_name_ctrl, 0, 0111 ) < 0 )
-        {
-            MTERROR( mtlog,"Unable to write to register - 'snap64_ctrl-0111'" );
-            return false;
-        }
-        else
-        {
-            MTINFO(mtlog,"Wrote - 'snap64_ctrl-0111'");
-        }
 
         return true;
     }
@@ -431,6 +453,30 @@ namespace mantis
     {
         f_canceled.store( a_flag );
         return;
+    }
+
+    unsigned long digitizer_roach_10gbe::ip_to_uint( std::string& a_ip )
+    {
+        static const char delim = '.';
+
+        string result_str;
+
+        for( string::const_iterator char_it = a_ip.begin(); char_it != a_ip.end(); ++char_it )
+        {
+            if( *char_it != delim )
+            {
+                result_str.push_back( *char_it );
+            }
+        }
+
+        unsigned long result;
+        std::stringstream buffer;
+        buffer << result_str;
+        buffer >> result;
+
+        MTDEBUG( mtlog, "Converted IP address to: " << result );
+        return result;
+
     }
 
     //********************************
