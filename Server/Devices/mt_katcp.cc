@@ -1,8 +1,12 @@
 #include "mt_katcp.hh"
 
+#include "mt_logger.hh"
+
 #include "katcp.h"
 #include "katcl.h"
+#include "netc.h"
 
+#include <errno.h>
 #include <sys/time.h>
 
 namespace mantis
@@ -12,7 +16,7 @@ namespace mantis
     katcp::katcp() :
             f_server_ip(),
             f_cmd_line( NULL ),
-            f_file_desc( 0 ),
+            f_file_desc( -1 ),
             f_timeout( 5000 )
     {
     }
@@ -22,7 +26,38 @@ namespace mantis
         destroy_katcl(f_cmd_line, 1);
     }
 
-    int program_bof( const std::string& a_bof_file )
+    bool katcp::connect()
+    {
+        // Connect to the ROACH board
+        if( f_server_ip.empty() )
+        {
+            MTERROR( mtlog,"Please provide the host address for the ROACH system" );
+            return false;
+        }
+
+        // get the file descriptor
+        f_file_desc = net_connect( const_cast< char* >( f_server_ip.c_str() ), 0, NETC_VERBOSE_ERRORS | NETC_VERBOSE_STATS );
+        if( f_file_desc < 0 )
+        {
+            MTINFO( mtlog,"Unable to connect to the ROACH board at <"<< f_server_ip << ">" );
+            return false;
+        }
+
+        MTINFO( mtlog,"Connected to ROACH board at <" << f_server_ip << ">" );
+
+        // katcp command line
+        destroy_katcl( f_cmd_line, 0 );
+        f_cmd_line = create_katcl( f_file_desc );
+        if( f_cmd_line == NULL )
+        {
+            MTERROR( mtlog, "Unable to allocate katcp command line" );
+            return false;
+        }
+
+        return true;
+    }
+
+    int katcp::program_bof( const std::string& a_bof_file )
     {
         /* populate a request */
         if( append_string_katcl( f_cmd_line, KATCP_FLAG_FIRST, "?progdev" ) < 0 )
@@ -40,7 +75,7 @@ namespace mantis
         return 0;
     }
 
-    int write_to_reg( const std::string& a_regname, int a_buffer, int a_length)
+    int katcp::write_to_reg( const std::string& a_regname, int a_buffer, int a_length)
     {
         /* populate a request */
         if( append_string_katcl( f_cmd_line, KATCP_FLAG_FIRST, "?write" ) < 0)
@@ -64,7 +99,7 @@ namespace mantis
         return 0;
     }
 
-    int read_from_reg( const std::string& a_regname, void* a_buffer, int a_length )
+    int katcp::read_from_reg( const std::string& a_regname, void* a_buffer, int a_length )
     {
         if( append_string_katcl( f_cmd_line, KATCP_FLAG_FIRST, "?read" ) < 0 )
             return -1;
@@ -99,7 +134,7 @@ namespace mantis
 
     int katcp::dispatch_client( const char* a_msgname, int a_verbose )
     {
-        fd_set fd_set_read, sd_set_write;
+        fd_set fd_set_read, fd_set_write;
         struct timeval timeout_tv;
         int result;
         char *ptr, *match;
@@ -114,7 +149,7 @@ namespace mantis
                 case '!':
                 case '?':
                     prefix = strlen( a_msgname + 1 );
-                    match = msgname + 1;
+                    match = a_msgname + 1;
                     break;
                 default:
                     prefix = strlen( a_msgname );
@@ -161,9 +196,9 @@ namespace mantis
                     }
                     break;
                 case  0 :
-                    if(verbose)
+                    if( a_verbose )
                     {
-                        MTERROR( mtlog, "dispatch: no io activity within " << f_rm_timeout << " ms" );
+                        MTERROR( mtlog, "dispatch: no io activity within " << f_timeout << " ms" );
                     }
                     return -1;
             }

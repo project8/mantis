@@ -15,6 +15,8 @@ namespace mantis
             katcp();
             virtual ~katcp();
 
+            bool connect();
+
             int program_bof( const std::string& a_bof_file );
 
             int write_to_reg( const std::string& a_regname, int a_buffer, int a_length);

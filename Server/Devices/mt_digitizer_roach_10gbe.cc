@@ -108,45 +108,9 @@ namespace mantis
         f_buffer = a_buffer;
         f_condition = a_condition;
 
-        /* note on the number of channels:
-        this should be the 65536*4*n_channels, once we are ready to do multiple channels
-        when copied to the buffer, the channels will be uninterleaved
-        btw, what's the 65536*4 limit from in the first place?
-        -- Noah, 11/12/14
-        */
-        if( f_buffer->record_size() > 65536*4 )
+        if( ! f_katcp_client.connect() )
         {
-            MTERROR( mtlog, "Record size must be <= 65536*4 = 262144" );
-            return false;   
-        }
-
-        MTINFO( mtlog, "connecting to katcp server..." );
-
-        // Connect to the ROACH board
-        if( f_katcp_server.empty() )
-        {
-            MTERROR( mtlog,"Please provide the host address for the ROACH system" );
-            return false;
-        }
-
-        // get the file descriptor
-        f_katcp_fd = net_connect( const_cast< char* >( f_katcp_server.c_str() ), 0, NETC_VERBOSE_ERRORS | NETC_VERBOSE_STATS );
-        if( f_katcp_fd < 0 )
-        {
-            MTINFO( mtlog,"Unable to connect to the ROACH board at <"<< f_katcp_server << ">" );
-            return false;
-        }
-        else
-        {
-            MTINFO( mtlog,"Connected to ROACH board at <" << f_katcp_server << ">" );
-        }
-
-        // katcp command line
-        destroy_katcl( f_katcp_cmdline, 0 );
-        f_katcp_cmdline = create_katcl( f_katcp_fd );
-        if( f_katcp_cmdline == NULL )
-        {
-            MTERROR( mtlog, "Unable to allocate katcp command line" );
+            MTERROR( mtlog, "unable to connect to the ROACH board" );
             return false;
         }
 
@@ -156,7 +120,7 @@ namespace mantis
         {
             for( unsigned int index = 0; index < f_buffer->size(); ++index )
             {
-                block* t_new_block = block::allocate_block< data_type >( f_buffer->record_size() );
+                block* t_new_block = block::allocate_block< data_type >( f_buffer->block_size() );
                 t_new_block->set_cleanup( new block_cleanup_roach_10gbe( t_new_block->data_bytes() ) );
                 f_buffer->set_block( index, t_new_block );
             }
@@ -166,8 +130,6 @@ namespace mantis
             MTERROR( mtlog, "unable to allocate buffer: " << e.what() );
             return false;
         }
-
-        f_rm_half_record_size = f_buffer->record_size() / 2;
 
         f_allocated = true;
         return true;
@@ -182,7 +144,7 @@ namespace mantis
             fAcquireMode = a_request->mode(); //default to 'request_mode_t_dual_interleaved'
         }
         
-        f_record_last = (record_id_type) (ceil( (double) (a_request->rate() * a_request->duration() * 1.e3) / (double) (f_buffer->record_size()) ));
+        f_record_last = (record_id_type) (ceil( (double) (a_request->rate() * a_request->duration() * 1.e3) / (double) (f_buffer->block_size()) ));
         f_record_count = 0;
         f_acquisition_count = 0;
         f_live_time = 0;
