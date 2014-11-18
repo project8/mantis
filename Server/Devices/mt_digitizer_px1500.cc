@@ -20,7 +20,6 @@ namespace mantis
     MTLOGGER( mtlog, "digitizer_px1500" );
 
     MT_REGISTER_DIGITIZER( digitizer_px1500, "px1500" );
-    MT_REGISTER_TEST_DIGITIZER( test_digitizer_px1500, "px1500" );
 
     const unsigned digitizer_px1500::s_data_type_size = sizeof( digitizer_px1500::data_type );
     unsigned digitizer_px1500::data_type_size_px1500()
@@ -124,7 +123,7 @@ namespace mantis
             for( unsigned int index = 0; index < f_buffer->size(); index++ )
             {
                 block* t_new_block = new block();
-                t_result = AllocateDmaBufferPX4( f_handle, f_buffer->record_size(), t_new_block->handle() );
+                t_result = AllocateDmaBufferPX4( f_handle, f_buffer->block_size(), t_new_block->handle() );
                 if( t_result != SIG_SUCCESS )
                 {
                     std::stringstream t_buff;
@@ -132,8 +131,8 @@ namespace mantis
                     DumpLibErrorPX4( t_result, t_buff.str().c_str() );
                     return false;
                 }
-                t_new_block->set_data_size( f_buffer->record_size() );
-                t_new_block->set_data_nbytes( f_buffer->record_size() );
+                t_new_block->set_data_size( f_buffer->block_size() );
+                t_new_block->set_data_nbytes( f_buffer->block_size() );
                 f_buffer->set_block( index, t_new_block );
             }
         }
@@ -152,7 +151,7 @@ namespace mantis
 
         //MTINFO( mtlog, "resetting counters..." );
 
-        f_record_last = (record_id_type) (ceil( (double) (a_request->rate() * a_request->duration() * 1.e3) / (double) (f_buffer->record_size()) ));
+        f_record_last = (record_id_type) (ceil( (double) (a_request->rate() * a_request->duration() * 1.e3) / (double) (f_buffer->block_size()) ));
         f_record_count = 0;
         f_acquisition_count = 0;
         f_live_time = 0;
@@ -357,7 +356,7 @@ namespace mantis
         a_block->set_record_id( f_record_count );
         a_block->set_acquisition_id( f_acquisition_count );
 
-        int t_result = GetPciAcquisitionDataFastPX4( f_handle, f_buffer->record_size(), a_block->data_bytes(), 0 );
+        int t_result = GetPciAcquisitionDataFastPX4( f_handle, f_buffer->block_size(), a_block->data_bytes(), 0 );
         if( t_result != SIG_SUCCESS )
         {
             DumpLibErrorPX4( t_result, "failed to acquire dma data over pci: " );

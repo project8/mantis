@@ -91,7 +91,7 @@ namespace mantis
         }
         f_header->SetAcquisitionRate( a_request->rate() );
         f_header->SetRunDuration( a_request->duration() );
-        f_header->SetRecordSize( f_buffer->record_size() / t_n_channels );
+        f_header->SetRecordSize( f_buffer->block_size() / t_n_channels );
 
         //optional fields
         f_header->SetTimestamp( a_request->date() );

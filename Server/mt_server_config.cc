@@ -25,7 +25,7 @@ namespace mantis
 
         add( "buffer-size", server_config << 512 );
 
-        add( "record-size", server_config << 4194304 );
+        add( "block-size", server_config << 4194304 );
 
         add( "data-chunk-size", server_config << 1024 );
         

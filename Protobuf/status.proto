@@ -22,7 +22,7 @@ message status
     //buffer size
     optional uint32 buffer_size = 2;
     
-    //record size
+    //block size  **** NOTE: even though this is called "record_size," it really is the block size ****
     optional uint32 record_size = 3;
     
     //record chunk size
