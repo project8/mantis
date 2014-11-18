@@ -53,6 +53,7 @@ namespace mantis
             f_10gbe_host_ip(),
             f_10gbe_port( 60000 ),
             f_10gbe_server( NULL ),
+            f_10gbe_connection( NULL ),
             //f_semaphore( NULL ),
             f_allocated( false ),
             f_buffer( NULL ),
@@ -97,6 +98,9 @@ namespace mantis
 
         }
 
+        delete f_10gbe_server;
+        delete f_10gbe_connection;
+
         /*
         if( f_semaphore != SEM_FAILED )
         {
@@ -139,7 +143,7 @@ namespace mantis
         }
         catch( exception& e )
         {
-            MTERROR( mtlog, "unable to setup the 10Gbe server" );
+            MTERROR( mtlog, "unable to setup the 10Gbe server:\n" << e.what() );
             return false;
         }
 
@@ -267,6 +271,8 @@ namespace mantis
             //check if we've written enough
             if( f_record_count == f_record_last || f_canceled.load() )
             {
+                // Normal exit
+
                 //mark the block as written
                 t_it->set_written();
 
@@ -276,7 +282,7 @@ namespace mantis
                 f_live_time += time_to_nsec( t_live_stop_time ) - time_to_nsec( t_live_start_time );
 
                 //halt the 10Gbe acquisition
-                stop();
+                stop( true );
 
                 //GET OUT
                 if( f_canceled.load() )
@@ -297,6 +303,8 @@ namespace mantis
 
             if( acquire( t_it.object(), t_stamp_time ) == false )
             {
+                // Acquisition has failed!
+
                 //mark the block as written
                 t_it->set_written();
 
@@ -304,7 +312,7 @@ namespace mantis
                 f_live_time += time_to_nsec( t_live_stop_time ) - time_to_nsec( t_live_start_time );
 
                 //halt the 10Gbe acquisition
-                stop();
+                stop( true );
 
                 // to make sure we don't deadlock anything
                 if( f_cancel_condition.is_waiting() )
@@ -330,10 +338,11 @@ namespace mantis
                 //accumulate live time
                 f_live_time += time_to_nsec( t_live_stop_time ) - time_to_nsec( t_live_start_time );
 
-                //halt the 10Gbe acquisition
-                if( stop() == false )
+                //pause the 10Gbe acquisition
+                if( stop( false ) == false )
                 {
                     //GET OUT
+                    stop( true );
                     MTINFO( mtlog, "finished abnormally because halting streaming failed" );
                     return;
                 }
@@ -358,6 +367,8 @@ namespace mantis
                     {
                         f_cancel_condition.release();
                     }
+
+                    disconnect_10gbe();
 
                     //GET OUT
                     MTINFO( mtlog, "finished abnormally because starting streaming failed" );
@@ -412,28 +423,37 @@ namespace mantis
             MTERROR( mtlog, "Unable to set register <" << f_reg_enable << "> to 1" );
             return false;
         }
+
+        if( f_10gbe_connection == NULL )
+        {
+            MTDEBUG( mtlog, "Waiting for 10Gbe connection" );
+            f_10gbe_connection = f_10gbe_server->get_connection();
+            if( f_10gbe_connection == NULL )
+            {
+                MTERROR( mtlog, "Did not receive valid connection" );
+                if( f_katcp_client.write_uint_to_reg( f_reg_enable, 0 ) < 0 )
+                {
+                    MTERROR( mtlog, "Unable to set register <" << f_reg_enable << "> to 0" );
+                }
+                return false;
+            }
+            MTDEBUG( mtlog, "Have 10Gbe connection" );
+        }
+
         return true;
     }
 
     bool digitizer_roach_10gbe::acquire( block* a_block, timespec& a_stamp_time )
     {
-        //TODO: read UDP packet; copy into a_block->data_bytes();
-        //Katcp
-        if( borph_read( f_reg_name_msb, a_block->data_bytes(), f_rm_half_record_size ) < 0 )
+        try
         {
-            MTERROR( mtlog,"Unable to read register 'snap64_bram_msb'" );
+            f_10gbe_connection->recv( (char*)a_block->data_bytes(), a_block->get_data_size(), MSG_WAITALL );
+        }
+        catch( exception& e )
+        {
+            MTERROR( mtlog, "Unable to receive data packet:\n" << e.what() );
             return false;
         }
-        
-/* ENABLE FOR SECOND CHANNEL
-        if( borph_read( f_reg_name_lsb, a_block->data_bytes() + f_rm_half_record_size, f_rm_half_record_size ) < 0 )
-        {
-            MTERROR( mtlog,"Unable to read register 'snap64_bram_lsb'" );
-            return false;
-        }   
-*/
-
-        //End:Katcp
 
         a_block->set_record_id( f_record_count );
         a_block->set_acquisition_id( f_acquisition_count );
@@ -443,13 +463,28 @@ namespace mantis
         return true;
     }
 
-    bool digitizer_roach_10gbe::stop()
+    bool digitizer_roach_10gbe::stop( bool a_disconnect_10gbe )
     {
         if( f_katcp_client.write_uint_to_reg( f_reg_enable, 0 ) < 0 )
         {
             MTERROR( mtlog, "Unable to set register <" << f_reg_enable << "> to 0" );
+            if( a_disconnect_10gbe ) disconnect_10gbe(); // still need to disconnect the socket, even if writing to the ROACH failed
             return false;
         }
+
+        if( a_disconnect_10gbe ) return disconnect_10gbe();
+
+        return true;
+    }
+
+    bool digitizer_roach_10gbe::disconnect_10gbe()
+    {
+        delete f_10gbe_connection;
+        f_10gbe_connection = NULL;
+
+        delete f_10gbe_server;
+        f_10gbe_server = NULL;
+
         return true;
     }
 

@@ -24,6 +24,7 @@
 namespace mantis
 {
     class block_cleanup_roach_10gbe;
+    class connection;
     class katcp;
     class server;
 
@@ -81,6 +82,7 @@ namespace mantis
             unsigned f_10gbe_port; /// Port to use for 10Gbe communication
 
             server* f_10gbe_server;
+            connection* f_10gbe_connection;
 
             //sem_t* f_semaphore;
 
@@ -100,7 +102,9 @@ namespace mantis
 
             bool start();
             bool acquire( block* a_block, timespec& a_time_stamp );
-            bool stop();
+            bool stop( bool a_disconnect_10gbe = false );
+
+            bool disconnect_10gbe();
 
     };
 
