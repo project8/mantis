@@ -69,6 +69,8 @@ namespace mantis
 
             katcp f_katcp_client;
             std::string f_bof_file;
+            std::string f_10gbe_host_ip;
+            unsigned f_10gbe_host_port;
 
             //sem_t* f_semaphore;
 

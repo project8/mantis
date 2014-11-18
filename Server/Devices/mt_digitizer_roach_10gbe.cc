@@ -42,6 +42,8 @@ namespace mantis
     digitizer_roach_10gbe::digitizer_roach_10gbe() :
             f_katcp_client(),
             f_bof_file(),
+            f_10gbe_host_ip(),
+            f_10gbe_host_port( 60000 ),
             //f_semaphore( NULL ),
             f_allocated( false ),
             f_buffer( NULL ),
@@ -97,9 +99,11 @@ namespace mantis
 
     void digitizer_roach_10gbe::configure( const param_node* config )
     {
-        f_katcp_client.set_server_ip( config->get_value( "roach-host" ) );
-        f_katcp_client.set_timeout( config->get_value( "roach-timeout", f_katcp_client.get_timeout() ) );
-        f_bof_file = config->get_value("roach-boffile", f_bof_file );
+        f_katcp_client.set_server_ip( config->get_value( "roach-ip" ) );
+        f_katcp_client.set_timeout( config->get_value( "timeout", f_katcp_client.get_timeout() ) );
+        f_bof_file = config->get_value( "bof-file", f_bof_file );
+        f_10gbe_host_ip = config->get_value( "10gbe-host-ip" );
+        f_10gbe_host_port = config->get_value( "10gbe-host-port", f_10gbe_host_port );
         return;
     }
 
@@ -108,11 +112,31 @@ namespace mantis
         f_buffer = a_buffer;
         f_condition = a_condition;
 
+        //TODO: setup UDP server
+
+        MTINFO( mtlog, "connecting to the ROACH board via katcp" );
+
         if( ! f_katcp_client.connect() )
         {
             MTERROR( mtlog, "unable to connect to the ROACH board" );
             return false;
         }
+
+        if( f_katcp_client.program_bof( f_bof_file ) < 0 )
+        {
+            MTERROR( mtlog,"Unable to program FPGA with bof file <" << f_bof_file << ">" );
+            return false;
+        }
+        else
+        {
+            MTINFO( mtlog,"FPGA programmed with bof file <"<< f_bof_file << ">" );
+        }
+
+        //TODO: check 10gbe connection
+
+        //TODO: start 10gbe driver
+
+        //TODO: write 10Gbe host ip address and port
 
         MTINFO( mtlog, "allocating buffer..." );
 
@@ -150,15 +174,9 @@ namespace mantis
         f_live_time = 0;
         f_dead_time = 0;
 
-        if( borph_prog( f_bof_file ) < 0 )
-        {
-            MTERROR( mtlog,"Unable to program FPGA with bof file <" << f_bof_file << ">" );
-            return false;
-        }
-        else
-        {
-            MTINFO( mtlog,"FPGA programmed with bof file <"<< f_bof_file << ">" );
-        }
+        //TODO: set rate (?) and record length
+
+        //TODO: do we do these following things?
 
         if( borph_write( f_reg_name_ctrl, 0, 00  ) < 0 )
         {
@@ -185,7 +203,7 @@ namespace mantis
 
     void digitizer_roach_10gbe::execute()
     {
-        iterator t_it( f_buffer, "dig-roach" );
+        iterator t_it( f_buffer, "dig-roach-10gbe" );
 
         timespec t_live_start_time;
         timespec t_live_stop_time;
@@ -224,7 +242,7 @@ namespace mantis
 
                 f_live_time += time_to_nsec( t_live_stop_time ) - time_to_nsec( t_live_start_time );
 
-                //halt the pci acquisition
+                //halt the 10Gbe acquisition
                 stop();
 
                 //GET OUT
@@ -252,7 +270,7 @@ namespace mantis
                 //get the time and update the number of live microseconds
                 f_live_time += time_to_nsec( t_live_stop_time ) - time_to_nsec( t_live_start_time );
 
-                //halt the pci acquisition
+                //halt the 10Gbe acquisition
                 stop();
 
                 // to make sure we don't deadlock anything
@@ -279,7 +297,7 @@ namespace mantis
                 //accumulate live time
                 f_live_time += time_to_nsec( t_live_stop_time ) - time_to_nsec( t_live_start_time );
 
-                //halt the pci acquisition
+                //halt the 10Gbe acquisition
                 if( stop() == false )
                 {
                     //GET OUT
@@ -356,11 +374,13 @@ namespace mantis
 
     bool digitizer_roach_10gbe::start()
     {
+        //TODO: set enable to 1
         return true;
     }
 
     bool digitizer_roach_10gbe::acquire( block* a_block, timespec& a_stamp_time )
     {
+        //TODO: read UDP packet; copy into a_block->data_bytes();
         //Katcp
         if( borph_read( f_reg_name_msb, a_block->data_bytes(), f_rm_half_record_size ) < 0 )
         {
@@ -388,6 +408,7 @@ namespace mantis
 
     bool digitizer_roach_10gbe::stop()
     {
+        //TODO: set enable to 0
         return true;
     }
 
