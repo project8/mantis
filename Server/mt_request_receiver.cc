@@ -24,7 +24,7 @@ namespace mantis
             f_condition( a_condition ),
             f_exe_name( a_exe_name ),
             f_buffer_size( 512 ),
-            f_record_size( 419304 ),
+            f_block_size( 419304 ),
             f_data_chunk_size( 1024 ),
             f_data_type_size( 1 ),
             f_bit_depth( 8 ),
@@ -101,7 +101,7 @@ namespace mantis
                 status* t_status = t_run_context->lock_status_out();
                 t_status->set_state( status_state_t_acknowledged );
                 t_status->set_buffer_size( f_buffer_size );
-                t_status->set_record_size( f_record_size );
+                t_status->set_record_size( f_block_size );
                 t_status->set_data_chunk_size( f_data_chunk_size );
                 t_status->set_data_type_size( f_data_type_size );
                 t_status->set_bit_depth( f_bit_depth );
@@ -220,13 +220,13 @@ namespace mantis
         return;
     }
 
-    size_t request_receiver::get_record_size() const
+    size_t request_receiver::get_block_size() const
     {
-        return f_record_size;
+        return f_block_size;
     }
-    void request_receiver::set_record_size( size_t size )
+    void request_receiver::set_block_size( size_t size )
     {
-        f_record_size = size;
+        f_block_size = size;
         return;
     }
 

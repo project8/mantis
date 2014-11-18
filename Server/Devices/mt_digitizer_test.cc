@@ -94,7 +94,7 @@ namespace mantis
         {
             for( unsigned int index = 0; index < f_buffer->size(); ++index )
             {
-                block* t_new_block = block::allocate_block< data_type >( f_buffer->record_size() );
+                block* t_new_block = block::allocate_block< data_type >( f_buffer->block_size() );
                 t_new_block->set_cleanup( new block_cleanup_test( t_new_block->data_bytes() ) );
                 f_buffer->set_block( index, t_new_block );
             }
@@ -108,8 +108,8 @@ namespace mantis
         MTINFO( mtlog, "creating master record..." );
 
         if( f_master_record != NULL ) delete [] f_master_record;
-        f_master_record = new data_type [f_buffer->record_size()];
-        for( unsigned index = 0; index < f_buffer->record_size(); ++index )
+        f_master_record = new data_type [f_buffer->block_size()];
+        for( unsigned index = 0; index < f_buffer->block_size(); ++index )
         {
             f_master_record[ index ] = index % f_params.levels;
         }
@@ -122,7 +122,7 @@ namespace mantis
     {
         //MTINFO( mtlog, "resetting counters..." );
 
-        f_record_last = (record_id_type) (ceil( (double) (a_request->rate() * a_request->duration() * 1.e3) / (double) (f_buffer->record_size()) ));
+        f_record_last = (record_id_type) (ceil( (double) (a_request->rate() * a_request->duration() * 1.e3) / (double) (f_buffer->block_size()) ));
         f_record_count = 0;
         f_acquisition_count = 0;
         f_live_time = 0;
@@ -315,7 +315,7 @@ namespace mantis
         a_block->set_record_id( f_record_count );
         a_block->set_acquisition_id( f_acquisition_count );
 
-        ::memcpy( a_block->data_bytes(), f_master_record, f_buffer->record_size() );
+        ::memcpy( a_block->data_bytes(), f_master_record, f_buffer->block_size() );
 
         // the timestamp is acquired after the data is transferred to avoid the problem on the px1500 where
         // the first record can take unusually long to be acquired.

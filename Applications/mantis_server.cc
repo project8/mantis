@@ -14,7 +14,7 @@
  *  The server requires the following configuration values:
  *   - port (integer; must match the port used by the client)
  *   - buffer-size (integer; number of record blocks in the DMA buffer)
- *   - record-size (integer; number of samples in a record)
+ *   - record-size (integer; number of samples in a block **** NOTE: this sets the number of samples in a block, even though it's called "record-size" ****)
  *
  *  Usage:
  *  $> mantis_server config=config_file.json [further configuration]
@@ -74,11 +74,19 @@ int main( int argc, char** argv )
 
     MTINFO( mtlog, "creating objects..." );
 
-    size_t t_buffer_size, t_record_size, t_data_chunk_size;
+    size_t t_buffer_size, t_block_size, t_data_chunk_size;
     try
     {
         t_buffer_size = t_config->get_value< int >( "buffer-size" );
-        t_record_size = t_config->get_value< int >( "record-size" );
+        if( t_config->has( "record-size" ) )
+        {
+            MTWARN( mtlog, "The \"record-size\" option is deprecated; please use \"block-size\" instead" );
+            t_block_size = t_config->get_value< int >( "record-size" );
+        }
+        else
+        {
+            t_block_size = t_config->get_value< int >( "block-size" );
+        }
         t_data_chunk_size = t_config->get_value< int >( "data-chunk-size" );
     }
     catch( exception& e )
@@ -105,13 +113,13 @@ int main( int argc, char** argv )
 
     request_receiver t_receiver( t_config, t_server, &t_run_queue, &t_queue_condition, t_configurator->exe_name() );
     t_receiver.set_buffer_size( t_buffer_size );
-    t_receiver.set_record_size( t_record_size );
+    t_receiver.set_block_size( t_block_size );
     t_receiver.set_data_chunk_size( t_data_chunk_size );
 
     // set up the digitizer
 
     condition t_buffer_condition;
-    buffer t_buffer( t_buffer_size, t_record_size );
+    buffer t_buffer( t_buffer_size, t_block_size );
 
     factory< digitizer >* t_dig_factory = NULL;
     digitizer* t_digitizer = NULL;

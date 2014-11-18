@@ -9,11 +9,11 @@ namespace mantis
 {
     MTLOGGER( mtlog, "buffer" );
 
-    buffer::buffer( const unsigned int& a_size, const unsigned int& a_record_size ) :
+    buffer::buffer( const unsigned int& a_size, const unsigned int& a_block_size ) :
             f_blocks( NULL ),
             f_mutexes( NULL ),
             f_size( a_size ),
-            f_record_size( a_record_size )
+            f_block_size( a_block_size )
     {
         f_blocks = new block*[f_size];
         for( unsigned t_index = 0; t_index < f_size; ++t_index )
@@ -39,9 +39,9 @@ namespace mantis
         return f_size;
     }
 
-    const unsigned int& buffer::record_size() const
+    const unsigned int& buffer::block_size() const
     {
-        return f_record_size;
+        return f_block_size;
     }
 
     void buffer::set_block( unsigned a_index, block* a_block )

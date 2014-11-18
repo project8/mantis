@@ -12,11 +12,11 @@ namespace mantis
         public:
             friend class iterator;
 
-            buffer( const unsigned int& a_size, const unsigned int& a_record_size );
+            buffer( const unsigned int& a_size, const unsigned int& a_block_size );
             virtual ~buffer();
 
             const unsigned int& size() const;
-            const unsigned int& record_size() const;
+            const unsigned int& block_size() const;
 
             void set_block( unsigned a_index, block* a_block );
             void delete_block( unsigned a_index );
@@ -27,7 +27,7 @@ namespace mantis
             block** f_blocks;
             mutex* f_mutexes;
             unsigned int f_size;
-            unsigned int f_record_size;
+            unsigned int f_block_size;
     };
 
 }
