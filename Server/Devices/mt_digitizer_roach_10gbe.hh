@@ -58,11 +58,7 @@ namespace mantis
             void set_canceled( bool a_flag );
 
         public:
-            bool run_basic_test()
-            {
-                // TODO: implement basic test
-                return true;
-            }
+            bool run_basic_test();
 
         private:
             static unsigned long ip_to_uint( std::string& a_ip );
@@ -104,6 +100,8 @@ namespace mantis
             bool acquire( block* a_block, timespec& a_time_stamp );
             bool stop( bool a_disconnect_10gbe = false );
 
+            bool enable_10gbe();
+            bool disable_10gbe();
             bool disconnect_10gbe();
 
     };

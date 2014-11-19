@@ -191,6 +191,13 @@ namespace mantis
             return false;
         }
 
+        MTDEBUG( mtlog, "Setting the block size in the ROACH" );
+        if( f_katcp_client.write_uint_to_reg( f_reg_block_size, f_buffer->block_size() ) < 0 )
+        {
+            MTERROR( mtlog, "Unable to set register <" << f_reg_block_size << "> with the block size (" << f_buffer->block_size() << ")" );
+            return false;
+        }
+
         MTINFO( mtlog, "allocating buffer..." );
 
         try
@@ -227,11 +234,6 @@ namespace mantis
         f_dead_time = 0;
 
         //TODO: set rate (?)
-        if( f_katcp_client.write_uint_to_reg( f_reg_block_size, f_buffer->block_size() ) < 0 )
-        {
-            MTERROR( mtlog, "Unable to set register <" << f_reg_block_size << "> with the block size (" << f_buffer->block_size() << ")" );
-            return false;
-        }
 
 
         return true;
@@ -417,11 +419,7 @@ namespace mantis
 
     bool digitizer_roach_10gbe::start()
     {
-        if( f_katcp_client.write_uint_to_reg( f_reg_enable, 1 ) < 0 )
-        {
-            MTERROR( mtlog, "Unable to set register <" << f_reg_enable << "> to 1" );
-            return false;
-        }
+        if( ! enable_10gbe() ) return false;
 
         if( f_10gbe_connection == NULL )
         {
@@ -464,15 +462,30 @@ namespace mantis
 
     bool digitizer_roach_10gbe::stop( bool a_disconnect_10gbe )
     {
+        bool result = disable_10gbe();
+
+        if( a_disconnect_10gbe ) result = result && disconnect_10gbe();
+
+        return result;
+    }
+
+    bool digitizer_roach_10gbe::enable_10gbe()
+    {
+        if( f_katcp_client.write_uint_to_reg( f_reg_enable, 1 ) < 0 )
+        {
+            MTERROR( mtlog, "Unable to set register <" << f_reg_enable << "> to 1" );
+            return false;
+        }
+        return true;
+    }
+
+    bool digitizer_roach_10gbe::disable_10gbe()
+    {
         if( f_katcp_client.write_uint_to_reg( f_reg_enable, 0 ) < 0 )
         {
             MTERROR( mtlog, "Unable to set register <" << f_reg_enable << "> to 0" );
-            if( a_disconnect_10gbe ) disconnect_10gbe(); // still need to disconnect the socket, even if writing to the ROACH failed
             return false;
         }
-
-        if( a_disconnect_10gbe ) return disconnect_10gbe();
-
         return true;
     }
 
@@ -483,6 +496,166 @@ namespace mantis
 
         delete f_10gbe_server;
         f_10gbe_server = NULL;
+
+        return true;
+    }
+
+    bool  digitizer_roach_10gbe::run_basic_test()
+    {
+        int t_result;
+
+        MTINFO( mtlog, "beginning allocation phase" );
+
+        MTDEBUG( mtlog, "setting up the 10Gbe server" );
+        delete f_10gbe_server;
+        try
+        {
+            f_10gbe_server = new server( f_10gbe_port, k_dgram );
+        }
+        catch( exception& e )
+        {
+            MTERROR( mtlog, "unable to setup the 10Gbe server:\n" << e.what() );
+            return false;
+        }
+
+        MTINFO( mtlog, "connecting to the ROACH board via katcp" );
+
+        if( ! f_katcp_client.connect() )
+        {
+            MTERROR( mtlog, "unable to connect to the ROACH board" );
+            delete f_10gbe_server;
+            f_10gbe_server = NULL;
+            return false;
+        }
+
+        if( f_katcp_client.program_bof( f_bof_file ) < 0 )
+        {
+            MTERROR( mtlog, "Unable to program FPGA with bof file <" << f_bof_file << ">" );
+            delete f_10gbe_server;
+            f_10gbe_server = NULL;
+            return false;
+        }
+        else
+        {
+            MTINFO( mtlog,"FPGA programmed with bof file <"<< f_bof_file << ">" );
+        }
+
+        MTDEBUG( mtlog, "Starting the 10Gbe driver" );
+        if( f_katcp_client.tap_start( f_10gbe_device, f_10gbe_device_mac, f_10gbe_device_ip, f_10gbe_port ) < 0 )
+        {
+            MTERROR( mtlog, "Unable to start the 10Gbe driver; configuration:" <<
+                    "\tDevice: " << f_10gbe_device << '\n' <<
+                    "\tDevice MAC address: " << f_10gbe_device_mac << '\n' <<
+                    "\tDevice IP address: " << f_10gbe_device_ip << '\n' <<
+                    "\tPort: " << f_10gbe_port);
+            delete f_10gbe_server;
+            f_10gbe_server = NULL;
+            return false;
+        }
+
+        MTDEBUG( mtlog, "Sending the 10Gbe server host IP address and port" );
+        if( f_katcp_client.write_uint_to_reg( f_reg_10gbe_port, f_10gbe_port) < 0 ||
+                f_katcp_client.write_uint_to_reg( f_reg_10gbe_ip, digitizer_roach_10gbe::ip_to_uint( f_10gbe_host_ip ) ) < 0 )
+        {
+            MTERROR( mtlog, "Unable to program the 10Gbe device with the server host IP address and port" );
+            delete f_10gbe_server;
+            f_10gbe_server = NULL;
+            return false;
+        }
+
+        MTDEBUG( mtlog, "Setting the block size in the ROACH" );
+        if( f_katcp_client.write_uint_to_reg( f_reg_block_size, f_buffer->block_size() ) < 0 )
+        {
+            MTERROR( mtlog, "Unable to set register <" << f_reg_block_size << "> with the block size (" << f_buffer->block_size() << ")" );
+            return false;
+        }
+
+        MTINFO( mtlog, "allocating buffer..." );
+
+        block* t_block = NULL;
+        // this is the minimum record size for the px1500
+        unsigned t_rec_size = 16384;
+
+        try
+        {
+            t_block = block::allocate_block< data_type >( t_rec_size );
+            t_block->set_cleanup( new block_cleanup_roach_10gbe( t_block->data_bytes() ) );
+        }
+        catch( exception& e )
+        {
+            MTERROR( mtlog, "unable to allocate block: " << e.what() );
+            delete f_10gbe_server;
+            f_10gbe_server = NULL;
+            return false;
+        }
+
+        MTINFO( mtlog, "allocation complete!\n" );
+
+
+
+        MTINFO( mtlog, "beginning initialization phase" );
+
+        // nothing to see folks. move along . . .
+
+        MTINFO( mtlog, "initialization complete!\n" );
+
+
+        MTINFO( mtlog, "beginning run phase" );
+
+        MTDEBUG( mtlog, "beginning acquisition" );
+
+        if( ! enable_10gbe() ) return false;
+
+        MTDEBUG( mtlog, "Waiting for 10Gbe connection" );
+        f_10gbe_connection = f_10gbe_server->get_connection();
+        if( f_10gbe_connection == NULL )
+        {
+            MTERROR( mtlog, "Did not receive valid connection" );
+            if( f_katcp_client.write_uint_to_reg( f_reg_enable, 0 ) < 0 )
+            {
+                MTERROR( mtlog, "Unable to set register <" << f_reg_enable << "> to 0" );
+            }
+            return false;
+        }
+        MTDEBUG( mtlog, "Have 10Gbe connection" );
+
+        MTDEBUG( mtlog, "acquiring a record" );
+
+        try
+        {
+            f_10gbe_connection->recv( (char*)t_block->data_bytes(), t_block->get_data_size(), MSG_WAITALL );
+        }
+        catch( exception& e )
+        {
+            MTERROR( mtlog, "Unable to receive data packet:\n" << e.what() );
+            return false;
+        }
+
+        MTDEBUG( mtlog, "ending acquisition..." );
+
+        disable_10gbe();
+
+        disconnect_10gbe();
+
+        std::stringstream t_str_buff;
+        for( unsigned i = 0; i < 99; ++i )
+        {
+            t_str_buff << t_block->data_bytes()[ i ] << ", ";
+        }
+        t_str_buff << t_block->data_bytes()[ 99 ];
+        MTDEBUG( mtlog, "the first 100 samples taken:\n" << t_str_buff.str() );
+
+        MTINFO( mtlog, "run complete!\n" );
+
+
+        MTINFO( mtlog, "beginning finalization phase" );
+
+        MTDEBUG( mtlog, "deallocating dma buffer" );
+
+        delete t_block;
+
+        MTINFO( mtlog, "finalization complete!\n" );
+
 
         return true;
     }
