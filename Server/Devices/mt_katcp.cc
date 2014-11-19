@@ -63,7 +63,7 @@ namespace mantis
     int katcp::program_bof( const string& a_bof_file )
     {
         /* populate a request */
-        if( append_string_katcl( f_cmd_line, KATCP_FLAG_FIRST, "?progdev" ) < 0 )
+        if( append_string_katcl( f_cmd_line, KATCP_FLAG_FIRST, const_cast< char* >("?progdev") ) < 0 )
             return -1;
         if( append_string_katcl( f_cmd_line, KATCP_FLAG_LAST, const_cast< char* >( a_bof_file.c_str() ) ) < 0 )
             return -1;
@@ -78,10 +78,10 @@ namespace mantis
         return 0;
     }
 
-    int katcp::write_uint_to_reg( const string& a_regname, uint a_buffer, int a_length)
+    int katcp::write_uint_to_reg( const string& a_regname, unsigned int a_buffer, int a_length )
     {
         // populate a request
-        if( append_string_katcl( f_cmd_line, KATCP_FLAG_FIRST, "?write" ) < 0)
+        if( append_string_katcl( f_cmd_line, KATCP_FLAG_FIRST, const_cast< char* >("?write") ) < 0)
             return -1;
         if( append_string_katcl( f_cmd_line, 0, const_cast< char* >( a_regname.c_str() ) ) < 0)
             return -1;
@@ -105,7 +105,7 @@ namespace mantis
     int katcp::read_from_reg( const string& a_regname, void* a_buffer, int a_length )
     {
         // populate a request
-        if( append_string_katcl( f_cmd_line, KATCP_FLAG_FIRST, "?read" ) < 0 )
+        if( append_string_katcl( f_cmd_line, KATCP_FLAG_FIRST, const_cast< char* >("?read") ) < 0 )
             return -1;
         if( append_string_katcl( f_cmd_line, 0, const_cast< char* >( a_regname.c_str() ) ) < 0 )
             return -1;
@@ -143,7 +143,7 @@ namespace mantis
     int katcp::tap_start( const string& a_device, const string& a_device_mac, const string& a_device_ip, uint16_t a_device_port )
     {
         // prepare a request
-        if( append_string_katcl( f_cmd_line, KATCP_FLAG_FIRST, "?tap-start" ) < 0 )
+        if( append_string_katcl( f_cmd_line, KATCP_FLAG_FIRST, const_cast< char* >("?tap-start") ) < 0 )
             return -1;
         if( append_string_katcl( f_cmd_line, 0, const_cast< char* >( a_device.c_str() ) ) < 0 )
             return -1;
@@ -185,11 +185,11 @@ namespace mantis
                 case '!':
                 case '?':
                     prefix = strlen( a_msgname + 1 );
-                    match = a_msgname + 1;
+                    match = const_cast< char* >(a_msgname) + 1;
                     break;
                 default:
                     prefix = strlen( a_msgname );
-                    match = a_msgname;
+                    match = const_cast< char* >(a_msgname);
                     break;
             }
         }

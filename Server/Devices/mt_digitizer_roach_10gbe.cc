@@ -13,7 +13,6 @@
 #include "mt_condition.hh"
 #include "mt_exception.hh"
 #include "mt_factory.hh"
-#include "mt_katcp.hh"
 #include "mt_iterator.hh"
 #include "mt_logger.hh"
 #include "mt_server.hh"

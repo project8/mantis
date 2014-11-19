@@ -357,7 +357,7 @@ namespace mantis
         btw, what's the 65536*4 limit from in the first place?
         -- Noah, 11/12/14
         */
-        if( f_buffer->record_size() > 65536*4 )
+        if( f_buffer->block_size() > 65536*4 )
         {
             MTERROR( mtlog, "Record size must be <= 65536*4 = 262144" );
             return false;   
@@ -399,7 +399,7 @@ namespace mantis
         {
             for( unsigned int index = 0; index < f_buffer->size(); ++index )
             {
-                block* t_new_block = block::allocate_block< data_type >( f_buffer->record_size() );
+                block* t_new_block = block::allocate_block< data_type >( f_buffer->block_size() );
                 t_new_block->set_cleanup( new block_cleanup_roach_snap( t_new_block->data_bytes() ) );
                 f_buffer->set_block( index, t_new_block );
             }
@@ -410,7 +410,7 @@ namespace mantis
             return false;
         }
 
-        f_rm_half_record_size = f_buffer->record_size() / 2;
+        f_rm_half_record_size = f_buffer->block_size() / 2;
 
         f_allocated = true;
         return true;
@@ -425,7 +425,7 @@ namespace mantis
             fAcquireMode = a_request->mode(); //default to 'request_mode_t_dual_interleaved'
         }
         
-        f_record_last = (record_id_type) (ceil( (double) (a_request->rate() * a_request->duration() * 1.e3) / (double) (f_buffer->record_size()) ));
+        f_record_last = (record_id_type) (ceil( (double) (a_request->rate() * a_request->duration() * 1.e3) / (double) (f_buffer->block_size()) ));
         f_record_count = 0;
         f_acquisition_count = 0;
         f_live_time = 0;

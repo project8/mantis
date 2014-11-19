@@ -27,7 +27,7 @@ add_digitizer_header_files(
 add_digitizer_source_files(
     mt_digitizer_roach_10gbe.cc
     mt_digitizer_roach_snap.cc
-    mt_katcp.hh
+    mt_katcp.cc
 )
 
 

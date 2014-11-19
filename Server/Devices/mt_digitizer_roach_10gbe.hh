@@ -14,6 +14,7 @@
 #include "mt_atomic.hh"
 #include "mt_block.hh"
 #include "mt_condition.hh"
+#include "mt_katcp.hh"
 #include "mt_mutex.hh"
 #include "request.pb.h"
 #include "mt_param.hh"
@@ -25,7 +26,6 @@ namespace mantis
 {
     class block_cleanup_roach_10gbe;
     class connection;
-    class katcp;
     class server;
 
     class digitizer_roach_10gbe : public digitizer

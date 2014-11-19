@@ -26,10 +26,10 @@ namespace mantis
             int program_bof( const std::string& a_bof_file );
 
             /// Write an integer to the specified register
-            int write_uint_to_reg( const std::string& a_regname, unsigned long a_buffer, int a_length = sizeof(unsigned long) );
+            int write_uint_to_reg( const std::string& a_regname, unsigned int a_buffer, int a_length = sizeof(unsigned long) );
 
             /// Read an integer from the specified register
-            int read_int_from_reg( const std::string& a_regname, void* a_buffer, int a_length );
+            int read_from_reg( const std::string& a_regname, void* a_buffer, int a_length );
 
             /// Program the 10Gbe device and start the TAP driver
             /// a_device_mac: MAC address for the 10Gbe device (e.g. 00:12:34:56:78:9a); first two bits must be zeroes to be valid
