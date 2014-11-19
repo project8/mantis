@@ -16,7 +16,7 @@ namespace mantis
 {
     MTLOGGER( mtlog, "client" );
 
-    client::client( const std::string& a_host, const int& a_port ) :
+    client::client( const std::string& a_host, const int& a_port, socket_type a_type ) :
             connection( -1, NULL )
     {
         //MTINFO( mtlog, "creating client with host <" << a_host << "> on port <" << a_port << ">" );
@@ -44,7 +44,7 @@ namespace mantis
         //MTINFO( mtlog, "address prepared..." );
 
         //open socket
-        f_socket = ::socket( AF_INET, SOCK_STREAM, 0 );
+        f_socket = ::socket( AF_INET, a_type, 0 );
         if( f_socket < 0 )
         {
             throw exception() << "[client] could not create socket:\n\t" << strerror( errno );

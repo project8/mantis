@@ -16,7 +16,7 @@ namespace mantis
 {
     MTLOGGER( mtlog, "server" );
 
-    server::server( const int& a_port ) :
+    server::server( const int& a_port, socket_type a_type ) :
             f_socket( 0 ),
             f_address( NULL )
     {
@@ -35,7 +35,7 @@ namespace mantis
         //MTINFO( mtlog, "address prepared..." );
 
         //open socket
-        f_socket = ::socket( AF_INET, SOCK_STREAM, 0 );
+        f_socket = ::socket( AF_INET, a_type, 0 );
         if( f_socket < 0 )
         {
             throw exception() << "[server] could not create socket:\n\t" << strerror( errno );
