@@ -6,6 +6,7 @@
 #include "katcl.h"
 #include "netc.h"
 
+#include <cstring>
 #include <errno.h>
 #include <sys/time.h>
 #include <vector>

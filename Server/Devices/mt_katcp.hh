@@ -3,6 +3,7 @@
 
 #include <string>
 
+#include <stdint.h>
 
 struct katcl_line;
 
