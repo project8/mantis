@@ -5,6 +5,8 @@
 #include "mt_logger.hh"
 #include "mt_thread.hh"
 
+#include <unistd.h>
+
 namespace mantis
 {
     MTLOGGER( mtlog, "digitizer" );

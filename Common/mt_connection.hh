@@ -7,6 +7,7 @@
 #include <errno.h>
 #include <netinet/in.h>
 #include <string>
+#include <sys/socket.h>
 #include <sys/types.h>
 
 namespace mantis
