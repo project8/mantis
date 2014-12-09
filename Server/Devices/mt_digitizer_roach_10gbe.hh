@@ -71,6 +71,7 @@ namespace mantis
             std::string f_reg_enable; /// ROACH register name for enabling sending data via 10Gbe
             std::string f_reg_10gbe_ip; /// ROACH register name for the 10Gbe IP address (must match what's in the bof file)
             std::string f_reg_10gbe_port; /// ROACH register name for the 10Gbe communication port (must match what's in the bof file)
+            std::string f_10gbe_name; /// ROACH 10Gbe call name (e.g. tap0)
             std::string f_10gbe_device; /// ROACH 10Gbe device name (e.g. gbe0)
             std::string f_10gbe_device_mac; /// MAC address to assign to the ROACH 10Gbe device
             std::string f_10gbe_device_ip; /// IP address to assign to the ROACH 10Gbe device
