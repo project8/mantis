@@ -6,6 +6,7 @@
 #include "katcl.h"
 #include "netc.h"
 
+#include <cstring>
 #include <errno.h>
 #include <sys/time.h>
 #include <vector>
@@ -140,23 +141,28 @@ namespace mantis
         return a_length;
     }
 
-    int katcp::tap_start( const string& a_device, const string& a_device_mac, const string& a_device_ip, uint16_t a_device_port )
+    int katcp::tap_start( const string& device_name, const string& a_device, const string& a_device_ip, uint16_t a_device_port, const string& a_device_mac )
     {
         // prepare a request
         if( append_string_katcl( f_cmd_line, KATCP_FLAG_FIRST, const_cast< char* >("?tap-start") ) < 0 )
             return -1;
+	std::cout<<"tap-start"<<std::endl;
+        if( append_string_katcl( f_cmd_line, 0, "tap0" /*const_cast< char* >( device_name.c_str() )*/ ) < 0 )
+            return -1;
+	std::cout<<"device_name.c_str()"<<std::endl;
         if( append_string_katcl( f_cmd_line, 0, const_cast< char* >( a_device.c_str() ) ) < 0 )
             return -1;
-        if( append_string_katcl( f_cmd_line, 0, const_cast< char* >( a_device_mac.c_str() ) ) < 0 )
-            return -1;
+	std::cout<<"a_device.c_str()"<<std::endl;
         if( append_string_katcl( f_cmd_line, 0, const_cast< char* >( a_device_ip.c_str() ) ) < 0 )
             return -1;
+	std::cout<<"a_device_ip.c_str()"<<std::endl;
         //if( append_args_katcl( f_cmd_line, 0, const_cast< char* >( katcp::mac_string_to_int( a_device_mac ).c_str() ),
         //                                      const_cast< char* >( katcp::ip_string_to_int(  a_device_ip  ).c_str() ) ) < 0)
+        //    return -1;
+        if( append_unsigned_long_katcl( f_cmd_line, 0, a_device_port ) < 0 )
             return -1;
-        if( append_unsigned_long_katcl( f_cmd_line, KATCP_FLAG_LAST, a_device_port ) < 0 )
+        if( append_string_katcl( f_cmd_line, KATCP_FLAG_LAST, const_cast< char* >( a_device_mac.c_str() ) ) < 0 )
             return -1;
-
         // send the request
         if( dispatch_client( "!tap-start" , 1 ) < 0 )
             return -1;

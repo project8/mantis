@@ -3,6 +3,7 @@
 
 #include <string>
 
+#include <stdint.h>
 
 struct katcl_line;
 
@@ -35,7 +36,7 @@ namespace mantis
             /// a_device_mac: MAC address for the 10Gbe device (e.g. 00:12:34:56:78:9a); first two bits must be zeroes to be valid
             /// a_device_ip:  IP address for the 10Gbe device (e.g. 10.0.0.2)
             /// a_device_port: Port for the 10 Gbe device (e.g. 10000)
-            int tap_start( const std::string& a_device, const std::string& a_device_mac, const std::string& a_device_ip, uint16_t a_device_port );
+            int tap_start( const std::string& device_name, const std::string& a_device, const std::string& a_device_ip, uint16_t a_device_port, const std::string& a_device_mac );
 
             /* add other katcp functions here */
 

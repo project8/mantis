@@ -47,6 +47,7 @@ namespace mantis
             f_reg_10gbe_ip( "dest_ip" ),
             f_reg_10gbe_port( "dest_port" ),
             f_10gbe_device( "gbe0" ),
+            f_10gbe_name( "tap0" ),
             f_10gbe_device_mac( "00:02:0A:00:00:1E" ),
             f_10gbe_device_ip( "10.0.0.200" ),
             f_10gbe_host_ip(),
@@ -169,7 +170,7 @@ namespace mantis
         }
 
         MTDEBUG( mtlog, "Starting the 10Gbe driver" );
-        if( f_katcp_client.tap_start( f_10gbe_device, f_10gbe_device_mac, f_10gbe_device_ip, f_10gbe_port ) < 0 )
+        if( f_katcp_client.tap_start( f_10gbe_name, f_10gbe_device, f_10gbe_device_ip, f_10gbe_port, f_10gbe_device_mac ) < 0 )
         {
             MTERROR( mtlog, "Unable to start the 10Gbe driver; configuration:" <<
                     "\tDevice: " << f_10gbe_device << '\n' <<
@@ -543,7 +544,7 @@ namespace mantis
         }
 
         MTDEBUG( mtlog, "Starting the 10Gbe driver" );
-        if( f_katcp_client.tap_start( f_10gbe_device, f_10gbe_device_mac, f_10gbe_device_ip, f_10gbe_port ) < 0 )
+        if( f_katcp_client.tap_start( f_10gbe_name, f_10gbe_device, f_10gbe_device_ip, f_10gbe_port, f_10gbe_device_mac ) < 0 )
         {
             MTERROR( mtlog, "Unable to start the 10Gbe driver; configuration:" <<
                     "\tDevice: " << f_10gbe_device << '\n' <<
