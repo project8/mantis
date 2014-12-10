@@ -1,5 +1,5 @@
-#ifndef MT_SERVER_HH_
-#define MT_SERVER_HH_
+#ifndef MT_SERVER_TCP_HH_
+#define MT_SERVER_TCP_HH_
 
 #include "mt_connection.hh"
 
@@ -9,11 +9,11 @@
 namespace mantis
 {
 
-    class server
+    class server_tcp
     {
         public:
-            server( const int& a_port );
-            virtual ~server();
+            server_tcp( const int& a_port );
+            virtual ~server_tcp();
 
             connection* get_connection();
 

@@ -39,7 +39,7 @@ namespace mantis
 
         try
         {
-            f_client = new client( a_request->write_host(), a_request->write_port() );
+            f_client = new client_tcp( a_request->write_host(), a_request->write_port() );
         }
         catch( exception& e )
         {
