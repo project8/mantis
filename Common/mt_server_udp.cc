@@ -16,9 +16,13 @@ namespace mantis
 {
     MTLOGGER( mtlog, "server_udp" );
 
+    int server_udp::f_last_errno = 0;
+
     server_udp::server_udp( const int& a_port ) :
             f_socket( 0 ),
-            f_address( NULL )
+            f_address( NULL ),
+            f_client_address( NULL ),
+            f_client_address_length( 0 )
     {
         //MTINFO( mtlog, "opening server_udp socket on port <" << a_port << ">" );
 
@@ -35,7 +39,7 @@ namespace mantis
         //MTINFO( mtlog, "address prepared..." );
 
         //open socket
-        f_socket = ::socket( AF_INET, SOCK_STREAM, 0 );
+        f_socket = ::socket( AF_INET, SOCK_DGRAM, 0 );
         if( f_socket < 0 )
         {
             throw exception() << "[server_udp] could not create socket:\n\t" << strerror( errno );
@@ -53,13 +57,10 @@ namespace mantis
 
         //MTINFO( mtlog, "socket bound..." );
 
-        //start listening
-        if( ::listen( f_socket, 10 ) < 0 )
-        {
-            throw exception() << "[server_udp] listen failed:\n\t" << strerror( errno );
-        }
-
-        //MTINFO( mtlog, "listening..." );
+        //client address
+        f_client_address = new sockaddr_in();
+        f_client_address_length = sizeof( f_client_address );
+        ::memset( f_client_address, 0, f_client_address_length );
 
         return;
     }
@@ -68,33 +69,27 @@ namespace mantis
     {
         //clean up server_udp address
         delete f_address;
+        delete f_client_address;
 
         //close server_udp socket
         ::close( f_socket );
     }
 
-    connection* server_udp::get_connection()
+    ssize_t server_udp::recvfrom( char* a_message, size_t a_size, int flags, int& ret_errno )
     {
-        int t_socket = 0;
-        sockaddr_in* t_address = NULL;
+        ssize_t t_recv_size = ::recvfrom( f_socket, a_message, a_size, flags, (sockaddr*)f_client_address, &f_client_address_length );
 
-        //initialize the new address
-        socklen_t t_address_length = sizeof(sockaddr_in);
-        t_address = new sockaddr_in();
-        ::memset( t_address, 0, t_address_length );
-
-        //accept a connection
-        //blocks the thread while waiting for an incoming connection
-        t_socket = ::accept( f_socket, (sockaddr*) (t_address), &t_address_length );
-        if( t_socket < 0 )
+        if( t_recv_size > 0 )
         {
-            throw exception() << "[server_udp] could not accept connection:\n\t" << strerror( errno );
+            return t_recv_size;
         }
+        f_last_errno = errno;
 
-        //MTINFO( mtlog, "connection accepted..." );
-
-        //return a new connection
-        return new connection( t_socket, t_address );
+        return t_recv_size;
     }
 
+    sockaddr_in* server_udp::client_address()
+    {
+        return f_client_address;
+    }
 }

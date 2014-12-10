@@ -16,8 +16,9 @@ namespace mantis
 {
     MTLOGGER( mtlog, "client_udp" );
 
-    client_udp::client_udp( const std::string& a_host, const int& a_port ) :
-            connection( -1, NULL )
+    int client_udp::f_last_errno = 0;
+
+    client_udp::client_udp( const std::string& a_host, const int& a_port )
     {
         //MTINFO( mtlog, "creating client_udp with host <" << a_host << "> on port <" << a_port << ">" );
 
@@ -44,7 +45,7 @@ namespace mantis
         //MTINFO( mtlog, "address prepared..." );
 
         //open socket
-        f_socket = ::socket( AF_INET, SOCK_STREAM, 0 );
+        f_socket = ::socket( AF_INET, SOCK_DGRAM, 0 );
         if( f_socket < 0 )
         {
             throw exception() << "[client_udp] could not create socket:\n\t" << strerror( errno );
@@ -53,14 +54,6 @@ namespace mantis
 
         //MTINFO( mtlog, "socket opened..." );
 
-        //connect socket
-        if( ::connect( f_socket, (sockaddr*) (f_address), t_address_length ) < 0 )
-        {
-            throw exception() << "[client_udp] could not create connection:\n\t" << strerror( errno );
-        }
-
-        //MTINFO( mtlog, "socket connected..." );
-
         return;
     }
 
@@ -68,4 +61,16 @@ namespace mantis
     {
     }
 
+    ssize_t client_udp::send( const char* a_message, size_t a_size, int flags, int& ret_errno )
+    {
+        ssize_t t_written_size = ::send( f_socket, (void*)a_message, a_size, flags );
+
+        if( t_written_size == (ssize_t)a_size )
+        {
+            return t_written_size;
+        }
+        f_last_errno = errno;
+
+        return t_written_size;
+    }
 }
