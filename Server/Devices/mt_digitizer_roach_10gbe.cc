@@ -42,7 +42,7 @@ namespace mantis
     digitizer_roach_10gbe::digitizer_roach_10gbe() :
             f_katcp_client(),
             f_bof_file(),
-            f_reg_block_size( "block_size" ),
+            f_reg_block_size( "block_size_by8" ),
             f_reg_enable( "enable" ),
             f_reg_10gbe_ip( "dest_ip" ),
             f_reg_10gbe_port( "dest_port" ),
@@ -192,7 +192,9 @@ namespace mantis
         }
 
         MTDEBUG( mtlog, "Setting the block size in the ROACH" );
-        if( f_katcp_client.write_uint_to_reg( f_reg_block_size, f_buffer->block_size() ) < 0 )
+        // block size is divided by 8 because the the block on the ROACH is comprised of 64-bit words,
+        // and currently each sample is 1 byte, so each 64-bit word contains 8 samples.
+        if( f_katcp_client.write_uint_to_reg( f_reg_block_size, f_buffer->block_size() / 8 ) < 0 )
         {
             MTERROR( mtlog, "Unable to set register <" << f_reg_block_size << "> with the block size (" << f_buffer->block_size() << ")" );
             return false;
