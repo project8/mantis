@@ -5,7 +5,7 @@
 #include "mt_logger.hh"
 #include "mt_run_context_dist.hh"
 #include "mt_run_queue.hh"
-#include "mt_server.hh"
+#include "mt_server_tcp.hh"
 #include "mt_version.hh"
 
 #include <cstddef>
@@ -17,7 +17,7 @@ namespace mantis
 {
     MTLOGGER( mtlog, "request_receiver" );
 
-    request_receiver::request_receiver( const param_node* a_config, server* a_server, run_queue* a_run_queue, condition* a_condition, const string& a_exe_name ) :
+    request_receiver::request_receiver( const param_node* a_config, server_tcp* a_server, run_queue* a_run_queue, condition* a_condition, const string& a_exe_name ) :
             f_config( *a_config ),
             f_server( a_server ),
             f_run_queue( a_run_queue ),

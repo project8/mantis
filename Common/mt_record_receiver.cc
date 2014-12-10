@@ -4,7 +4,7 @@
 #include "mt_condition.hh"
 #include "mt_logger.hh"
 #include "mt_record_dist.hh"
-#include "mt_server.hh"
+#include "mt_server_tcp.hh"
 #include "response.pb.h"
 
 #include <cstddef>
@@ -14,7 +14,7 @@ namespace mantis
 {
     MTLOGGER( mtlog, "record_receiver" );
 
-    record_receiver::record_receiver( server* a_server ) :
+    record_receiver::record_receiver( server_tcp* a_server ) :
             f_server( a_server ),
             f_buffer( NULL ),
             f_condition( NULL ),
@@ -81,7 +81,7 @@ namespace mantis
         record_dist* t_record_dist = new record_dist();
         t_record_dist->set_data_chunk_nbytes( f_data_chunk_size );
         MTINFO( mtlog, "waiting for incoming record connection" );
-        // thread is blocked by the accept call in server::get_connection
+        // thread is blocked by the accept call in server_tcp::get_connection
         // until an incoming connection is received
         t_record_dist->set_connection( f_server->get_connection() );
 
