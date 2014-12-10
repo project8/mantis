@@ -37,7 +37,7 @@ namespace mantis
         // objects for receiving and writing data
         try
         {
-            f_server = new server( a_write_port, k_stream );
+            f_server = new server( a_write_port );
         }
         catch( exception& e)
         {
