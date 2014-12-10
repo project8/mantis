@@ -6,10 +6,11 @@
 namespace mantis
 {
 
-    class client : public connection
+    class client :
+            public connection
     {
         public:
-            client( const std::string& a_host, const int& a_port, socket_type a_type );
+            client( const std::string& a_host, const int& a_port );
             virtual ~client();
     };
 

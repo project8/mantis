@@ -5,7 +5,6 @@
 
 #include <netinet/in.h>
 #include <string>
-#include <sys/socket.h>
 
 namespace mantis
 {
@@ -13,7 +12,7 @@ namespace mantis
     class server
     {
         public:
-            server( const int& a_port, socket_type a_type );
+            server( const int& a_port );
             virtual ~server();
 
             connection* get_connection();

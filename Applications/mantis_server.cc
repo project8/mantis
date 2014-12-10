@@ -100,7 +100,7 @@ int main( int argc, char** argv )
     server* t_server;
     try
     {
-        t_server = new server( t_config->get_value< int >( "port" ), k_stream );
+        t_server = new server( t_config->get_value< int >( "port" ) );
     }
     catch( exception& e )
     {

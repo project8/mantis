@@ -93,7 +93,7 @@ namespace mantis
         client* t_request_client;
         try
         {
-            t_request_client = new client( t_request_host, t_request_port, k_stream );
+            t_request_client = new client( t_request_host, t_request_port );
         }
         catch( exception& e )
         {
