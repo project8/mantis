@@ -25,7 +25,6 @@
 namespace mantis
 {
     class block_cleanup_roach_10gbe;
-    class connection;
     class server_udp;
 
     class digitizer_roach_10gbe : public digitizer
@@ -79,7 +78,6 @@ namespace mantis
             unsigned f_10gbe_port; /// Port to use for 10Gbe communication
 
             server_udp* f_10gbe_server;
-            connection* f_10gbe_connection;
 
             //sem_t* f_semaphore;
 
@@ -99,11 +97,10 @@ namespace mantis
 
             bool start();
             bool acquire( block* a_block, timespec& a_time_stamp );
-            bool stop( bool a_disconnect_10gbe = false );
+            bool stop();
 
             bool enable_10gbe();
             bool disable_10gbe();
-            bool disconnect_10gbe();
 
     };
 

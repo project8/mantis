@@ -53,7 +53,6 @@ namespace mantis
             f_10gbe_host_ip(),
             f_10gbe_port( 60000 ),
             f_10gbe_server( NULL ),
-            f_10gbe_connection( NULL ),
             //f_semaphore( NULL ),
             f_allocated( false ),
             f_buffer( NULL ),
@@ -99,7 +98,6 @@ namespace mantis
         }
 
         delete f_10gbe_server;
-        delete f_10gbe_connection;
 
         /*
         if( f_semaphore != SEM_FAILED )
@@ -286,7 +284,7 @@ namespace mantis
                 f_live_time += time_to_nsec( t_live_stop_time ) - time_to_nsec( t_live_start_time );
 
                 //halt the 10Gbe acquisition
-                stop( true );
+                stop();
 
                 //GET OUT
                 if( f_canceled.load() )
@@ -316,7 +314,7 @@ namespace mantis
                 f_live_time += time_to_nsec( t_live_stop_time ) - time_to_nsec( t_live_start_time );
 
                 //halt the 10Gbe acquisition
-                stop( true );
+                stop();
 
                 // to make sure we don't deadlock anything
                 if( f_cancel_condition.is_waiting() )
@@ -343,10 +341,9 @@ namespace mantis
                 f_live_time += time_to_nsec( t_live_stop_time ) - time_to_nsec( t_live_start_time );
 
                 //pause the 10Gbe acquisition
-                if( stop( false ) == false )
+                if( stop() == false )
                 {
                     //GET OUT
-                    stop( true );
                     MTINFO( mtlog, "finished abnormally because halting streaming failed" );
                     return;
                 }
@@ -371,8 +368,6 @@ namespace mantis
                     {
                         f_cancel_condition.release();
                     }
-
-                    disconnect_10gbe();
 
                     //GET OUT
                     MTINFO( mtlog, "finished abnormally because starting streaming failed" );
@@ -424,22 +419,6 @@ namespace mantis
     {
         if( ! enable_10gbe() ) return false;
 
-        if( f_10gbe_connection == NULL )
-        {
-            MTDEBUG( mtlog, "Waiting for 10Gbe connection" );
-            f_10gbe_connection = f_10gbe_server->get_connection();
-            if( f_10gbe_connection == NULL )
-            {
-                MTERROR( mtlog, "Did not receive valid connection" );
-                if( f_katcp_client.write_uint_to_reg( f_reg_enable, 0 ) < 0 )
-                {
-                    MTERROR( mtlog, "Unable to set register <" << f_reg_enable << "> to 0" );
-                }
-                return false;
-            }
-            MTDEBUG( mtlog, "Have 10Gbe connection" );
-        }
-
         return true;
     }
 
@@ -447,7 +426,7 @@ namespace mantis
     {
         try
         {
-            f_10gbe_connection->recv( (char*)a_block->data_bytes(), a_block->get_data_size(), MSG_WAITALL );
+            f_10gbe_server->recvfrom( (char*)a_block->data_bytes(), a_block->get_data_size(), MSG_WAITALL );
         }
         catch( exception& e )
         {
@@ -463,13 +442,9 @@ namespace mantis
         return true;
     }
 
-    bool digitizer_roach_10gbe::stop( bool a_disconnect_10gbe )
+    bool digitizer_roach_10gbe::stop()
     {
-        bool result = disable_10gbe();
-
-        if( a_disconnect_10gbe ) result = result && disconnect_10gbe();
-
-        return result;
+        return disable_10gbe();
     }
 
     bool digitizer_roach_10gbe::enable_10gbe()
@@ -489,17 +464,6 @@ namespace mantis
             MTERROR( mtlog, "Unable to set register <" << f_reg_enable << "> to 0" );
             return false;
         }
-        return true;
-    }
-
-    bool digitizer_roach_10gbe::disconnect_10gbe()
-    {
-        delete f_10gbe_connection;
-        f_10gbe_connection = NULL;
-
-        delete f_10gbe_server;
-        f_10gbe_server = NULL;
-
         return true;
     }
 
@@ -609,24 +573,11 @@ namespace mantis
 
         if( ! enable_10gbe() ) return false;
 
-        MTDEBUG( mtlog, "Waiting for 10Gbe connection" );
-        f_10gbe_connection = f_10gbe_server->get_connection();
-        if( f_10gbe_connection == NULL )
-        {
-            MTERROR( mtlog, "Did not receive valid connection" );
-            if( f_katcp_client.write_uint_to_reg( f_reg_enable, 0 ) < 0 )
-            {
-                MTERROR( mtlog, "Unable to set register <" << f_reg_enable << "> to 0" );
-            }
-            return false;
-        }
-        MTDEBUG( mtlog, "Have 10Gbe connection" );
-
         MTDEBUG( mtlog, "acquiring a record" );
 
         try
         {
-            f_10gbe_connection->recv( (char*)t_block->data_bytes(), t_block->get_data_size(), MSG_WAITALL );
+            f_10gbe_server->recvfrom( (char*)t_block->data_bytes(), t_block->get_data_size(), MSG_WAITALL );
         }
         catch( exception& e )
         {
@@ -637,8 +588,6 @@ namespace mantis
         MTDEBUG( mtlog, "ending acquisition..." );
 
         disable_10gbe();
-
-        disconnect_10gbe();
 
         std::stringstream t_str_buff;
         for( unsigned i = 0; i < 99; ++i )
