@@ -9,6 +9,7 @@ set( MANTIS_COMMON_HEADERFILES
     mt_buffer.hh
     mt_callable.hh
     mt_client_tcp.hh
+    mt_client_udp.hh
     mt_condition.hh
     mt_configurator.hh    
     mt_connection.hh
@@ -27,6 +28,7 @@ set( MANTIS_COMMON_HEADERFILES
     mt_run_context_dist.hh
     mt_run_description.hh
     mt_server_tcp.hh    
+    mt_server_udp.hh    
     mt_signal_handler.hh
     mt_thread.hh
     mt_writer.hh
@@ -38,6 +40,7 @@ set( MANTIS_COMMON_SOURCEFILES
     mt_buffer.cc
     mt_callable.cc
     mt_client_tcp.cc
+    mt_client_udp.cc
     mt_condition.cc
     mt_configurator.cc    
     mt_connection.cc
@@ -56,6 +59,7 @@ set( MANTIS_COMMON_SOURCEFILES
     mt_run_context_dist.cc
     mt_run_description.cc
     mt_server_tcp.cc    
+    mt_server_udp.cc    
     mt_signal_handler.cc
     mt_thread.cc
     mt_version.cc

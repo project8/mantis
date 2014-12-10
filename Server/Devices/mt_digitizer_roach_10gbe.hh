@@ -26,7 +26,7 @@ namespace mantis
 {
     class block_cleanup_roach_10gbe;
     class connection;
-    class server;
+    class server_udp;
 
     class digitizer_roach_10gbe : public digitizer
     {
@@ -78,7 +78,7 @@ namespace mantis
             std::string f_10gbe_host_ip; /// IP address of the 10Gbe server (i.e. this digitizer object)
             unsigned f_10gbe_port; /// Port to use for 10Gbe communication
 
-            server* f_10gbe_server;
+            server_udp* f_10gbe_server;
             connection* f_10gbe_connection;
 
             //sem_t* f_semaphore;

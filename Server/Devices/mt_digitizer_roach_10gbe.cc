@@ -15,7 +15,7 @@
 #include "mt_factory.hh"
 #include "mt_iterator.hh"
 #include "mt_logger.hh"
-#include "mt_server.hh"
+#include "mt_server_udp.hh"
 
 #include <cmath> // for ceil()
 #include <cstdlib> // for exit()
@@ -139,7 +139,7 @@ namespace mantis
         delete f_10gbe_server;
         try
         {
-            f_10gbe_server = new server( f_10gbe_port, k_dgram );
+            f_10gbe_server = new server_udp( f_10gbe_port );
         }
         catch( exception& e )
         {
@@ -513,7 +513,7 @@ namespace mantis
         delete f_10gbe_server;
         try
         {
-            f_10gbe_server = new server( f_10gbe_port, k_dgram );
+            f_10gbe_server = new server_udp( f_10gbe_port );
         }
         catch( exception& e )
         {
