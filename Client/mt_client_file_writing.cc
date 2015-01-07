@@ -16,7 +16,7 @@
 #include "mt_record_receiver.hh"
 #include "mt_run_context_dist.hh"
 #include "mt_run_description.hh"
-#include "mt_server.hh"
+#include "mt_server_tcp.hh"
 #include "mt_signal_handler.hh"
 #include "mt_thread.hh"
 
@@ -37,7 +37,7 @@ namespace mantis
         // objects for receiving and writing data
         try
         {
-            f_server = new server( a_write_port, k_stream );
+            f_server = new server_tcp( a_write_port );
         }
         catch( exception& e)
         {

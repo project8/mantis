@@ -9,7 +9,7 @@
 
 #include "mt_client_file_writing.hh"
 #include "mt_client_worker.hh"
-#include "mt_client.hh"
+#include "mt_client_tcp.hh"
 #include "mt_exception.hh"
 #include "mt_logger.hh"
 #include "mt_run_context_dist.hh"
@@ -90,10 +90,10 @@ namespace mantis
         // start the client for sending the request
         MTINFO( mtlog, "connecting with the server...");
 
-        client* t_request_client;
+        client_tcp* t_request_client;
         try
         {
-            t_request_client = new client( t_request_host, t_request_port, k_stream );
+            t_request_client = new client_tcp( t_request_host, t_request_port );
         }
         catch( exception& e )
         {

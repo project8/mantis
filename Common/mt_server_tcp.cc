@@ -1,4 +1,4 @@
-#include "mt_server.hh"
+#include "mt_server_tcp.hh"
 
 #include "mt_exception.hh"
 #include "mt_logger.hh"
@@ -14,13 +14,13 @@
 
 namespace mantis
 {
-    MTLOGGER( mtlog, "server" );
+    MTLOGGER( mtlog, "server_tcp" );
 
-    server::server( const int& a_port, socket_type a_type ) :
+    server_tcp::server_tcp( const int& a_port ) :
             f_socket( 0 ),
             f_address( NULL )
     {
-        //MTINFO( mtlog, "opening server socket on port <" << a_port << ">" );
+        //MTINFO( mtlog, "opening server_tcp socket on port <" << a_port << ">" );
 
         //initialize address
         socklen_t t_socket_length = sizeof(sockaddr_in);
@@ -35,10 +35,10 @@ namespace mantis
         //MTINFO( mtlog, "address prepared..." );
 
         //open socket
-        f_socket = ::socket( AF_INET, a_type, 0 );
+        f_socket = ::socket( AF_INET, SOCK_STREAM, 0 );
         if( f_socket < 0 )
         {
-            throw exception() << "[server] could not create socket:\n\t" << strerror( errno );
+            throw exception() << "[server_tcp] could not create socket:\n\t" << strerror( errno );
             return;
         }
 
@@ -47,7 +47,7 @@ namespace mantis
         //bind socket
         if( ::bind( f_socket, (const sockaddr*) (f_address), t_socket_length ) < 0 )
         {
-            throw exception() << "[server] could not bind socket:\n\t" << strerror( errno );
+            throw exception() << "[server_tcp] could not bind socket:\n\t" << strerror( errno );
             return;
         }
 
@@ -56,7 +56,7 @@ namespace mantis
         //start listening
         if( ::listen( f_socket, 10 ) < 0 )
         {
-            throw exception() << "[server] listen failed:\n\t" << strerror( errno );
+            throw exception() << "[server_tcp] listen failed:\n\t" << strerror( errno );
         }
 
         //MTINFO( mtlog, "listening..." );
@@ -64,16 +64,16 @@ namespace mantis
         return;
     }
 
-    server::~server()
+    server_tcp::~server_tcp()
     {
-        //clean up server address
+        //clean up server_tcp address
         delete f_address;
 
-        //close server socket
+        //close server_tcp socket
         ::close( f_socket );
     }
 
-    connection* server::get_connection()
+    connection* server_tcp::get_connection()
     {
         int t_socket = 0;
         sockaddr_in* t_address = NULL;
@@ -88,7 +88,7 @@ namespace mantis
         t_socket = ::accept( f_socket, (sockaddr*) (t_address), &t_address_length );
         if( t_socket < 0 )
         {
-            throw exception() << "[server] could not accept connection:\n\t" << strerror( errno );
+            throw exception() << "[server_tcp] could not accept connection:\n\t" << strerror( errno );
         }
 
         //MTINFO( mtlog, "connection accepted..." );

@@ -15,7 +15,7 @@ namespace mantis
     class condition;
     class record_dist;
     class response;
-    class server;
+    class server_tcp;
 
     class block_cleanup_rr;
 
@@ -23,7 +23,7 @@ namespace mantis
         public callable
     {
         public:
-            record_receiver( server* a_server );
+            record_receiver( server_tcp* a_server );
             virtual ~record_receiver();
 
             bool allocate( buffer* a_buffer, condition* a_condition );
@@ -39,7 +39,7 @@ namespace mantis
             void set_data_type_size( size_t size );
 
         private:
-            server* f_server;
+            server_tcp* f_server;
             buffer* f_buffer;
             condition* f_condition;
 
