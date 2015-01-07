@@ -3,7 +3,7 @@
 
 #include "mt_writer.hh"
 
-#include "mt_client.hh"
+#include "mt_client_tcp.hh"
 #include "mt_record_dist.hh"
 
 namespace mantis
@@ -26,7 +26,7 @@ namespace mantis
 
         private:
             record_dist* f_record_dist;
-            client* f_client;
+            client_tcp* f_client;
 
             size_t f_data_chunk_size;
 

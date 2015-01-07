@@ -17,7 +17,7 @@ namespace mantis
     class param_node;
     class record_receiver;
     class run_context_dist;
-    class server;
+    class server_tcp;
     class thread;
 
     class client_file_writing
@@ -34,7 +34,7 @@ namespace mantis
 
         private:
             const param_node* f_config;
-            server* f_server;
+            server_tcp* f_server;
             condition *f_buffer_condition;
             buffer *f_buffer;
             record_receiver* f_receiver;

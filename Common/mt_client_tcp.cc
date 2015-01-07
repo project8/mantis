@@ -1,4 +1,4 @@
-#include "mt_client.hh"
+#include "mt_client_tcp.hh"
 
 #include "mt_exception.hh"
 #include "mt_logger.hh"
@@ -14,18 +14,18 @@
 
 namespace mantis
 {
-    MTLOGGER( mtlog, "client" );
+    MTLOGGER( mtlog, "client_tcp" );
 
-    client::client( const std::string& a_host, const int& a_port, socket_type a_type ) :
+    client_tcp::client_tcp( const std::string& a_host, const int& a_port ) :
             connection( -1, NULL )
     {
-        //MTINFO( mtlog, "creating client with host <" << a_host << "> on port <" << a_port << ">" );
+        //MTINFO( mtlog, "creating client_tcp with host <" << a_host << "> on port <" << a_port << ">" );
 
         //find host
         hostent* t_host = gethostbyname( a_host.c_str() );
         if( t_host == NULL )
         {
-            throw exception() << "[client] could not find host <" << a_host << ">\n";
+            throw exception() << "[client_tcp] could not find host <" << a_host << ">\n";
             return;
         }
 
@@ -44,10 +44,10 @@ namespace mantis
         //MTINFO( mtlog, "address prepared..." );
 
         //open socket
-        f_socket = ::socket( AF_INET, a_type, 0 );
+        f_socket = ::socket( AF_INET, SOCK_STREAM, 0 );
         if( f_socket < 0 )
         {
-            throw exception() << "[client] could not create socket:\n\t" << strerror( errno );
+            throw exception() << "[client_tcp] could not create socket:\n\t" << strerror( errno );
             return;
         }
 
@@ -56,7 +56,7 @@ namespace mantis
         //connect socket
         if( ::connect( f_socket, (sockaddr*) (f_address), t_address_length ) < 0 )
         {
-            throw exception() << "[client] could not create connection:\n\t" << strerror( errno );
+            throw exception() << "[client_tcp] could not create connection:\n\t" << strerror( errno );
         }
 
         //MTINFO( mtlog, "socket connected..." );
@@ -64,7 +64,7 @@ namespace mantis
         return;
     }
 
-    client::~client()
+    client_tcp::~client_tcp()
     {
     }
 

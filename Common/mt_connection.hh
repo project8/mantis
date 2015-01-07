@@ -12,15 +12,6 @@
 
 namespace mantis
 {
-    enum socket_type
-    {
-        k_stream = SOCK_STREAM, // tcp
-        k_dgram = SOCK_DGRAM,   // udp
-        k_seqpacket = SOCK_SEQPACKET,
-        k_raw = SOCK_RAW,
-        k_rdm = SOCK_RDM
-    };
-
     class closed_connection :
         public std::exception
     {
