@@ -34,6 +34,7 @@ namespace mantis
     }
     file_writer::~file_writer()
     {
+        delete f_monarch;
         delete f_run_desc;
     }
 
@@ -146,6 +147,7 @@ namespace mantis
 
         return true;
     }
+
     bool file_writer::write( block* a_block )
     {
         bool t_is_new_acquisition = a_block->get_acquisition_id() != f_last_acquisition_id;
