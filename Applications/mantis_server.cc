@@ -35,7 +35,7 @@
 #include "mt_logger.hh"
 #include "mt_request_receiver.hh"
 #include "mt_run_queue.hh"
-#include "mt_server.hh"
+#include "mt_server_tcp.hh"
 #include "mt_server_config.hh"
 #include "mt_server_worker.hh"
 #include "mt_signal_handler.hh"
@@ -97,10 +97,10 @@ int main( int argc, char** argv )
 
     // set up the server and request receiver
 
-    server* t_server;
+    server_tcp* t_server;
     try
     {
-        t_server = new server( t_config->get_value< int >( "port" ) );
+        t_server = new server_tcp( t_config->get_value< int >( "port" ) );
     }
     catch( exception& e )
     {

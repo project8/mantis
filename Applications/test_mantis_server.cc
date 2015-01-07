@@ -1,6 +1,6 @@
 #include "mt_configurator.hh"
 #include "mt_logger.hh"
-#include "mt_server.hh"
+#include "mt_server_tcp.hh"
 #include "mt_server_config.hh"
 #include "mt_run_context_dist.hh"
 #include "mt_connection.hh"
@@ -23,7 +23,7 @@ int main( int argc, char** argv )
 
         MTINFO( mtlog, " starting server..." );
 
-        server* t_server = new server( t_configurator.get< int >( "port" ) );
+        server_tcp* t_server = new server_tcp( t_configurator.get< int >( "port" ) );
         run_context_dist* t_run_context = new run_context_dist();
 
         while( true )
