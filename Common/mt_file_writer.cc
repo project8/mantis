@@ -6,8 +6,8 @@
 #include "mt_logger.hh"
 #include "mt_run_description.hh"
 
-#include "MonarchException.hpp"
-#include "MonarchVersion.hpp"
+#include "M3Exception.hh"
+#include "M3Version.hh"
 
 #include <cstring> // for memcpy()
 using std::stringstream;
@@ -22,7 +22,10 @@ namespace mantis
             writer(),
             f_monarch( NULL ),
             f_header( NULL ),
+            f_stream( NULL ),
             f_record( NULL ),
+            f_data( NULL ),
+            f_last_acquisition_id( UINT32_MAX ),
             f_dig_params(),
             f_run_desc( NULL )
     {
@@ -59,48 +62,19 @@ namespace mantis
 
         try
         {
-            f_monarch = monarch::Monarch::OpenForWriting( a_request->file() );
+            f_monarch = monarch3::Monarch3::OpenForWriting( a_request->file() );
         }
-        catch( monarch::MonarchException& e )
+        catch( monarch3::M3Exception& e )
         {
             MTERROR( mtlog, "error opening file: " << e.what() );
             return false;
         }
         f_header = f_monarch->GetHeader();
 
-        //required fields
+        // run header information
         f_header->SetFilename( a_request->file() );
-        unsigned t_n_channels = 1;
-        if( a_request->mode() == request_mode_t_single )
-        {
-            f_header->SetAcquisitionMode( monarch::sOneChannel );
-            f_header->SetFormatMode( monarch::sFormatSingle );
-            t_n_channels = 1;
-        }
-        if( a_request->mode() == request_mode_t_dual_separate )
-        {
-            f_header->SetAcquisitionMode( monarch::sTwoChannel );
-            f_header->SetFormatMode( monarch::sFormatMultiSeparate );
-            t_n_channels = 2;
-        }
-        if( a_request->mode() == request_mode_t_dual_interleaved )
-        {
-            f_header->SetAcquisitionMode( monarch::sTwoChannel );
-            f_header->SetFormatMode( monarch::sFormatMultiInterleaved );
-            t_n_channels = 2;
-        }
-        f_header->SetAcquisitionRate( a_request->rate() );
         f_header->SetRunDuration( a_request->duration() );
-        f_header->SetRecordSize( f_buffer->block_size() / t_n_channels );
-
-        //optional fields
         f_header->SetTimestamp( a_request->date() );
-        f_header->SetRunType( monarch::sRunTypeSignal );
-        f_header->SetRunSource( monarch::sSourceMantis );
-        f_header->SetDataTypeSize( f_dig_params.data_type_size );
-        f_header->SetBitDepth( f_dig_params.bit_depth );
-        f_header->SetVoltageMin( f_dig_params.v_min );
-        f_header->SetVoltageRange( f_dig_params.v_range );
 
         // description
         if( f_run_desc == NULL )
@@ -116,10 +90,44 @@ namespace mantis
         param_node* t_client_config = param_input_json::read_string( a_request->client_config() );
         f_run_desc->set_client_config( *t_client_config );
 
-        string t_full_desc;
+        std::string t_full_desc;
         param_output_json::write_string( *f_run_desc, t_full_desc, param_output_json::k_compact );
         f_header->SetDescription( t_full_desc );
 
+        // stream and channel information
+        unsigned t_n_channels = 1;
+        if( a_request->mode() == request_mode_t_single )
+        {
+            f_header->AddStream( "mantis digitizer",
+                    a_request->rate(), f_buffer->block_size() / t_n_channels,
+                    f_dig_params.data_type_size, monarch3::sDigitized,
+                    f_dig_params.bit_depth );
+            t_n_channels = 1;
+        }
+        if( a_request->mode() == request_mode_t_dual_separate )
+        {
+            f_header->AddStream( "mantis digitizer", 2, monarch3::sSeparate,
+                    a_request->rate(), f_buffer->block_size() / t_n_channels,
+                    f_dig_params.data_type_size, monarch3::sDigitized,
+                    f_dig_params.bit_depth );
+            t_n_channels = 2;
+        }
+        if( a_request->mode() == request_mode_t_dual_interleaved )
+        {
+            f_header->AddStream( "mantis digitizer", 2, monarch3::sInterleaved,
+                    a_request->rate(), f_buffer->block_size() / t_n_channels,
+                    f_dig_params.data_type_size, monarch3::sDigitized,
+                    f_dig_params.bit_depth );
+            t_n_channels = 2;
+        }
+
+        // write voltage information to channel headers
+        typedef std::vector< monarch3::M3ChannelHeader > ChanHeaders;
+        for( ChanHeaders::iterator t_chan_it = f_header->GetChannelHeaders().begin(); t_chan_it != f_header->GetChannelHeaders().end(); ++t_chan_it )
+        {
+            t_chan_it->SetVoltageMin( f_dig_params.v_min );
+            t_chan_it->SetVoltageRange( f_dig_params.v_range );
+        }
 
         MTINFO( mtlog, "writing header..." );
 
@@ -127,24 +135,26 @@ namespace mantis
         {
             f_monarch->WriteHeader();
         }
-        catch( monarch::MonarchException& e )
+        catch( monarch3::M3Exception& e )
         {
             MTERROR( mtlog, "error while writing header: " << e.what() );
             return false;
         }
-        f_monarch->SetInterface( monarch::sInterfaceInterleaved );
-        f_record = f_monarch->GetRecordInterleaved();
+        f_stream = f_monarch->GetStream( 0 );
+        f_record = f_stream->GetStreamRecord();
+        f_data = f_record->GetData();
 
         return true;
     }
     bool file_writer::write( block* a_block )
     {
-        f_record->fAcquisitionId = (monarch::AcquisitionIdType) (a_block->get_acquisition_id());
-        f_record->fRecordId = (monarch::RecordIdType) (a_block->get_record_id());
-        f_record->fTime = (monarch::TimeType) (a_block->get_timestamp());
-        ::memcpy( f_record->fData, a_block->data_bytes(), a_block->get_data_nbytes() );
+        bool t_is_new_acquisition = a_block->get_acquisition_id() != f_last_acquisition_id;
+        f_last_acquisition_id = a_block->get_acquisition_id();
+        f_record->SetRecordId( (monarch3::RecordIdType) (a_block->get_record_id()) );
+        f_record->SetTime( (monarch3::TimeType) (a_block->get_timestamp()) );
+        ::memcpy( f_data, a_block->data_bytes(), a_block->get_data_nbytes() );
 
-        return f_monarch->WriteRecord();
+        return f_stream->WriteRecord( t_is_new_acquisition );
     }
 
 }

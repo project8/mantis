@@ -3,7 +3,7 @@
 
 #include "mt_writer.hh"
 
-#include "Monarch.hpp"
+#include "M3Monarch.hh"
 
 #include "thorax.hh"
 
@@ -44,9 +44,12 @@ namespace mantis
             bool initialize_derived( request* a_response );
 
         private:
-            monarch::Monarch* f_monarch;
-            monarch::MonarchHeader* f_header;
-            monarch::MonarchRecordBytes* f_record;
+            monarch3::Monarch3* f_monarch;
+            monarch3::M3Header* f_header;
+            monarch3::M3Stream* f_stream;
+            monarch3::M3Record* f_record;
+            byte_type* f_data;
+            acquisition_id_type f_last_acquisition_id;
 
             struct dig_calib_params f_dig_params;
 
