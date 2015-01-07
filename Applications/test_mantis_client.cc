@@ -1,6 +1,6 @@
 #include "mt_configurator.hh"
 #include "mt_logger.hh"
-#include "mt_client.hh"
+#include "mt_client_tcp.hh"
 #include "mt_client_config.hh"
 #include "mt_run_context_dist.hh"
 #include "thorax.hh"
@@ -69,7 +69,7 @@ int main( int argc, char** argv )
         MTINFO( mtlog, "attempting to reach host at: " << t_host );
         int t_port = t_configurator.get< int >( "port" );
         MTINFO( mtlog, "host port: " << t_port );
-        client* t_client = new client( t_host, t_port );
+        client_tcp* t_client = new client_tcp( t_host, t_port );
         run_context_dist* t_run_context = new run_context_dist();
         t_run_context->set_connection( t_client );
 
