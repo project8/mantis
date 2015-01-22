@@ -100,7 +100,7 @@ namespace mantis
         if( a_request->mode() == request_mode_t_single )
         {
             f_header->AddStream( "mantis digitizer",
-                    a_request->rate(), f_buffer->block_size() / t_n_channels,
+                    a_request->rate(), f_buffer->block_size() / t_n_channels, 1,
                     f_dig_params.data_type_size, monarch3::sDigitized,
                     f_dig_params.bit_depth );
             t_n_channels = 1;
@@ -108,7 +108,7 @@ namespace mantis
         if( a_request->mode() == request_mode_t_dual_separate )
         {
             f_header->AddStream( "mantis digitizer", 2, monarch3::sSeparate,
-                    a_request->rate(), f_buffer->block_size() / t_n_channels,
+                    a_request->rate(), f_buffer->block_size() / t_n_channels, 1,
                     f_dig_params.data_type_size, monarch3::sDigitized,
                     f_dig_params.bit_depth );
             t_n_channels = 2;
@@ -116,7 +116,7 @@ namespace mantis
         if( a_request->mode() == request_mode_t_dual_interleaved )
         {
             f_header->AddStream( "mantis digitizer", 2, monarch3::sInterleaved,
-                    a_request->rate(), f_buffer->block_size() / t_n_channels,
+                    a_request->rate(), f_buffer->block_size() / t_n_channels, 1,
                     f_dig_params.data_type_size, monarch3::sDigitized,
                     f_dig_params.bit_depth );
             t_n_channels = 2;
