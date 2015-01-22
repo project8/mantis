@@ -34,7 +34,7 @@
 #include "mt_factory.hh"
 #include "mt_logger.hh"
 #include "mt_request_receiver.hh"
-#include "mt_run_queue.hh"
+#include "mt_run_database.hh"
 #include "mt_server_tcp.hh"
 #include "mt_server_config.hh"
 #include "mt_server_worker.hh"
@@ -109,9 +109,9 @@ int main( int argc, char** argv )
     }
 
     condition t_queue_condition;
-    run_queue t_run_queue;
+    run_database t_run_database;
 
-    request_receiver t_receiver( t_config, t_server, &t_run_queue, &t_queue_condition, t_configurator->exe_name() );
+    request_receiver t_receiver( t_config, t_server, &t_run_database, &t_queue_condition, t_configurator->exe_name() );
     t_receiver.set_buffer_size( t_buffer_size );
     t_receiver.set_block_size( t_block_size );
     t_receiver.set_data_chunk_size( t_data_chunk_size );
@@ -160,7 +160,7 @@ int main( int argc, char** argv )
 
     server_worker t_worker( t_config,
                             t_digitizer,
-                            &t_buffer, &t_run_queue,
+                            &t_buffer, &t_run_database,
                             &t_queue_condition, &t_buffer_condition,
                             t_configurator->exe_name() );
 
@@ -168,22 +168,18 @@ int main( int argc, char** argv )
 
     try
     {
-        thread t_queue_thread( &t_run_queue );
         thread t_receiver_thread( &t_receiver );
         thread t_worker_thread( &t_worker );
 
         signal_handler t_sig_hand;
-        t_sig_hand.push_thread( &t_queue_thread );
         t_sig_hand.push_thread( &t_receiver_thread );
         t_sig_hand.push_thread( &t_worker_thread );
 
-        t_queue_thread.start();
         t_receiver_thread.start();
         t_worker_thread.start();
 
         MTINFO( mtlog, "running..." );
 
-        t_queue_thread.join();
         t_receiver_thread.join();
         t_worker_thread.join();
 
@@ -191,7 +187,6 @@ int main( int argc, char** argv )
         {
             t_sig_hand.pop_thread(); // worker thread
             t_sig_hand.pop_thread(); // receiver thread
-            t_sig_hand.pop_thread(); // queue thread
         }
     }
     catch( exception& e)

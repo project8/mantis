@@ -11,13 +11,13 @@ namespace mantis
 {
     class buffer;
     class condition;
-    class run_queue;
+    class run_database;
     class server_tcp;
 
     class request_receiver : public callable
     {
         public:
-            request_receiver( const param_node* a_config, server_tcp* a_server, run_queue* a_run_queue, condition* a_condition, const std::string& a_exe_name = "unknown" );
+            request_receiver( const param_node* a_config, server_tcp* a_server, run_database* a_run_database, condition* a_condition, const std::string& a_exe_name = "unknown" );
             virtual ~request_receiver();
 
             void execute();
@@ -47,7 +47,7 @@ namespace mantis
         private:
             param_node f_config;
             server_tcp* f_server;
-            run_queue* f_run_queue;
+            run_database* f_run_database;
             condition* f_condition;
             std::string f_exe_name;
 

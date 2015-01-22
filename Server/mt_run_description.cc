@@ -20,22 +20,63 @@ namespace mantis
     {
         // default description
         param_node t_empty_node;
+        add( "id", param_value( 0 ) );
+        add( "status", param_value( 0 ) );
         add( "mantis", t_empty_node );
         add( "monarch", t_empty_node );
         add( "client-config", t_empty_node );
         add( "server-config", t_empty_node );
         add( "description", param_value() );
+        add( "request-string", param_value() );
+        add( "response-string", param_value() );
     }
 
     run_description::~run_description()
     {
     }
 
+    void run_description::set_id( unsigned a_id )
+    {
+        param_value t_value;
+        this->replace( "id", t_value << a_id );
+        return;
+    }
 
-    void run_description::set_mantis_client_exe( const std::string& a_exe )
+    unsigned run_description::get_id() const
+    {
+        return this->get_value< unsigned >( "id" );
+    }
+
+    void run_description::set_status( status a_status )
+    {
+        param_value t_value;
+        this->replace( "status", t_value << a_status );
+        return;
+    }
+
+    run_description::status run_description::get_status() const
+    {
+        return this->get_value< status >( "status" );
+    }
+
+    void run_description::set_client_exe( const std::string& a_exe )
     {
         param_value t_value;
         this->node_at( "mantis" )->replace( "client-exe", t_value << a_exe );
+        return;
+    }
+
+    void run_description::set_client_version( const std::string& a_ver )
+    {
+        param_value t_value;
+        this->node_at( "mantis" )->replace( "client-version", t_value << a_ver );
+        return;
+    }
+
+    void run_description::set_client_commit( const std::string& a_ver )
+    {
+        param_value t_value;
+        this->node_at( "mantis" )->replace( "client-commit", t_value << a_ver );
         return;
     }
 
@@ -46,13 +87,6 @@ namespace mantis
         return;
     }
 
-    void run_description::set_mantis_client_version( const std::string& a_ver )
-    {
-        param_value t_value;
-        this->node_at( "mantis" )->replace( "client-version", t_value << a_ver );
-        return;
-    }
-
     void run_description::set_mantis_server_version( const std::string& a_ver )
     {
         param_value t_value;
@@ -60,24 +94,17 @@ namespace mantis
         return;
     }
 
-    void run_description::set_monarch_version( const std::string& a_ver )
-    {
-        param_value t_value;
-        this->node_at( "monarch" )->replace( "version", t_value << a_ver );
-        return;
-    }
-
-    void run_description::set_mantis_client_commit( const std::string& a_ver )
-    {
-        param_value t_value;
-        this->node_at( "mantis" )->replace( "client-commit", t_value << a_ver );
-        return;
-    }
-
     void run_description::set_mantis_server_commit( const std::string& a_ver )
     {
         param_value t_value;
         this->node_at( "mantis" )->replace( "server-commit", t_value << a_ver );
+        return;
+    }
+
+    void run_description::set_monarch_version( const std::string& a_ver )
+    {
+        param_value t_value;
+        this->node_at( "monarch" )->replace( "version", t_value << a_ver );
         return;
     }
 
@@ -97,17 +124,28 @@ namespace mantis
 
     void run_description::set_client_config( const param_node& a_config )
     {
-        param_value t_value;
         this->replace( "client-config", a_config );
         return;
     }
 
     void run_description::set_server_config( const param_node& a_config )
     {
-        param_value t_value;
         this->replace( "server-config", a_config );
         return;
     }
 
+    void run_description::set_request_string( const std::string& a_rec )
+    {
+        param_value t_value;
+        this->replace( "request-string", t_value << a_rec );
+        return;
+    }
+
+    void run_description::set_response_string( const std::string& a_resp )
+    {
+        param_value t_value;
+        this->replace( "response-string", t_value << a_resp );
+        return;
+    }
 
 } /* namespace Katydid */

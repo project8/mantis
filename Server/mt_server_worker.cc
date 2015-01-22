@@ -8,8 +8,8 @@
 #include "mt_file_writer.hh"
 #include "mt_logger.hh"
 #include "mt_run_context_dist.hh"
+#include "mt_run_database.hh"
 #include "mt_run_description.hh"
-#include "mt_run_queue.hh"
 #include "mt_signal_handler.hh"
 #include "mt_thread.hh"
 #include "mt_version.hh"
@@ -23,12 +23,12 @@ namespace mantis
 {
     MTLOGGER( mtlog, "server_worker" );
 
-    server_worker::server_worker( const param_node* a_config, digitizer* a_digitizer, buffer* a_buffer, run_queue* a_run_queue, condition* a_queue_condition, condition* a_buffer_condition, const string& a_exe_name ) :
+    server_worker::server_worker( const param_node* a_config, digitizer* a_digitizer, buffer* a_buffer, run_database* a_run_database, condition* a_queue_condition, condition* a_buffer_condition, const string& a_exe_name ) :
             f_config( a_config ),
             f_digitizer( a_digitizer ),
             f_writer( NULL ),
             f_buffer( a_buffer ),
-            f_run_queue( a_run_queue ),
+            f_run_database( a_run_database ),
             f_queue_condition( a_queue_condition ),
             f_buffer_condition( a_buffer_condition ),
             f_digitizer_state( k_inactive ),
@@ -46,85 +46,37 @@ namespace mantis
     {
         while( ! f_canceled.load() )
         {
-            if( f_run_queue->empty() == true )
+            if( f_run_database->queue_empty() == true )
             {
                 // thread cancellation point via call to pthread_cond_wait in queue_condition::wait
                 f_queue_condition->wait();
             }
 
-            bool t_communication_fail = false;
+            MTINFO( mtlog, "setting run status <started>..." );
 
-            MTINFO( mtlog, "sending server status <started>..." );
+            run_description* t_run_desc = f_run_database->pop();
+            t_run_desc->set_status( run_description::started );
 
-            run_context_dist* t_run_context = f_run_queue->from_front();
-            t_run_context->lock_status_out()->set_state( status_state_t_started );
-            try
-            {
-                if( ! t_run_context->push_status_no_mutex() )
-                {
-                    MTERROR( mtlog, "unable to send status <started> to the client; aborting" );
-                    t_communication_fail = true;
-                }
-            }
-            catch( closed_connection& cc )
-            {
-                MTERROR( mtlog, "closed connection detected by: " << cc.what() );
-                t_communication_fail = true;
-            }
-            t_run_context->unlock_outbound();
-
-            if( t_communication_fail )
-            {
-                delete t_run_context->get_connection();
-                delete t_run_context;
-                continue;
-            }
+            t_run_desc->set_mantis_server_exe( f_exe_name );
+            t_run_desc->set_mantis_server_version( TOSTRING(Mantis_VERSION) );
+            t_run_desc->set_mantis_server_commit( TOSTRING(Mantis_GIT_COMMIT) );
+            t_run_desc->set_server_config( *f_config );
 
             MTINFO( mtlog, "initializing..." );
 
-            request* t_request = t_run_context->lock_request_in();
-            f_digitizer->initialize( t_request );
+            request t_request;
+            t_request.ParseFromString( t_run_desc->get_value( "request-string" ) );
+
+            f_digitizer->initialize( &t_request );
 
             MTINFO( mtlog, "creating writer..." );
 
-            if(! f_digitizer->write_mode_check( t_request->file_write_mode() ) )
-            {
-                MTERROR( mtlog, "unable to operate in write mode " << t_request->file_write_mode() << '\n'
-                        << "                run request ignored" );
-                t_run_context->unlock_inbound();
-
-                status* t_status = t_run_context->lock_status_out();
-                t_status->set_state( status_state_t_error );
-                std::stringstream t_error_msg;
-                t_error_msg << "unable to operate in write mode " <<  t_request->file_write_mode();
-                t_status->set_error_message( t_error_msg.str() );
-                try
-                {
-                    t_run_context->push_status_no_mutex();
-                }
-                catch( closed_connection& cc )
-                {}
-                t_run_context->unlock_outbound();
-                delete t_run_context->get_connection();
-                delete t_run_context;
-                continue;
-            }
-
+            // factory still used for writer from when we were potentially writing to different kinds of writers
             factory< writer >* t_writer_factory = factory< writer >::get_instance();
-            if( t_request->file_write_mode() == request_file_write_mode_t_local )
-            {
-                f_writer = t_writer_factory->create( "file" );
-                run_description* t_run_desc = new run_description();
-                t_run_desc->set_mantis_server_exe( f_exe_name );
-                t_run_desc->set_mantis_server_version( TOSTRING(Mantis_VERSION) );
-                t_run_desc->set_mantis_server_commit( TOSTRING(Mantis_GIT_COMMIT) );
-                t_run_desc->set_server_config( *f_config );
-                static_cast< file_writer* >( f_writer )->set_run_description( t_run_desc );
-            }
-            else
-            {
-                f_writer = t_writer_factory->create( "network" );
-            }
+            f_writer = t_writer_factory->create( "file" );
+
+            static_cast< file_writer* >( f_writer )->set_run_description( t_run_desc );
+
             f_writer->set_buffer( f_buffer, f_buffer_condition );
             try
             {
@@ -133,20 +85,14 @@ namespace mantis
             catch( exception& e )
             {
                 MTERROR( mtlog, "unable to configure writer: " << e.what() );
-                t_run_context->unlock_inbound();
-                delete t_run_context->get_connection();
-                delete t_run_context;
+                t_run_desc->set_status( run_description::error );
                 continue;
             }
-            if( ! f_writer->initialize( t_request ) )
+            if( ! f_writer->initialize( &t_request ) )
             {
-                t_run_context->unlock_inbound();
-                delete t_run_context->get_connection();
-                delete t_run_context;
+                t_run_desc->set_status( run_description::error );
                 continue;
             }
-
-            t_run_context->unlock_inbound();
 
             MTINFO( mtlog, "running..." );
 
@@ -164,27 +110,7 @@ namespace mantis
             t_writer_thread->start();
             f_writer_state = k_running;
 
-            t_run_context->lock_status_out()->set_state( status_state_t_running );
-            try
-            {
-                if( ! t_run_context->push_status_no_mutex() )
-                {
-                    MTERROR( mtlog, "unable to send status <running> to the client" );
-                    t_communication_fail = true;
-                }
-            }
-            catch( closed_connection& cc )
-            {
-                MTINFO( mtlog, "closed connection detected by: " << cc.what() );
-                t_communication_fail = true;
-            }
-            t_run_context->unlock_outbound();
-            if( t_communication_fail )
-            {
-                MTERROR( mtlog, "; canceling run" );
-                f_digitizer->cancel();
-                f_writer->cancel();
-            }
+            t_run_desc->set_status( run_description::running );
 
             // cancellation point (I think) via calls to pthread_join
             t_digitizer_thread->join();
@@ -195,73 +121,27 @@ namespace mantis
             delete t_digitizer_thread;
             delete t_writer_thread;
 
-            if( t_communication_fail )
-            {
-                delete f_writer;
-                f_writer = NULL;
-                delete t_run_context->get_connection();
-                delete t_run_context;
-                continue;
-            }
-
-
-            //t_run_context = f_run_queue->from_front();
-            status* t_status = t_run_context->lock_status_out();
             if( ! f_canceled.load() )
             {
                 MTINFO( mtlog, "sending server status <stopped>..." );
-                t_status->set_state( status_state_t_stopped );
+                t_run_desc->set_status( run_description::stopped );
             }
             else
             {
                 MTINFO( mtlog, "sending server status <canceled>..." );
-                t_status->set_state( status_state_t_canceled );
-                t_status->set_error_message( "run was cancelled" );
-            }
-            try
-            {
-                if( ! t_run_context->push_status_no_mutex() )
-                {
-                    MTERROR( mtlog, "unable to send status <stopped>/<canceled> to client" );
-                    t_communication_fail = true;
-                }
-            }
-            catch( closed_connection& cc )
-            {
-                MTINFO( mtlog, "closed connection detected by: " << cc.what() );
-                t_communication_fail = true;
-            }
-            t_run_context->unlock_outbound();
-
-            if( t_communication_fail )
-            {
-                delete f_writer;
-                f_writer = NULL;
-                delete t_run_context->get_connection();
-                delete t_run_context;
-                continue;
+                t_run_desc->set_status( run_description::canceled );
             }
 
             MTINFO( mtlog, "finalizing..." );
 
-            response* t_response = t_run_context->lock_response_out();
-            f_digitizer->finalize( t_response );
-            f_writer->finalize( t_response );
-            t_response->set_state( response_state_t_complete );
-            try
-            {
-                t_run_context->push_response_no_mutex();
-            }
-            catch( closed_connection& cc )
-            {
-                MTINFO( mtlog, "closed connection detected by: " << cc.what() );
-            }
-            t_run_context->unlock_outbound();
+            response t_response;
+            f_digitizer->finalize( &t_response );
+            f_writer->finalize( &t_response );
+            t_response.set_state( response_state_t_complete );
+            t_run_desc->set_response_string( t_response.SerializeAsString() );
 
             delete f_writer;
             f_writer = NULL;
-            delete t_run_context->get_connection();
-            delete t_run_context;
         }
 
         return;
