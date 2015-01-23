@@ -89,6 +89,22 @@ include_directories( BEFORE
 )
 
 
+###################
+# SimpleAmqpClient
+###################
+
+add_subdirectory( SimpleAmqpClient )
+pbuilder_add_ext_libraries( SimpleAmqpClient )
+# add to the RPATH to be used when installing, but only if it's not a system directory
+#list( FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${Monarch_LIBRARY_DIR}" isSystemDir )
+#if( "${isSystemDir}" STREQUAL "-1" )
+#   list( APPEND CMAKE_INSTALL_RPATH ${Monarch_LIBRARY_DIR} )
+#endif( "${isSystemDir}" STREQUAL "-1" )
+include_directories( BEFORE 
+    ${PROJECT_SOURCE_DIR}/SimpleAmqpClient/src/SimpleAmqpClient
+)
+
+
 ###########
 # Protobuf
 ###########
@@ -125,7 +141,7 @@ pbuilder_add_ext_libraries( boost_atomic )
 # Build Mantis #
 ################
 
-add_subdirectory( Common )
-add_subdirectory( Client )
-add_subdirectory( Server )
-add_subdirectory( Applications )
+#add_subdirectory( Common )
+#add_subdirectory( Client )
+#add_subdirectory( Server )
+#add_subdirectory( Applications )
