@@ -19,6 +19,7 @@
  *
  */
 
+#include "mt_broker.hh"
 #include "mt_logger.hh"
 #include "mt_client_config.hh"
 #include "mt_configurator.hh"
@@ -37,7 +38,9 @@ int main( int argc, char** argv )
         client_config t_cc;
         configurator t_configurator( argc, argv, &t_cc );
 
-        run_client the_client( t_configurator.config(), t_configurator.exe_name() );
+        broker t_broker( t_configurator.config()->get_value( "broker-addr" ), t_configurator.config()->get_value< unsigned >( "broker-port" ) );
+
+        run_client the_client( &t_broker, t_configurator.config(), t_configurator.exe_name() );
 
         the_client.execute();
 

@@ -68,7 +68,7 @@ namespace mantis
         t_digitizer_thread.cancel();
 
         MTDEBUG( mtlog, "calling finalize");
-        response* a_response;
+        response* a_response = NULL;
         finalize( a_response );
 
         return true;

@@ -142,7 +142,7 @@ namespace mantis
         //cout << "  modifier has finished canceling" );
         return;
     }
-    void modifier::finalize( response* a_response )
+    void modifier::finalize( response* /*a_response*/ )
     {
         //MTINFO( mtlog, "calculating statistics..." );
         /*

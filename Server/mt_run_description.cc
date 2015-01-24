@@ -6,6 +6,7 @@
  */
 
 #include "mt_run_description.hh"
+#include "mt_version.hh"
 
 #include<string>
 using std::string;
@@ -50,13 +51,13 @@ namespace mantis
     void run_description::set_status( status a_status )
     {
         param_value t_value;
-        this->replace( "status", t_value << a_status );
+        this->replace( "status", t_value << (unsigned)a_status );
         return;
     }
 
     run_description::status run_description::get_status() const
     {
-        return this->get_value< status >( "status" );
+        return (status)(this->get_value< unsigned >( "status" ));
     }
 
     void run_description::set_client_exe( const std::string& a_exe )

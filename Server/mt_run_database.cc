@@ -87,7 +87,7 @@ namespace mantis
         while( t_it_counter != f_run_db.end() )
         {
             t_it_deletable = t_it_counter++;
-            if( t_it_deletable > run_description::running )
+            if( t_it_deletable->second->get_status() > run_description::running )
             {
                 delete t_it_deletable->second;
             }
@@ -125,6 +125,7 @@ namespace mantis
         t_id = f_id_count++;
         f_run_db[ t_id ] = a_run;
         f_run_queue.push_back( a_run );
+        a_run->set_status( run_description::waiting );
         f_mutex.unlock();
         return t_id;
     }

@@ -439,7 +439,7 @@ namespace mantis
         return false;
     }
     template< class XWriter >
-    bool param_output_json::write_param_null( const param& a_to_write, XWriter* a_writer )
+    bool param_output_json::write_param_null( const param& /*a_to_write*/, XWriter* a_writer )
     {
         //MTWARN( mtlog_p, "writing null" );
         a_writer->Null();

@@ -26,6 +26,7 @@
  *    e.g.:   port/i=8235
  */
 
+#include "mt_broker.hh"
 #include "mt_buffer.hh"
 #include "mt_condition.hh"
 #include "mt_configurator.hh"
@@ -95,23 +96,14 @@ int main( int argc, char** argv )
         return -1;
     }
 
-    // set up the server and request receiver
+    // set up the AMQP connection and the request receiver
 
-    server_tcp* t_server;
-    try
-    {
-        t_server = new server_tcp( t_config->get_value< int >( "port" ) );
-    }
-    catch( exception& e )
-    {
-        MTERROR( mtlog, "unable to start server: " << e.what() );
-        return -1;
-    }
+    broker t_broker( t_config->get_value( "broker-addr" ), t_config->get_value< unsigned >( "broker-port" ) );
 
     condition t_queue_condition;
     run_database t_run_database;
 
-    request_receiver t_receiver( t_config, t_server, &t_run_database, &t_queue_condition, t_configurator->exe_name() );
+    request_receiver t_receiver( t_config, &t_broker, &t_run_database, &t_queue_condition, t_configurator->exe_name() );
     t_receiver.set_buffer_size( t_buffer_size );
     t_receiver.set_block_size( t_block_size );
     t_receiver.set_data_chunk_size( t_data_chunk_size );
@@ -130,14 +122,12 @@ int main( int argc, char** argv )
         if( t_digitizer == NULL )
         {
             MTERROR( mtlog, "could not create digitizer <" << t_config->get_value< string >( "digitizer" ) << ">; aborting" );
-            delete t_server;
             return -1;
         }
     }
     catch( exception& e )
     {
         MTERROR( mtlog, "exception caught while creating digitizer: " << e.what() );
-        delete t_server;
         return -1;
     }
 
@@ -154,15 +144,13 @@ int main( int argc, char** argv )
     if(! t_digitizer->allocate( &t_buffer, &t_buffer_condition ) )
     {
         MTERROR( mtlog, "digitizer was not able to allocate the buffer" );
-        delete t_server;
         return -1;
     }
 
     server_worker t_worker( t_config,
                             t_digitizer,
                             &t_buffer, &t_run_database,
-                            &t_queue_condition, &t_buffer_condition,
-                            t_configurator->exe_name() );
+                            &t_queue_condition, &t_buffer_condition );
 
     MTINFO( mtlog, "starting threads..." );
 
@@ -197,7 +185,6 @@ int main( int argc, char** argv )
 
     MTINFO( mtlog, "shutting down..." );
 
-    delete t_server;
     delete t_config;
 
     return 0;

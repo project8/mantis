@@ -19,7 +19,9 @@ namespace mantis
 
         param_value server_config;
 
-        add( "port", server_config << 98342 );
+        add( "broker-port", server_config << 98342 );
+
+        add( "broker-addr", server_config << "localhost" );
 
         add( "digitizer", server_config << "test" );
 

@@ -22,9 +22,12 @@ if( Mantis_BUILD_SERVER )
         mt_destroyer.hh
         mt_digitizer.hh
         mt_factory.hh
-        mt_network_writer.hh
-        mt_run_queue.hh
+        mt_file_writer.hh
+        #mt_network_writer.hh
+        #mt_run_queue.hh
         mt_request_receiver.hh
+        mt_run_database.hh
+        mt_run_description.hh
         mt_server_config.hh
         mt_server_worker.hh
         mt_singleton.hh
@@ -33,9 +36,12 @@ if( Mantis_BUILD_SERVER )
     
     set( MANTIS_SERVER_SOURCEFILES
         mt_digitizer.cc
-        mt_network_writer.cc
-        mt_run_queue.cc
+        mt_file_writer.cc
+        #mt_network_writer.cc
+        #mt_run_queue.cc
         mt_request_receiver.cc
+        mt_run_database.cc
+        mt_run_description.cc
         mt_server_config.cc
         mt_server_worker.cc
         ${DIGITIZER_SOURCEFILES}

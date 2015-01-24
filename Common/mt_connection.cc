@@ -1,5 +1,10 @@
 #include "mt_connection.hh"
 
+#include "mt_exception.hh"
+
+#include "SimpleAmqpClient/AmqpLibraryException.h"
+
+/*
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,11 +14,26 @@
 #include <sys/socket.h>
 #include <sys/time.h>
 #include <sys/types.h>
-
+*/
 
 namespace mantis
 {
+    connection::connection( AmqpClient::Channel::ptr_t a_chan ) :
+            f_amqp_chan( a_chan )
+    {
+    }
 
+    connection::~connection()
+    {
+    }
+
+    AmqpClient::Channel::ptr_t connection::amqp()
+    {
+        return f_amqp_chan;
+    }
+
+
+    /*
     int connection::f_last_errno = 0;
 
     connection::connection( int a_socket, sockaddr_in* an_address ) :
@@ -116,7 +136,7 @@ namespace mantis
         return f_last_errno;
     }
 
-    /*
+    *//*
     size_t connection::recv_size( int flags )
     {
         size_t t_size = 0;
@@ -128,7 +148,7 @@ namespace mantis
         //cout << "receiving something of size " << t_size << "; size read: " << t_recv_size << endl;
         return t_size;
     }
-    */
+    *//*
 
     closed_connection::closed_connection() :
             std::exception(),
@@ -149,6 +169,6 @@ namespace mantis
     {
         return f_exception.str().c_str();
     }
-
+*/
 
 }

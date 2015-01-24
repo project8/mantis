@@ -7,6 +7,9 @@
 
 #include "mt_run_client.hh"
 
+#include "mt_broker.hh"
+#include "mt_constants.hh"
+
 #include "mt_client_file_writing.hh"
 #include "mt_client_worker.hh"
 #include "mt_client_tcp.hh"
@@ -28,7 +31,8 @@ namespace mantis
 {
     MTLOGGER( mtlog, "run_client" );
 
-    run_client::run_client( const param_node* a_node, const string& a_exe_name ) :
+    run_client::run_client( broker* a_broker, const param_node* a_node, const string& a_exe_name ) :
+            f_broker( a_broker ),
             f_config( *a_node ),
             f_exe_name( a_exe_name ),
             f_canceled( false ),
@@ -43,6 +47,81 @@ namespace mantis
     void run_client::execute()
     {
         MTINFO( mtlog, "creating request objects..." );
+
+        param_node* t_run_node = new param_node();
+        t_run_node->add( "config", f_config );
+        t_run_node->add( "description", param_value() << "???" );
+
+        param_node* t_client_node = new param_node();
+        t_client_node->add( "commit", param_value() << TOSTRING(Mantis_COMMIT) );
+        t_client_node->add( "exe", param_value() << f_exe_name );
+        t_client_node->add( "version", param_value() << TOSTRING(Mantis_VERSION) );
+
+        param_node* t_request_payload = new param_node();
+        t_request_payload->add( "client", t_client_node );
+        t_request_payload->add( "run", t_run_node );
+
+        param_node* t_request = new param_node();
+        t_request->add( "msgtype", param_value() << T_MANTIS_REQUEST );
+        t_request->add( "msgop", param_value() << OP_MANTIS_RUN );
+        t_request->add( "target", param_value() << "mantis" );
+        t_request->add( "timestamp", param_value() << get_absolute_time_string() );
+        t_request->add( "payload", t_request_payload );
+
+        std::string t_request_str;
+        if(! param_output_json::write_string( *t_request, t_request_str, param_output_json::k_compact ) )
+        {
+            MTERROR( mtlog, "Could not convert request to string" );
+            f_return = RETURN_ERROR;
+            return;
+        }
+
+
+        MTINFO( mtlog, "connecting to broker..." );
+
+        connection* t_connection = f_broker->create_connection();
+        if( t_connection == NULL )
+        {
+            MTERROR( mtlog, "Cannot create connection to AMQP broker" );
+            f_return = RETURN_ERROR;
+            return;
+        }
+
+        try
+        {
+            t_connection->amqp()->DeclareExchange( "requests", AmqpClient::Channel::EXCHANGE_TYPE_DIRECT, true );
+        }
+        catch( std::exception& e )
+        {
+            MTERROR( mtlog, "Exchange <request> was not present; aborting.\n(" << e.what() << ")" );
+            f_return = RETURN_ERROR;
+            return;
+        }
+
+
+        MTINFO( mtlog, "sending request..." );
+
+        AmqpClient::BasicMessage::ptr_t t_message = AmqpClient::BasicMessage::Create( t_request_str );
+        t_message->ContentEncoding( "application/json" );
+
+        try
+        {
+            t_connection->amqp()->BasicPublish( "requests", "mantis", t_message );
+        }
+        catch( AmqpClient::MessageReturnedException& e )
+        {
+            MTERROR( mtlog, "Message could not be sent: " << e.what() );
+            f_return = RETURN_ERROR;
+            return;
+        }
+
+        f_return = RETURN_SUCCESS;
+
+
+
+
+/*
+
 
         bool t_client_writes_file = true;
         if( f_config.get_value< string >( "file-writer" ) == std::string( "server" ) )
@@ -175,9 +254,9 @@ namespace mantis
         f_config.add( "voltage-range", new param_value( t_status->voltage_range() ) );
         t_run_context.unlock_inbound();
 
-        /****************************************************************/
-        /*********************** file writing ***************************/
-        /****************************************************************/
+        //****************************************************************
+        //*********************** file writing ***************************
+        //****************************************************************
         client_file_writing* t_file_writing = NULL;
         if( t_client_writes_file )
         {
@@ -198,9 +277,9 @@ namespace mantis
             }
 
         }
-        /****************************************************************/
-        /****************************************************************/
-        /****************************************************************/
+        //****************************************************************
+        //****************************************************************
+        //****************************************************************
 
 
         MTINFO( mtlog, "transmitting status: ready" )
@@ -240,9 +319,9 @@ namespace mantis
             return;
         }
 
-        /****************************************************************/
-        /*********************** file writing ***************************/
-        /****************************************************************/
+        //****************************************************************
+        //*********************** file writing ***************************
+        //****************************************************************
         if( t_client_writes_file )
         {
             if( t_run_success < 0 )
@@ -259,9 +338,9 @@ namespace mantis
             delete t_file_writing;
             t_file_writing = NULL;
         }
-        /****************************************************************/
-        /****************************************************************/
-        /****************************************************************/
+        //****************************************************************
+        //****************************************************************
+        //****************************************************************
 
 
 
@@ -309,6 +388,7 @@ namespace mantis
         delete t_request_client;
 
         f_return = t_run_success;
+        */
         return;
     }
 
@@ -325,7 +405,7 @@ namespace mantis
 
 
 
-
+/*
     run_client::setup_loop::setup_loop( run_context_dist* a_run_context ) :
             f_run_context( a_run_context ),
             f_canceled( false ),
@@ -475,6 +555,6 @@ namespace mantis
     {
         return f_return;
     }
-
+*/
 
 } /* namespace mantis */

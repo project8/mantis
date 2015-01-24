@@ -19,13 +19,9 @@ namespace mantis
 
         param_value client_value;
 
-        add( "port", client_value << 98342 );
+        add( "broker-port", client_value << 98342 );
 
-        add( "host", client_value << "localhost" );
-
-        add( "client-port", client_value << 98343 );
-
-        add( "client-host", client_value << "localhost" );
+        add( "broker-addr", client_value << "localhost" );
 
         add( "file", client_value << "mantis_client_out.egg" );
 
@@ -34,8 +30,6 @@ namespace mantis
         add( "duration", client_value << 500 );
 
         add( "mode", client_value << 0 );
-
-        add( "file-writer", client_value << "server" );
     }
 
     client_config::~client_config()

@@ -22,11 +22,13 @@
 
 namespace mantis
 {
+    class broker;
     class client_file_writing;
     class run_context_dist;
 
     class run_client : public callable
     {
+            /*
         private:
             class setup_loop : public callable
             {
@@ -62,9 +64,10 @@ namespace mantis
                     atomic_bool f_canceled;
                     int f_return;
             };
+            */
 
         public:
-            run_client( const param_node* a_node, const std::string& a_exe_name = "unknown" );
+            run_client( broker* a_broker, const param_node* a_node, const std::string& a_exe_name = "unknown" );
             virtual ~run_client();
 
             void execute();
@@ -73,6 +76,7 @@ namespace mantis
             int get_return();
 
         private:
+            broker* f_broker;
             param_node f_config;
             std::string f_exe_name;
             atomic_bool f_canceled;

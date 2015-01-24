@@ -21,6 +21,9 @@ include_directories( BEFORE
     ${PROJECT_BINARY_DIR}/Common
 )
 
+set( CMAKE_MACOSX_RPATH TRUE )
+
+
 ##################
 # mantis options #
 ##################
@@ -29,7 +32,7 @@ include_directories( BEFORE
 set( Mantis_BUILD_CLIENT TRUE CACHE BOOL "Flag to enable building of the client library and applications" )
 
 # Option to build the server library and executables, and options to build different servers
-set( Mantis_BUILD_SERVER FALSE CACHE BOOL "Flag to enable building of the server library and applications" )
+set( Mantis_BUILD_SERVER TRUE CACHE BOOL "Flag to enable building of the server library and applications" )
 
 # add an option to perform iterator time profiling
 set( Mantis_ENABLE_ITERATOR_TIMING FALSE CACHE BOOL "Flag to enable iterator time profiling" )
@@ -62,6 +65,19 @@ if( GIT_FOUND )
 endif( GIT_FOUND )
 
 
+########
+# Boost
+########
+
+# Boost (1.46 required for filesystem version 3)
+find_package( Boost 1.46.0 REQUIRED COMPONENTS atomic )
+# make sure dynamic linking is assumed for all boost libraries
+add_definitions( -DBOOST_ALL_DYN_LINK )
+include_directories( ${Boost_INCLUDE_DIRS} )
+pbuilder_add_ext_libraries( ${Boost_LIBRARIES} )
+
+
+
 ############
 # RapidJSON (as included with Mantis)
 ############
@@ -74,12 +90,12 @@ include_directories( BEFORE ${PROJECT_SOURCE_DIR}/RapidJSON )
 ##########
 
 add_subdirectory( Monarch )
-pbuilder_add_ext_libraries( ${Monarch_LIBRARIES} )
+pbuilder_add_submodule_libraries( ${Monarch_LIBRARIES} )
 # add to the RPATH to be used when installing, but only if it's not a system directory
-list( FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${Monarch_LIBRARY_DIR}" isSystemDir )
-if( "${isSystemDir}" STREQUAL "-1" )
-   list( APPEND CMAKE_INSTALL_RPATH ${Monarch_LIBRARY_DIR} )
-endif( "${isSystemDir}" STREQUAL "-1" )
+#list( FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${Monarch_LIBRARY_DIR}" isSystemDir )
+#if( "${isSystemDir}" STREQUAL "-1" )
+#   list( APPEND CMAKE_INSTALL_RPATH ${Monarch_LIBRARY_DIR} )
+#endif( "${isSystemDir}" STREQUAL "-1" )
 include_directories( BEFORE 
     ${PROJECT_SOURCE_DIR}/Monarch/Source
     ${PROJECT_SOURCE_DIR}/Monarch/libthorax/cpp
@@ -94,16 +110,16 @@ include_directories( BEFORE
 ###################
 
 add_subdirectory( SimpleAmqpClient )
-pbuilder_add_ext_libraries( SimpleAmqpClient )
+pbuilder_add_submodule_libraries( SimpleAmqpClient )
 # add to the RPATH to be used when installing, but only if it's not a system directory
 #list( FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${Monarch_LIBRARY_DIR}" isSystemDir )
 #if( "${isSystemDir}" STREQUAL "-1" )
 #   list( APPEND CMAKE_INSTALL_RPATH ${Monarch_LIBRARY_DIR} )
 #endif( "${isSystemDir}" STREQUAL "-1" )
 include_directories( BEFORE 
-    ${PROJECT_SOURCE_DIR}/SimpleAmqpClient/src/SimpleAmqpClient
+    ${PROJECT_SOURCE_DIR}/SimpleAmqpClient/src
 )
-
+message( STATUS "amqplibdir: ${SimpleAmqpClient_LIBRARIES}")
 
 ###########
 # Protobuf
@@ -128,20 +144,20 @@ pbuilder_add_ext_libraries( ${CMAKE_THREAD_LIBS_INIT} )
 # Boost as included with mantis
 ########
 
-include_directories ( BEFORE 
-    ${PROJECT_SOURCE_DIR}
-)
+#include_directories ( BEFORE 
+#    ${PROJECT_SOURCE_DIR}
+#)
 
-add_subdirectory (boost)
+#add_subdirectory (boost)
 
-pbuilder_add_ext_libraries( boost_atomic )
+#pbuilder_add_ext_libraries( boost_atomic )
 
 
 ################
 # Build Mantis #
 ################
 
-#add_subdirectory( Common )
-#add_subdirectory( Client )
-#add_subdirectory( Server )
-#add_subdirectory( Applications )
+add_subdirectory( Common )
+add_subdirectory( Client )
+add_subdirectory( Server )
+add_subdirectory( Applications )

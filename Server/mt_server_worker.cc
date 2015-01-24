@@ -23,7 +23,7 @@ namespace mantis
 {
     MTLOGGER( mtlog, "server_worker" );
 
-    server_worker::server_worker( const param_node* a_config, digitizer* a_digitizer, buffer* a_buffer, run_database* a_run_database, condition* a_queue_condition, condition* a_buffer_condition, const string& a_exe_name ) :
+    server_worker::server_worker( const param_node* a_config, digitizer* a_digitizer, buffer* a_buffer, run_database* a_run_database, condition* a_queue_condition, condition* a_buffer_condition ) :
             f_config( a_config ),
             f_digitizer( a_digitizer ),
             f_writer( NULL ),
@@ -31,10 +31,9 @@ namespace mantis
             f_run_database( a_run_database ),
             f_queue_condition( a_queue_condition ),
             f_buffer_condition( a_buffer_condition ),
+            f_canceled( false ),
             f_digitizer_state( k_inactive ),
-            f_writer_state( k_inactive ),
-            f_exe_name( a_exe_name ),
-            f_canceled( false )
+            f_writer_state( k_inactive )
     {
     }
 
@@ -57,15 +56,26 @@ namespace mantis
             run_description* t_run_desc = f_run_database->pop();
             t_run_desc->set_status( run_description::started );
 
-            t_run_desc->set_mantis_server_exe( f_exe_name );
-            t_run_desc->set_mantis_server_version( TOSTRING(Mantis_VERSION) );
-            t_run_desc->set_mantis_server_commit( TOSTRING(Mantis_GIT_COMMIT) );
             t_run_desc->set_server_config( *f_config );
 
             MTINFO( mtlog, "initializing..." );
 
+            //TODO for now, just give the request the minimum needed to configure the digitizer
+            param_node* t_client_config = t_run_desc->node_at( "client-config" );
             request t_request;
-            t_request.ParseFromString( t_run_desc->get_value( "request-string" ) );
+            //t_request.ParseFromString( t_run_desc->get_value( "request-string" ) );
+            //t_request.set_write_host( t_write_host );
+            //t_request.set_write_port( t_write_port );
+            //t_request.set_file( t_client_config->get_value< string >( "file" ) );
+            //t_request.set_description( t_client_config->get_value< string >( "description", "default client run" ) );
+            t_request.set_date( get_absolute_time_string() );
+            t_request.set_mode( (request_mode_t)t_client_config->get_value< int >( "mode" ) );
+            t_request.set_rate( t_client_config->get_value< double >( "rate" ) );
+            t_request.set_duration( t_client_config->get_value< double >( "duration" ) );
+            //t_request.set_file_write_mode( request_file_write_mode_t_local );
+            //t_request.set_client_exe( f_exe_name );
+            //t_request.set_client_version( TOSTRING(Mantis_VERSION) );
+            //t_request.set_client_commit( TOSTRING(Mantis_GIT_COMMIT) );
 
             f_digitizer->initialize( &t_request );
 
@@ -149,6 +159,7 @@ namespace mantis
 
     void server_worker::cancel()
     {
+        MTDEBUG( mtlog, "Canceling server_worker" );
         f_canceled.store( true );
 
         if( f_digitizer_state == k_running )

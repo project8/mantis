@@ -24,7 +24,7 @@ namespace mantis
     {
     }
 
-    void bit_shift_modifier::configure( const param_node* a_config )
+    void bit_shift_modifier::configure( const param_node* /*a_config*/ )
     {
         return;
     }
@@ -36,7 +36,7 @@ namespace mantis
         return;
     }
 
-    bool bit_shift_modifier::initialize_derived( request* a_request )
+    bool bit_shift_modifier::initialize_derived( request* /*a_request*/ )
     {
         return true;
     }

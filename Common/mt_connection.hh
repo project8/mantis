@@ -1,17 +1,37 @@
 #ifndef MT_CONNECTION_HH_
 #define MT_CONNECTION_HH_
 
-#include "mt_exception.hh"
+#include "SimpleAmqpClient/SimpleAmqpClient.h"
 
+/*
 #include <cstring>
 #include <errno.h>
 #include <netinet/in.h>
 #include <string>
 #include <sys/socket.h>
 #include <sys/types.h>
+*/
 
 namespace mantis
 {
+    class connection
+    {
+        public:
+            connection( AmqpClient::Channel::ptr_t a_chan );
+            ~connection();
+
+            AmqpClient::Channel::ptr_t amqp();
+
+        private:
+            AmqpClient::Channel::ptr_t f_amqp_chan;
+
+    };
+
+
+
+
+    /*
+
     class closed_connection :
         public std::exception
     {
@@ -112,8 +132,9 @@ namespace mantis
         }
         return t_value;
     }
+    */
 
 }
 
 
-#endif
+#endif /* MT_CONNECTION_HH_ */
