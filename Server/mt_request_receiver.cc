@@ -8,6 +8,7 @@
 #include "mt_logger.hh"
 #include "mt_run_context_dist.hh"
 #include "mt_run_database.hh"
+#include "mt_run_description.hh"
 #include "mt_version.hh"
 
 #include "MonarchVersion.hpp"
@@ -77,8 +78,8 @@ namespace mantis
             switch( t_msg_node->get_value< unsigned >( "msgop" ) )
             {
                 case OP_MANTIS_RUN:
+                {
                     MTDEBUG( mtlog, "Run operation request received" );
-                    break;/*
                     param_node* t_msg_payload = t_msg_node->node_at( "payload" );
                     run_description* t_run_desc = new run_description();
                     t_run_desc->set_status( run_description::created );
@@ -112,8 +113,8 @@ namespace mantis
                         //MTINFO( mtlog, "releasing queue condition" );
                         f_queue_condition->release();
                     }
-                    break;*/
-
+                    break;
+                }
                 case OP_MANTIS_QUERY:
                     MTWARN( mtlog, "Query operations not yet supported; request ignored" );
                     break;

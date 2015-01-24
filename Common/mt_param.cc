@@ -473,7 +473,7 @@ namespace mantis
 
     std::string param_node::get_value( const std::string& a_name, const char* a_default ) const
     {
-        return get_value( a_name, a_default );
+        return get_value( a_name, std::string( a_default ) );
     }
 
     const param* param_node::at( const std::string& a_name ) const

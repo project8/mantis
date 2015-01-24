@@ -66,7 +66,7 @@ namespace mantis
             //t_request.ParseFromString( t_run_desc->get_value( "request-string" ) );
             //t_request.set_write_host( t_write_host );
             //t_request.set_write_port( t_write_port );
-            //t_request.set_file( t_client_config->get_value< string >( "file" ) );
+            t_request.set_file( t_client_config->get_value< string >( "file" ) );
             //t_request.set_description( t_client_config->get_value< string >( "description", "default client run" ) );
             t_request.set_date( get_absolute_time_string() );
             t_request.set_mode( (request_mode_t)t_client_config->get_value< int >( "mode" ) );
@@ -76,6 +76,8 @@ namespace mantis
             //t_request.set_client_exe( f_exe_name );
             //t_request.set_client_version( TOSTRING(Mantis_VERSION) );
             //t_request.set_client_commit( TOSTRING(Mantis_GIT_COMMIT) );
+
+            std::cout << "Retrieved request from the queue:\n" << *t_client_config << std::endl;
 
             f_digitizer->initialize( &t_request );
 
@@ -100,6 +102,7 @@ namespace mantis
             }
             if( ! f_writer->initialize( &t_request ) )
             {
+                MTERROR( mtlog, "unable to initoalize writer" );
                 t_run_desc->set_status( run_description::error );
                 continue;
             }
