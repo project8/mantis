@@ -1,7 +1,6 @@
 #ifndef MT_BLOCK_HH_
 #define MT_BLOCK_HH_
 
-#include "block_header.pb.h"
 #include "thorax.hh"
 
 namespace mantis
@@ -37,14 +36,26 @@ namespace mantis
     class block
     {
         public:
+            //state of block
+            enum state_t
+            {
+                unused = 0,
+                acquiring = 1,
+                acquired = 2,
+                processing = 3,
+                writing = 4,
+                written = 5
+            };
+
+        public:
             block();
             virtual ~block();
 
             template< typename DataType >
             static block* allocate_block( unsigned a_data_size, unsigned a_prefix_size = 0, unsigned a_postfix_size = 0 );
 
-            block_header_state_t get_state() const;
-            void set_state( block_header_state_t a_state );
+            state_t get_state() const;
+            void set_state( state_t a_state );
 
             bool is_unused() const;
             void set_unused();
@@ -76,9 +87,6 @@ namespace mantis
             size_t get_data_size() const;
             void set_data_size( size_t a_size );
 
-            block_header* header();
-            const block_header* header() const;
-
             byte_type* memblock_bytes();
             const byte_type* memblock_bytes() const;
 
@@ -108,7 +116,11 @@ namespace mantis
             void set_cleanup( block_cleanup* a_cleanup );
 
         protected:
-            block_header f_header;
+            state_t f_state;
+            acquisition_id_type f_acquisition_id;
+            record_id_type f_record_id;
+            time_nsec_type f_timestamp;
+            unsigned f_data_size;
 
             byte_type* f_memblock_bytes;
             unsigned f_memblock_nbytes;

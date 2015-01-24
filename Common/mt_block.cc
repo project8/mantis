@@ -3,7 +3,11 @@
 namespace mantis
 {
     block::block() :
-            f_header(),
+            f_state( unused ),
+            f_acquisition_id( 0 ),
+            f_record_id( 0 ),
+            f_timestamp( 0 ),
+            f_data_size( 0 ),
             f_memblock_bytes( NULL ),
             f_memblock_nbytes( 0 ),
             f_prefix_bytes( NULL ),
@@ -14,11 +18,6 @@ namespace mantis
             f_postfix_nbytes( 0 ),
             f_cleanup( NULL )
     {
-        f_header.set_state( block_header_state_t_unused );
-        f_header.set_acquisition_id( 0 );
-        f_header.set_record_id( 0 );
-        f_header.set_timestamp( 0 );
-        f_header.set_data_size( 0 );
     }
 
     block::~block()
@@ -27,124 +26,114 @@ namespace mantis
         delete f_cleanup;
     }
 
-    block_header_state_t block::get_state() const
+    block::state_t block::get_state() const
     {
-        return f_header.state();
+        return f_state;
     }
-    void block::set_state( block_header_state_t a_state )
+    void block::set_state( state_t a_state )
     {
-        f_header.set_state( a_state );
+        f_state = a_state ;
         return;
     }
 
     bool block::is_unused() const
     {
-        return f_header.state() == block_header_state_t_unused;
+        return f_state == unused;
     }
     void block::set_unused()
     {
-        f_header.set_state( block_header_state_t_unused );
+        f_state = unused;
         return;
     }
 
     bool block::is_acquiring() const
     {
-        return f_header.state() == block_header_state_t_acquiring;
+        return f_state == acquiring;
     }
     void block::set_acquiring()
     {
-        f_header.set_state( block_header_state_t_acquiring );
+        f_state = acquiring;
         return;
     }
 
     bool block::is_acquired() const
     {
-        return f_header.state() == block_header_state_t_acquired;
+        return f_state == acquired;
     }
     void block::set_acquired()
     {
-        f_header.set_state( block_header_state_t_acquired );
+        f_state = acquired;
         return;
     }
 
     bool block::is_processing() const
     {
-        return f_header.state() == block_header_state_t_processing;
+        return f_state == processing;
     }
     void block::set_processing()
     {
-        f_header.set_state( block_header_state_t_processing );
+        f_state = processing;
         return;
     }
 
     bool block::is_writing() const
     {
-        return f_header.state() == block_header_state_t_writing;
+        return f_state == writing;
     }
     void block::set_writing()
     {
-        f_header.set_state( block_header_state_t_writing );
+        f_state = writing;
         return;
     }
 
     bool block::is_written() const
     {
-        return f_header.state() == block_header_state_t_written;
+        return f_state == written;
     }
     void block::set_written()
     {
-        f_header.set_state( block_header_state_t_written );
+        f_state = written;
         return;
     }
 
     acquisition_id_type block::get_acquisition_id() const
     {
-        return f_header.acquisition_id();
+        return f_acquisition_id;
     }
     void block::set_acquisition_id( acquisition_id_type an_id )
     {
-        f_header.set_acquisition_id( an_id );
+        f_acquisition_id = an_id;
         return;
     }
 
     record_id_type block::get_record_id() const
     {
-        return f_header.record_id();
+        return f_record_id;
     }
     void block::set_record_id( record_id_type an_id )
     {
-        f_header.set_record_id( an_id );
+        f_record_id = an_id;
         return;
     }
 
     time_nsec_type block::get_timestamp() const
     {
-        return f_header.timestamp();
+        return f_timestamp;
     }
     void block::set_timestamp( time_nsec_type a_timestamp )
     {
-        f_header.set_timestamp( a_timestamp );
+        f_timestamp = a_timestamp;
         return;
     }
 
     size_t block::get_data_size() const
     {
-        return f_header.data_size();
+        return f_data_size;
     }
     void block::set_data_size( size_t a_size )
     {
-        f_header.set_data_size( a_size );
+        f_data_size = a_size;
         return;
-    }
-
-    block_header* block::header()
-    {
-        return &f_header;
-    }
-
-    const block_header* block::header() const
-    {
-        return &f_header;
     }
 
     byte_type* block::memblock_bytes()
