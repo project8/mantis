@@ -10,8 +10,6 @@
 #include "mt_param.hh"
 #include "mt_thread.hh"
 
-#include "response.pb.h"
-
 #include <cmath> // for ceil()
 #include <cstdlib> // for exit()
 #include <cstring> // for memset()
@@ -333,16 +331,23 @@ namespace mantis
         //cout << "  digitizer_test16 is done canceling" );
         return;
     }
-    void digitizer_test16::finalize( response* a_response )
+    void digitizer_test16::finalize( param_node* a_response )
     {
         //MTINFO( mtlog, "calculating statistics..." );
+        double t_livetime = (double) (f_live_time) * SEC_PER_NSEC;
+        double t_deadtime = (double) f_dead_time * SEC_PER_NSEC;
+        double t_mb_recorded = (double) (4 * f_record_count);
 
-        a_response->set_digitizer_records( f_record_count );
-        a_response->set_digitizer_acquisitions( f_acquisition_count );
-        a_response->set_digitizer_live_time( (double) f_live_time * SEC_PER_NSEC );
-        a_response->set_digitizer_dead_time( (double) f_dead_time * SEC_PER_NSEC );
-        a_response->set_digitizer_megabytes( (double) (4 * f_record_count) );
-        a_response->set_digitizer_rate( a_response->digitizer_megabytes() / a_response->digitizer_live_time() );
+        param_node* t_resp_node = new param_node();
+        param_value t_value;
+        t_resp_node->add( "record-count", t_value << f_record_count );
+        t_resp_node->add( "acquisition-count", t_value << f_acquisition_count );
+        t_resp_node->add( "livetime", t_value << t_livetime );
+        t_resp_node->add( "deadtime", t_value << t_deadtime );
+        t_resp_node->add( "mb-recorded", t_value << t_mb_recorded );
+        t_resp_node->add( "digitization-rate", t_value << t_mb_recorded / t_livetime );
+
+        a_response->add( "digitizer-test16", t_resp_node );
 
         return;
     }

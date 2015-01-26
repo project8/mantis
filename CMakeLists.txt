@@ -121,16 +121,6 @@ include_directories( BEFORE
 )
 message( STATUS "amqplibdir: ${SimpleAmqpClient_LIBRARIES}")
 
-###########
-# Protobuf
-###########
-
-find_package( Protobuf )
-include_directories( ${PROTOBUF_INCLUDE_DIR} )
-pbuilder_add_ext_libraries( ${PROTOBUF_LIBRARIES} )
-include_directories( BEFORE ${CMAKE_CURRENT_BINARY_DIR}/Protobuf )
-add_subdirectory( Protobuf )
-
 
 ##########
 # Threads
@@ -138,19 +128,6 @@ add_subdirectory( Protobuf )
 
 find_package( Threads )
 pbuilder_add_ext_libraries( ${CMAKE_THREAD_LIBS_INIT} )
-
-
-########
-# Boost as included with mantis
-########
-
-#include_directories ( BEFORE 
-#    ${PROJECT_SOURCE_DIR}
-#)
-
-#add_subdirectory (boost)
-
-#pbuilder_add_ext_libraries( boost_atomic )
 
 
 ################

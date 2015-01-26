@@ -12,7 +12,6 @@ namespace mantis
     class buffer;
     class condition;
     class param_node;
-    class response;
 
     class digitizer :
         public callable
@@ -25,7 +24,7 @@ namespace mantis
             virtual bool deallocate( buffer* a_buffer ) = 0;
 
             virtual bool initialize( param_node* a_config ) = 0;
-            virtual void finalize( response* a_response ) = 0;
+            virtual void finalize( param_node* a_response ) = 0;
 
             virtual unsigned data_type_size() = 0;
 

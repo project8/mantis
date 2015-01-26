@@ -6,8 +6,6 @@
 #include "mt_atomic.hh"
 #include "mt_buffer.hh"
 #include "mt_condition.hh"
-#include "request.pb.h"
-#include "response.pb.h"
 #include "thorax.hh"
 
 namespace mantis
@@ -50,7 +48,7 @@ namespace mantis
             virtual bool initialize_derived( param_node* a_node ) = 0;
             void execute();
             void cancel();
-            virtual void finalize( response* a_response );
+            virtual void finalize( param_node* a_response );
 
             // thread-safe getter
             bool get_canceled();

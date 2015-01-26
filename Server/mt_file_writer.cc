@@ -60,19 +60,19 @@ namespace mantis
         f_header->SetFilename( t_filename );
         unsigned t_n_channels = 1;
         unsigned t_req_mode = t_client_config->get_value< unsigned >( "mode" );
-        if( t_req_mode == request_mode_t_single )
+        if( t_req_mode == monarch::sFormatSingle )
         {
             f_header->SetAcquisitionMode( monarch::sOneChannel );
             f_header->SetFormatMode( monarch::sFormatSingle );
             t_n_channels = 1;
         }
-        if( t_req_mode == request_mode_t_dual_separate )
+        if( t_req_mode == monarch::sFormatMultiSeparate )
         {
             f_header->SetAcquisitionMode( monarch::sTwoChannel );
             f_header->SetFormatMode( monarch::sFormatMultiSeparate );
             t_n_channels = 2;
         }
-        if( t_req_mode == request_mode_t_dual_interleaved )
+        if( t_req_mode == monarch::sFormatMultiInterleaved )
         {
             f_header->SetAcquisitionMode( monarch::sTwoChannel );
             f_header->SetFormatMode( monarch::sFormatMultiInterleaved );

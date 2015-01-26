@@ -28,8 +28,7 @@ namespace mantis
         add( "client-config", t_empty_node );
         add( "server-config", t_empty_node );
         add( "description", param_value() );
-        add( "request-string", param_value() );
-        add( "response-string", param_value() );
+        add( "response", param_value() );
     }
 
     run_description::~run_description()
@@ -135,17 +134,9 @@ namespace mantis
         return;
     }
 
-    void run_description::set_request_string( const std::string& a_rec )
+    void run_description::set_response( const param_node& a_response )
     {
-        param_value t_value;
-        this->replace( "request-string", t_value << a_rec );
-        return;
-    }
-
-    void run_description::set_response_string( const std::string& a_resp )
-    {
-        param_value t_value;
-        this->replace( "response-string", t_value << a_resp );
+        this->replace( "response", a_response );
         return;
     }
 

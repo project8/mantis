@@ -19,7 +19,7 @@ if( Mantis_BUILD_CLIENT )
     )
     
     add_library( MantisClient ${MANTIS_CLIENT_SOURCEFILES} )
-    target_link_libraries( MantisClient MantisCommon MantisProto ${EXTERNAL_LIBRARIES} )
+    target_link_libraries( MantisClient MantisCommon ${EXTERNAL_LIBRARIES} )
     
     pbuilder_install_headers( ${MANTIS_CLIENT_HEADERFILES} )
     pbuilder_install_libraries( MantisClient )

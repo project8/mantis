@@ -36,7 +36,7 @@ namespace mantis
             bool initialize( request* a_request );
             void execute();
             void cancel();
-            void finalize( response* a_response );
+            void finalize( param_node* a_response );
 
             unsigned data_type_size();
 

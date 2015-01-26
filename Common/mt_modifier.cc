@@ -2,6 +2,7 @@
 
 #include "mt_iterator.hh"
 #include "mt_logger.hh"
+#include "mt_param.hh"
 
 #include <cstring> // for memcpy()
 using std::stringstream;
@@ -143,15 +144,20 @@ namespace mantis
         //cout << "  modifier has finished canceling" );
         return;
     }
-    void modifier::finalize( response* /*a_response*/ )
+    void modifier::finalize( param_node* /*a_response*/ )
     {
         //MTINFO( mtlog, "calculating statistics..." );
         /*
-        a_response->set_modifier_records( f_record_count );
-        a_response->set_modifier_acquisitions( f_acquisition_count );
-        a_response->set_modifier_live_time( (double) (f_live_time) * SEC_PER_NSEC );
-        a_response->set_modifier_megabytes( (double) (4 * f_record_count) );
-        a_response->set_modifier_rate( a_response->modifier_megabytes() / a_response->modifier_live_time() );
+        double t_livetime = (double) (f_live_time) * SEC_PER_NSEC;
+        double t_mb_modified = (double) (4 * f_record_count);
+
+        param_node* t_resp_node = new param_node();
+        param_value t_value;
+        t_resp_node->add( "record-count", t_value << f_record_count );
+        t_resp_node->add( "acquisition-count", t_value << f_acquisition_count );
+        t_resp_node->add( "livetime", t_value << t_livetime );
+        t_resp_node->add( "mb-modified", t_value << t_mb_modified );
+        t_resp_node->add( "modification-rate", t_value << t_mb_modified / t_livetime );
         */
         return;
     }

@@ -9,15 +9,9 @@
 
 #include "mt_broker.hh"
 #include "mt_constants.hh"
-
-#include "mt_client_file_writing.hh"
-#include "mt_client_worker.hh"
-#include "mt_client_tcp.hh"
 #include "mt_exception.hh"
 #include "mt_logger.hh"
-#include "mt_run_context_dist.hh"
-#include "mt_signal_handler.hh"
-#include "mt_thread.hh"
+#include "mt_connection.hh"
 #include "mt_version.hh"
 #include "thorax.hh"
 

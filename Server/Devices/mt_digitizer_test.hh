@@ -7,7 +7,6 @@
 #include "mt_block.hh"
 #include "mt_condition.hh"
 #include "mt_mutex.hh"
-#include "request.pb.h"
 
 #include <stdint.h>
 
@@ -35,7 +34,7 @@ namespace mantis
             bool initialize( param_node* a_config );
             void execute();
             void cancel();
-            void finalize( response* a_response );
+            void finalize( param_node* a_response );
 
             unsigned data_type_size();
 

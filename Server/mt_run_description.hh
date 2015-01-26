@@ -55,8 +55,7 @@ namespace mantis
             void set_client_config( const param_node& a_config );
             void set_server_config( const param_node& a_config );
 
-            void set_request_string( const std::string& a_req );
-            void set_response_string( const std::string& a_resp );
+            void set_response( const param_node& a_response );
     };
 
 } /* namespace Katydid */

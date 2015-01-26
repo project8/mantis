@@ -67,7 +67,7 @@ set( MANTIS_COMMON_HEADERFILES
 )
 
 add_library( MantisCommon ${MANTIS_COMMON_SOURCEFILES} )
-target_link_libraries( MantisCommon MantisProto ${EXTERNAL_LIBRARIES} )
+target_link_libraries( MantisCommon ${EXTERNAL_LIBRARIES} )
 
 pbuilder_install_headers( ${MANTIS_COMMON_HEADERFILES} )
 pbuilder_install_libraries( MantisCommon )

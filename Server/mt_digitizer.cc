@@ -69,8 +69,9 @@ namespace mantis
         t_digitizer_thread.cancel();
 
         MTDEBUG( mtlog, "calling finalize");
-        response* a_response = NULL;
-        finalize( a_response );
+        param_node t_response;
+        finalize( &t_response );
+        MTINFO( mtlog, "In-situ digitizer test result:\n" << t_response );
 
         return true;
     }

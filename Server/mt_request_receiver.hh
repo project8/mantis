@@ -11,7 +11,6 @@ namespace mantis
     class buffer;
     class condition;
     class broker;
-    class requestable;
     class run_database;
     class server_tcp;
 
@@ -20,8 +19,6 @@ namespace mantis
         public:
             request_receiver( const param_node* a_config, broker* a_broker, run_database* a_run_database, condition* a_condition, const std::string& a_exe_name = "unknown" );
             virtual ~request_receiver();
-
-            void add_requestable( std::string& a_name, requestable* a_requestable );
 
             void execute();
             void cancel();

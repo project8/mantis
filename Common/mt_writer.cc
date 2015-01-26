@@ -2,6 +2,7 @@
 
 #include "mt_iterator.hh"
 #include "mt_logger.hh"
+#include "mt_param.hh"
 
 #include <cstring> // for memcpy()
 using std::stringstream;
@@ -138,15 +139,21 @@ namespace mantis
         //cout << "  writer has finished canceling" );
         return;
     }
-    void writer::finalize( response* a_response )
+    void writer::finalize( param_node* a_response )
     {
         //MTINFO( mtlog, "calculating statistics..." );
+        double t_livetime = (double) (f_live_time) * SEC_PER_NSEC;
+        double t_mb_written = (double) (4 * f_record_count);
 
-        a_response->set_writer_records( f_record_count );
-        a_response->set_writer_acquisitions( f_acquisition_count );
-        a_response->set_writer_live_time( (double) (f_live_time) * SEC_PER_NSEC );
-        a_response->set_writer_megabytes( (double) (4 * f_record_count) );
-        a_response->set_writer_rate( a_response->writer_megabytes() / a_response->writer_live_time() );
+        param_node* t_resp_node = new param_node();
+        param_value t_value;
+        t_resp_node->add( "record-count", t_value << f_record_count );
+        t_resp_node->add( "acquisition-count", t_value << f_acquisition_count );
+        t_resp_node->add( "livetime", t_value << t_livetime );
+        t_resp_node->add( "mb-written", t_value << t_mb_written );
+        t_resp_node->add( "writer-rate", t_value << t_mb_written / t_livetime );
+
+        a_response->add( "file-writer", t_resp_node );
 
         return;
     }

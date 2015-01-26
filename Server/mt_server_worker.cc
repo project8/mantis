@@ -7,7 +7,6 @@
 #include "mt_digitizer.hh"
 #include "mt_file_writer.hh"
 #include "mt_logger.hh"
-#include "mt_run_context_dist.hh"
 #include "mt_run_database.hh"
 #include "mt_run_description.hh"
 #include "mt_signal_handler.hh"
@@ -123,11 +122,11 @@ namespace mantis
 
             MTINFO( mtlog, "finalizing..." );
 
-            response t_response;
+            param_node t_response;
             f_dev_mgr->device()->finalize( &t_response );
             t_writer.finalize( &t_response );
-            t_response.set_state( response_state_t_complete );
-            t_run_desc->set_response_string( t_response.SerializeAsString() );
+            t_run_desc->set_response( t_response );
+            t_run_desc->set_status( run_description::stopped );
         }
 
         return;
