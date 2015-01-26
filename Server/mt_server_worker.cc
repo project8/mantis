@@ -127,6 +127,7 @@ namespace mantis
             t_writer.finalize( &t_response );
             t_run_desc->set_response( t_response );
             t_run_desc->set_status( run_description::stopped );
+            MTINFO( mtlog, "response:\n" << t_response );
         }
 
         return;

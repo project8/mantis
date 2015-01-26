@@ -52,8 +52,8 @@ namespace mantis
 
             void set_description( const std::string& a_desc );
 
-            void set_client_config( const param_node& a_config );
-            void set_server_config( const param_node& a_config );
+            void set_file_config( const param_node& a_config );
+            void set_mantis_config( const param_node& a_config );
 
             void set_response( const param_node& a_response );
     };

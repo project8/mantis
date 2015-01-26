@@ -22,7 +22,7 @@ namespace mantis
 {
     MTLOGGER( mtlog, "request_receiver" );
 
-    request_receiver::request_receiver( const param_node* a_config, broker* a_broker, run_database* a_run_database, condition* a_queue_condition, const string& a_exe_name ) :
+    request_receiver::request_receiver( const param_node& a_config, broker* a_broker, run_database* a_run_database, condition* a_queue_condition, const string& a_exe_name ) :
             f_master_server_config( *a_config ),
             f_broker( a_broker ),
             f_run_database( a_run_database ),
@@ -75,17 +75,18 @@ namespace mantis
                     param_node* t_msg_payload = t_msg_node->node_at( "payload" );
                     run_description* t_run_desc = new run_description();
                     t_run_desc->set_status( run_description::created );
+
                     t_run_desc->set_mantis_server_commit( TOSTRING(Mantis_GIT_COMMIT) );
                     t_run_desc->set_mantis_server_exe( f_exe_name );
                     t_run_desc->set_mantis_server_version( TOSTRING(Mantis_VERSION) );
                     t_run_desc->set_monarch_commit( TOSTRING(Monarch_GIT_COMMIT) );
                     t_run_desc->set_monarch_version( TOSTRING(Monarch_VERSION ) );
 
-                    t_run_desc->set_server_config( f_master_server_config );
+                    t_run_desc->set_mantis_config( f_master_server_config );
 
                     try
                     {
-                        t_run_desc->set_client_config( *( t_msg_payload->node_at( "run" )->node_at( "config" ) ) );
+                        t_run_desc->set_file_config( *( t_msg_payload->node_at( "run" )->node_at( "config" ) ) );
                     }
                     catch(...)
                     {

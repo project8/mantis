@@ -102,14 +102,14 @@ namespace mantis
         return f_exe_name;
     }
 
-    param_node* configurator::config()
+    param_node& configurator::config()
     {
-        return f_master_config;
+        return *f_master_config;
     }
 
-    const param_node* configurator::config() const
+    const param_node& configurator::config() const
     {
-        return f_master_config;
+        return *f_master_config;
     }
 
 } /* namespace mantis */

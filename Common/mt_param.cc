@@ -23,6 +23,20 @@ namespace mantis
 {
     MTLOGGER( mtlog, "param" );
 
+    param_exception::param_exception() :
+            exception()
+    {
+    }
+    param_exception::param_exception( const param_exception& an_exception ) :
+            exception( an_exception )
+    {
+    }
+
+    param_exception::~param_exception() throw ()
+    {
+    }
+
+
     unsigned param::s_indent_level = 0;
 
     param::param()
@@ -214,7 +228,7 @@ namespace mantis
     std::string param_array::get_value( unsigned a_index ) const
     {
         const param_value* value = value_at( a_index );
-        if( value == NULL ) throw exception() << "No value at <" << a_index << "> is present at this node";
+        if( value == NULL ) throw param_exception() << "No value at <" << a_index << "> is present at this node";
         return value->get();
     }
 
@@ -460,7 +474,7 @@ namespace mantis
     std::string param_node::get_value( const std::string& a_name ) const
     {
         const param_value* value = value_at( a_name );
-        if( value == NULL ) throw exception() << "No value with name <" << a_name << "> is present at this node";
+        if( value == NULL ) throw param_exception() << "No value with name <" << a_name << "> is present at this node";
         return value->get();
     }
 
@@ -561,7 +575,7 @@ namespace mantis
         const_iterator it = f_contents.find( a_name );
         if( it == f_contents.end() )
         {
-            throw exception() << "No value present corresponding to name <" << a_name << ">\n";
+            throw param_exception() << "No value present corresponding to name <" << a_name << ">\n";
         }
         return *(it->second);
     }

@@ -7,8 +7,7 @@
 namespace mantis
 {
 
-    class exception :
-        public std::exception
+    class exception : public std::exception
     {
         public:
             exception();

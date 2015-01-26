@@ -122,15 +122,15 @@ namespace mantis
         return;
     }
 
-    void run_description::set_client_config( const param_node& a_config )
+    void run_description::set_file_config( const param_node& a_config )
     {
-        this->replace( "client-config", a_config );
+        this->replace( "file", a_config );
         return;
     }
 
-    void run_description::set_server_config( const param_node& a_config )
+    void run_description::set_mantis_config( const param_node& a_config )
     {
-        this->replace( "server-config", a_config );
+        this->replace( "mantis-config", a_config );
         return;
     }
 

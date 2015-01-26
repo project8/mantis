@@ -29,6 +29,15 @@ namespace mantis
     class param_array;
     class param_node;
 
+    class param_exception : public exception
+    {
+        public:
+            param_exception();
+            param_exception( const param_exception& );
+            ~param_exception() throw ();
+    };
+
+
     class param
     {
         public:

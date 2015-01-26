@@ -25,8 +25,8 @@ namespace mantis
 
             const std::string& exe_name() const;
 
-            param_node* config();
-            const param_node* config() const;
+            param_node& config();
+            const param_node& config() const;
 
             template< typename XReturnType >
             XReturnType get( const std::string& a_name ) const;

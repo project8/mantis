@@ -38,7 +38,8 @@ int main( int argc, char** argv )
         client_config t_cc;
         configurator t_configurator( argc, argv, &t_cc );
 
-        broker t_broker( t_configurator.config()->get_value( "broker-addr" ), t_configurator.config()->get_value< unsigned >( "broker-port" ) );
+        broker t_broker( t_configurator.config().get_value( "broker-addr" ),
+                         t_configurator.config().get_value< unsigned >( "broker-port" ) );
 
         run_client the_client( &t_broker, t_configurator.config(), t_configurator.exe_name() );
 
@@ -46,9 +47,14 @@ int main( int argc, char** argv )
 
         return the_client.get_return();
     }
-    catch( mantis::exception& e )
+    catch( param_exception& e )
     {
-        MTERROR( mtlog, "mantis::exception caught: " << e.what() );
+        MTERROR( mtlog, "configuration error: " << e.what() );
+        return RETURN_ERROR;
+    }
+    catch( exception& e )
+    {
+        MTERROR( mtlog, "mantis error: " << e.what() );
         return RETURN_ERROR;
     }
     catch( std::exception& e )

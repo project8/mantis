@@ -28,46 +28,8 @@ namespace mantis
 
     class run_client : public callable
     {
-            /*
-        private:
-            class setup_loop : public callable
-            {
-                public:
-                    setup_loop( run_context_dist* a_run_context );
-                    virtual ~setup_loop();
-
-                    void execute();
-                    void cancel();
-
-                    int get_return();
-
-                private:
-                    run_context_dist* f_run_context;
-                    atomic_bool f_canceled;
-                    int f_return;
-            };
-
-            class run_loop : public callable
-            {
-                public:
-                    run_loop( run_context_dist* a_run_context, client_file_writing* a_file_writing = NULL );
-                    virtual ~run_loop();
-
-                    void execute();
-                    void cancel();
-
-                    int get_return();
-
-                private:
-                    run_context_dist* f_run_context;
-                    client_file_writing* f_file_writing;
-                    atomic_bool f_canceled;
-                    int f_return;
-            };
-            */
-
         public:
-            run_client( broker* a_broker, const param_node* a_node, const std::string& a_exe_name = "unknown" );
+            run_client( broker* a_broker, const param_node& a_node, const std::string& a_exe_name = "unknown" );
             virtual ~run_client();
 
             void execute();

@@ -68,19 +68,28 @@ int main( int argc, char** argv )
         return -1;
     }
 
-    param_node* t_server_config = t_configurator->config();
-
     MTINFO( mtlog, "creating objects..." );
 
     // AMQP broker
-    broker t_broker( t_server_config->get_value( "broker-addr" ), t_server_config->get_value< unsigned >( "broker-port" ) );
+    broker* t_broker = NULL;
+    try
+    {
+        broker t_broker( t_configurator->config().get_value( "broker-addr" ),
+                         t_configurator->config().get_value< unsigned >( "broker-port" ) );
+    }
+    catch( param_exception& e )
+    {
+        MTERROR( mtlog, "configuration error: " << e.what() );
+        delete t_configurator;
+        return -1;
+    }
 
     // run database and queue condition
     condition t_queue_condition;
     run_database t_run_database;
 
     // request receiver
-    request_receiver t_receiver( t_server_config, &t_broker, &t_run_database, &t_queue_condition, t_configurator->exe_name() );
+    request_receiver t_receiver( t_configurator->config(), &t_broker, &t_run_database, &t_queue_condition, t_configurator->exe_name() );
 
     // device manager
     device_manager t_dev_mgr;
@@ -120,8 +129,6 @@ int main( int argc, char** argv )
     }
 
     MTINFO( mtlog, "shutting down..." );
-
-    delete t_server_config;
 
     return 0;
 }

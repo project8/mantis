@@ -17,19 +17,15 @@ namespace mantis
     {
         // default client configuration
 
-        param_value client_value;
+        param_value t_value;
 
-        add( "broker-port", client_value << 98342 );
+        add( "broker-port", t_value << 98342 );
 
-        add( "broker-addr", client_value << "localhost" );
+        add( "broker-addr", t_value << "localhost" );
 
-        add( "file", client_value << "mantis_client_out.egg" );
+        add( "file", t_value << "mantis_client_out.egg" );
 
-        add( "rate", client_value << 250.0 );
-
-        add( "duration", client_value << 500 );
-
-        add( "mode", client_value << 0 );
+        add( "description", t_value << "???" );
     }
 
     client_config::~client_config()
