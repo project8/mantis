@@ -3,10 +3,8 @@
 
 #include "mt_callable.hh"
 
+#include "mt_mutex.hh"
 #include "mt_param.hh"
-
-
-#include <cstddef>
 
 namespace mantis
 {
@@ -28,41 +26,16 @@ namespace mantis
             void execute();
             void cancel();
 
-            size_t get_buffer_size() const;
-            void set_buffer_size( size_t size );
-
-            size_t get_block_size() const;
-            void set_block_size( size_t size );
-
-            size_t get_data_chunk_size() const;
-            void set_data_chunk_size( size_t size );
-
-            size_t get_data_type_size() const;
-            void set_data_type_size( size_t size );
-
-            size_t get_bit_depth() const;
-            void set_bit_depth( size_t bd );
-
-            double get_voltage_min() const;
-            void set_voltage_min( double v_min );
-
-            double get_voltage_range() const;
-            void set_voltage_range( double v_range );
-
         private:
-            param_node f_config;
+            void apply_config( const std::string& a_config_addr, const param_value& a_value );
+
+            mutex f_msc_mutex;
+            param_node f_master_server_config;
+
             broker* f_broker;
             run_database* f_run_database;
             condition* f_queue_condition;
             std::string f_exe_name;
-
-            size_t f_buffer_size;
-            size_t f_block_size;
-            size_t f_data_chunk_size;
-            size_t f_data_type_size;
-            size_t f_bit_depth;
-            double f_voltage_min;
-            double f_voltage_range;
     };
 
 }

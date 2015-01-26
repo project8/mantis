@@ -27,16 +27,13 @@
  */
 
 #include "mt_broker.hh"
-#include "mt_buffer.hh"
 #include "mt_condition.hh"
 #include "mt_configurator.hh"
-#include "mt_digitizer.hh"
+#include "mt_device_manager.hh"
 #include "mt_exception.hh"
-#include "mt_factory.hh"
 #include "mt_logger.hh"
 #include "mt_request_receiver.hh"
 #include "mt_run_database.hh"
-#include "mt_server_tcp.hh"
 #include "mt_server_config.hh"
 #include "mt_server_worker.hh"
 #include "mt_signal_handler.hh"
@@ -71,86 +68,25 @@ int main( int argc, char** argv )
         return -1;
     }
 
-    param_node* t_config = t_configurator->config();
+    param_node* t_server_config = t_configurator->config();
 
     MTINFO( mtlog, "creating objects..." );
 
-    size_t t_buffer_size, t_block_size, t_data_chunk_size;
-    try
-    {
-        t_buffer_size = t_config->get_value< int >( "buffer-size" );
-        if( t_config->has( "record-size" ) )
-        {
-            MTWARN( mtlog, "The \"record-size\" option is deprecated; please use \"block-size\" instead" );
-            t_block_size = t_config->get_value< int >( "record-size" );
-        }
-        else
-        {
-            t_block_size = t_config->get_value< int >( "block-size" );
-        }
-        t_data_chunk_size = t_config->get_value< int >( "data-chunk-size" );
-    }
-    catch( exception& e )
-    {
-        MTERROR( mtlog, "required parameters were not available: " << e.what() );
-        return -1;
-    }
+    // AMQP broker
+    broker t_broker( t_server_config->get_value( "broker-addr" ), t_server_config->get_value< unsigned >( "broker-port" ) );
 
-    // set up the AMQP connection and the request receiver
-
-    broker t_broker( t_config->get_value( "broker-addr" ), t_config->get_value< unsigned >( "broker-port" ) );
-
+    // run database and queue condition
     condition t_queue_condition;
     run_database t_run_database;
 
-    request_receiver t_receiver( t_config, &t_broker, &t_run_database, &t_queue_condition, t_configurator->exe_name() );
-    t_receiver.set_buffer_size( t_buffer_size );
-    t_receiver.set_block_size( t_block_size );
-    t_receiver.set_data_chunk_size( t_data_chunk_size );
+    // request receiver
+    request_receiver t_receiver( t_server_config, &t_broker, &t_run_database, &t_queue_condition, t_configurator->exe_name() );
 
-    // set up the digitizer
+    // device manager
+    device_manager t_dev_mgr;
 
-    condition t_buffer_condition;
-    buffer t_buffer( t_buffer_size, t_block_size );
-
-    factory< digitizer >* t_dig_factory = NULL;
-    digitizer* t_digitizer = NULL;
-    try
-    {
-        t_dig_factory = factory< digitizer >::get_instance();
-        t_digitizer = t_dig_factory->create( t_config->get_value< string >( "digitizer" ) );
-        if( t_digitizer == NULL )
-        {
-            MTERROR( mtlog, "could not create digitizer <" << t_config->get_value< string >( "digitizer" ) << ">; aborting" );
-            return -1;
-        }
-    }
-    catch( exception& e )
-    {
-        MTERROR( mtlog, "exception caught while creating digitizer: " << e.what() );
-        return -1;
-    }
-
-    // get the digitizer parameters
-    t_receiver.set_data_type_size( t_digitizer->params().data_type_size );
-    t_receiver.set_bit_depth( t_digitizer->params().bit_depth );
-    t_receiver.set_voltage_min( t_digitizer->params().v_min );
-    t_receiver.set_voltage_range( t_digitizer->params().v_range );
-    t_config->add( "data-type-size", new param_value( t_digitizer->params().data_type_size ) );
-    t_config->add( "bit-depth", new param_value( t_digitizer->params().bit_depth ) );
-    t_config->add( "voltage-min", new param_value( t_digitizer->params().v_min ) );
-    t_config->add( "voltage-range", new param_value( t_digitizer->params().v_range ) );
-
-    if(! t_digitizer->allocate( &t_buffer, &t_buffer_condition ) )
-    {
-        MTERROR( mtlog, "digitizer was not able to allocate the buffer" );
-        return -1;
-    }
-
-    server_worker t_worker( t_config,
-                            t_digitizer,
-                            &t_buffer, &t_run_database,
-                            &t_queue_condition, &t_buffer_condition );
+    // server worker
+    server_worker t_worker( &t_dev_mgr, &t_run_database, &t_queue_condition );
 
     MTINFO( mtlog, "starting threads..." );
 
@@ -185,7 +121,7 @@ int main( int argc, char** argv )
 
     MTINFO( mtlog, "shutting down..." );
 
-    delete t_config;
+    delete t_server_config;
 
     return 0;
 }

@@ -62,26 +62,7 @@ namespace mantis
 
     digitizer_px1500::~digitizer_px1500()
     {
-        if( f_allocated )
-        {
-            int t_result;
-
-            MTINFO( mtlog, "deallocating dma buffer..." );
-
-            iterator t_it( f_buffer );
-            for( size_t index = 0; index < f_buffer->size(); index++ )
-            {
-                f_buffer->delete_block( index );
-            }
-
-            MTINFO( mtlog, "disconnecting from digitizer card..." );
-
-            t_result = DisconnectFromDevicePX4( f_handle );
-            if( t_result != SIG_SUCCESS )
-            {
-                DumpLibErrorPX4( t_result, "failed to disconnect from digitizer card: " );
-                exit( -1 );
-            }
+        if( f_buffer != NULL ) deallocate( f_buffer );
         }
         /*
         if( f_semaphore != SEM_FAILED )
@@ -145,6 +126,37 @@ namespace mantis
         f_allocated = true;
         return true;
     }
+
+    bool digitizer_px1500::deallocate( buffer* a_buffer )
+    {
+        if( f_allocated && a_buffer == f_buffer )
+        {
+            int t_result;
+
+            MTINFO( mtlog, "deallocating dma buffer..." );
+
+            iterator t_it( f_buffer );
+            for( size_t index = 0; index < f_buffer->size(); index++ )
+            {
+                f_buffer->delete_block( index );
+            }
+            f_allocated = false;
+            f_buffer = NULL;
+
+            MTINFO( mtlog, "disconnecting from digitizer card..." );
+
+            t_result = DisconnectFromDevicePX4( f_handle );
+            if( t_result != SIG_SUCCESS )
+            {
+                DumpLibErrorPX4( t_result, "failed to disconnect from digitizer card: " );
+                return false;
+            }
+            return true;
+        }
+        MTERROR( mtlog, "Cannot deallocate buffer that was not allocated by this digitizer" );
+        return false;
+    }
+
     bool digitizer_px1500::initialize( request* a_request )
     {
         int t_result;
@@ -382,11 +394,6 @@ namespace mantis
             return false;
         }
         ++f_acquisition_count;
-        return true;
-    }
-
-    bool digitizer_px1500::write_mode_check( request_file_write_mode_t mode )
-    {
         return true;
     }
 

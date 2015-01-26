@@ -1,12 +1,13 @@
 #include "mt_digitizer_test16.hh"
 
-#include "mt_bit_shift_modifier.hh"
+//#include "mt_bit_shift_modifier.hh"
 #include "mt_buffer.hh"
 #include "mt_condition.hh"
 #include "mt_exception.hh"
 #include "mt_factory.hh"
 #include "mt_iterator.hh"
 #include "mt_logger.hh"
+#include "mt_param.hh"
 #include "mt_thread.hh"
 
 #include "response.pb.h"
@@ -64,17 +65,7 @@ namespace mantis
 
     digitizer_test16::~digitizer_test16()
     {
-        if( f_allocated )
-        {
-            delete [] f_master_record;
-
-            MTINFO( mtlog, "deallocating buffer..." );
-
-            for( unsigned int index = 0; index < f_buffer->size(); index++ )
-            {
-                f_buffer->delete_block( index );
-            }
-        }
+        if( f_buffer != NULL ) deallocate( f_buffer );
         /*
         if( f_semaphore != SEM_FAILED )
         {
@@ -120,11 +111,31 @@ namespace mantis
         return true;
     }
 
-    bool digitizer_test16::initialize( request* a_request )
+    bool digitizer_test16::deallocate( buffer* a_buffer )
+    {
+        if( f_allocated && a_buffer == f_buffer )
+        {
+            delete [] f_master_record;
+
+            MTINFO( mtlog, "deallocating buffer..." );
+
+            for( unsigned int index = 0; index < a_buffer->size(); index++ )
+            {
+                a_buffer->delete_block( index );
+            }
+            f_buffer = NULL; // ownership returned to original owner
+            f_allocated = false;
+            return true;
+        }
+        MTERROR( mtlog, "Cannot deallocate buffer that was not allocated by this digitizer" );
+        return false;
+    }
+
+    bool digitizer_test16::initialize( param_node* a_config )
     {
         //MTINFO( mtlog, "resetting counters..." );
 
-        f_record_last = (record_id_type) (ceil( (double) (a_request->rate() * a_request->duration() * 1.e3) / (double) (f_buffer->block_size()) ));
+        f_record_last = (record_id_type) (ceil( (double) (a_config->get_value< double >( "rate" ) * a_config->get_value< double >( "duration" ) * 1.e3) / (double) (f_buffer->block_size()) ));
         f_record_count = 0;
         f_acquisition_count = 0;
         f_live_time = 0;
@@ -143,14 +154,14 @@ namespace mantis
         timespec t_stamp_time;
 
 
-
+/*
         // bit shift modifier
         bit_shift_modifier< digitizer_test16::data_type > t_bs_mod;
         t_bs_mod.set_bit_shift( 2 );
         t_bs_mod.set_buffer( f_buffer, f_condition );
         thread t_bs_mod_thread( &t_bs_mod );
         t_bs_mod_thread.start();
-
+*/
 
 
         MTINFO( mtlog, "waiting for buffer readiness" );
@@ -200,13 +211,13 @@ namespace mantis
                     MTINFO( mtlog, "was canceled mid-run" );
                     f_cancel_condition.release();
                     MTDEBUG( mtlog, "canceling bs_mod thread" );
-                    t_bs_mod_thread.cancel();
+                    //t_bs_mod_thread.cancel();
                 }
                 else
                 {
                     MTINFO( mtlog, "finished normally" );
                     MTDEBUG( mtlog, "waiting for bs_mod thread to finish" );
-                    t_bs_mod_thread.join();
+                    //t_bs_mod_thread.join();
                     MTDEBUG( mtlog, "bs_mod thread done" );
                 }
                 return;
@@ -238,7 +249,7 @@ namespace mantis
                 MTINFO( mtlog, "finished abnormally because acquisition failed" );
 
                 MTDEBUG( mtlog, "canceling bs_mod thread" );
-                t_bs_mod_thread.cancel();
+                //t_bs_mod_thread.cancel();
 
                 return;
             }
@@ -261,7 +272,7 @@ namespace mantis
                     //GET OUT
                     MTINFO( mtlog, "finished abnormally because halting streaming failed" );
                     MTDEBUG( mtlog, "canceling bs_mod thread" );
-                    t_bs_mod_thread.cancel();
+                    //t_bs_mod_thread.cancel();
                     return;
                 }
 
@@ -290,7 +301,7 @@ namespace mantis
                     MTINFO( mtlog, "finished abnormally because starting streaming failed" );
 
                     MTDEBUG( mtlog, "canceling bs_mod thread" );
-                    t_bs_mod_thread.cancel();
+                    //t_bs_mod_thread.cancel();
 
                     return;
                 }
@@ -365,11 +376,6 @@ namespace mantis
     bool digitizer_test16::stop()
     {
         ++f_acquisition_count;
-        return true;
-    }
-
-    bool digitizer_test16::write_mode_check( request_file_write_mode_t )
-    {
         return true;
     }
 

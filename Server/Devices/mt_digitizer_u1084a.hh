@@ -31,12 +31,12 @@ namespace mantis
             virtual ~digitizer_u1084a();
 
             bool allocate( buffer* a_buffer, condition* a_condition );
+            bool deallocate( buffer* a_buffer );
+
             bool initialize( request* a_request );
             void execute();
             void cancel();
             void finalize( response* a_response );
-
-            bool write_mode_check( request_file_write_mode_t mode );
 
             unsigned data_type_size();
 

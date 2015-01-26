@@ -4,7 +4,7 @@
 
 set( MANTIS_COMMON_HEADERFILES
     mt_atomic.hh
-    mt_bit_shift_modifier.hh
+    #mt_bit_shift_modifier.hh
     mt_block.hh
     mt_broker.hh
     mt_buffer.hh

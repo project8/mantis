@@ -24,7 +24,7 @@ namespace mantis
     {
     }
 
-    bool modifier::initialize( request* a_request )
+    bool modifier::initialize( param_node* a_node )
     {
         f_canceled = false;
 
@@ -34,8 +34,9 @@ namespace mantis
         f_acquisition_count = 0;
         f_live_time = 0;
 
-        return initialize_derived( a_request );
+        return initialize_derived( a_node );
     }
+
     void modifier::execute()
     {
         iterator t_it( f_buffer, "modifier" );

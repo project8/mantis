@@ -3,6 +3,7 @@
 #include "mt_buffer.hh"
 #include "mt_condition.hh"
 #include "mt_logger.hh"
+#include "mt_param.hh"
 #include "mt_thread.hh"
 
 #include <unistd.h>
@@ -44,10 +45,10 @@ namespace mantis
         }
 
         MTDEBUG( mtlog, "calling initialize" );
-        request t_request;
-        t_request.set_rate( 250.0 ); // MHz
-        t_request.set_duration( 100.0 ); // ms
-        if ( ! initialize( &t_request ) )
+        param_node t_config;
+        t_config.add( "rate", param_value() << 250.0 ); // MHz
+        t_config.add( "duration", param_value() << 100.0 ); // ms
+        if ( ! initialize( &t_config ) )
         {
             MTERROR( mtlog, "failure during initialize" );
             return false;

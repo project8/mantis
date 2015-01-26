@@ -11,6 +11,7 @@ namespace mantis
 {
     class buffer;
     class condition;
+    class device_manager;
     class digitizer;
     class param_node;
     class run_context_dist;
@@ -22,22 +23,21 @@ namespace mantis
     class server_worker : public callable
     {
         public:
-            server_worker( const param_node* a_config, digitizer* a_digitizer, buffer* a_buffer, run_database* a_run_queue, condition* a_queue_condition, condition* a_buffer_condition );
+            server_worker( device_manager* a_dev_mgr, run_database* a_run_queue, condition* a_queue_condition );
             virtual ~server_worker();
 
             void execute();
             void cancel();
 
-            void set_writer( writer* a_writer );
-
         private:
-            const param_node* f_config;
-            digitizer* f_digitizer;
-            writer* f_writer;
-            buffer* f_buffer;
+            device_manager* f_dev_mgr;
             run_database* f_run_database;
             condition* f_queue_condition;
-            condition* f_buffer_condition;
+
+            // the server worker does not own the digitizer or writer
+            // these pointers are here so that the worker can be cancelled by a different thread
+            digitizer* f_digitizer;
+            writer* f_writer;
 
             atomic_bool f_canceled;
 

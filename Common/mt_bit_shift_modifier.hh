@@ -29,11 +29,9 @@ namespace mantis
             bit_shift_modifier();
             virtual ~bit_shift_modifier();
 
-            void configure( const param_node* );
-
             void set_bit_shift( unsigned a_shift );
 
-            bool initialize_derived( request* a_response );
+            bool initialize_derived( param_node* a_node );
 
         private:
             unsigned f_bit_shift;

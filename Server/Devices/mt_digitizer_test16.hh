@@ -7,7 +7,6 @@
 #include "mt_block.hh"
 #include "mt_condition.hh"
 #include "mt_mutex.hh"
-#include "request.pb.h"
 
 #include <stdint.h>
 
@@ -30,12 +29,12 @@ namespace mantis
             virtual ~digitizer_test16();
 
             bool allocate( buffer* a_buffer, condition* a_condition );
-            bool initialize( request* a_request );
+            bool deallocate( buffer* a_buffer );
+
+            bool initialize( param_node* a_config );
             void execute();
             void cancel();
             void finalize( response* a_response );
-
-            bool write_mode_check( request_file_write_mode_t mode );
 
             unsigned data_type_size();
 

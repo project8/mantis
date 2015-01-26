@@ -12,7 +12,7 @@
 
 namespace mantis
 {
-    class param_node;
+    class run_description;
 
     /*!
      @class writer
@@ -46,11 +46,11 @@ namespace mantis
 
             void set_buffer( buffer* a_buffer, condition* a_condition );
 
-            virtual void configure( const param_node* config ) = 0;
+            bool initialize( run_description* a_run_desc );
+            virtual bool initialize_derived( run_description* a_run_desc ) = 0;
 
-            bool initialize( request* a_response );
-            virtual bool initialize_derived( request* a_response ) = 0;
             void execute();
+
             void cancel();
             virtual void finalize( response* a_response );
 

@@ -46,10 +46,8 @@ namespace mantis
 
             void set_buffer( buffer* a_buffer, condition* a_condition );
 
-            virtual void configure( const param_node* config ) = 0;
-
-            bool initialize( request* a_response );
-            virtual bool initialize_derived( request* a_response ) = 0;
+            bool initialize( param_node* a_node );
+            virtual bool initialize_derived( param_node* a_node ) = 0;
             void execute();
             void cancel();
             virtual void finalize( response* a_response );

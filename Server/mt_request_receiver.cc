@@ -24,18 +24,11 @@ namespace mantis
     MTLOGGER( mtlog, "request_receiver" );
 
     request_receiver::request_receiver( const param_node* a_config, broker* a_broker, run_database* a_run_database, condition* a_queue_condition, const string& a_exe_name ) :
-            f_config( *a_config ),
+            f_master_server_config( *a_config ),
             f_broker( a_broker ),
             f_run_database( a_run_database ),
             f_queue_condition( a_queue_condition ),
-            f_exe_name( a_exe_name ),
-            f_buffer_size( 512 ),
-            f_block_size( 419304 ),
-            f_data_chunk_size( 1024 ),
-            f_data_type_size( 1 ),
-            f_bit_depth( 8 ),
-            f_voltage_min( -0.25 ),
-            f_voltage_range( 0.5 )
+            f_exe_name( a_exe_name )
     {
     }
 
@@ -88,6 +81,9 @@ namespace mantis
                     t_run_desc->set_mantis_server_version( TOSTRING(Mantis_VERSION) );
                     t_run_desc->set_monarch_commit( TOSTRING(Monarch_GIT_COMMIT) );
                     t_run_desc->set_monarch_version( TOSTRING(Monarch_VERSION ) );
+
+                    t_run_desc->set_server_config( f_master_server_config );
+
                     try
                     {
                         t_run_desc->set_client_config( *( t_msg_payload->node_at( "run" )->node_at( "config" ) ) );
@@ -100,9 +96,9 @@ namespace mantis
                     t_run_desc->set_client_exe( t_msg_payload->node_at( "client" )->get_value( "exe", "N/A" ) );
                     t_run_desc->set_client_version( t_msg_payload->node_at( "client" )->get_value( "version", "N/A" ) );
                     t_run_desc->set_description( t_msg_payload->node_at( "run" )->get_value( "description", "N/A" ) );
+
                     // TODO send acknowledgment
                     t_run_desc->set_status( run_description::acknowledged );
-                    // not set here: server config
 
                     MTINFO( mtlog, "queuing request..." );
                     f_run_database->enqueue( t_run_desc );
@@ -296,82 +292,17 @@ namespace mantis
         return;
     }
 
+    void request_receiver::apply_config( const std::string& a_config_addr, const param_value& a_value )
+    {
+        f_msc_mutex.lock();
+        f_master_server_config.replace( a_config_addr, a_value );
+        f_msc_mutex.unlock();
+        return;
+    }
+
     void request_receiver::cancel()
     {
         MTDEBUG( mtlog, "Canceling request receiver" );
-        return;
-    }
-
-    size_t request_receiver::get_buffer_size() const
-    {
-        return f_buffer_size;
-    }
-    void request_receiver::set_buffer_size( size_t size )
-    {
-        f_buffer_size = size;
-        return;
-    }
-
-    size_t request_receiver::get_block_size() const
-    {
-        return f_block_size;
-    }
-    void request_receiver::set_block_size( size_t size )
-    {
-        f_block_size = size;
-        return;
-    }
-
-    size_t request_receiver::get_data_chunk_size() const
-    {
-        return f_data_chunk_size;
-    }
-    void request_receiver::set_data_chunk_size( size_t size )
-    {
-        f_data_chunk_size = size;
-        return;
-    }
-
-    size_t request_receiver::get_data_type_size() const
-    {
-        return f_data_type_size;
-    }
-    void request_receiver::set_data_type_size( size_t size )
-    {
-        f_data_type_size = size;
-        return;
-    }
-
-    size_t request_receiver::get_bit_depth() const
-    {
-        return f_bit_depth;
-    }
-
-    void request_receiver::set_bit_depth( size_t bd )
-    {
-        f_bit_depth = bd;
-        return;
-    }
-
-    double request_receiver::get_voltage_min() const
-    {
-        return f_voltage_min;
-    }
-
-    void request_receiver::set_voltage_min( double v_min )
-    {
-        f_voltage_min = v_min;
-        return;
-    }
-
-    double request_receiver::get_voltage_range() const
-    {
-        return f_voltage_range;
-    }
-
-    void request_receiver::set_voltage_range( double v_range )
-    {
-        f_voltage_range = v_range;
         return;
     }
 

@@ -11,7 +11,7 @@
 
 namespace mantis
 {
-    class run_description;
+    class device_manager;
 
     /*!
      @class file_writer
@@ -37,20 +37,16 @@ namespace mantis
             file_writer();
             virtual ~file_writer();
 
-            void configure( const param_node* );
+            void set_device_manager( device_manager* a_dev_mgr );
 
-            void set_run_description( run_description* a_run_desc );
-
-            bool initialize_derived( request* a_response );
+            bool initialize_derived( run_description* a_run_desc );
 
         private:
             monarch::Monarch* f_monarch;
             monarch::MonarchHeader* f_header;
             monarch::MonarchRecordBytes* f_record;
 
-            struct dig_calib_params f_dig_params;
-
-            run_description* f_run_desc;
+            device_manager* f_dev_mgr;
 
             bool write( block* a_block );
     };

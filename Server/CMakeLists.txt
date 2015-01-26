@@ -20,6 +20,7 @@ if( Mantis_BUILD_SERVER )
 
     set( MANTIS_SERVER_HEADERFILES
         mt_destroyer.hh
+        mt_device_manager.hh
         mt_digitizer.hh
         mt_factory.hh
         mt_file_writer.hh
@@ -35,6 +36,7 @@ if( Mantis_BUILD_SERVER )
     )
     
     set( MANTIS_SERVER_SOURCEFILES
+        mt_device_manager.cc
         mt_digitizer.cc
         mt_file_writer.cc
         #mt_network_writer.cc

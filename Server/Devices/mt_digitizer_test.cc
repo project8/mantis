@@ -6,6 +6,7 @@
 #include "mt_factory.hh"
 #include "mt_iterator.hh"
 #include "mt_logger.hh"
+#include "mt_param.hh"
 
 #include "response.pb.h"
 
@@ -64,17 +65,7 @@ namespace mantis
 
     digitizer_test::~digitizer_test()
     {
-        if( f_allocated )
-        {
-            delete [] f_master_record;
-
-            MTINFO( mtlog, "deallocating buffer..." );
-
-            for( unsigned int index = 0; index < f_buffer->size(); index++ )
-            {
-                f_buffer->delete_block( index );
-            }
-        }
+        if( f_buffer != NULL ) deallocate( f_buffer );
         /*
         if( f_semaphore != SEM_FAILED )
         {
@@ -118,11 +109,31 @@ namespace mantis
         return true;
     }
 
-    bool digitizer_test::initialize( request* a_request )
+    bool digitizer_test::deallocate( buffer* a_buffer )
+    {
+        if( f_allocated && a_buffer == f_buffer )
+        {
+            delete [] f_master_record;
+
+            MTINFO( mtlog, "deallocating buffer..." );
+
+            for( unsigned int index = 0; index < a_buffer->size(); index++ )
+            {
+                a_buffer->delete_block( index );
+            }
+            f_buffer = NULL; // ownership returned to original owner
+            f_allocated = false;
+            return true;
+        }
+        MTERROR( mtlog, "Cannot deallocate buffer that was not allocated by this digitizer" );
+        return false;
+    }
+
+    bool digitizer_test::initialize( param_node* a_config )
     {
         //MTINFO( mtlog, "resetting counters..." );
 
-        f_record_last = (record_id_type) (ceil( (double) (a_request->rate() * a_request->duration() * 1.e3) / (double) (f_buffer->block_size()) ));
+        f_record_last = (record_id_type) (ceil( (double) (a_config->get_value< double >( "rate" ) * a_config->get_value< double >( "duration" ) * 1.e3) / (double) (f_buffer->block_size()) ));
         f_record_count = 0;
         f_acquisition_count = 0;
         f_live_time = 0;
@@ -330,11 +341,6 @@ namespace mantis
     bool digitizer_test::stop()
     {
         ++f_acquisition_count;
-        return true;
-    }
-
-    bool digitizer_test::write_mode_check( request_file_write_mode_t )
-    {
         return true;
     }
 

@@ -90,28 +90,7 @@ namespace mantis
 
     digitizer_u1084a::~digitizer_u1084a()
     {
-        if( f_allocated )
-        {
-            ViStatus t_result;
-            /*
-            MTINFO( mtlog, "deallocating dma buffer..." );
-
-            iterator t_it( f_buffer );
-            for( size_t index = 0; index < f_buffer->size(); index++ )
-            {
-                f_buffer->delete_block( index );
-            }
-
-            MTINFO( mtlog, "disconnecting from digitizer card..." );
-
-            t_result = DisconnectFromDevicePX4( f_handle );
-            if( t_result != VI_SUCCESS )
-            {
-                PrintU1084AError( f_handle, t_result, "failed to disconnect from digitizer card: " );
-                exit( -1 );
-            }
-             */
-        }
+        if( f_buffer != NULL ) deallocate( f_buffer );
         /*
         if( f_semaphore != SEM_FAILED )
         {
@@ -225,6 +204,37 @@ namespace mantis
          */
         f_allocated = true;
         return true;
+    }
+
+    bool digitizer_u1084a::deallocate( buffer* a_buffer )
+    {
+        if( f_allocated )
+        {
+            ViStatus t_result;
+            /*
+            MTINFO( mtlog, "deallocating dma buffer..." );
+
+            iterator t_it( f_buffer );
+            for( size_t index = 0; index < f_buffer->size(); index++ )
+            {
+                f_buffer->delete_block( index );
+            }
+            f_allocated = false;
+            f_buffer = NULL;
+
+            MTINFO( mtlog, "disconnecting from digitizer card..." );
+
+            t_result = DisconnectFromDevicePX4( f_handle );
+            if( t_result != VI_SUCCESS )
+            {
+                PrintU1084AError( f_handle, t_result, "failed to disconnect from digitizer card: " );
+                return false;
+            }
+            return true;
+             */
+        }
+        MTERROR( mtlog, "Cannot deallocate buffer that was not allocated by this digitizer" );
+        return false;
     }
 
     // This is maybe a bit of a misnomer, or something to restructure
@@ -560,11 +570,6 @@ namespace mantis
             return false;
         }
         ++f_acquisition_count;*/
-        return true;
-    }
-
-    bool digitizer_u1084a::write_mode_check( request_file_write_mode_t mode )
-    {
         return true;
     }
 

@@ -3,8 +3,6 @@
 
 #include "mt_callable.hh"
 
-#include "request.pb.h"
-
 #include "thorax.hh"
 
 #include <cstddef>
@@ -13,6 +11,7 @@ namespace mantis
 {
     class buffer;
     class condition;
+    class param_node;
     class response;
 
     class digitizer :
@@ -23,10 +22,10 @@ namespace mantis
             virtual ~digitizer();
 
             virtual bool allocate( buffer* a_buffer, condition* a_condition ) = 0;
-            virtual bool initialize( request* a_request ) = 0;
-            virtual void finalize( response* a_response ) = 0;
+            virtual bool deallocate( buffer* a_buffer ) = 0;
 
-            virtual bool write_mode_check( request_file_write_mode_t mode ) = 0;
+            virtual bool initialize( param_node* a_config ) = 0;
+            virtual void finalize( response* a_response ) = 0;
 
             virtual unsigned data_type_size() = 0;
 
