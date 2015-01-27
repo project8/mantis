@@ -23,7 +23,7 @@ namespace mantis
     MTLOGGER( mtlog, "request_receiver" );
 
     request_receiver::request_receiver( const param_node& a_config, broker* a_broker, run_database* a_run_database, condition* a_queue_condition, const string& a_exe_name ) :
-            f_master_server_config( *a_config ),
+            f_master_server_config( a_config ),
             f_broker( a_broker ),
             f_run_database( a_run_database ),
             f_queue_condition( a_queue_condition ),

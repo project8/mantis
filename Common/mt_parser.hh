@@ -3,14 +3,20 @@
 
 #include "mt_param.hh"
 
-#include "mt_exception.hh"
-
-#include <map>
 #include <string>
-#include <sstream>
 
 namespace mantis
 {
+    class cl_arg : public param_node
+    {
+        public:
+            cl_arg( const std::string& a_addr, const std::string& a_value );
+            ~cl_arg();
+
+        private:
+            void add_next( param_node* a_parent, const std::string& a_addr, const std::string& a_value );
+    };
+
 
     class parser : public param_node
     {

@@ -352,6 +352,15 @@ namespace mantis
         return;
     }
 
+    void param_array::append( const param_array& an_array )
+    {
+        for( param_array::const_iterator it = an_array.begin(); it != an_array.end(); ++it )
+        {
+            push_back( *(*it) );
+        }
+        return;
+    }
+
     void param_array::erase( unsigned a_index )
     {
         delete f_contents[ a_index ];
@@ -459,6 +468,11 @@ namespace mantis
     bool param_node::is_node() const
     {
         return true;
+    }
+
+    unsigned param_node::size() const
+    {
+        return f_contents.size();
     }
 
     bool param_node::has( const std::string& a_name ) const
@@ -621,10 +635,37 @@ namespace mantis
         return;
     }
 
-    void param_node::merge( const param_node* a_object )
+    void param_node::merge( const param_node& a_object )
     {
-        for( const_iterator it = a_object->f_contents.begin(); it != a_object->f_contents.end(); ++it )
+        //MTDEBUG( mtlog, "merging object with " << a_object.size() << " items:\n" << a_object );
+        for( const_iterator it = a_object.f_contents.begin(); it != a_object.f_contents.end(); ++it )
         {
+            if( ! has( it->first ) )
+            {
+                //MTDEBUG( mtlog, "do not have object <" << it->first << "> = <" << *it->second << ">" );
+                add( it->first, *it->second );
+                continue;
+            }
+            param& t_param = (*this)[ it->first ];
+            if( t_param.is_value() )
+            {
+                //MTDEBUG( mtlog, "replacing the value <" << it->first << "> with <" << *it->second << ">" );
+                replace( it->first, *it->second );
+                continue;
+            }
+            if( t_param.is_node() && it->second->is_node() )
+            {
+                //MTDEBUG( mtlog, "merging nodes")
+                t_param.as_node().merge( it->second->as_node() );
+                continue;
+            }
+            if( t_param.is_array() && it->second->is_array() )
+            {
+                //MTDEBUG( mtlog, "appending array" );
+                t_param.as_array().append( it->second->as_array() );
+                continue;
+            }
+            //MTDEBUG( mtlog, "generic replace" );
             this->replace( it->first, *it->second );
         }
     }

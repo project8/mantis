@@ -29,7 +29,7 @@ namespace mantis
         // first configuration: defaults
         if ( a_default != NULL )
         {
-            f_master_config->merge(a_default);
+            f_master_config->merge( *a_default );
         }
 
         //std::cout << "first configuration complete" << std::endl;
@@ -54,7 +54,7 @@ namespace mantis
                 {
                     throw exception() << "[configurator] error parsing config file";
                 }
-                f_master_config->merge( t_config_from_file );
+                f_master_config->merge( *t_config_from_file );
                 delete t_config_from_file;
             }
         }
@@ -70,7 +70,7 @@ namespace mantis
             if( ! t_config_json.empty() )
             {
                 param_node* t_config_from_json = param_input_json::read_string( t_config_json );
-                f_master_config->merge( t_config_from_json );
+                f_master_config->merge( *t_config_from_json );
                 delete t_config_from_json;
             }
         }
@@ -86,7 +86,8 @@ namespace mantis
 
         //std::cout << "removed config and json from parsed options" << std::endl;
         //cout << t_parser );
-        f_master_config->merge( &t_parser );
+        //MTDEBUG( mtlog, "adding command-line parser:\n" << t_parser << *f_master_config );
+        f_master_config->merge( t_parser );
 
         //std::cout << "fourth configuration complete" << std::endl;
         MTINFO( mtlog, "final configuration:\n" << *f_master_config );

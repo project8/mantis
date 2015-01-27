@@ -74,8 +74,8 @@ int main( int argc, char** argv )
     broker* t_broker = NULL;
     try
     {
-        broker t_broker( t_configurator->config().get_value( "broker-addr" ),
-                         t_configurator->config().get_value< unsigned >( "broker-port" ) );
+        t_broker = new broker( t_configurator->config().get_value( "broker-addr" ),
+                               t_configurator->config().get_value< unsigned >( "broker-port" ) );
     }
     catch( param_exception& e )
     {
@@ -89,7 +89,7 @@ int main( int argc, char** argv )
     run_database t_run_database;
 
     // request receiver
-    request_receiver t_receiver( t_configurator->config(), &t_broker, &t_run_database, &t_queue_condition, t_configurator->exe_name() );
+    request_receiver t_receiver( t_configurator->config(), t_broker, &t_run_database, &t_queue_condition, t_configurator->exe_name() );
 
     // device manager
     device_manager t_dev_mgr;

@@ -48,7 +48,6 @@ namespace mantis
         t_client_node->add( "version", param_value() << TOSTRING(Mantis_VERSION) );
 
         param_node* t_request_payload = new param_node();
-        t_request_payload->add( "client", t_client_node );
         t_request_payload->add( "file", f_config.node_at( "file" ) );
 
         param_node* t_request = new param_node();

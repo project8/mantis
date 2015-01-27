@@ -38,8 +38,10 @@ int main( int argc, char** argv )
         client_config t_cc;
         configurator t_configurator( argc, argv, &t_cc );
 
-        broker t_broker( t_configurator.config().get_value( "broker-addr" ),
-                         t_configurator.config().get_value< unsigned >( "broker-port" ) );
+        const param_node* t_broker_node = t_configurator.config().node_at( "broker" );
+
+        broker t_broker( t_broker_node->get_value( "addr" ),
+                         t_broker_node->get_value< unsigned >( "port" ) );
 
         run_client the_client( &t_broker, t_configurator.config(), t_configurator.exe_name() );
 

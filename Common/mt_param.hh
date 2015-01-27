@@ -217,6 +217,8 @@ namespace mantis
             void push_front( const param& a_value );
             void push_front( param* a_value_ptr );
 
+            void append( const param_array& an_array );
+
             void erase( unsigned a_index );
             param* remove( unsigned a_index );
 
@@ -272,6 +274,8 @@ namespace mantis
 
             virtual bool is_null() const;
             virtual bool is_node() const;
+
+            unsigned size() const;
 
             bool has( const std::string& a_name ) const;
             unsigned count( const std::string& a_name ) const;
@@ -329,7 +333,7 @@ namespace mantis
             /// Merges the contents of a_object into this object.
             /// If names in the contents of a_object exist in this object,
             /// the values in this object corresponding to the matching names will be replaced.
-            void merge( const param_node* a_object );
+            void merge( const param_node& a_object );
 
             void erase( const std::string& a_name );
             param* remove( const std::string& a_name );
