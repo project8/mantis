@@ -19,33 +19,44 @@ add_digitizer( U1084A )
 if( Mantis_BUILD_SERVER )
 
     set( MANTIS_SERVER_HEADERFILES
+        mt_atomic.hh
+        #mt_bit_shift_modifier.hh
+        mt_block.hh
+        mt_buffer.hh
         mt_destroyer.hh
         mt_device_manager.hh
         mt_digitizer.hh
         mt_factory.hh
         mt_file_writer.hh
-        #mt_network_writer.hh
-        #mt_run_queue.hh
+        mt_iterator.hh
+        mt_iterator_timer.hh
+        mt_modifier.hh
         mt_request_receiver.hh
         mt_run_database.hh
         mt_run_description.hh
         mt_server_config.hh
         mt_server_worker.hh
         mt_singleton.hh
+        mt_writer.hh
         ${DIGITIZER_HEADERFILES}
     )
     
     set( MANTIS_SERVER_SOURCEFILES
+        #mt_bit_shift_modifier.cc
+        mt_block.cc
+        mt_buffer.cc
         mt_device_manager.cc
         mt_digitizer.cc
         mt_file_writer.cc
-        #mt_network_writer.cc
-        #mt_run_queue.cc
+        mt_iterator.cc
+        mt_iterator_timer.cc
+        mt_modifier.cc
         mt_request_receiver.cc
         mt_run_database.cc
         mt_run_description.cc
         mt_server_config.cc
         mt_server_worker.cc
+        mt_writer.cc
         ${DIGITIZER_SOURCEFILES}
     )
     
