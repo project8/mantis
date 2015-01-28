@@ -7,6 +7,7 @@
 #include "mt_run_description.hh"
 
 #include "M3Exception.hh"
+#include "M3Types.hh"
 #include "M3Version.hh"
 
 #include <cstring> // for memcpy()
@@ -25,111 +26,108 @@ namespace mantis
             f_stream( NULL ),
             f_record( NULL ),
             f_data( NULL ),
-            f_last_acquisition_id( UINT32_MAX ),
-            f_dig_params(),
-            f_run_desc( NULL )
+            f_dev_mgr( NULL ),
+            f_last_acquisition_id( UINT32_MAX )
     {
-        // give some reasonable digitizer parameter defaults (these are from the px1500)
-        get_calib_params( 8, 1, -0.25, 0.5, &f_dig_params );
     }
     file_writer::~file_writer()
     {
-        delete f_monarch;
-        delete f_run_desc;
     }
 
-    void file_writer::configure( const param_node* a_config )
+    void file_writer::set_device_manager( device_manager* a_dev_mgr )
     {
-        // this should be present whether the configuration is from the client or from the server
-        get_calib_params(
-                a_config->get_value< unsigned >( "bit-depth",      f_dig_params.bit_depth ),
-                a_config->get_value< unsigned >( "data-type-size", f_dig_params.data_type_size ),
-                a_config->get_value< double   >( "voltage-min",    f_dig_params.v_min ),
-                a_config->get_value< double   >( "voltage-range",  f_dig_params.v_range ),
-                &f_dig_params );
+        f_dev_mgr = a_dev_mgr;
         return;
     }
 
-    void file_writer::set_run_description( run_description* a_run_desc )
-    {
-        delete f_run_desc;
-        f_run_desc = a_run_desc;
-        return;
-    }
-
-    bool file_writer::initialize_derived( request* a_request )
+    bool file_writer::initialize_derived( run_description* a_run_desc )
     {
         MTINFO( mtlog, "opening file..." );
 
-        try
+        const param_node* t_file_config = a_run_desc->node_at( "file" );
+        const param_node* t_mantis_config = a_run_desc->node_at( "mantis-config" );
+        if( t_file_config == NULL || t_mantis_config == NULL )
         {
-            f_monarch = monarch3::Monarch3::OpenForWriting( a_request->file() );
-        }
-        catch( monarch3::M3Exception& e )
-        {
-            MTERROR( mtlog, "error opening file: " << e.what() );
+            MTERROR( mtlog, "Either the file configuration (" << t_file_config << ") or mantis config (" << t_mantis_config << ") is missing" );
             return false;
         }
-        f_header = f_monarch->GetHeader();
-
-        // run header information
-        f_header->SetFilename( a_request->file() );
-        f_header->SetRunDuration( a_request->duration() );
-        f_header->SetTimestamp( a_request->date() );
-
-        // description
-        if( f_run_desc == NULL )
+        const param_node* t_device_config = t_mantis_config->node_at( "device" );
+        const param_node* t_run_config = t_mantis_config->node_at( "run" );
+        if( t_device_config == NULL || t_run_config == NULL )
         {
-            f_run_desc = new run_description();
-        }
-        f_run_desc->set_mantis_client_exe( a_request->client_exe() );
-        f_run_desc->set_mantis_client_version( a_request->client_version() );
-        f_run_desc->set_mantis_client_commit( a_request->client_commit() );
-        f_run_desc->set_monarch_version( TOSTRING(Monarch_VERSION) );
-        f_run_desc->set_monarch_commit( TOSTRING(Monarch_GIT_COMMIT) );
-        f_run_desc->set_description( a_request->description() );
-        param_node* t_client_config = param_input_json::read_string( a_request->client_config() );
-        f_run_desc->set_client_config( *t_client_config );
-
-        std::string t_full_desc;
-        param_output_json::write_string( *f_run_desc, t_full_desc, param_output_json::k_compact );
-        f_header->SetDescription( t_full_desc );
-
-        // stream and channel information
-        unsigned t_n_channels = 1;
-        if( a_request->mode() == request_mode_t_single )
-        {
-            f_header->AddStream( "mantis digitizer",
-                    a_request->rate(), f_buffer->block_size() / t_n_channels, 1,
-                    f_dig_params.data_type_size, monarch3::sDigitized,
-                    f_dig_params.bit_depth );
-            t_n_channels = 1;
-        }
-        if( a_request->mode() == request_mode_t_dual_separate )
-        {
-            f_header->AddStream( "mantis digitizer", 2, monarch3::sSeparate,
-                    a_request->rate(), f_buffer->block_size() / t_n_channels, 1,
-                    f_dig_params.data_type_size, monarch3::sDigitized,
-                    f_dig_params.bit_depth );
-            t_n_channels = 2;
-        }
-        if( a_request->mode() == request_mode_t_dual_interleaved )
-        {
-            f_header->AddStream( "mantis digitizer", 2, monarch3::sInterleaved,
-                    a_request->rate(), f_buffer->block_size() / t_n_channels, 1,
-                    f_dig_params.data_type_size, monarch3::sDigitized,
-                    f_dig_params.bit_depth );
-            t_n_channels = 2;
+            MTERROR( mtlog, "Either the device configuration (" << t_device_config << ") or run config (" << t_run_config << ") is missing" );
+            return false;
         }
 
-        // write voltage information to channel headers
-        typedef std::vector< monarch3::M3ChannelHeader > ChanHeaders;
-        for( ChanHeaders::iterator t_chan_it = f_header->GetChannelHeaders().begin(); t_chan_it != f_header->GetChannelHeaders().end(); ++t_chan_it )
+        try
         {
-            t_chan_it->SetVoltageMin( f_dig_params.v_min );
-            t_chan_it->SetVoltageRange( f_dig_params.v_range );
-        }
+            std::string t_filename( t_file_config->get_value( "filename" ) );
+            try
+            {
+                f_monarch = monarch3::Monarch3::OpenForWriting( t_filename );
+            }
+            catch( monarch3::M3Exception& e )
+            {
+                MTERROR( mtlog, "error opening file: " << e.what() );
+                return false;
+            }
+            f_header = f_monarch->GetHeader();
 
+            // run header information
+            f_header->SetFilename( t_filename );
+            f_header->SetRunDuration( t_run_config->get_value< double >( "duration" ) );
+            char t_timestamp[64];
+            get_time_absolute_str( t_timestamp );
+            f_header->SetTimestamp( t_timestamp );
+
+            // stream and channel information
+            monarch3::DataFormatType t_data_mode = t_device_config->get_value< monarch3::DataFormatType >( "data-mode" );
+            monarch3::MultiChannelFormatType t_chan_mode = t_device_config->get_value< monarch3::MultiChannelFormatType >( "channel-mode" );
+            unsigned t_n_channels = t_device_config->get_value< unsigned >( "n-channels" );
+            unsigned t_rate = t_device_config->get_value< unsigned >( "rate" );
+            unsigned t_sample_size = t_device_config->get_value< unsigned >( "sample-size" );
+            if( t_n_channels == 1 )
+            {
+                f_header->AddStream( "mantis digitizer",
+                        t_rate, f_buffer->block_size() / t_n_channels, t_sample_size,
+                        f_dev_mgr->device()->params().data_type_size, t_data_mode,
+                        f_dev_mgr->device()->params().bit_depth );
+                t_n_channels = 1;
+            }
+            else
+            {
+                f_header->AddStream( "mantis digitizer", t_n_channels, t_chan_mode,
+                        t_rate, f_buffer->block_size() / t_n_channels, t_sample_size,
+                        f_dev_mgr->device()->params().data_type_size, t_data_mode,
+                        f_dev_mgr->device()->params().bit_depth );
+                t_n_channels = 2;
+            }
+
+            // write voltage information to channel headers
+            //TODO: when the device manager is improved, setting of the channel header info will have to go with the streams above
+            typedef std::vector< monarch3::M3ChannelHeader > ChanHeaders;
+            for( ChanHeaders::iterator t_chan_it = f_header->GetChannelHeaders().begin(); t_chan_it != f_header->GetChannelHeaders().end(); ++t_chan_it )
+            {
+                t_chan_it->SetVoltageMin( f_dev_mgr->device()->params().v_min );
+                t_chan_it->SetVoltageRange( f_dev_mgr->device()->params().v_range );
+            }
+
+        }
+        catch( param_exception& e )
+        {
+            MTERROR( mtlog, "Configuration error: " << e.what() );
+            return false;
+        }
+        catch( exception& e )
+        {
+            MTERROR( mtlog, "Mantis error: " << e.what() );
+            return false;
+        }
+        catch( std::exception& e )
+        {
+            MTERROR( mtlog, "std::exception caught: " << e.what() );
+            return false;
+        }
         MTINFO( mtlog, "writing header..." );
 
         try

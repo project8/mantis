@@ -7,8 +7,9 @@
 #include "mt_logger.hh"
 #include "mt_run_description.hh"
 
-#include "MonarchException.hpp"
-#include "MonarchVersion.hpp"
+#include "M3Exception.hh"
+#include "M3Types.hh"
+#include "M3Version.hh"
 
 #include <cstring> // for memcpy()
 using std::stringstream;
@@ -23,7 +24,10 @@ namespace mantis
             writer(),
             f_monarch( NULL ),
             f_header( NULL ),
+            f_stream( NULL ),
             f_record( NULL ),
+            f_data( NULL ),
+            f_last_acquisition_id( UINT32_MAX ),
             f_dev_mgr( NULL )
     {
     }
@@ -39,7 +43,7 @@ namespace mantis
 
     bool file_writer::initialize_derived( run_description* a_run_desc )
     {
-        MTINFO( mtlog, "Opening file" );
+        MTINFO( mtlog, "opening file..." );
 
         const param_node* t_file_config = a_run_desc->node_at( "file" );
         const param_node* t_mantis_config = a_run_desc->node_at( "mantis-config" );
@@ -58,55 +62,57 @@ namespace mantis
 
         try
         {
-            string t_filename( t_file_config->get_value( "filename" ) );
+            std::string t_filename( t_file_config->get_value( "filename" ) );
             try
             {
-                f_monarch = monarch::Monarch::OpenForWriting( t_filename );
+                f_monarch = monarch3::Monarch3::OpenForWriting( t_filename );
             }
-            catch( monarch::MonarchException& e )
+            catch( monarch3::M3Exception& e )
             {
-                MTERROR( mtlog, "Error opening file: " << e.what() );
+                MTERROR( mtlog, "error opening file: " << e.what() );
                 return false;
             }
             f_header = f_monarch->GetHeader();
 
-            f_header->SetDescription( t_file_config->get_value( "description" ) );
-
+            // run header information
             f_header->SetFilename( t_filename );
-            unsigned t_n_channels = 1;
-            unsigned t_req_mode = t_device_config->get_value< unsigned >( "mode" );
-            if( t_req_mode == monarch::sFormatSingle )
-            {
-                f_header->SetAcquisitionMode( monarch::sOneChannel );
-                f_header->SetFormatMode( monarch::sFormatSingle );
-                t_n_channels = 1;
-            }
-            if( t_req_mode == monarch::sFormatMultiSeparate )
-            {
-                f_header->SetAcquisitionMode( monarch::sTwoChannel );
-                f_header->SetFormatMode( monarch::sFormatMultiSeparate );
-                t_n_channels = 2;
-            }
-            if( t_req_mode == monarch::sFormatMultiInterleaved )
-            {
-                f_header->SetAcquisitionMode( monarch::sTwoChannel );
-                f_header->SetFormatMode( monarch::sFormatMultiInterleaved );
-                t_n_channels = 2;
-            }
-            f_header->SetAcquisitionRate( t_device_config->get_value< double >( "rate" ) );
             f_header->SetRunDuration( t_run_config->get_value< double >( "duration" ) );
-            f_header->SetRecordSize( f_buffer->block_size() / t_n_channels );
-
             char t_timestamp[64];
             get_time_absolute_str( t_timestamp );
             f_header->SetTimestamp( t_timestamp );
-            f_header->SetRunType( monarch::sRunTypeSignal );
-            f_header->SetRunSource( monarch::sSourceMantis );
 
-            f_header->SetDataTypeSize( f_dev_mgr->device()->params().data_type_size );
-            f_header->SetBitDepth( f_dev_mgr->device()->params().bit_depth );
-            f_header->SetVoltageMin( f_dev_mgr->device()->params().v_min );
-            f_header->SetVoltageRange( f_dev_mgr->device()->params().v_range );
+            // stream and channel information
+            monarch3::DataFormatType t_data_mode = t_device_config->get_value< monarch3::DataFormatType >( "data-mode" );
+            monarch3::MultiChannelFormatType t_chan_mode = t_device_config->get_value< monarch3::MultiChannelFormatType >( "channel-mode" );
+            unsigned t_n_channels = t_device_config->get_value< unsigned >( "n-channels" );
+            unsigned t_rate = t_device_config->get_value< unsigned >( "rate" );
+            unsigned t_sample_size = t_device_config->get_value< unsigned >( "sample-size" );
+            if( t_n_channels == 1 )
+            {
+                f_header->AddStream( "mantis digitizer",
+                        t_rate, f_buffer->block_size() / t_n_channels, t_sample_size,
+                        f_dev_mgr->device()->params().data_type_size, t_data_mode,
+                        f_dev_mgr->device()->params().bit_depth );
+                t_n_channels = 1;
+            }
+            else
+            {
+                f_header->AddStream( "mantis digitizer", t_n_channels, t_chan_mode,
+                        t_rate, f_buffer->block_size() / t_n_channels, t_sample_size,
+                        f_dev_mgr->device()->params().data_type_size, t_data_mode,
+                        f_dev_mgr->device()->params().bit_depth );
+                t_n_channels = 2;
+            }
+
+            // write voltage information to channel headers
+            //TODO: when the device manager is improved, setting of the channel header info will have to go with the streams above
+            typedef std::vector< monarch3::M3ChannelHeader > ChanHeaders;
+            for( ChanHeaders::iterator t_chan_it = f_header->GetChannelHeaders().begin(); t_chan_it != f_header->GetChannelHeaders().end(); ++t_chan_it )
+            {
+                t_chan_it->SetVoltageMin( f_dev_mgr->device()->params().v_min );
+                t_chan_it->SetVoltageRange( f_dev_mgr->device()->params().v_range );
+            }
+
         }
         catch( param_exception& e )
         {
@@ -123,33 +129,33 @@ namespace mantis
             MTERROR( mtlog, "std::exception caught: " << e.what() );
             return false;
         }
-
-
-        MTINFO( mtlog, "Writing header" );
+        MTINFO( mtlog, "writing header..." );
 
         try
         {
             f_monarch->WriteHeader();
         }
-        catch( monarch::MonarchException& e )
+        catch( monarch3::M3Exception& e )
         {
-            MTERROR( mtlog, "Error while writing header: " << e.what() );
+            MTERROR( mtlog, "error while writing header: " << e.what() );
             return false;
         }
-        f_monarch->SetInterface( monarch::sInterfaceInterleaved );
-        f_record = f_monarch->GetRecordInterleaved();
+        f_stream = f_monarch->GetStream( 0 );
+        f_record = f_stream->GetStreamRecord();
+        f_data = f_record->GetData();
 
         return true;
     }
 
     bool file_writer::write( block* a_block )
     {
-        f_record->fAcquisitionId = (monarch::AcquisitionIdType) (a_block->get_acquisition_id());
-        f_record->fRecordId = (monarch::RecordIdType) (a_block->get_record_id());
-        f_record->fTime = (monarch::TimeType) (a_block->get_timestamp());
-        ::memcpy( f_record->fData, a_block->data_bytes(), a_block->get_data_nbytes() );
+        bool t_is_new_acquisition = a_block->get_acquisition_id() != f_last_acquisition_id;
+        f_last_acquisition_id = a_block->get_acquisition_id();
+        f_record->SetRecordId( (monarch3::RecordIdType) (a_block->get_record_id()) );
+        f_record->SetTime( (monarch3::TimeType) (a_block->get_timestamp()) );
+        ::memcpy( f_data, a_block->data_bytes(), a_block->get_data_nbytes() );
 
-        return f_monarch->WriteRecord();
+        return f_stream->WriteRecord( t_is_new_acquisition );
     }
 
 }

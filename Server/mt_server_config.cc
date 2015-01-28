@@ -7,6 +7,8 @@
 
 #include "mt_server_config.hh"
 
+#include "M3Types.hh"
+
 #include<string>
 using std::string;
 
@@ -30,8 +32,11 @@ namespace mantis
 
         param_node* t_dev_node = new param_node();
         t_dev_node->add( "name", t_value << "test" );
-        t_dev_node->add( "rate", t_value << 250.0 );
-        t_dev_node->add( "mode", t_value << 0 );
+        t_dev_node->add( "rate", t_value << 250 );
+        t_dev_node->add( "n-channels", t_value << 1 );
+        t_dev_node->add( "data-mode", t_value << monarch3::sDigitized );
+        t_dev_node->add( "channel-mode", t_value << monarch3::sInterleaved );
+        t_dev_node->add( "sample-size", t_value << 1 );
         t_dev_node->add( "buffer-size", t_value << 512 );
         t_dev_node->add( "block-size", t_value << 4194304 );
         t_dev_node->add( "data-chunk-size", t_value << 1024 );
