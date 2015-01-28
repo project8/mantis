@@ -97,11 +97,10 @@ pbuilder_add_submodule_libraries( ${Monarch_LIBRARIES} )
 #   list( APPEND CMAKE_INSTALL_RPATH ${Monarch_LIBRARY_DIR} )
 #endif( "${isSystemDir}" STREQUAL "-1" )
 include_directories( BEFORE 
-    ${PROJECT_SOURCE_DIR}/Monarch/Source
+    ${PROJECT_SOURCE_DIR}/Monarch/Monarch3
     ${PROJECT_SOURCE_DIR}/Monarch/libthorax/cpp
     ${PROJECT_SOURCE_DIR}/Monarch/libthorax
     ${PROJECT_BINARY_DIR}/Monarch
-    ${PROJECT_BINARY_DIR}/Monarch/Protobuf 
 )
 
 
