@@ -116,7 +116,7 @@ namespace mantis
                     // TODO send acknowledgment
                     t_run_desc->set_status( run_description::acknowledged );
 
-                    MTINFO( mtlog, "queuing request..." );
+                    MTINFO( mtlog, "Queuing request" );
                     f_run_database->enqueue( t_run_desc );
 
                     // if the queue condition is waiting, release it

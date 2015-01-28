@@ -47,14 +47,16 @@ namespace mantis
                 f_queue_condition->wait();
             }
 
-            MTINFO( mtlog, "setting run status <started>" );
+            MTINFO( mtlog, "Processing run request from queue" );
+
+            MTINFO( mtlog, "Setting run status <started>" );
 
             run_description* t_run_desc = f_run_database->pop();
             t_run_desc->set_status( run_description::started );
 
-            MTINFO( mtlog, "initializing..." );
+            MTINFO( mtlog, "Initializing" );
 
-            std::cout << "Retrieved request from the queue:\n" << *t_run_desc << std::endl;
+            MTDEBUG( mtlog, "Retrieved request from the queue:\n" << *t_run_desc );
 
             if( ! f_dev_mgr->configure( *t_run_desc ) )
             {
@@ -120,14 +122,14 @@ namespace mantis
                 t_run_desc->set_status( run_description::canceled );
             }
 
-            MTINFO( mtlog, "finalizing..." );
+            MTINFO( mtlog, "Finalizing..." );
 
             param_node t_response;
             f_dev_mgr->device()->finalize( &t_response );
             t_writer.finalize( &t_response );
             t_run_desc->set_response( t_response );
             t_run_desc->set_status( run_description::stopped );
-            MTINFO( mtlog, "response:\n" << t_response );
+            MTINFO( mtlog, "Run response:\n" << t_response );
         }
 
         return;
