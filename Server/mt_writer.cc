@@ -155,6 +155,8 @@ namespace mantis
 
         a_response->add( "file-writer", t_resp_node );
 
+        finalize_derived( a_response );
+
         return;
     }
 

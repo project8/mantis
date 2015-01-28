@@ -33,6 +33,7 @@ namespace mantis
     }
     file_writer::~file_writer()
     {
+        delete f_monarch;
     }
 
     void file_writer::set_device_manager( device_manager* a_dev_mgr )
@@ -89,7 +90,7 @@ namespace mantis
             unsigned t_sample_size = t_device_config->get_value< unsigned >( "sample-size" );
             if( t_n_channels == 1 )
             {
-                f_header->AddStream( "mantis digitizer",
+                f_header->AddStream( std::string("mantis - ") + t_device_config->get_value( "name" ),
                         t_rate, f_buffer->block_size() / t_n_channels, t_sample_size,
                         f_dev_mgr->device()->params().data_type_size, t_data_mode,
                         f_dev_mgr->device()->params().bit_depth );
@@ -97,7 +98,7 @@ namespace mantis
             }
             else
             {
-                f_header->AddStream( "mantis digitizer", t_n_channels, t_chan_mode,
+                f_header->AddStream( std::string("mantis - ") + t_device_config->get_value( "name" ), t_n_channels, t_chan_mode,
                         t_rate, f_buffer->block_size() / t_n_channels, t_sample_size,
                         f_dev_mgr->device()->params().data_type_size, t_data_mode,
                         f_dev_mgr->device()->params().bit_depth );
@@ -140,6 +141,7 @@ namespace mantis
             MTERROR( mtlog, "error while writing header: " << e.what() );
             return false;
         }
+
         f_stream = f_monarch->GetStream( 0 );
         f_record = f_stream->GetStreamRecord();
         f_data = f_record->GetData();
@@ -156,6 +158,15 @@ namespace mantis
         ::memcpy( f_data, a_block->data_bytes(), a_block->get_data_nbytes() );
 
         return f_stream->WriteRecord( t_is_new_acquisition );
+    }
+
+    void file_writer::finalize_derived( param_node* /*a_response*/ )
+    {
+        MTDEBUG( mtlog, "File writer finalizing" );
+        f_monarch->FinishWriting();
+        delete f_monarch;
+        f_monarch = NULL;
+        return;
     }
 
 }

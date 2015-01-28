@@ -51,7 +51,8 @@ namespace mantis
             void execute();
 
             void cancel();
-            virtual void finalize( param_node* a_response );
+            void finalize( param_node* a_response );
+            virtual void finalize_derived( param_node* a_response ) = 0;
 
             // thread-safe getter
             bool get_canceled();

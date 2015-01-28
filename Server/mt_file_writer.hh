@@ -41,6 +41,8 @@ namespace mantis
 
             bool initialize_derived( run_description* a_run_desc );
 
+            void finalize_derived( param_node* a_response );
+
         private:
             monarch3::Monarch3* f_monarch;
             monarch3::M3Header* f_header;
