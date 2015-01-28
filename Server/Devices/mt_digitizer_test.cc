@@ -127,11 +127,11 @@ namespace mantis
         return false;
     }
 
-    bool digitizer_test::initialize( param_node* a_config )
+    bool digitizer_test::initialize( const param_node* a_config )
     {
         //MTINFO( mtlog, "resetting counters..." );
 
-        f_record_last = (record_id_type) (ceil( (double) (a_config->get_value< double >( "rate" ) * a_config->get_value< double >( "duration" ) * 1.e3) / (double) (f_buffer->block_size()) ));
+        f_record_last = (record_id_type) (ceil( (double) (a_config->node_at( "device" )->get_value< double >( "rate" ) * a_config->node_at( "run" )->get_value< double >( "duration" ) * 1.e3) / (double) (f_buffer->block_size()) ));
         f_record_count = 0;
         f_acquisition_count = 0;
         f_live_time = 0;
@@ -139,6 +139,7 @@ namespace mantis
 
         return true;
     }
+
     void digitizer_test::execute()
     {
         iterator t_it( f_buffer, "dig_test" );

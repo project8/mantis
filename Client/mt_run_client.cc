@@ -25,8 +25,7 @@ namespace mantis
 {
     MTLOGGER( mtlog, "run_client" );
 
-    run_client::run_client( broker* a_broker, const param_node& a_node, const string& a_exe_name ) :
-            f_broker( a_broker ),
+    run_client::run_client( const param_node& a_node, const string& a_exe_name ) :
             f_config( a_node ),
             f_exe_name( a_exe_name ),
             f_canceled( false ),
@@ -42,13 +41,22 @@ namespace mantis
     {
         MTINFO( mtlog, "creating request objects..." );
 
+        const param_node* t_file_node = f_config.node_at( "file" );
+        if( t_file_node == NULL )
+        {
+            MTERROR( mtlog, "no file configuration is present" );
+            f_return = RETURN_ERROR;
+            return;
+        }
+
         param_node* t_client_node = new param_node();
         t_client_node->add( "commit", param_value() << TOSTRING(Mantis_GIT_COMMIT) );
         t_client_node->add( "exe", param_value() << f_exe_name );
         t_client_node->add( "version", param_value() << TOSTRING(Mantis_VERSION) );
 
         param_node* t_request_payload = new param_node();
-        t_request_payload->add( "file", f_config.node_at( "file" ) );
+        t_request_payload->add( "file", *t_file_node );
+        t_request_payload->add( "client", *t_client_node );
 
         param_node* t_request = new param_node();
         t_request->add( "msgtype", param_value() << T_MANTIS_REQUEST );
@@ -60,15 +68,22 @@ namespace mantis
         std::string t_request_str;
         if(! param_output_json::write_string( *t_request, t_request_str, param_output_json::k_compact ) )
         {
+            delete t_request;
             MTERROR( mtlog, "Could not convert request to string" );
             f_return = RETURN_ERROR;
             return;
         }
+        delete t_request;
 
 
         MTINFO( mtlog, "connecting to broker..." );
 
-        connection* t_connection = f_broker->create_connection();
+        const param_node* t_broker_node = f_config.node_at( "broker" );
+
+        broker t_broker( t_broker_node->get_value( "addr" ),
+                         t_broker_node->get_value< unsigned >( "port" ) );
+
+        connection* t_connection = t_broker.create_connection();
         if( t_connection == NULL )
         {
             MTERROR( mtlog, "Cannot create connection to AMQP broker" );
@@ -82,6 +97,7 @@ namespace mantis
         }
         catch( std::exception& e )
         {
+            delete t_connection;
             MTERROR( mtlog, "Exchange <request> was not present; aborting.\n(" << e.what() << ")" );
             f_return = RETURN_ERROR;
             return;
@@ -99,10 +115,13 @@ namespace mantis
         }
         catch( AmqpClient::MessageReturnedException& e )
         {
+            delete t_connection;
             MTERROR( mtlog, "Message could not be sent: " << e.what() );
             f_return = RETURN_ERROR;
             return;
         }
+
+        delete t_connection;
 
         f_return = RETURN_SUCCESS;
 

@@ -19,11 +19,14 @@ namespace mantis
 
         param_value t_value;
 
-        add( "broker-port", t_value << 98342 );
+        param_node* t_broker_node = new param_node();
+        t_broker_node->add( "port", t_value << 98342 );
+        t_broker_node->add( "addr", t_value << "localhost" );
+        add( "broker", t_broker_node );
 
-        add( "broker-addr", t_value << "localhost" );
-
-        add( "duration", t_value << 500 );
+        param_node* t_run_node = new param_node();
+        t_run_node->add( "duration", t_value << 500 );
+        add( "run", t_run_node );
 
         param_node* t_dev_node = new param_node();
         t_dev_node->add( "name", t_value << "test" );
@@ -32,6 +35,7 @@ namespace mantis
         t_dev_node->add( "buffer-size", t_value << 512 );
         t_dev_node->add( "block-size", t_value << 4194304 );
         t_dev_node->add( "data-chunk-size", t_value << 1024 );
+        // TODO: for multi-device mode, this node will be called "devices", and each device will have a separate node(?)
         add( "device", t_dev_node );
     }
 

@@ -8,6 +8,15 @@
 
 namespace mantis
 {
+    // Executable return constants
+
+#define RETURN_SUCCESS 1
+#define RETURN_ERROR -1
+#define RETURN_CANCELED -2
+#define RETURN_REVOKED -3
+
+
+
     // AMQP message constants
     // Conforming to the dripline standards defined in [dripline]/python/dripline/core/constants.py
 

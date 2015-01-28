@@ -31,7 +31,7 @@ namespace mantis
             bool allocate( buffer* a_buffer, condition* a_condition );
             bool deallocate( buffer* a_buffer );
 
-            bool initialize( param_node* a_config );
+            bool initialize( const param_node* a_config );
             void execute();
             void cancel();
             void finalize( param_node* a_response );

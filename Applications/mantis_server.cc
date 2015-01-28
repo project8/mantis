@@ -28,6 +28,7 @@
 
 #include "mt_broker.hh"
 #include "mt_condition.hh"
+#include "mt_constants.hh"
 #include "mt_configurator.hh"
 #include "mt_device_manager.hh"
 #include "mt_exception.hh"
@@ -46,7 +47,7 @@ MTLOGGER( mtlog, "mantis_server" );
 
 int main( int argc, char** argv )
 {
-    MTDEBUG( mtlog, "Welcome to Mantis\n\n" <<
+    MTINFO( mtlog, "Welcome to Mantis\n\n" <<
             "\t\t _______  _______  _       __________________ _______ \n" <<
             "\t\t(       )(  ___  )( \\    /|\\__   __/\\__   __/(  ____ \\\n" <<
             "\t\t| () () || (   ) ||  \\  ( |   ) (      ) (   | (    \\/\n" <<
@@ -56,51 +57,34 @@ int main( int argc, char** argv )
             "\t\t| )   ( || )   ( || )  \\  |   | |   ___) (___/\\____) |\n" <<
             "\t\t|/     \\||/     \\||/    \\_)   )_(   \\_______/\\_______)\n\n");
 
-    server_config t_sc;
-    configurator* t_configurator = NULL;
     try
     {
-        t_configurator = new configurator( argc, argv, &t_sc );
-    }
-    catch( exception& e )
-    {
-        MTERROR( mtlog, "unable to configure server: " << e.what() );
-        return -1;
-    }
+        server_config t_sc;
+        configurator t_configurator( argc, argv, &t_sc );
 
-    MTINFO( mtlog, "creating objects..." );
+        MTINFO( mtlog, "creating objects..." );
 
-    // AMQP broker
-    broker* t_broker = NULL;
-    try
-    {
-        t_broker = new broker( t_configurator->config().get_value( "broker-addr" ),
-                               t_configurator->config().get_value< unsigned >( "broker-port" ) );
-    }
-    catch( param_exception& e )
-    {
-        MTERROR( mtlog, "configuration error: " << e.what() );
-        delete t_configurator;
-        return -1;
-    }
+        const param_node* t_broker_node = t_configurator.config().node_at( "broker" );
 
-    // run database and queue condition
-    condition t_queue_condition;
-    run_database t_run_database;
+        // AMQP broker
+        broker t_broker( t_broker_node->get_value( "addr" ),
+                         t_broker_node->get_value< unsigned >( "port" ) );
 
-    // request receiver
-    request_receiver t_receiver( t_configurator->config(), t_broker, &t_run_database, &t_queue_condition, t_configurator->exe_name() );
+        // run database and queue condition
+        condition t_queue_condition;
+        run_database t_run_database;
 
-    // device manager
-    device_manager t_dev_mgr;
+        // request receiver
+        request_receiver t_receiver( t_configurator.config(), &t_broker, &t_run_database, &t_queue_condition, t_configurator.exe_name() );
 
-    // server worker
-    server_worker t_worker( &t_dev_mgr, &t_run_database, &t_queue_condition );
+        // device manager
+        device_manager t_dev_mgr;
 
-    MTINFO( mtlog, "starting threads..." );
+        // server worker
+        server_worker t_worker( &t_dev_mgr, &t_run_database, &t_queue_condition );
 
-    try
-    {
+        MTINFO( mtlog, "starting threads..." );
+
         thread t_receiver_thread( &t_receiver );
         thread t_worker_thread( &t_worker );
 
@@ -121,14 +105,24 @@ int main( int argc, char** argv )
             t_sig_hand.pop_thread(); // worker thread
             t_sig_hand.pop_thread(); // receiver thread
         }
-    }
-    catch( exception& e)
-    {
-        MTERROR( mtlog, "exception caught during server running: \n\t" << e.what() );
-        return -1;
-    }
 
-    MTINFO( mtlog, "shutting down..." );
+        MTINFO( mtlog, "shutting down..." );
+    }
+    catch( param_exception& e )
+    {
+        MTERROR( mtlog, "configuration error: " << e.what() );
+        return RETURN_ERROR;
+    }
+    catch( exception& e )
+    {
+        MTERROR( mtlog, "mantis error: " << e.what() );
+        return RETURN_ERROR;
+    }
+    catch( std::exception& e )
+    {
+        MTERROR( mtlog, "std::exception caught: " << e.what() );
+        return RETURN_ERROR;
+    }
 
     return 0;
 }

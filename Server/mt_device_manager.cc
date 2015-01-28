@@ -35,18 +35,32 @@ namespace mantis
 
     bool device_manager::configure( run_description& a_run_desc )
     {
-        param_node* t_server_config = a_run_desc.node_at( "server-config" );
-        param_node* t_client_config = a_run_desc.node_at( "client-config" );
-        if( ! set_device( t_server_config->get_value( "digitizer"), t_server_config->get_value< unsigned >( "buffer-size" ), t_server_config->get_value< unsigned >( "block-size" ) ) )
+        const param_node* t_mantis_config = a_run_desc.node_at( "mantis-config" );
+        if( t_mantis_config == NULL )
+        {
+            MTERROR( mtlog, "Mantis configuration is missing" );
+            return false;
+        }
+
+        //TODO: for multi-device mode, this node will be called "devices", and each device will have its own node(?)
+        const param_node* t_device_config = t_mantis_config->node_at( "device" );
+        if( t_device_config == NULL )
+        {
+            MTERROR( mtlog, "Device configuration is missing" );
+        }
+
+        if( ! set_device( t_device_config->get_value( "name"), t_device_config->get_value< unsigned >( "buffer-size" ), t_device_config->get_value< unsigned >( "block-size" ) ) )
         {
             MTERROR( mtlog, "Unable to set device" );
             return false;
         }
-        if( ! f_device->initialize( t_client_config ) )
+
+        if( ! f_device->initialize( t_mantis_config ) )
         {
             MTERROR( mtlog, "Unable to configure device" );
             return false;
         }
+
         return true;
     }
 
@@ -69,13 +83,13 @@ namespace mantis
                 f_device = t_dig_factory->create( a_dev );
                 if( f_device == NULL )
                 {
-                    MTERROR( mtlog, "could not create digitizer <" << a_dev << ">; aborting" );
+                    MTERROR( mtlog, "Could not create digitizer <" << a_dev << ">; aborting" );
                     return false;
                 }
             }
             catch( exception& e )
             {
-                MTERROR( mtlog, "exception caught while creating device <" << a_dev << ">: " << e.what() );
+                MTERROR( mtlog, "Exception caught while creating device <" << a_dev << ">: " << e.what() );
                 return false;
             }
 
@@ -87,7 +101,7 @@ namespace mantis
             f_buffer = new buffer( a_buffer_size, a_block_size );
             if(! f_device->allocate( f_buffer, &f_buffer_condition ) )
             {
-                MTERROR( mtlog, "device <" << a_dev << "> was not able to allocate the buffer" );
+                MTERROR( mtlog, "Device <" << a_dev << "> was not able to allocate the buffer" );
                 return false;
             }
             f_buffer_size = a_buffer_size;

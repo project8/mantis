@@ -47,7 +47,7 @@ namespace mantis
                 f_queue_condition->wait();
             }
 
-            MTINFO( mtlog, "setting run status <started>..." );
+            MTINFO( mtlog, "setting run status <started>" );
 
             run_description* t_run_desc = f_run_database->pop();
             t_run_desc->set_status( run_description::started );
@@ -58,12 +58,12 @@ namespace mantis
 
             if( ! f_dev_mgr->configure( *t_run_desc ) )
             {
-                MTERROR( mtlog, "unable to configure device manager" );
+                MTERROR( mtlog, "Unable to configure device manager" );
                 t_run_desc->set_status( run_description::error );
                 continue;
             }
 
-            MTINFO( mtlog, "creating writer..." );
+            MTINFO( mtlog, "Creating writer" );
 
             file_writer t_writer;
             t_writer.set_device_manager( f_dev_mgr );
@@ -71,12 +71,12 @@ namespace mantis
 
             if( ! t_writer.initialize( t_run_desc ) )
             {
-                MTERROR( mtlog, "unable to initialize writer" );
+                MTERROR( mtlog, "Unable to initialize writer" );
                 t_run_desc->set_status( run_description::error );
                 continue;
             }
 
-            MTINFO( mtlog, "running..." );
+            MTINFO( mtlog, "Setting run status <running>" );
             t_run_desc->set_status( run_description::running );
 
             f_digitizer = f_dev_mgr->device();
@@ -111,12 +111,12 @@ namespace mantis
 
             if( ! f_canceled.load() )
             {
-                MTINFO( mtlog, "sending server status <stopped>..." );
+                MTINFO( mtlog, "Setting run status <stopped>" );
                 t_run_desc->set_status( run_description::stopped );
             }
             else
             {
-                MTINFO( mtlog, "sending server status <canceled>..." );
+                MTINFO( mtlog, "Setting run status <canceled>" );
                 t_run_desc->set_status( run_description::canceled );
             }
 

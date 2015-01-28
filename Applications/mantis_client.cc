@@ -20,6 +20,7 @@
  */
 
 #include "mt_broker.hh"
+#include "mt_constants.hh"
 #include "mt_logger.hh"
 #include "mt_client_config.hh"
 #include "mt_configurator.hh"
@@ -38,12 +39,7 @@ int main( int argc, char** argv )
         client_config t_cc;
         configurator t_configurator( argc, argv, &t_cc );
 
-        const param_node* t_broker_node = t_configurator.config().node_at( "broker" );
-
-        broker t_broker( t_broker_node->get_value( "addr" ),
-                         t_broker_node->get_value< unsigned >( "port" ) );
-
-        run_client the_client( &t_broker, t_configurator.config(), t_configurator.exe_name() );
+        run_client the_client( t_configurator.config(), t_configurator.exe_name() );
 
         the_client.execute();
 

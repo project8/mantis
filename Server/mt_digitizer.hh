@@ -23,7 +23,7 @@ namespace mantis
             virtual bool allocate( buffer* a_buffer, condition* a_condition ) = 0;
             virtual bool deallocate( buffer* a_buffer ) = 0;
 
-            virtual bool initialize( param_node* a_config ) = 0;
+            virtual bool initialize( const param_node* a_config ) = 0;
             virtual void finalize( param_node* a_response ) = 0;
 
             virtual unsigned data_type_size() = 0;
