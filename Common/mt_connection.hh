@@ -17,5 +17,6 @@ namespace mantis
             AmqpClient::Channel::ptr_t f_amqp_chan;
 
     };
+}
 
 #endif /* MT_CONNECTION_HH_ */
