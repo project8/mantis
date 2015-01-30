@@ -113,7 +113,7 @@ namespace mantis
                         t_run_desc->set_client_version( "N/A" );
                     }
 
-                    // TODO send acknowledgment
+                    t_connection->amqp()->BasicAck( t_envelope );
                     t_run_desc->set_status( run_description::acknowledged );
 
                     MTINFO( mtlog, "Queuing request" );
@@ -128,10 +128,94 @@ namespace mantis
                     break;
                 }
                 case OP_MANTIS_QUERY:
-                    MTWARN( mtlog, "Query operations not yet supported; request ignored" );
+                    MTDEBUG( mtlog, "Query request received" );
+                    const param_node* t_msg_payload = t_msg_node->node_at( "payload" );
+
+                    std::string t_query_type( t_msg_payload->get_value( "query", "" ) );
+                    t_connection->amqp()->BasicAck( t_envelope );
+
+                    if( ! t_envelope->Message()->ReplyToIsSet() )
+                    {
+                        MTWARN( mtlog, "Query request has no reply-to" );
+                        break;
+                    }
+
+                    std::string t_reply_to( t_envelope->Message()->ReplyTo() );
+
+                    string t_reply_str;
+                    if( t_query_type == "config" )
+                    {
+                        param_output_json::write_string( f_master_server_config, t_reply_str, param_output_json::k_compact );
+                    }
+                    else if( t_query_type == "mantis" )
+                    {
+                        param_node t_reply_node;
+                        t_reply_node.add( "error", param_value() << "Query type <mantis> is not yet supported" );
+                        param_output_json::write_string( t_reply_node, t_reply_str, param_output_json::k_compact );
+                    }
+                    else
+                    {
+                        param_node t_reply_node;
+                        t_reply_node.add( "error", param_value() << "Unrecognized query type or no query type provided" );
+                        param_output_json::write_string( t_reply_node, t_reply_str, param_output_json::k_compact );
+                    }
+
+                    AmqpClient::BasicMessage::ptr_t t_reply_msg = AmqpClient::BasicMessage::Create( t_reply_str );
+                    t_reply_msg->ContentEncoding( "application/json" );
+                    t_reply_msg->CorrelationId( t_envelope->Message()->CorrelationId() );
+
+                    try
+                    {
+                        t_connection->amqp()->BasicPublish( "", t_envelope->Message()->ReplyTo(), t_reply_msg );
+                    }
+                    catch( AmqpClient::MessageReturnedException& e )
+                    {
+                        MTERROR( mtlog, "Reply message could not be sent: " << e.what() );
+                    }
+
                     break;
                 case OP_MANTIS_CONFIG:
-                    MTWARN( mtlog, "Config operations not yet supported; request ignored" );
+                    MTDEBUG( mtlog, "Config request received" );
+                    const param_node* t_msg_payload = t_msg_node->node_at( "payload" );
+
+                    std::string t_action( t_msg_payload->get_value( "action", "" ) );
+                    const param_node* t_config_node = t_msg_payload->node_at( "config" );
+
+                    if( t_action == "merge" )
+                    {
+                        f_master_server_config.merge( *t_config_node );
+                    }
+                    else if( t_action == "replace" )
+                    {
+                        f_master_server_config = *t_config_node;
+                    }
+
+                    t_connection->amqp()->BasicAck( t_envelope );
+
+                    if( ! t_envelope->Message()->ReplyToIsSet() )
+                    {
+                        MTWARN( mtlog, "Config request has no reply-to" );
+                        break;
+                    }
+
+                    std::string t_reply_to( t_envelope->Message()->ReplyTo() );
+
+                    string t_reply_str;
+                    param_output_json::write_string( f_master_server_config, t_reply_str, param_output_json::k_compact );
+
+                    AmqpClient::BasicMessage::ptr_t t_reply_msg = AmqpClient::BasicMessage::Create( t_reply_str );
+                    t_reply_msg->ContentEncoding( "application/json" );
+                    t_reply_msg->CorrelationId( t_envelope->Message()->CorrelationId() );
+
+                    try
+                    {
+                        t_connection->amqp()->BasicPublish( "", t_envelope->Message()->ReplyTo(), t_reply_msg );
+                    }
+                    catch( AmqpClient::MessageReturnedException& e )
+                    {
+                        MTERROR( mtlog, "Reply message could not be sent: " << e.what() );
+                    }
+
                     break;
                 default:
                     MTERROR( mtlog, "Unrecognized message operation: <" << t_msg_node->get_value< unsigned >( "msgop" ) << ">" );
