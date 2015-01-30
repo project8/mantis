@@ -23,6 +23,14 @@ include_directories( BEFORE
 
 set( CMAKE_MACOSX_RPATH TRUE )
 
+# build shared libraries under linux and mac
+message( STATUS "system name: ${CMAKE_SYSTEM_NAME}")
+if ( ${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR ${CMAKE_SYSTEM_NAME} MATCHES "Darwin" )
+    set (BUILD_SHARED_LIBS ON)
+elseif( ${CMAKE_SYSTEM_NAME} MATCHES "Windows" )
+    set (BUILD_SHARED_LIBS OFF)    
+endif( ${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR ${CMAKE_SYSTEM_NAME} MATCHES "Darwin" )
+
 
 ##################
 # mantis options #
