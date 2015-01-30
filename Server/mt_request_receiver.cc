@@ -128,6 +128,7 @@ namespace mantis
                     break;
                 }
                 case OP_MANTIS_QUERY:
+                {
                     MTDEBUG( mtlog, "Query request received" );
                     const param_node* t_msg_payload = t_msg_node->node_at( "payload" );
 
@@ -142,22 +143,36 @@ namespace mantis
 
                     std::string t_reply_to( t_envelope->Message()->ReplyTo() );
 
-                    string t_reply_str;
+                    param_node t_reply;
                     if( t_query_type == "config" )
                     {
-                        param_output_json::write_string( f_master_server_config, t_reply_str, param_output_json::k_compact );
+                        t_reply.add( "payload", f_master_server_config );
+                        t_reply.add( "msgtype", param_value() << T_MANTIS_REPLY );
                     }
                     else if( t_query_type == "mantis" )
                     {
-                        param_node t_reply_node;
-                        t_reply_node.add( "error", param_value() << "Query type <mantis> is not yet supported" );
-                        param_output_json::write_string( t_reply_node, t_reply_str, param_output_json::k_compact );
+                        param_node* t_msg_node = new param_node();
+                        t_msg_node->add( "error", param_value() << "Query type <mantis> is not yet supported" );
+                        t_reply.add( "payload", t_msg_node );
+                        t_reply.add( "msgtype", param_value() << T_MANTIS_ALERT );
                     }
                     else
                     {
-                        param_node t_reply_node;
-                        t_reply_node.add( "error", param_value() << "Unrecognized query type or no query type provided" );
-                        param_output_json::write_string( t_reply_node, t_reply_str, param_output_json::k_compact );
+                        param_node* t_msg_node = new param_node();
+                        t_msg_node->add( "error", param_value() << "Unrecognized query type or no query type provided" );
+                        t_reply.add( "payload", t_msg_node );
+                        t_reply.add( "msgtype", param_value() << T_MANTIS_ALERT );
+                    }
+
+                    //t_reply.add( "msgop", param_value() << OP_MANTIS_RUN );
+                    t_reply.add( "target", param_value() << t_reply_to );
+                    t_reply.add( "timestamp", param_value() << get_absolute_time_string() );
+
+                    std::string t_reply_str;
+                    if(! param_output_json::write_string( t_reply, t_reply_str, param_output_json::k_compact ) )
+                    {
+                        MTERROR( mtlog, "Could not convert reply to string" );
+                        break;
                     }
 
                     AmqpClient::BasicMessage::ptr_t t_reply_msg = AmqpClient::BasicMessage::Create( t_reply_str );
@@ -174,7 +189,9 @@ namespace mantis
                     }
 
                     break;
+                }
                 case OP_MANTIS_CONFIG:
+                {
                     MTDEBUG( mtlog, "Config request received" );
                     const param_node* t_msg_payload = t_msg_node->node_at( "payload" );
 
@@ -200,8 +217,19 @@ namespace mantis
 
                     std::string t_reply_to( t_envelope->Message()->ReplyTo() );
 
-                    string t_reply_str;
-                    param_output_json::write_string( f_master_server_config, t_reply_str, param_output_json::k_compact );
+                    param_node t_reply;
+                    t_reply.add( "payload", f_master_server_config );
+                    t_reply.add( "msgtype", param_value() << T_MANTIS_REPLY );
+                    //t_reply.add( "msgop", param_value() << OP_MANTIS_RUN );
+                    t_reply.add( "target", param_value() << t_reply_to );
+                    t_reply.add( "timestamp", param_value() << get_absolute_time_string() );
+
+                    std::string t_reply_str;
+                    if(! param_output_json::write_string( t_reply, t_reply_str, param_output_json::k_compact ) )
+                    {
+                        MTERROR( mtlog, "Could not convert reply to string" );
+                        break;
+                    }
 
                     AmqpClient::BasicMessage::ptr_t t_reply_msg = AmqpClient::BasicMessage::Create( t_reply_str );
                     t_reply_msg->ContentEncoding( "application/json" );
@@ -217,6 +245,7 @@ namespace mantis
                     }
 
                     break;
+                }
                 default:
                     MTERROR( mtlog, "Unrecognized message operation: <" << t_msg_node->get_value< unsigned >( "msgop" ) << ">" );
                     break;

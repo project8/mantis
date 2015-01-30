@@ -142,7 +142,7 @@ namespace mantis
             param_array( const param_array& orig );
             virtual ~param_array();
 
-            param_array& operator=( const param_node& rhs );
+            param_array& operator=( const param_array& rhs );
 
             virtual param* clone() const;
 
