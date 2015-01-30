@@ -266,7 +266,7 @@ namespace mantis
 #define __MTDEFAULT_LOGGER        mantis::logger::GetRootLogger()
 
 #define __MTLOG_LOCATION         mantis::logger::Location(__FILE__, __FUNC__, __LINE__)
-
+#ifndef _WIN32
 #define __MTLOG_LOG_4(I,L,M,O) \
         { \
     if (I.IsLevelEnabled(mantis::logger::e##L)) { \
@@ -278,6 +278,11 @@ namespace mantis
         } \
     } \
         }
+#else
+#define __MTLOG_LOG_4(I,L,M,O) \
+	    { } 
+#endif
+
 
 #define __MTLOG_LOG_3(I,L,M)     __MTLOG_LOG_4(I,L,M,false)
 #define __MTLOG_LOG_2(L,M)       __MTLOG_LOG_4(__MTDEFAULT_LOGGER,L,M,false)
