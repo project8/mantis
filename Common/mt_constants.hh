@@ -21,7 +21,7 @@ namespace mantis
     // Conforming to the dripline standards defined in [dripline]/python/dripline/core/constants.py
 
     // Operation constants
-#define OP_MANTIS_RUN    0 // == OP_SENSOR_GET
+#define OP_MANTIS_RUN    0 // == OP_SENSOR_SET
 #define OP_MANTIS_QUERY  1 // == OP_SENSOR_GET
 #define OP_MANTIS_CONFIG 6 // == OP_SENSOR_CONFIG
 

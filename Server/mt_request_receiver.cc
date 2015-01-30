@@ -49,7 +49,7 @@ namespace mantis
         t_connection->amqp()->DeclareQueue( "mantis", false, false, true, false );
         t_connection->amqp()->BindQueue( "mantis", "requests", "mantis" );
 
-        std::string t_consumer_tag = t_connection->amqp()->BasicConsume( "mantis" );
+        std::string t_consumer_tag = t_connection->amqp()->BasicConsume( "mantis", "mantis", true, false ); // second bool is setting no_ack to false
 
         while( true )
         {
@@ -65,6 +65,7 @@ namespace mantis
             else
             {
                 MTERROR( mtlog, "Unable to parse message with content type <" << t_envelope->Message()->ContentEncoding() << ">" );
+                continue;
             }
 
             switch( t_msg_node->get_value< unsigned >( "msgop" ) )
@@ -154,14 +155,14 @@ namespace mantis
                         param_node* t_msg_node = new param_node();
                         t_msg_node->add( "error", param_value() << "Query type <mantis> is not yet supported" );
                         t_reply.add( "payload", t_msg_node );
-                        t_reply.add( "msgtype", param_value() << T_MANTIS_ALERT );
+                        t_reply.add( "msgtype", param_value() << T_MANTIS_REPLY );
                     }
                     else
                     {
                         param_node* t_msg_node = new param_node();
                         t_msg_node->add( "error", param_value() << "Unrecognized query type or no query type provided" );
                         t_reply.add( "payload", t_msg_node );
-                        t_reply.add( "msgtype", param_value() << T_MANTIS_ALERT );
+                        t_reply.add( "msgtype", param_value() << T_MANTIS_REPLY );
                     }
 
                     //t_reply.add( "msgop", param_value() << OP_MANTIS_RUN );
@@ -250,6 +251,7 @@ namespace mantis
                     MTERROR( mtlog, "Unrecognized message operation: <" << t_msg_node->get_value< unsigned >( "msgop" ) << ">" );
                     break;
             }
+            delete t_msg_node;
         }
 
         delete t_connection;
