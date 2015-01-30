@@ -21,6 +21,14 @@ include_directories( BEFORE
     ${PROJECT_BINARY_DIR}/Common
 )
 
+# build shared libraries
+if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+    set (BUILD_SHARED_LIBS ON)
+elseif (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+    set (BUILD_SHARED_LIBS OFF)    
+endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+
+
 ##################
 # mantis options #
 ##################
