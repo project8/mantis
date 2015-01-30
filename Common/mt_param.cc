@@ -137,6 +137,12 @@ namespace mantis
     {
     }
 
+    param_value& param_value::operator=( const param_value& rhs )
+    {
+        f_value = rhs.f_value;
+        return *this;
+    }
+
     param* param_value::clone() const
     {
         return new param_value( *this );
@@ -147,6 +153,11 @@ namespace mantis
         return false;
     }
 
+    bool param_value::empty() const
+    {
+        return f_value.empty();
+    }
+
     bool param_value::is_value() const
     {
         return true;
@@ -155,6 +166,12 @@ namespace mantis
     const string& param_value::get() const
     {
          return f_value;
+    }
+
+    void param_value::clear()
+    {
+        f_value.clear();
+        return;
     }
 
     std::string param_value::to_string() const
@@ -184,10 +201,17 @@ namespace mantis
 
     param_array::~param_array()
     {
+        clear();
+    }
+
+    param_array& param_array::operator=( const param_array& rhs )
+    {
+        clear();
         for( unsigned ind = 0; ind < f_contents.size(); ++ind )
         {
-            delete f_contents[ ind ];
+            this->assign( ind, rhs[ ind ].clone() );
         }
+        return *this;
     }
 
     param* param_array::clone() const
@@ -372,6 +396,14 @@ namespace mantis
         f_contents[ a_index ] = NULL;
         return t_current;
     }
+    void param_array::clear()
+    {
+        for( unsigned ind = 0; ind < f_contents.size(); ++ind )
+        {
+            delete f_contents[ ind ];
+        }
+        return;
+    }
 
     param_array::iterator param_array::begin()
     {
@@ -449,10 +481,17 @@ namespace mantis
 
     param_node::~param_node()
     {
-        for( iterator it = f_contents.begin(); it != f_contents.end(); ++it )
+        clear();
+    }
+
+    param_node& param_node::operator=( const param_node& rhs )
+    {
+        clear();
+        for( const_iterator it = rhs.f_contents.begin(); it != rhs.f_contents.end(); ++it )
         {
-            delete it->second;
+            this->replace( it->first, *it->second );
         }
+        return *this;
     }
 
     param* param_node::clone() const
@@ -691,6 +730,15 @@ namespace mantis
             return removed;
         }
         return NULL;
+    }
+
+    void param_node::clear()
+    {
+        for( iterator it = f_contents.begin(); it != f_contents.end(); ++it )
+        {
+            delete it->second;
+        }
+        return;
     }
 
     param_node::iterator param_node::begin()

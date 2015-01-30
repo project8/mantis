@@ -74,7 +74,11 @@ namespace mantis
             param_value(const param_value& orig);
             virtual ~param_value();
 
+            param_value& operator=( const param_value& rhs );
+
             virtual param* clone() const;
+
+            bool empty() const;
 
             virtual bool is_null() const;
             virtual bool is_value() const;
@@ -87,6 +91,8 @@ namespace mantis
             param_value& operator<<( const XStreamableType& a_streamable );
 
             virtual std::string to_string() const;
+
+            void clear();
 
         protected:
             std::string f_value;
@@ -135,6 +141,8 @@ namespace mantis
             param_array();
             param_array( const param_array& orig );
             virtual ~param_array();
+
+            param_array& operator=( const param_node& rhs );
 
             virtual param* clone() const;
 
@@ -221,6 +229,7 @@ namespace mantis
 
             void erase( unsigned a_index );
             param* remove( unsigned a_index );
+            void clear();
 
             iterator begin();
             const_iterator begin() const;
@@ -269,6 +278,8 @@ namespace mantis
             param_node();
             param_node( const param_node& orig );
             virtual ~param_node();
+
+            param_node& operator=( const param_node& rhs );
 
             virtual param* clone() const;
 
@@ -337,6 +348,7 @@ namespace mantis
 
             void erase( const std::string& a_name );
             param* remove( const std::string& a_name );
+            void clear();
 
             iterator begin();
             const_iterator begin() const;
