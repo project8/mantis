@@ -6,7 +6,11 @@
 #include "mt_param.hh"
 #include "mt_thread.hh"
 
+#ifndef _WIN32
 #include <unistd.h>
+#else
+#include <Windows.h>
+#endif
 
 namespace mantis
 {
@@ -63,7 +67,11 @@ namespace mantis
         t_condition.release();
 
         MTDEBUG( mtlog, "waiting" );
+#ifndef _WIN32
         sleep(1);
+#else
+        Sleep(1000);
+#endif
 
         MTDEBUG( mtlog, "canceling" );
         t_digitizer_thread.cancel();

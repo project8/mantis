@@ -2,6 +2,7 @@
 
 namespace mantis
 {
+#ifndef _WIN32
 
     mutex::mutex()
     {
@@ -32,4 +33,32 @@ namespace mantis
         return;
     }
 
+#else /* _WIN32 */
+
+    mutex::mutex()
+    {
+        InitializeCriticalSection(&f_critical_section);
+    }
+    mutex::~mutex()
+    {
+        DeleteCriticalSection(&f_critical_section);
+    }
+
+    bool mutex::trylock()
+    {
+        return TryEnterCriticalSection(&f_critical_section);
+    }
+
+    void mutex::lock()
+    {
+        EnterCriticalSection(&f_critical_section);
+        return;
+    }
+    void mutex::unlock()
+    {
+        LeaveCriticalSection(&f_critical_section);
+        return;
+    }
+
+#endif /* _WIN32 */
 }

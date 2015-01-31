@@ -49,6 +49,8 @@
 
 #endif  /* LOGGER_UTILITY_MACROS_ */
 
+#ifndef _WIN32
+
 // COLOR DEFINITIONS
 #define MTCOLOR_NORMAL "0"
 #define MTCOLOR_BRIGHT "1"
@@ -353,5 +355,29 @@ namespace mantis
 #define MTWARN_ONCE(...)   macro_dispatcher(__MTLOG_WARN_ONCE_, __VA_ARGS__)(__VA_ARGS__)
 #define MTERROR_ONCE(...)  macro_dispatcher(__MTLOG_ERROR_ONCE_, __VA_ARGS__)(__VA_ARGS__)
 #define MTFATAL_ONCE(...)  macro_dispatcher(__MTLOG_FATAL_ONCE_, __VA_ARGS__)(__VA_ARGS__)
+
+#else /*_WIN32*/
+
+#include <iostream>
+#define MTLOGGER(I,K)      
+
+#define MTLOG(I,K)         std::cout << "LOG: " << K << std::endl;
+#define MTTRACE(I,K)       std::cout << "TRACE: " << K << std::endl;
+#define MTDEBUG(I,K)       std::cout << "DEBUG: " << K << std::endl;
+#define MTINFO(I,K)        std::cout << "INFO: " << K << std::endl;
+#define MTWARN(I,K)        std::cout << "WARN: " << K << std::endl;
+#define MTERROR(I,K)       std::cout << "ERROR: " << K << std::endl;
+#define MTFATAL(I,K)       std::cout << "FATAL: " << K << std::endl;
+#define MTASSERT(I,K)      std::cout << "ASSERT: " << K << std::endl;
+
+#define MTLOG_ONCE(I,K)    std::cout << "LOG: " << K << std::endl;
+#define MTTRACE_ONCE(I,K)  std::cout << "TRACE: " << K << std::endl;
+#define MTDEBUG_ONCE(I,K)  std::cout << "DEBUG: " << K << std::endl;
+#define MTINFO_ONCE(I,K)   std::cout << "INFO: " << K << std::endl;
+#define MTWARN_ONCE(I,K)   std::cout << "WARN: " << K << std::endl;
+#define MTERROR_ONCE(I,K)  std::cout << "ERROR: " << K << std::endl;
+#define MTFATAL_ONCE(I,K)  std::cout << "FATAL: " << K << std::endl;
+
+#endif
 
 #endif /* MTLOGGER_H_ */

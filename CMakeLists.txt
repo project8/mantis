@@ -28,7 +28,7 @@ message( STATUS "system name: ${CMAKE_SYSTEM_NAME}")
 if ( ${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR ${CMAKE_SYSTEM_NAME} MATCHES "Darwin" )
     set (BUILD_SHARED_LIBS ON)
 elseif( ${CMAKE_SYSTEM_NAME} MATCHES "Windows" )
-    set (BUILD_SHARED_LIBS OFF)    
+    set (BUILD_SHARED_LIBS ON)    
 endif( ${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR ${CMAKE_SYSTEM_NAME} MATCHES "Darwin" )
 
 

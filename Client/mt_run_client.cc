@@ -17,7 +17,7 @@
 
 #include <algorithm> // for min
 #include <string>
-#include <unistd.h>
+
 using std::string;
 
 
@@ -26,9 +26,10 @@ namespace mantis
     MTLOGGER( mtlog, "run_client" );
 
     run_client::run_client( const param_node& a_node, const string& a_exe_name ) :
+            //callable(),
             f_config( a_node ),
             f_exe_name( a_exe_name ),
-            f_canceled( false ),
+            //f_canceled( false ),
             f_return( 0 )
     {
     }
@@ -189,13 +190,13 @@ namespace mantis
 
         return;
     }
-
+    /*
     void run_client::cancel()
     {
         f_canceled.store( true );
         return;
     }
-
+    */
     int run_client::get_return()
     {
         return f_return;

@@ -13,6 +13,11 @@
 #include "mt_thread.hh"
 #include "mt_version.hh"
 
+#ifdef _WIN32
+#include <Windows.h>
+#else
+#include <unistd.h>
+#endif
 #include <sstream>
 
 using std::string;
@@ -87,23 +92,30 @@ namespace mantis
             thread* t_digitizer_thread = new thread( f_digitizer );
             thread* t_writer_thread = new thread( f_writer );
 
-            t_digitizer_thread->start();
-            f_digitizer_state = k_running;
-
-            while( f_dev_mgr->buffer_condition()->is_waiting() == false )
+            if (!f_canceled.load())
             {
-                usleep( 1000 );
+                f_digitizer_state = k_running;
+                f_writer_state = k_running;
+
+                t_digitizer_thread->start();
+
+                while (f_dev_mgr->buffer_condition()->is_waiting() == false)
+                {
+#ifndef _WIN32
+                    usleep( 1000 );
+#else
+                    Sleep(1);
+#endif
+                }
+
+                t_writer_thread->start();
+
+                // cancellation point (I think) via calls to pthread_join
+                t_digitizer_thread->join();
+                f_digitizer_state = k_inactive;
+                t_writer_thread->join();
+                f_writer_state = k_inactive;
             }
-
-            t_writer_thread->start();
-            f_writer_state = k_running;
-
-
-            // cancellation point (I think) via calls to pthread_join
-            t_digitizer_thread->join();
-            f_digitizer_state = k_inactive;
-            t_writer_thread->join();
-            f_writer_state = k_inactive;
 
             f_digitizer = NULL;
             f_writer = NULL;
@@ -135,6 +147,12 @@ namespace mantis
         return;
     }
 
+    /*
+    Asyncronous cancellation:
+    - The execute function waits while the digitizer and writer run; if cancelled, those threads are cancelled, which 
+    eventually returns control to the execute function, which completes quickly.
+    - If cancelled before the threads are started, operation of the digitizer and writer will be skipped.
+    */
     void server_worker::cancel()
     {
         MTDEBUG( mtlog, "Canceling server_worker" );
