@@ -15,7 +15,7 @@ namespace mantis
     class run_database;
     class server_tcp;
 
-    class request_receiver : public callable
+    class MANTIS_API request_receiver : public callable
     {
         public:
             request_receiver( const param_node& a_config, broker* a_broker, run_database* a_run_database, condition* a_condition, const std::string& a_exe_name = "unknown" );

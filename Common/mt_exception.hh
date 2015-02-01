@@ -1,13 +1,15 @@
 #ifndef MT_EXCEPTION_HH_
 #define MT_EXCEPTION_HH_
 
+#include "mt_constants.hh"
+
 #include <sstream>
 #include <exception>
 
 namespace mantis
 {
 
-    class exception : public std::exception
+    class MANTIS_API exception : public std::exception
     {
         public:
             exception();

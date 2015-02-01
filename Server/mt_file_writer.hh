@@ -31,7 +31,7 @@ namespace mantis
      string from the request object. All other run_description information should already be set prior to
      calling writer::initialize.
     */
-    class file_writer : public writer
+    class MANTIS_API file_writer : public writer
     {
         public:
             file_writer();

@@ -1,3 +1,5 @@
+#define MANTIS_API_EXPORTS
+
 #include "mt_writer.hh"
 
 #include "mt_iterator.hh"

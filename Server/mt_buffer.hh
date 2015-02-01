@@ -7,7 +7,7 @@
 namespace mantis
 {
 
-    class buffer
+    class MANTIS_API buffer
     {
         public:
             friend class iterator;

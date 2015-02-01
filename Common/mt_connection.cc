@@ -1,3 +1,5 @@
+#define MANTIS_API_EXPORTS
+
 #include "mt_connection.hh"
 
 #include "SimpleAmqpClient/AmqpLibraryException.h"

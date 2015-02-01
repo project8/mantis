@@ -16,7 +16,7 @@
 namespace mantis
 {
 
-    class signal_handler
+    class MANTIS_API signal_handler
     {
         public:
             typedef std::stack< thread* > threads;

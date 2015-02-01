@@ -1,6 +1,8 @@
 #ifndef MT_BLOCK_HH_
 #define MT_BLOCK_HH_
 
+#include "mt_constants.hh"
+
 #include "thorax.hh"
 
 namespace mantis
@@ -33,7 +35,7 @@ namespace mantis
     // block
     //**************************************************
 
-    class block
+    class MANTIS_API block
     {
         public:
             //state of block
@@ -166,7 +168,7 @@ namespace mantis
     // block_cleanup
     //**************************************************
 
-    class block_cleanup
+    class MANTIS_API block_cleanup
     {
         public:
             block_cleanup() {}

@@ -1,3 +1,5 @@
+#define MANTIS_API_EXPORTS
+
 #include "mt_parser.hh"
 
 #include "mt_exception.hh"

@@ -1,6 +1,8 @@
 #ifndef MT_CONDITION_HH_
 #define MT_CONDITION_HH_
 
+#include "mt_constants.hh"
+
 #ifndef _WIN32
 #include <pthread.h>
 #include <cstddef>
@@ -11,7 +13,7 @@
 namespace mantis
 {
 
-    class condition
+    class MANTIS_API condition
     {
         public:
             condition();

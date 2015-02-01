@@ -18,7 +18,7 @@ namespace mantis
 {
     class run_description;
 
-    class device_manager
+    class MANTIS_API device_manager
     {
         public:
             device_manager();

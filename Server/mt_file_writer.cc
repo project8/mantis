@@ -1,3 +1,5 @@
+#define MANTIS_API_EXPORTS
+
 #include "mt_file_writer.hh"
 
 #include "mt_configurator.hh"

@@ -8,6 +8,19 @@
 
 namespace mantis
 {
+    // API export macros for windows
+#ifdef _WIN32
+#  ifdef MANTIS_API_EXPORTS
+#    define MANTIS_API __declspec(dllexport)
+#  else
+#    define MANTIS_API __declspec(dllimport)
+#  endif
+#else
+#  define MANTIS_API
+#endif
+
+
+
     // Executable return constants
 
 #define RETURN_SUCCESS 1
