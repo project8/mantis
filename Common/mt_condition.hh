@@ -29,7 +29,7 @@ namespace mantis
             pthread_cond_t f_condition;
 #else
             CRITICAL_SECTION f_critical_section;
-            CONDITION_VARIABLE f_condition
+            CONDITION_VARIABLE f_condition;
 #endif
     };
 

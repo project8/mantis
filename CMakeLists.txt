@@ -25,11 +25,11 @@ set( CMAKE_MACOSX_RPATH TRUE )
 
 # build shared libraries under linux and mac
 message( STATUS "system name: ${CMAKE_SYSTEM_NAME}")
-if ( ${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR ${CMAKE_SYSTEM_NAME} MATCHES "Darwin" )
+#if ( ${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR ${CMAKE_SYSTEM_NAME} MATCHES "Darwin" )
     set (BUILD_SHARED_LIBS ON)
-elseif( ${CMAKE_SYSTEM_NAME} MATCHES "Windows" )
-    set (BUILD_SHARED_LIBS ON)    
-endif( ${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR ${CMAKE_SYSTEM_NAME} MATCHES "Darwin" )
+#elseif( ${CMAKE_SYSTEM_NAME} MATCHES "Windows" )
+#    set (BUILD_SHARED_LIBS OFF)    
+#endif( ${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR ${CMAKE_SYSTEM_NAME} MATCHES "Darwin" )
 
 
 ##################
@@ -109,7 +109,9 @@ include_directories( BEFORE
     ${PROJECT_SOURCE_DIR}/Monarch/libthorax/cpp
     ${PROJECT_SOURCE_DIR}/Monarch/libthorax
     ${PROJECT_BINARY_DIR}/Monarch
+    ${HDF5_INCLUDE_DIR}
 )
+message(STATUS "hdf5 include dir: ${HDF5_INCLUDE_DIR}")
 
 
 ###################

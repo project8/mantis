@@ -3,6 +3,7 @@
 
 #include "mt_callable.hh"
 
+#include "mt_atomic.hh"
 #include "mt_mutex.hh"
 #include "mt_param.hh"
 
@@ -33,6 +34,8 @@ namespace mantis
             run_database* f_run_database;
             condition* f_queue_condition;
             std::string f_exe_name;
+
+            atomic_bool f_canceled;
     };
 
 }

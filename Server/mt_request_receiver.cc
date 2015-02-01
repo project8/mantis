@@ -10,7 +10,7 @@
 #include "mt_run_description.hh"
 #include "mt_version.hh"
 
-#include "MonarchVersion.hpp"
+#include "M3Version.hh"
 
 #include <cstddef>
 #include <signal.h>
@@ -27,7 +27,8 @@ namespace mantis
             f_broker( a_broker ),
             f_run_database( a_run_database ),
             f_queue_condition( a_queue_condition ),
-            f_exe_name( a_exe_name )
+            f_exe_name( a_exe_name ),
+            f_canceled( false )
     {
     }
 
@@ -42,7 +43,7 @@ namespace mantis
         {
             MTERROR( mtlog, "Cannot create connection to AMQP broker" );
             cancel();
-            kill( 0, SIGINT );
+            raise( SIGINT );
             return;
         }
 
@@ -53,9 +54,13 @@ namespace mantis
 
         while( true )
         {
+            if( f_canceled.load() ) return;
+
             // blocking call to wait for incoming message
             AmqpClient::Envelope::ptr_t t_envelope = t_connection->amqp()->BasicConsumeMessage( t_consumer_tag );
 
+
+            if (f_canceled.load()) return;
 
             param_node* t_msg_node = NULL;
             if( t_envelope->Message()->ContentEncoding() == "application/json" )
@@ -270,6 +275,11 @@ namespace mantis
     void request_receiver::cancel()
     {
         MTDEBUG( mtlog, "Canceling request receiver" );
+        if (! f_canceled.load())
+        {
+            f_canceled.store(true);
+            return;
+        }
         return;
     }
 

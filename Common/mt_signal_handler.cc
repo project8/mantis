@@ -11,7 +11,11 @@
 #include "mt_logger.hh"
 
 #include <signal.h>
-#include <unistd.h>
+#ifndef _WIN32
+#include <unistd.h> //usleep
+#else
+#include <Windows.h> //Sleep
+#endif
 
 namespace mantis
 {
@@ -36,6 +40,7 @@ namespace mantis
             f_handling_sig_int = true;
         }
 
+#ifndef _WIN32
         if( ! f_handling_sig_quit && signal( SIGQUIT, signal_handler::handler_cancel_threads ) == SIG_ERR )
         {
             throw exception() << "Unable to handle SIGQUIT\n";
@@ -49,6 +54,7 @@ namespace mantis
         {
             throw exception() << "Unable to ignore SIGPIPE\n";
         }
+#endif
     }
 
     signal_handler::~signal_handler()
@@ -100,7 +106,11 @@ namespace mantis
         {
             f_threads.top()->cancel();
             f_threads.pop();
+#ifndef _WIN32
             usleep( 100 );
+#else
+            Sleep( 1 );
+#endif
         }
         f_mutex.unlock();
         return;

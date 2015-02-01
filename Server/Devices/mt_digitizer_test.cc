@@ -154,10 +154,11 @@ namespace mantis
 
         f_condition->wait();
 
-        MTINFO( mtlog, "loose at <" << t_it.index() << ">" );
+        MTINFO( mtlog, "Digitizer loose at <" << t_it.index() << ">" );
 
-        int t_old_cancel_state;
-        pthread_setcancelstate( PTHREAD_CANCEL_DISABLE, &t_old_cancel_state );
+        // nsoblath, 1/30/15: why did i have this here before?
+        //int t_old_cancel_state;
+        //pthread_setcancelstate( PTHREAD_CANCEL_DISABLE, &t_old_cancel_state );
 
         //start acquisition
         if( start() == false )
@@ -165,7 +166,7 @@ namespace mantis
             return;
         }
 
-        MTINFO( mtlog, "planning on " << f_record_last << " records" );
+        MTINFO( mtlog, "Planning on " << f_record_last << " records" );
 
         //start timing
         get_time_monotonic( &t_live_start_time );
@@ -191,12 +192,12 @@ namespace mantis
                 //GET OUT
                 if( f_canceled.load() )
                 {
-                    MTINFO( mtlog, "was canceled mid-run" );
+                    MTINFO( mtlog, "Digitizer was canceled mid-run" );
                     f_cancel_condition.release();
                 }
                 else
                 {
-                    MTINFO( mtlog, "finished normally" );
+                    MTINFO( mtlog, "Finished normally" );
                 }
                 return;
             }
@@ -221,7 +222,7 @@ namespace mantis
                 }
 
                 //GET OUT
-                MTINFO( mtlog, "finished abnormally because acquisition failed" );
+                MTINFO( mtlog, "Finished abnormally because acquisition failed" );
 
                 return;
             }
@@ -245,7 +246,7 @@ namespace mantis
                 if( stop() == false )
                 {
                     //GET OUT
-                    MTINFO( mtlog, "finished abnormally because halting streaming failed" );
+                    MTINFO( mtlog, "Finished abnormally because halting streaming failed" );
                     return;
                 }
 
@@ -271,28 +272,37 @@ namespace mantis
                     }
 
                     //GET OUT
-                    MTINFO( mtlog, "finished abnormally because starting streaming failed" );
+                    MTINFO( mtlog, "Finished abnormally because starting streaming failed" );
                     return;
                 }
 
-                //increment block
+                //increment block (waits for mutex lock)
                 ++t_it;
 
                 //start live timer
                 get_time_monotonic( &t_live_start_time );;
 
-                MTINFO( mtlog, "loose at <" << t_it.index() << ">" );
+                MTINFO( mtlog, "Loose at <" << t_it.index() << ">" );
             }
             //MTINFO( mtlog, "record count: " << f_record_count );
 
             // slow things down a bit, since this is for testing purposes, after all
-            usleep( 100 );
+#ifndef _WIN32
+            usleep( 1000 );
+#else
+            Sleep(1);
+#endif
         }
 
         return;
     }
+
+    /* Asyncronous cancelation:
+    Main execution loop checks for f_canceled, and exits if it's true.
+    */
     void digitizer_test::cancel()
     {
+        MTDEBUG(mtlog, "Canceling digitizer test");
         //cout << "CANCELLING DIGITIZER TEST" );
         if( ! f_canceled.load() )
         {
@@ -302,6 +312,7 @@ namespace mantis
         //cout << "  digitizer_test is done canceling" );
         return;
     }
+
     void digitizer_test::finalize( param_node* a_response )
     {
         //MTINFO( mtlog, "calculating statistics..." );
@@ -327,6 +338,7 @@ namespace mantis
     {
         return true;
     }
+
     bool digitizer_test::acquire( block* a_block, timespec& a_stamp_time )
     {
         a_block->set_record_id( f_record_count );
@@ -344,6 +356,7 @@ namespace mantis
 
         return true;
     }
+
     bool digitizer_test::stop()
     {
         ++f_acquisition_count;
@@ -382,8 +395,10 @@ namespace mantis
             f_triggered( false ),
             f_memblock( a_memblock )
     {}
+
     block_cleanup_test::~block_cleanup_test()
     {}
+
     bool block_cleanup_test::delete_memblock()
     {
         if( f_triggered ) return true;

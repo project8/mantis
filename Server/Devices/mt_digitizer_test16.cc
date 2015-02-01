@@ -163,10 +163,10 @@ namespace mantis
 */
 
 
-        MTINFO( mtlog, "waiting for buffer readiness" );
+        MTINFO( mtlog, "Waiting for buffer readiness" );
         f_condition->wait();
 
-        MTINFO( mtlog, "loose at <" << t_it.index() << ">" );
+        MTINFO( mtlog, "Loose at <" << t_it.index() << ">" );
 
         // why was cancel disabled? -- Noah, 3/27/14
         //int t_old_cancel_state;
@@ -178,7 +178,7 @@ namespace mantis
             return;
         }
 
-        MTINFO( mtlog, "planning on " << f_record_last << " records" );
+        MTINFO( mtlog, "Planning on " << f_record_last << " records" );
 
         //start timing
         get_time_monotonic( &t_live_start_time );
@@ -207,17 +207,17 @@ namespace mantis
                 //GET OUT
                 if( f_canceled.load() )
                 {
-                    MTINFO( mtlog, "was canceled mid-run" );
+                    MTINFO( mtlog, "Was canceled mid-run" );
                     f_cancel_condition.release();
-                    MTDEBUG( mtlog, "canceling bs_mod thread" );
+                    MTDEBUG( mtlog, "Canceling bs_mod thread" );
                     //t_bs_mod_thread.cancel();
                 }
                 else
                 {
-                    MTINFO( mtlog, "finished normally" );
-                    MTDEBUG( mtlog, "waiting for bs_mod thread to finish" );
+                    MTINFO( mtlog, "Finished normally" );
+                    //MTDEBUG( mtlog, "Waiting for bs_mod thread to finish" );
                     //t_bs_mod_thread.join();
-                    MTDEBUG( mtlog, "bs_mod thread done" );
+                    //MTDEBUG( mtlog, "bs_mod thread done" );
                 }
                 return;
             }
@@ -245,9 +245,9 @@ namespace mantis
                 }
 
                 //GET OUT
-                MTINFO( mtlog, "finished abnormally because acquisition failed" );
+                MTINFO( mtlog, "Finished abnormally because acquisition failed" );
 
-                MTDEBUG( mtlog, "canceling bs_mod thread" );
+                //MTDEBUG( mtlog, "canceling bs_mod thread" );
                 //t_bs_mod_thread.cancel();
 
                 return;
@@ -257,7 +257,7 @@ namespace mantis
 
             if( +t_it == false )
             {
-                MTINFO( mtlog, "blocked at <" << t_it.index() << ">" );
+                MTINFO( mtlog, "Blocked at <" << t_it.index() << ">" );
 
                 //stop live timer
                 get_time_monotonic( &t_live_stop_time );
@@ -269,8 +269,8 @@ namespace mantis
                 if( stop() == false )
                 {
                     //GET OUT
-                    MTINFO( mtlog, "finished abnormally because halting streaming failed" );
-                    MTDEBUG( mtlog, "canceling bs_mod thread" );
+                    MTINFO( mtlog, "Finished abnormally because halting streaming failed" );
+                    //MTDEBUG( mtlog, "Canceling bs_mod thread" );
                     //t_bs_mod_thread.cancel();
                     return;
                 }
@@ -297,9 +297,9 @@ namespace mantis
                     }
 
                     //GET OUT
-                    MTINFO( mtlog, "finished abnormally because starting streaming failed" );
+                    MTINFO( mtlog, "Finished abnormally because starting streaming failed" );
 
-                    MTDEBUG( mtlog, "canceling bs_mod thread" );
+                    //MTDEBUG( mtlog, "Canceling bs_mod thread" );
                     //t_bs_mod_thread.cancel();
 
                     return;
@@ -316,11 +316,19 @@ namespace mantis
             //MTINFO( mtlog, "record count: " << f_record_count );
 
             // slow things down a bit, since this is for testing purposes, after all
-            usleep( 100 );
+#ifndef _WIN32
+            usleep( 1000 );
+#else
+            Sleep(1);
+#endif
         }
 
         return;
     }
+
+    /* Asyncronous cancelation:
+    Main execution loop checks for f_canceled, and exits if it's true.
+    */
     void digitizer_test16::cancel()
     {
         //cout << "CANCELLING DIGITIZER TEST" );
@@ -332,6 +340,7 @@ namespace mantis
         //cout << "  digitizer_test16 is done canceling" );
         return;
     }
+
     void digitizer_test16::finalize( param_node* a_response )
     {
         //MTINFO( mtlog, "calculating statistics..." );
@@ -357,6 +366,7 @@ namespace mantis
     {
         return true;
     }
+
     bool digitizer_test16::acquire( block* a_block, timespec& a_stamp_time )
     {
         a_block->set_record_id( f_record_count );
@@ -379,6 +389,7 @@ namespace mantis
 
         return true;
     }
+
     bool digitizer_test16::stop()
     {
         ++f_acquisition_count;
@@ -417,8 +428,10 @@ namespace mantis
             f_triggered( false ),
             f_memblock( a_memblock )
     {}
+
     block_cleanup_test16::~block_cleanup_test16()
     {}
+
     bool block_cleanup_test16::delete_memblock()
     {
         if( f_triggered ) return true;

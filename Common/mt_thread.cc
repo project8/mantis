@@ -26,7 +26,7 @@ namespace mantis
 #ifndef _WIN32
             pthread_create(&f_thread, 0, &thread::thread_setup_and_execute, this);
 #else
-            f_thread = CreateThread(NULL, 0, thread::thread_setup_and_execute, this, 0, &id);
+            f_thread = CreateThread(NULL, 0, thread::thread_setup_and_execute, this, 0, NULL);
 #endif
             set_state(e_running);
         }
@@ -53,8 +53,6 @@ namespace mantis
             f_object->cancel();
 #ifndef _WIN32
             pthread_cancel(f_thread);
-#else
-
 #endif
             set_state(e_cancelled);
         }
