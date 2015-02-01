@@ -21,7 +21,7 @@ namespace mantis
 
     // run_client was formerlly used in a separate thread, hence the previous use of the callable base class
 
-    class run_client// : public callable
+    class MANTIS_API run_client// : public callable
     {
         public:
             run_client( const param_node& a_node, const std::string& a_exe_name = "unknown" );

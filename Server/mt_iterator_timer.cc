@@ -5,6 +5,8 @@
  *      Author: nsoblath
  */
 
+#define MANTIS_API_EXPORTS
+
 #include "mt_iterator_timer.hh"
 
 #include "mt_logger.hh"

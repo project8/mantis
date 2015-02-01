@@ -37,7 +37,7 @@ namespace mantis
 
      Be sure to check each writer's documentation for any necessary usage details.
     */
-    class writer : public callable
+    class MANTIS_API writer : public callable
     {
         public:
             writer();

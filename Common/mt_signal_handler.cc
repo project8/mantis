@@ -5,6 +5,8 @@
  *      Author: nsoblath
  */
 
+#define MANTIS_API_EXPORTS
+
 #include "mt_signal_handler.hh"
 
 #include "mt_exception.hh"

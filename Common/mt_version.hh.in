@@ -10,6 +10,8 @@
 #ifndef MT_VERSION_HH_
 #define MT_VERSION_HH_
 
+#include "mt_constants.hh"
+
 #include <string>
 
 #define Mantis_VERSION_MAJOR @Mantis_VERSION_MAJOR@
@@ -23,7 +25,7 @@
 
 namespace mantis
 {
-    class version
+    class MANTIS_API version
     {
         public:
             version();

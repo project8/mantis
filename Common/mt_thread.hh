@@ -13,7 +13,7 @@
 namespace mantis
 {
 
-    class thread
+    class MANTIS_API thread
     {
         public:
             typedef enum{ e_ready, e_running, e_cancelled, e_complete } state;

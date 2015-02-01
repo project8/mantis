@@ -7,7 +7,7 @@
 
 namespace mantis
 {
-    class cl_arg : public param_node
+    class MANTIS_API cl_arg : public param_node
     {
         public:
             cl_arg( const std::string& a_addr, const std::string& a_value );
@@ -18,7 +18,7 @@ namespace mantis
     };
 
 
-    class parser : public param_node
+    class MANTIS_API parser : public param_node
     {
         public:
             parser( int an_argc, char** an_argv );

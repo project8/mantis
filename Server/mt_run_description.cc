@@ -5,6 +5,8 @@
  *      Author: nsoblath
  */
 
+#define MANTIS_API_EXPORTS
+
 #include "mt_run_description.hh"
 #include "mt_version.hh"
 

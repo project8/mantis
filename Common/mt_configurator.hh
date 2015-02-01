@@ -17,7 +17,7 @@
 namespace mantis
 {
 
-    class configurator
+    class MANTIS_API configurator
     {
         public:
             configurator( int an_argc, char** an_argv, param_node* a_default = NULL );

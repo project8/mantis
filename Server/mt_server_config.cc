@@ -5,6 +5,8 @@
  *      Author: nsoblath
  */
 
+#define MANTIS_API_EXPORTS
+
 #include "mt_server_config.hh"
 
 #include "M3Types.hh"

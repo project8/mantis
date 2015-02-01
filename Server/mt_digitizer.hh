@@ -13,8 +13,7 @@ namespace mantis
     class condition;
     class param_node;
 
-    class digitizer :
-        public callable
+    class MANTIS_API digitizer : public callable
     {
         public:
             digitizer();

@@ -20,7 +20,7 @@ namespace mantis
     class thread;
     class writer;
 
-    class server_worker : public callable
+    class MANTIS_API server_worker : public callable
     {
         public:
             server_worker( device_manager* a_dev_mgr, run_database* a_run_queue, condition* a_queue_condition );

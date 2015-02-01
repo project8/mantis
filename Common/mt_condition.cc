@@ -1,3 +1,5 @@
+#define MANTIS_API_EXPORTS
+
 #include "mt_condition.hh"
 
 namespace mantis

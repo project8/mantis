@@ -5,6 +5,8 @@
  *      Author: nsoblath
  */
 
+#define MANTIS_API_EXPORTS
+
 #include "mt_run_client.hh"
 
 #include "mt_broker.hh"

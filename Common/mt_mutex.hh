@@ -1,6 +1,8 @@
 #ifndef MT_MUTEX_HH_
 #define MT_MUTEX_HH_
 
+#include "mt_constants.hh"
+
 #ifndef _WIN32
 #include <pthread.h>
 #include <cstddef>
@@ -11,7 +13,7 @@
 namespace mantis
 {
 
-    class mutex
+    class MANTIS_API mutex
     {
         public:
             mutex();

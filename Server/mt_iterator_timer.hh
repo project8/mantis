@@ -22,7 +22,7 @@ namespace mantis
 {
     MTLOGGER( mtlog_it, "iterator_timer" );
 
-    class iterator_timer
+    class MANTIS_API iterator_timer
     {
         public:
             enum event_type

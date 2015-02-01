@@ -1,3 +1,5 @@
+#define MANTIS_API_EXPORTS
+
 #include "mt_bit_shift_modifier.hh"
 
 #include "mt_configurator.hh"

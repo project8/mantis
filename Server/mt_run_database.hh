@@ -10,7 +10,7 @@ namespace mantis
 {
     class run_description;
 
-    class run_database
+    class MANTIS_API run_database
     {
         public:
             run_database();
