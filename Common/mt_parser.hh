@@ -28,7 +28,6 @@ namespace mantis
 
         private:
             static const char f_separator = '=';
-            //static const size_t f_npos = std::string::npos;
 
     };
 

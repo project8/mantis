@@ -9,7 +9,6 @@
 
 namespace mantis
 {
-
     class MANTIS_API iterator
     {
         public:

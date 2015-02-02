@@ -6,6 +6,10 @@
 #include <sstream>
 #include <exception>
 
+#ifdef _WIN32
+MANTIS_EXPIMP_TEMPLATE template class MANTIS_API std::basic_stringstream< char, std::char_traits< char >, std::allocator< char > >;
+#endif
+
 namespace mantis
 {
 

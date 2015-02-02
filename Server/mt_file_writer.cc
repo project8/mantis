@@ -1,4 +1,5 @@
 #define MANTIS_API_EXPORTS
+#define M3_API_EXPORTS
 
 #include "mt_file_writer.hh"
 

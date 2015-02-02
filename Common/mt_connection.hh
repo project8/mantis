@@ -1,6 +1,8 @@
 #ifndef MT_CONNECTION_HH_
 #define MT_CONNECTION_HH_
 
+#include "mt_constants.hh"
+
 #include "SimpleAmqpClient/SimpleAmqpClient.h"
 
 namespace mantis

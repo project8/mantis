@@ -10,6 +10,7 @@
 
 //#include "mt_singleton.hh"
 
+#include "mt_constants.hh"
 #include "mt_logger.hh"
 
 #include "thorax.hh"
@@ -18,32 +19,43 @@
 #include <list>
 #include <string>
 
+#ifdef _WIN32
+MANTIS_EXPIMP_TEMPLATE template class MANTIS_API std::basic_string< char, std::char_traits< char >, std::allocator< char > >;
+#endif
+
 namespace mantis
 {
     MTLOGGER( mtlog_it, "iterator_timer" );
 
+    struct iterator_event
+    {
+        enum event_type
+        {
+            k_incr_begin,
+            k_incr_try_begin,
+            k_incr_locked,
+            k_incr_try_fail,
+            k_other
+        };
+
+        timespec f_time;
+        event_type f_type;
+        iterator_event( event_type a_type = k_other )
+        {
+            f_type = a_type;
+        }
+        bool operator==( const iterator_event& rhs ) { return f_time==rhs.f_time && f_type==rhs.f_type; }
+        bool operator<( const iterator_event& rhs ) {
+            return f_time < rhs.f_time;
+        }
+    };
+
+#ifdef _WIN32
+    MANTIS_EXPIMP_TEMPLATE template class MANTIS_API std::list< iterator_event >;
+#endif
+
     class MANTIS_API iterator_timer
     {
-        public:
-            enum event_type
-            {
-                k_incr_begin,
-                k_incr_try_begin,
-                k_incr_locked,
-                k_incr_try_fail,
-                k_other
-            };
-
-            struct event
-            {
-                timespec f_time;
-                event_type f_type;
-                event( event_type a_type = k_other )
-                {
-                    f_type = a_type;
-                }
-            };
-
         public:
             iterator_timer();
             virtual ~iterator_timer();
@@ -70,7 +82,7 @@ namespace mantis
             bool f_ignore_decr;
             unsigned f_increment_counter;
 
-            std::list< event > f_events;
+            std::list< iterator_event > f_events;
 
 
     };
@@ -102,7 +114,7 @@ namespace mantis
     inline void iterator_timer::increment_begin()
     {
         if( f_ignore_incr ) return;
-        f_events.push_back( event( k_incr_begin ) );
+        f_events.push_back( iterator_event( iterator_event::k_incr_begin ) );
         get_time_monotonic( &f_events.back().f_time );
         return;
     }
@@ -110,7 +122,7 @@ namespace mantis
     inline void iterator_timer::increment_try_begin()
     {
         if( f_ignore_incr ) return;
-        f_events.push_back( event( k_incr_try_begin ) );
+        f_events.push_back( iterator_event( iterator_event::k_incr_try_begin ) );
         get_time_monotonic( &f_events.back().f_time );
         return;
     }
@@ -118,7 +130,7 @@ namespace mantis
     inline void iterator_timer::increment_locked()
     {
         if( f_ignore_incr ) return;
-        f_events.push_back( event( k_incr_locked ) );
+        f_events.push_back( iterator_event( iterator_event::k_incr_locked ) );
         get_time_monotonic( &f_events.back().f_time );
         ++f_increment_counter;
         return;
@@ -127,7 +139,7 @@ namespace mantis
     inline void iterator_timer::increment_try_fail()
     {
         if( f_ignore_incr ) return;
-        f_events.push_back( event( k_incr_try_fail ) );
+        f_events.push_back( iterator_event( iterator_event::k_incr_try_fail ) );
         get_time_monotonic( &f_events.back().f_time );
         return;
     }
@@ -135,7 +147,7 @@ namespace mantis
     inline void iterator_timer::other()
     {
         if( f_ignore_incr || f_ignore_decr ) return;
-        f_events.push_back( event( k_other ) );
+        f_events.push_back( iterator_event( iterator_event::k_other ) );
         get_time_monotonic( &f_events.back().f_time );
         return;
     }

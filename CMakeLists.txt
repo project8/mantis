@@ -99,19 +99,13 @@ include_directories( BEFORE ${PROJECT_SOURCE_DIR}/RapidJSON )
 
 add_subdirectory( Monarch )
 pbuilder_add_submodule_libraries( ${Monarch_LIBRARIES} )
+include_directories( ${Monarch_DEP_INCLUDE_DIRS} )
+message(STATUS "from monarch, libthorax dep include dirs: ${Monarch_DEP_INCLUDE_DIRS}")
 # add to the RPATH to be used when installing, but only if it's not a system directory
 #list( FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${Monarch_LIBRARY_DIR}" isSystemDir )
 #if( "${isSystemDir}" STREQUAL "-1" )
 #   list( APPEND CMAKE_INSTALL_RPATH ${Monarch_LIBRARY_DIR} )
 #endif( "${isSystemDir}" STREQUAL "-1" )
-include_directories( BEFORE 
-    ${PROJECT_SOURCE_DIR}/Monarch/Monarch3
-    ${PROJECT_SOURCE_DIR}/Monarch/libthorax/cpp
-    ${PROJECT_SOURCE_DIR}/Monarch/libthorax
-    ${PROJECT_BINARY_DIR}/Monarch
-    ${HDF5_INCLUDE_DIR}
-)
-message(STATUS "hdf5 include dir: ${HDF5_INCLUDE_DIR}")
 
 
 ###################

@@ -122,19 +122,19 @@ namespace mantis
             acquisition_id_type f_acquisition_id;
             record_id_type f_record_id;
             time_nsec_type f_timestamp;
-            unsigned f_data_size;
+            size_t f_data_size;
 
             byte_type* f_memblock_bytes;
-            unsigned f_memblock_nbytes;
+            size_t f_memblock_nbytes;
 
             byte_type* f_prefix_bytes;
-            unsigned f_prefix_nbytes;
+            size_t f_prefix_nbytes;
 
             byte_type* f_data_bytes;
-            unsigned f_data_nbytes;
+            size_t f_data_nbytes;
 
             byte_type* f_postfix_bytes;
-            unsigned f_postfix_nbytes;
+            size_t f_postfix_nbytes;
 
             block_cleanup* f_cleanup;
     };

@@ -12,11 +12,8 @@
 
 #include "mt_exception.hh"
 
-#include <string>
-
 namespace mantis
 {
-
     class MANTIS_API configurator
     {
         public:

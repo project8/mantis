@@ -13,8 +13,13 @@
 
 #include <stack>
 
+
 namespace mantis
 {
+#ifdef _WIN32
+    MANTIS_EXPIMP_TEMPLATE template class MANTIS_API std::deque< thread*, std::allocator< thread* > >;
+    MANTIS_EXPIMP_TEMPLATE template class MANTIS_API std::stack< thread*, std::deque< thread*, std::allocator< thread* > > >;
+#endif
 
     class MANTIS_API signal_handler
     {
@@ -47,5 +52,5 @@ namespace mantis
 
     };
 
-} /* namespace Katydid */
+} /* namespace mantis */
 #endif /* MT_SIGNAL_HANDLER_HH_ */
