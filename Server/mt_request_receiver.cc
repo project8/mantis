@@ -75,19 +75,33 @@ namespace mantis
                 continue;
             }
 
-            switch( t_msg_node->get_value< unsigned >( "msgop" ) )
+            if( t_msg_node == NULL )
+            {
+                MTERROR( mtlog, "Message body could not be parsed; skipping request" );
+                continue;
+            }
+
+            const param_node* t_msg_payload = t_msg_node->node_at( "payload" );
+            if( t_msg_payload == NULL )
+            {
+                MTERROR( mtlog, "There was no payload present in the message" );
+                delete t_msg_node;
+                continue;
+            }
+
+
+            switch( t_msg_node->get_value< unsigned >( "msgop", OP_MANTIS_UNKNOWN ) )
             {
                 case OP_MANTIS_RUN:
                 {
                     MTDEBUG( mtlog, "Run operation request received" );
-                    const param_node* t_msg_payload = t_msg_node->node_at( "payload" );
 
                     // required
                     const param_node* t_file_node = t_msg_payload->node_at( "file" );
                     if( t_file_node == NULL )
                     {
                         MTERROR( mtlog, "No file configuration present; aborting request" );
-                        continue;
+                        break;
                     }
 
                     // optional
@@ -138,7 +152,6 @@ namespace mantis
                 case OP_MANTIS_QUERY:
                 {
                     MTDEBUG( mtlog, "Query request received" );
-                    const param_node* t_msg_payload = t_msg_node->node_at( "payload" );
 
                     std::string t_query_type( t_msg_payload->get_value( "query", "" ) );
                     t_connection->amqp()->BasicAck( t_envelope );
@@ -201,7 +214,6 @@ namespace mantis
                 case OP_MANTIS_CONFIG:
                 {
                     MTDEBUG( mtlog, "Config request received" );
-                    const param_node* t_msg_payload = t_msg_node->node_at( "payload" );
 
                     std::string t_action( t_msg_payload->get_value( "action", "" ) );
                     const param_node* t_config_node = t_msg_payload->node_at( "config" );
@@ -257,9 +269,10 @@ namespace mantis
                 default:
                     MTERROR( mtlog, "Unrecognized message operation: <" << t_msg_node->get_value< unsigned >( "msgop" ) << ">" );
                     break;
-            }
+            } // end switch on message type
+            // nothing should happen after the switch block except deleting objects
             delete t_msg_node;
-        }
+        } // end while (true)
 
         delete t_connection;
 
