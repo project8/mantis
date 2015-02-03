@@ -142,7 +142,12 @@ namespace mantis
             f_return = RETURN_ERROR;
             return;
         }
-
+        else
+        {
+            MTERROR( mtlog, "Unknown or missing request type: " << t_request_type );
+            f_return = RETURN_ERROR;
+            return;
+        }
 
 
         MTINFO( mtlog, "Sending request" );
