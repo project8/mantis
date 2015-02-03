@@ -25,7 +25,7 @@ namespace mantis
         param_value t_value;
 
         param_node* t_broker_node = new param_node();
-        t_broker_node->add( "port", t_value << 98342 );
+        t_broker_node->add( "port", t_value << 5672 );
         t_broker_node->add( "addr", t_value << "localhost" );
         add( "broker", t_broker_node );
 
