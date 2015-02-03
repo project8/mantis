@@ -1,3 +1,5 @@
+#define MANTIS_API_EXPORTS
+
 #include "mt_digitizer_test.hh"
 
 #include "mt_buffer.hh"

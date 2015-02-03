@@ -1,3 +1,5 @@
+#define MANTIS_API_EXPORTS
+
 #include "mt_digitizer_test16.hh"
 
 //#include "mt_bit_shift_modifier.hh"
