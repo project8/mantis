@@ -19,9 +19,9 @@
 #include <list>
 #include <string>
 
-#ifdef _WIN32
-MANTIS_EXPIMP_TEMPLATE template class MANTIS_API std::basic_string< char, std::char_traits< char >, std::allocator< char > >;
-#endif
+//#ifdef _WIN32
+//MANTIS_EXPIMP_TEMPLATE template class MANTIS_API std::basic_string< char, std::char_traits< char >, std::allocator< char > >;
+//#endif
 
 namespace mantis
 {

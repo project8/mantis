@@ -39,6 +39,7 @@ namespace mantis
 #define OP_MANTIS_RUN    0 // == OP_SENSOR_SET
 #define OP_MANTIS_QUERY  1 // == OP_SENSOR_GET
 #define OP_MANTIS_CONFIG 6 // == OP_SENSOR_CONFIG
+#define OP_MANTIS_UNKNOWN ULONG_MAX
 
     // Message type constants
 #define T_MANTIS_REPLY   2 // == T_REPLY

@@ -22,9 +22,9 @@
 #include <sstream>
 #include <string>
 
-#ifdef _WIN32
-MANTIS_EXPIMP_TEMPLATE template class MANTIS_API std::basic_string< char, std::char_traits< char >, std::allocator< char > >;
-#endif
+//#ifdef _WIN32
+//MANTIS_EXPIMP_TEMPLATE template class MANTIS_API std::basic_string< char, std::char_traits< char >, std::allocator< char > >;
+//#endif
 
 namespace mantis
 {
@@ -131,9 +131,9 @@ namespace mantis
     }
 
 
-#ifdef _WIN32
-    MANTIS_EXPIMP_TEMPLATE template class MANTIS_API std::deque< param* >;
-#endif
+//#ifdef _WIN32
+//    MANTIS_EXPIMP_TEMPLATE template class MANTIS_API std::deque< param* >;
+//#endif
 
     class MANTIS_API param_array : public param
     {
@@ -275,9 +275,9 @@ namespace mantis
 
 
 
-#ifdef _WIN32
-    MANTIS_EXPIMP_TEMPLATE template class MANTIS_API std::map< std::string, param* >;
-#endif
+//#ifdef _WIN32
+//    MANTIS_EXPIMP_TEMPLATE template class MANTIS_API std::map< std::string, param* >;
+//#endif
 
     class MANTIS_API param_node : public param
     {
