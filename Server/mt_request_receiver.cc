@@ -59,6 +59,7 @@ namespace mantis
             if( f_canceled.load() ) return;
 
             // blocking call to wait for incoming message
+            MTDEBUG( mtlog, "Waiting for incoming message" );
             AmqpClient::Envelope::ptr_t t_envelope = t_connection->amqp()->BasicConsumeMessage( t_consumer_tag );
 
 
@@ -72,12 +73,14 @@ namespace mantis
             else
             {
                 MTERROR( mtlog, "Unable to parse message with content type <" << t_envelope->Message()->ContentEncoding() << ">" );
+                t_connection->amqp()->BasicAck( t_envelope );
                 continue;
             }
 
             if( t_msg_node == NULL )
             {
                 MTERROR( mtlog, "Message body could not be parsed; skipping request" );
+                t_connection->amqp()->BasicAck( t_envelope );
                 continue;
             }
 
@@ -86,6 +89,7 @@ namespace mantis
             {
                 MTERROR( mtlog, "There was no payload present in the message" );
                 delete t_msg_node;
+                t_connection->amqp()->BasicAck( t_envelope );
                 continue;
             }
 
@@ -101,6 +105,7 @@ namespace mantis
                     if( t_file_node == NULL )
                     {
                         MTERROR( mtlog, "No file configuration present; aborting request" );
+                        t_connection->amqp()->BasicAck( t_envelope );
                         break;
                     }
 
@@ -273,6 +278,8 @@ namespace mantis
             // nothing should happen after the switch block except deleting objects
             delete t_msg_node;
         } // end while (true)
+
+        MTDEBUG( mtlog, "Request receiver is done" );
 
         delete t_connection;
 
