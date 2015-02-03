@@ -23,13 +23,8 @@ include_directories( BEFORE
 
 set( CMAKE_MACOSX_RPATH TRUE )
 
-# build shared libraries under linux and mac
 message( STATUS "system name: ${CMAKE_SYSTEM_NAME}")
-#if ( ${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR ${CMAKE_SYSTEM_NAME} MATCHES "Darwin" )
-    set (BUILD_SHARED_LIBS ON)
-#elseif( ${CMAKE_SYSTEM_NAME} MATCHES "Windows" )
-#    set (BUILD_SHARED_LIBS OFF)    
-#endif( ${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR ${CMAKE_SYSTEM_NAME} MATCHES "Darwin" )
+set (BUILD_SHARED_LIBS ON)
 
 
 ##################
@@ -112,7 +107,6 @@ message(STATUS "from monarch, libthorax dep include dirs: ${Monarch_DEP_INCLUDE_
 # SimpleAmqpClient
 ###################
 
-##pbuilder_add_ext_libraries( ${PROJECT_SOURCE_DIR}/SimpleAmqpClient/build/Debug/SimpleAmqpClient.2.lib )
 add_subdirectory( SimpleAmqpClient )
 pbuilder_add_submodule_libraries( SimpleAmqpClient )
 # add to the RPATH to be used when installing, but only if it's not a system directory
@@ -123,7 +117,6 @@ pbuilder_add_submodule_libraries( SimpleAmqpClient )
 include_directories( BEFORE 
     ${PROJECT_SOURCE_DIR}/SimpleAmqpClient/src
 )
-message( STATUS "amqplibdir: ${SimpleAmqpClient_LIBRARIES}")
 
 
 ##########
