@@ -19,11 +19,11 @@ pbuilder_add_ext_libraries( ${NISCOPE_LIBRARIES} )
 #############################
 
 add_digitizer_header_files(
-    #mt_digitizer_PXIe5122.hh
+    mt_digitizer_pxie5122.hh
 )
 
 add_digitizer_source_files(
-    #mt_digitizer_PXIe5122.cc
+    mt_digitizer_pxie5122.cc
 )
 
 
