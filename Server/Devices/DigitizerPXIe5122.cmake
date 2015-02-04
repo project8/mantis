@@ -6,6 +6,10 @@ find_path( NISCOPE_INCLUDE_DIR niScope.h PATHS $ENV{NIIVIPATH}/Include )
 message( STATUS "NI-Scope include dir: ${NISCOPE_INCLUDE_DIR}")
 include_directories( ${NISCOPE_INCLUDE_DIR} )
 
+find_path( NISCOPE_VXI_INCLUDE_DIR vpptype.h PATHS $ENV{VXIPNPPATH}/WinNT/Include )
+message( STATUS "NI-Scope VXI include dir: ${NISCOPE_VXI_INCLUDE_DIR}")
+include_directories( ${NISCOPE_VXI_INCLUDE_DIR} )
+
 find_library( NISCOPE_LIBRARIES niScope PATHS $ENV{NIIVIPATH}/Lib_x64/msc )
 if( NOT NISCOPE_LIBRARIES )
     message( FATAL_ERROR "Did not find NI-Scope library" )

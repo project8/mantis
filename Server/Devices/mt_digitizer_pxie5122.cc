@@ -24,14 +24,13 @@ namespace mantis
 
 
     const unsigned digitizer_pxie5122::s_data_type_size = sizeof( digitizer_pxie5122::data_type );
-    unsigned digitizer_pxie5122::data_type_size_pxie5122()
+    unsigned digitizer_pxie5122::data_type_size()
     {
         return digitizer_pxie5122::s_data_type_size;
     }
 
     digitizer_pxie5122::digitizer_pxie5122() :
             //f_semaphore( NULL ),
-            f_master_record( NULL ),
             f_allocated( false ),
             f_buffer( NULL ),
             f_condition( NULL ),
@@ -138,6 +137,19 @@ namespace mantis
         f_acquisition_count = 0;
         f_live_time = 0;
         f_dead_time = 0;
+
+        //MTINFO( mtlog, "initializing the digitizer" );
+
+        std::string resourceNameStr( a_config->get_value( "name", "NONE" ) );
+        ViChar* resourceName = new ViChar[resourceNameStr.size() ];
+        strcpy( resourceName, resourceNameStr.c_str() );
+        if( ! handle_error( niScope_init( resourceName, NISCOPE_VAL_FALSE, NISCOPE_VAL_FALSE, &f_handle ) ) )
+        {
+            handle_error( niScope_close( f_handle ) );
+            delete[] resourceName;
+            return false;
+        }
+        delete[] resourceName;
 
         return true;
     }
@@ -385,6 +397,24 @@ namespace mantis
     {
         MTWARN( mtlog, "Basic test for digitizer_pxie5122 has not been implemented" );
         return false;
+    }
+
+    bool digitizer_pxie5122::handle_error( ViStatus a_status )
+    {
+        if( a_status == VI_SUCCESS ) return true;
+        const unsigned t_buffer_size = 512;
+        ViChar t_msg_buffer[ t_buffer_size ];
+        niScope_GetErrorMessage( f_handle, a_status, t_buffer_size, t_msg_buffer );
+        if( a_status > 0 )
+        {
+            MTWARN( mtlog, t_msg_buffer );
+            return false;
+        }
+        else // a_status < 0, since VI_SUCCESS == 0
+        {
+            MTERROR( mtlog, t_msg_buffer );
+            return false;
+        }
     }
 
 

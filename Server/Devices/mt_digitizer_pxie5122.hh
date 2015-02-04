@@ -8,6 +8,8 @@
 #include "mt_condition.hh"
 #include "mt_mutex.hh"
 
+#include "niScope.h"
+
 #include <stdint.h>
 
 //#include <semaphore.h>
@@ -16,10 +18,33 @@ namespace mantis
 {
     class block_cleanup_pxie5122;
 
+    /*
+    Available configuration values:
+    - input impedance (not yet; niScope_ConfigureChanCharacteristics)
+    - max input frequency? (not yet; -1 is full bandwidth; 0 is use hardware defaults; niScope_ConfigureChanCharacteristics)
+    - minimum sample rate (not yet; niScope_ConfigureHorizontalTiming)
+    - minimum number of points per record (not yet; niScope_ConfigureHorizontalTiming)
+    - number of records? (not yet; niScope_ConfigureHorizontalTiming)
+    - voltage range (not yet; niScope_ConfigureVertical)
+    - voltage offset (not yet; niScope_ConfigureVertical)
+    - coupling (not yet; niScope_ConfigureVertical)
+    - probe attenuation (not yet; niScope_ConfigureVertical)
+    - various trigger things (not yet; niScope_ConfigureTrigger...)
+    */
+
+    /*
+    Information to obtain
+    - Actual number of samples (not yet; niScope_ActualMeasWfmSize)
+    - Actual number of waveforms (not yet; niScope_ActualNumWfms)
+    - Actual record length (not yet; niScope_ActualRecordLength)
+    - Actual sample mode (not yet; niScope_SampleMode)
+    - Actual sample rate (not yet; niScope_SampleRate)
+    */
+
     class digitizer_pxie5122 : public digitizer
     {
         public:
-            typedef uint8_t data_type;
+            typedef ViInt16 data_type;
 
             static unsigned data_type_size_test();
 
@@ -48,9 +73,11 @@ namespace mantis
         private:
             static const unsigned s_data_type_size;
 
+            bool handle_error( ViStatus a_status );
+
             //sem_t* f_semaphore;
 
-            data_type* f_master_record;
+            ViSession f_handle;
 
             bool f_allocated;
 
