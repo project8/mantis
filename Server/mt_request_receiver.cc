@@ -40,19 +40,31 @@ namespace mantis
 
     void request_receiver::execute()
     {
-        connection* t_connection = f_broker->create_connection();
-        if( t_connection == NULL )
+        connection* t_connection = NULL;
+        std::string t_consumer_tag;
+        try
         {
-            MTERROR( mtlog, "Cannot create connection to AMQP broker" );
+            t_connection = f_broker->create_connection();
+            if( t_connection == NULL )
+            {
+                MTERROR( mtlog, "Cannot create connection to AMQP broker" );
+                cancel();
+                raise( SIGINT );
+                return;
+            }
+
+            t_connection->amqp()->DeclareQueue( "mantis", false, false, true, false );
+            t_connection->amqp()->BindQueue( "mantis", "requests", "mantis" );
+
+            t_consumer_tag = t_connection->amqp()->BasicConsume( "mantis", "mantis", true, false ); // second bool is setting no_ack to false
+        }
+        catch( AmqpClient::AmqpException& e )
+        {
+            MTERROR( mtlog, "AMQP exception caught: " << e.what() );
             cancel();
             raise( SIGINT );
             return;
         }
-
-        t_connection->amqp()->DeclareQueue( "mantis", false, false, true, false );
-        t_connection->amqp()->BindQueue( "mantis", "requests", "mantis" );
-
-        std::string t_consumer_tag = t_connection->amqp()->BasicConsume( "mantis", "mantis", true, false ); // second bool is setting no_ack to false
 
         while( true )
         {
@@ -138,7 +150,7 @@ namespace mantis
                                 t_devs_to_remove.push_back( t_node_it->first );
                             }
                         }
-                        catch( exception& e )
+                        catch( exception& )
                         {
                             MTWARN( mtlog, "Found non-node param object in \"devices\"" );
                         }

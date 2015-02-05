@@ -2,11 +2,14 @@
 #define MT_BLOCK_HH_
 
 #include "mt_constants.hh"
+#include "mt_logger.hh"
 
 #include "thorax.hh"
 
 namespace mantis
 {
+    MTLOGGER( mtlog_block, "block" );
+
     /*!
      @class block
      @author D. Furse, N. Oblath
@@ -159,6 +162,9 @@ namespace mantis
 
         t_new_block->f_postfix_nbytes = a_postfix_size * t_data_type_size;
         t_new_block->f_postfix_bytes = t_new_block->f_data_bytes + t_new_block->f_data_nbytes;
+
+        //MTDEBUG( mtlog, "dt size: " << t_data_type_size << "; total size: " << t_total_size << ": block n bytes: " << t_new_block->f_memblock_nbytes <<
+        //    "; prefix nybtes: " << t_new_block->f_prefix_nbytes << "; data nbytes: " << t_new_block->f_data_nbytes << "; postfix nbytes: " << t_new_block->f_postfix_nbytes );
 
         return t_new_block;
     }

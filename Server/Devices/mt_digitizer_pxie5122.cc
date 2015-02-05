@@ -157,6 +157,7 @@ namespace mantis
         }
 
         std::string resourceNameStr = a_dev_config->get_value( "resource-name", "" );
+        MTDEBUG( mtlog, "Resource name from config: <" << resourceNameStr << ">" );
         if( resourceNameStr.empty() )
         {
             MTERROR( mtlog, "No resource name was provided" );
@@ -168,19 +169,19 @@ namespace mantis
             return false;
         }
 
-        MTDEBUG( mtlog, "Connecting to the 5122 using resource name <" << f_resource_name << ">" );
-        if( f_resource_name.empty() )
+        if( ! f_handle )
         {
-            f_resource_name == resourceNameStr;
+            f_resource_name = resourceNameStr;
+            MTDEBUG( mtlog, "Connecting to the 5122 using resource name <" << f_resource_name << ">" );
 
-            ViChar* resourceName = new ViChar[ f_resource_name.size() ];
-            strcpy( resourceName, f_resource_name.c_str() );
-            if( !handle_error( niScope_init( resourceName, NISCOPE_VAL_FALSE, NISCOPE_VAL_FALSE, &f_handle ) ) )
+            //ViChar* resourceName = new ViChar[ f_resource_name.size() ];
+            //strcpy( resourceName, f_resource_name.c_str() );
+            if( !handle_error( niScope_init( const_cast< char* >( f_resource_name.c_str() ), NISCOPE_VAL_FALSE, NISCOPE_VAL_FALSE, &f_handle ) ) )
             {
-                delete[] resourceName;
+                //delete[] resourceName;
                 return false;
             }
-            delete[] resourceName;
+            //delete[] resourceName;
         }
 
         MTDEBUG( mtlog, "Configuring the 5122" );
@@ -202,7 +203,8 @@ namespace mantis
         // TODO: the block size request assumes that we're only using 1 channel
         // Note that the record size request is passed as the 3rd parameter; this is correct regardless of the number of channels in use;
         // This parameter in the NI function is the minimum number of samples in the record for each channel according to the NI-SCOPE documentation.
-        if( !handle_error( niScope_ConfigureHorizontalTiming( f_handle, a_dev_config->get_value< double >( "rate-req" ),
+        // Must convert MHz rate request to Hz for NI-SCOPE
+        if( !handle_error( niScope_ConfigureHorizontalTiming( f_handle, a_dev_config->get_value< double >( "rate-req" ) * 1.e6,
             a_dev_config->get_value< unsigned >( "record-size-req" ), 0, 1, VI_TRUE ) ) )
         {
             return false;
@@ -212,6 +214,8 @@ namespace mantis
         {
             return false;
         }
+        // convert from Hz to MHz
+        t_actual_rate *= 1.e-6;
         a_dev_config->replace( "rate", param_value() << t_actual_rate );
         ViInt32 t_actual_rec_size;
         if( !handle_error( niScope_ActualRecordLength( f_handle, &t_actual_rec_size ) ) )
@@ -219,6 +223,7 @@ namespace mantis
             return false;
         }
         a_dev_config->replace( "record-size", param_value() << t_actual_rec_size );
+        MTINFO( mtlog, "Actual rate: " << t_actual_rate << " MHz; Actual record size: " << t_actual_rec_size );
 
         // check buffer allocation
         // this section assumes 1 channel, in not multiplying t_actual_rec_size by the number of channels when converting to block size

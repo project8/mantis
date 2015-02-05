@@ -64,19 +64,19 @@ namespace mantis
         param_node* t_pxie5122_node = new param_node();
         t_pxie5122_node->add( "name", t_value << "pxie5122" );
         t_pxie5122_node->add( "enabled", t_value << true );
-        t_pxie5122_node->add( "resource-name", t_value << "DAQ::1" );
-        t_pxie5122_node->add( "rate-req", t_value << 250 );
+        t_pxie5122_node->add( "resource-name", t_value << "PXI1Slot2" );
+        t_pxie5122_node->add( "rate-req", t_value << 150 );
         t_pxie5122_node->add( "n-channels", t_value << 1 );
         t_pxie5122_node->add( "data-mode", t_value << monarch3::sDigitized );
         t_pxie5122_node->add( "channel-mode", t_value << monarch3::sSeparate );
         t_pxie5122_node->add( "sample-size", t_value << 1 );
         t_pxie5122_node->add( "buffer-size", t_value << 512 );
-        t_pxie5122_node->add( "record-size-req", t_value << 4194304 );
+        t_pxie5122_node->add( "record-size-req", t_value << 524288 );// 1048576 );
         t_pxie5122_node->add( "data-chunk-size", t_value << 1024 );
         t_pxie5122_node->add( "input-impedance", t_value << 50 );
         t_pxie5122_node->add( "voltage-range", t_value << 0.5 );
         t_pxie5122_node->add( "voltage-offset", t_value << -0.25 );
-        t_pxie5122_node->add( "input-coupling", t_value << 0 ); // AC coupling
+        t_pxie5122_node->add( "input-coupling", t_value << 1 ); // DC coupling
         t_pxie5122_node->add( "probe-attenuation", t_value << 1.0 );
         t_dev_node->add( "pxie5122", t_pxie5122_node );
 
