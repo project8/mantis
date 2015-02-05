@@ -13,7 +13,7 @@
 namespace mantis
 {
 
-    class run_description : public param_node
+    class MANTIS_API run_description : public param_node
     {
         public:
             enum status

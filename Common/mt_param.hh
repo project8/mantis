@@ -22,6 +22,10 @@
 #include <sstream>
 #include <string>
 
+//#ifdef _WIN32
+//MANTIS_EXPIMP_TEMPLATE template class MANTIS_API std::basic_string< char, std::char_traits< char >, std::allocator< char > >;
+//#endif
+
 namespace mantis
 {
     MTLOGGER(mtlog_p, "param");
@@ -29,7 +33,7 @@ namespace mantis
     class param_array;
     class param_node;
 
-    class param_exception : public exception
+    class MANTIS_API param_exception : public exception
     {
         public:
             param_exception();
@@ -38,7 +42,7 @@ namespace mantis
     };
 
 
-    class param
+    class MANTIS_API param
     {
         public:
             param();
@@ -65,7 +69,7 @@ namespace mantis
             static unsigned s_indent_level;
     };
 
-    class param_value : public param
+    class MANTIS_API param_value : public param
     {
         public:
             param_value();
@@ -127,7 +131,11 @@ namespace mantis
     }
 
 
-    class param_array : public param
+//#ifdef _WIN32
+//    MANTIS_EXPIMP_TEMPLATE template class MANTIS_API std::deque< param* >;
+//#endif
+
+    class MANTIS_API param_array : public param
     {
         public:
             typedef std::deque< param* > contents;
@@ -267,7 +275,11 @@ namespace mantis
 
 
 
-    class param_node : public param
+//#ifdef _WIN32
+//    MANTIS_EXPIMP_TEMPLATE template class MANTIS_API std::map< std::string, param* >;
+//#endif
+
+    class MANTIS_API param_node : public param
     {
         public:
             typedef std::map< std::string, param* > contents;
@@ -381,10 +393,10 @@ namespace mantis
 
 
 
-    std::ostream& operator<<(std::ostream& out, const param& value);
-    std::ostream& operator<<(std::ostream& out, const param_value& value);
-    std::ostream& operator<<(std::ostream& out, const param_array& value);
-    std::ostream& operator<<(std::ostream& out, const param_node& value);
+    MANTIS_API std::ostream& operator<<(std::ostream& out, const param& value);
+    MANTIS_API std::ostream& operator<<(std::ostream& out, const param_value& value);
+    MANTIS_API std::ostream& operator<<(std::ostream& out, const param_array& value);
+    MANTIS_API std::ostream& operator<<(std::ostream& out, const param_node& value);
 
 
 
@@ -392,7 +404,7 @@ namespace mantis
     //************** INPUT ******************
     //***************************************
 
-    class param_input_json
+    class MANTIS_API param_input_json
     {
         public:
             param_input_json();
@@ -408,7 +420,7 @@ namespace mantis
     //************** OUTPUT *****************
     //***************************************
 
-    class param_output_json
+    class MANTIS_API param_output_json
     {
         public:
             typedef rapidjson::Writer< rapidjson::FileStream, rapidjson::UTF8<>, rapidjson::MemoryPoolAllocator<> > rj_file_writer;

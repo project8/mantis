@@ -8,6 +8,8 @@
 #ifndef MT_BROKER_HH_
 #define MT_BROKER_HH_
 
+#include "mt_constants.hh"
+
 #include "SimpleAmqpClient/SimpleAmqpClient.h"
 
 #include <string>
@@ -16,7 +18,7 @@ namespace mantis
 {
     class connection;
 
-    class broker
+    class MANTIS_API broker
     {
         public:
             broker( const std::string& a_address, unsigned port );

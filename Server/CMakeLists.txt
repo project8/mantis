@@ -10,6 +10,7 @@ include( DigitizerConfig )
 ####################################################
 add_digitizer( Test TRUE )
 add_digitizer( Test16 TRUE )
+add_digitizer( PXIe5122 )
 add_digitizer( PX1500 )
 add_digitizer( PX14400 )
 add_digitizer( U1084A )

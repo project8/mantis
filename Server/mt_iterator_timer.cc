@@ -5,6 +5,8 @@
  *      Author: nsoblath
  */
 
+#define MANTIS_API_EXPORTS
+
 #include "mt_iterator_timer.hh"
 
 #include "mt_logger.hh"
@@ -28,8 +30,8 @@ namespace mantis
 
     iterator_timer::~iterator_timer()
     {
-        list< event >::const_iterator t_list_it = f_events.begin();
-        event t_prev_event;
+        list< iterator_event >::const_iterator t_list_it = f_events.begin();
+        iterator_event t_prev_event;
         timespec t_temp_duration;
         double t_time_thread_blocked_by_block = 0;
         double t_time_waiting_after_fail = 0;
@@ -39,14 +41,14 @@ namespace mantis
         {
             t_prev_event = *t_list_it;
             ++t_list_it;
-            if( t_prev_event.f_type == k_incr_begin )
+            if( t_prev_event.f_type == iterator_event::k_incr_begin )
             {
                 // then the current event type must be incr_locked, after possibly blocking the thread for some time
                 if( t_list_it == f_events.end() )
                 {
                     MTWARN( mtlog, "event list ended after increment-begin" );
                 }
-                else if( (*t_list_it).f_type == k_incr_locked )
+                else if( ( *t_list_it ).f_type == iterator_event::k_incr_locked )
                 {
                     time_diff( t_prev_event.f_time, (*t_list_it).f_time, &t_temp_duration );
                     t_time_thread_blocked_by_block += time_to_sec( t_temp_duration );
@@ -60,14 +62,14 @@ namespace mantis
                     MTERROR( mtlog, "event type <" << (*t_list_it).f_type << "> following increment-begin!" );
                 }
             }
-            else if( t_prev_event.f_type == k_incr_try_begin )
+            else if( t_prev_event.f_type == iterator_event::k_incr_try_begin )
             {
                 // then the current event type must be incr_locked or incr_try_fail
                 if( t_list_it == f_events.end() )
                 {
                     MTWARN( mtlog, "event list ended after increment-try-begin" );
                 }
-                else if( (*t_list_it).f_type == k_incr_locked || (*t_list_it).f_type == k_incr_try_fail )
+                else if( ( *t_list_it ).f_type==iterator_event::k_incr_locked||( *t_list_it ).f_type == iterator_event::k_incr_try_fail )
                 {
                     time_diff( t_prev_event.f_time, (*t_list_it).f_time, &t_temp_duration );
                     t_time_misc += time_to_sec( t_temp_duration );
@@ -81,14 +83,14 @@ namespace mantis
                     MTERROR( mtlog, "event type <" << (*t_list_it).f_type << "> following increment-try-begin!" );
                 }
             }
-            else if( t_prev_event.f_type == k_incr_locked )
+            else if( t_prev_event.f_type == iterator_event::k_incr_locked )
             {
                 // then the current event should be incr_begin, incr_try_begin or incr_other
                 if( t_list_it == f_events.end() )
                 {
                     MTDEBUG( mtlog, "event list ended after increment-locked" );
                 }
-                else if( (*t_list_it).f_type == k_incr_begin || (*t_list_it).f_type == k_incr_try_begin || (*t_list_it).f_type == k_other )
+                else if( ( *t_list_it ).f_type == iterator_event::k_incr_begin || ( *t_list_it ).f_type == iterator_event::k_incr_try_begin || ( *t_list_it ).f_type == iterator_event::k_other )
                 {
                     time_diff( t_prev_event.f_time, (*t_list_it).f_time, &t_temp_duration );
                     t_time_working += time_to_sec( t_temp_duration );
@@ -102,7 +104,7 @@ namespace mantis
                     MTWARN( mtlog, "event type <" << (*t_list_it).f_type << "> following increment-locked!");
                 }
             }
-            else if( t_prev_event.f_type == k_incr_try_fail )
+            else if( t_prev_event.f_type == iterator_event::k_incr_try_fail )
             {
                 // then it's expected that the thread owner will try again, producing either an incr_begin, an incr_try_begin
                 // incr_other would also be acceptable
@@ -110,7 +112,7 @@ namespace mantis
                 {
                     MTDEBUG( mtlog, "event list ended after increment-try-fail" );
                 }
-                else if( (*t_list_it).f_type == k_incr_begin || (*t_list_it).f_type == k_incr_try_begin || (*t_list_it).f_type == k_other )
+                else if( ( *t_list_it ).f_type == iterator_event::k_incr_begin || ( *t_list_it ).f_type == iterator_event::k_incr_try_begin || ( *t_list_it ).f_type == iterator_event::k_other )
                 {
                     time_diff( t_prev_event.f_time, (*t_list_it).f_time, &t_temp_duration );
                     t_time_waiting_after_fail += time_to_sec( t_temp_duration );

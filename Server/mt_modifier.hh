@@ -36,7 +36,7 @@ namespace mantis
 
      Be sure to check each modifier's documentation for any necessary usage details.
     */
-    class modifier : public callable
+    class MANTIS_API modifier : public callable
     {
         public:
             modifier();

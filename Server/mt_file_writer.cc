@@ -1,3 +1,6 @@
+#define MANTIS_API_EXPORTS
+#define M3_API_EXPORTS
+
 #include "mt_file_writer.hh"
 
 #include "mt_configurator.hh"
@@ -53,11 +56,11 @@ namespace mantis
             MTERROR( mtlog, "Either the file configuration (" << t_file_config << ") or mantis config (" << t_mantis_config << ") is missing" );
             return false;
         }
-        const param_node* t_device_config = t_mantis_config->node_at( "device" );
+        const param_node* t_all_devs_config = t_mantis_config->node_at( "devices" );
         const param_node* t_run_config = t_mantis_config->node_at( "run" );
-        if( t_device_config == NULL || t_run_config == NULL )
+        if( t_all_devs_config == NULL || t_run_config == NULL )
         {
-            MTERROR( mtlog, "Either the device configuration (" << t_device_config << ") or run config (" << t_run_config << ") is missing" );
+            MTERROR( mtlog, "Either the device configuration (" << t_all_devs_config << ") or run config (" << t_run_config << ") is missing" );
             return false;
         }
 
@@ -83,36 +86,49 @@ namespace mantis
             f_header->SetTimestamp( t_timestamp );
 
             // stream and channel information
-            monarch3::DataFormatType t_data_mode = t_device_config->get_value< monarch3::DataFormatType >( "data-mode" );
-            monarch3::MultiChannelFormatType t_chan_mode = t_device_config->get_value< monarch3::MultiChannelFormatType >( "channel-mode" );
-            unsigned t_n_channels = t_device_config->get_value< unsigned >( "n-channels" );
-            unsigned t_rate = t_device_config->get_value< unsigned >( "rate" );
-            unsigned t_sample_size = t_device_config->get_value< unsigned >( "sample-size" );
-            if( t_n_channels == 1 )
+            for( param_node::const_iterator t_node_it = t_all_devs_config->begin(); t_node_it != t_all_devs_config->end(); ++t_node_it )
             {
-                f_header->AddStream( std::string("mantis - ") + t_device_config->get_value( "name" ),
-                        t_rate, f_buffer->block_size() / t_n_channels, t_sample_size,
-                        f_dev_mgr->device()->params().data_type_size, t_data_mode,
-                        f_dev_mgr->device()->params().bit_depth );
-                t_n_channels = 1;
-            }
-            else
-            {
-                f_header->AddStream( std::string("mantis - ") + t_device_config->get_value( "name" ), t_n_channels, t_chan_mode,
-                        t_rate, f_buffer->block_size() / t_n_channels, t_sample_size,
-                        f_dev_mgr->device()->params().data_type_size, t_data_mode,
-                        f_dev_mgr->device()->params().bit_depth );
-                t_n_channels = 2;
+                try
+                {
+                    const param_node* t_device_config = &( t_node_it->second->as_node() );
+
+                    uint32_t t_data_mode = t_device_config->get_value< uint32_t >( "data-mode" );
+                    uint32_t t_chan_mode = t_device_config->get_value< uint32_t >( "channel-mode" );
+                    unsigned t_n_channels = t_device_config->get_value< unsigned >( "n-channels" );
+                    unsigned t_rate = t_device_config->get_value< unsigned >( "rate" );
+                    unsigned t_sample_size = t_device_config->get_value< unsigned >( "sample-size" );
+                    std::vector< unsigned > t_chan_vec;
+                    if( t_n_channels == 1 )
+                    {
+                        f_header->AddStream( std::string( "mantis - " ) + t_device_config->get_value( "name" ),
+                            t_rate, f_buffer->block_size() / t_n_channels, t_sample_size,
+                            f_dev_mgr->device()->params().data_type_size, t_data_mode,
+                            f_dev_mgr->device()->params().bit_depth, &t_chan_vec );
+                    }
+                    else
+                    {
+                        f_header->AddStream( std::string( "mantis - " ) + t_device_config->get_value( "name" ), t_n_channels, t_chan_mode,
+                            t_rate, f_buffer->block_size() / t_n_channels, t_sample_size,
+                            f_dev_mgr->device()->params().data_type_size, t_data_mode,
+                            f_dev_mgr->device()->params().bit_depth, &t_chan_vec );
+                    }
+
+                    for( std::vector< unsigned >::const_iterator it = t_chan_vec.begin(); it != t_chan_vec.end(); ++it )
+                    {
+                        f_header->GetChannelHeaders()[ *it ].SetVoltageMin( t_device_config->get_value< double >( "voltage-min" ) );
+                        f_header->GetChannelHeaders()[ *it ].SetVoltageRange( t_device_config->get_value< double >( "voltage-range" ) );
+                        f_header->GetChannelHeaders()[ *it ].SetDACGain( t_device_config->get_value< double >( "dac-gain" ) );
+                    }
+                }
+                catch( exception& e )
+                {
+                    MTWARN( mtlog, "Found non-node param object in \"devices\"" );
+                }
             }
 
-            // write voltage information to channel headers
-            //TODO: when the device manager is improved, setting of the channel header info will have to go with the streams above
-            typedef std::vector< monarch3::M3ChannelHeader > ChanHeaders;
-            for( ChanHeaders::iterator t_chan_it = f_header->GetChannelHeaders().begin(); t_chan_it != f_header->GetChannelHeaders().end(); ++t_chan_it )
-            {
-                t_chan_it->SetVoltageMin( f_dev_mgr->device()->params().v_min );
-                t_chan_it->SetVoltageRange( f_dev_mgr->device()->params().v_range );
-            }
+
+
+
 
         }
         catch( param_exception& e )

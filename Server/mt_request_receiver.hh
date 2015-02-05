@@ -3,6 +3,7 @@
 
 #include "mt_callable.hh"
 
+#include "mt_atomic.hh"
 #include "mt_mutex.hh"
 #include "mt_param.hh"
 
@@ -14,7 +15,7 @@ namespace mantis
     class run_database;
     class server_tcp;
 
-    class request_receiver : public callable
+    class MANTIS_API request_receiver : public callable
     {
         public:
             request_receiver( const param_node& a_config, broker* a_broker, run_database* a_run_database, condition* a_condition, const std::string& a_exe_name = "unknown" );
@@ -33,6 +34,8 @@ namespace mantis
             run_database* f_run_database;
             condition* f_queue_condition;
             std::string f_exe_name;
+
+            atomic_bool f_canceled;
     };
 
 }

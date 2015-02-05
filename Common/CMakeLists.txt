@@ -6,8 +6,9 @@ set( MANTIS_COMMON_HEADERFILES
     mt_broker.hh
     mt_callable.hh
     mt_condition.hh
-    mt_configurator.hh    
+    mt_configurator.hh
     mt_connection.hh
+    mt_constants.hh
     mt_exception.hh
     mt_logger.hh
     mt_mutex.hh

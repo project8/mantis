@@ -5,6 +5,8 @@
  *      Author: nsoblath
  */
 
+#define MANTIS_API_EXPORTS
+
 #include "mt_param.hh"
 
 #include "mt_logger.hh"
@@ -37,7 +39,7 @@ namespace mantis
     }
 
 
-    unsigned param::s_indent_level = 0;
+    MANTIS_API unsigned param::s_indent_level = 0;
 
     param::param()
     {
@@ -781,25 +783,25 @@ namespace mantis
 
 
 
-    std::ostream& operator<<(std::ostream& out, const param& a_value)
+    MANTIS_API std::ostream& operator<<(std::ostream& out, const param& a_value)
     {
         return out << a_value.to_string();
     }
 
 
-    std::ostream& operator<<(std::ostream& out, const param_value& a_value)
+    MANTIS_API std::ostream& operator<<(std::ostream& out, const param_value& a_value)
     {
         return out << a_value.to_string();
     }
 
 
-    std::ostream& operator<<(std::ostream& out, const param_array& a_value)
+    MANTIS_API std::ostream& operator<<(std::ostream& out, const param_array& a_value)
     {
         return out << a_value.to_string();
     }
 
 
-    std::ostream& operator<<(std::ostream& out, const param_node& a_value)
+    MANTIS_API std::ostream& operator<<(std::ostream& out, const param_node& a_value)
     {
         return out << a_value.to_string();
     }

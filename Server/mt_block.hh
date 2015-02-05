@@ -1,6 +1,8 @@
 #ifndef MT_BLOCK_HH_
 #define MT_BLOCK_HH_
 
+#include "mt_constants.hh"
+
 #include "thorax.hh"
 
 namespace mantis
@@ -33,7 +35,7 @@ namespace mantis
     // block
     //**************************************************
 
-    class block
+    class MANTIS_API block
     {
         public:
             //state of block
@@ -120,19 +122,19 @@ namespace mantis
             acquisition_id_type f_acquisition_id;
             record_id_type f_record_id;
             time_nsec_type f_timestamp;
-            unsigned f_data_size;
+            size_t f_data_size;
 
             byte_type* f_memblock_bytes;
-            unsigned f_memblock_nbytes;
+            size_t f_memblock_nbytes;
 
             byte_type* f_prefix_bytes;
-            unsigned f_prefix_nbytes;
+            size_t f_prefix_nbytes;
 
             byte_type* f_data_bytes;
-            unsigned f_data_nbytes;
+            size_t f_data_nbytes;
 
             byte_type* f_postfix_bytes;
-            unsigned f_postfix_nbytes;
+            size_t f_postfix_nbytes;
 
             block_cleanup* f_cleanup;
     };
@@ -166,7 +168,7 @@ namespace mantis
     // block_cleanup
     //**************************************************
 
-    class block_cleanup
+    class MANTIS_API block_cleanup
     {
         public:
             block_cleanup() {}

@@ -1,3 +1,5 @@
+#define MANTIS_API_EXPORTS
+
 #include "mt_writer.hh"
 
 #include "mt_iterator.hh"
@@ -27,7 +29,7 @@ namespace mantis
 
     bool writer::initialize( run_description* a_run_desc )
     {
-        f_canceled = false;
+        f_canceled.store( false );
 
         //MTINFO( mtlog, "resetting counters..." );
 
@@ -58,12 +60,28 @@ namespace mantis
             //try to advance
             if( +t_it == false )
             {
+                // if attempt fails, see if we're waiting on the buffer condition, and release if so
                 if( f_condition->is_waiting() == true )
                 {
-                    MTINFO( mtlog, "releasing buffer" );
+                    MTDEBUG( mtlog, "Releasing buffer" );
                     f_condition->release();
                 }
+                // advance; will wait for mutex lock on the next block
                 ++t_it;
+            }
+
+            //check if thread has been cancelled
+            if (f_canceled.load())
+            {
+                // to make sure we don't deadlock anything
+                if (f_cancel_condition.is_waiting())
+                {
+                    f_cancel_condition.release();
+                }
+
+                //GET OUT
+                MTINFO(mtlog, "Finished abnormally because writer thread was canceled");
+                return;
             }
 
             //if the block we're on is unused, skip it
@@ -85,12 +103,12 @@ namespace mantis
                 // to make sure we don't deadlock anything
                 if( f_cancel_condition.is_waiting() )
                 {
-                    MTINFO( mtlog, "was canceled mid-run" );
+                    MTINFO( mtlog, "Writer as canceled mid-run" );
                     f_cancel_condition.release();
                 }
                 else
                 {
-                    MTINFO( mtlog, "finished normally" );
+                    MTINFO( mtlog, "Finished normally" );
                 }
                 return;
             }
@@ -110,7 +128,7 @@ namespace mantis
                 }
 
                 //GET OUT
-                MTINFO( mtlog, "finished abnormally because writing failed" );
+                MTINFO( mtlog, "Finished abnormally because writing failed" );
                 return;
             }
 
@@ -128,6 +146,12 @@ namespace mantis
 
         return;
     }
+
+    /* Asyncronous cancelation:
+    During the main execution loop, the variable f_canceled is checked to see if the thread was canceled.
+    Question: what happens if the thread is cancelled when the iterator is waiting to receive a mutex lock to advance to the next block?
+    Question: what does the cancel condition do?
+    */
     void writer::cancel()
     {
         //cout << "CANCELING WRITER" );
@@ -139,6 +163,7 @@ namespace mantis
         //cout << "  writer has finished canceling" );
         return;
     }
+
     void writer::finalize( param_node* a_response )
     {
         //MTINFO( mtlog, "calculating statistics..." );

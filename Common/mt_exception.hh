@@ -1,13 +1,19 @@
 #ifndef MT_EXCEPTION_HH_
 #define MT_EXCEPTION_HH_
 
+#include "mt_constants.hh"
+
 #include <sstream>
 #include <exception>
+
+//#ifdef _WIN32
+//MANTIS_EXPIMP_TEMPLATE template class MANTIS_API std::basic_stringstream< char, std::char_traits< char >, std::allocator< char > >;
+//#endif
 
 namespace mantis
 {
 
-    class exception : public std::exception
+    class MANTIS_API exception : public std::exception
     {
         public:
             exception();

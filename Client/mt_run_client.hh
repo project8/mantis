@@ -8,7 +8,7 @@
 #ifndef MT_RUN_CLIENT_HH_
 #define MT_RUN_CLIENT_HH_
 
-#include "mt_callable.hh"
+//#include "mt_callable.hh"
 
 #include "mt_atomic.hh"
 #include "mt_param.hh"
@@ -19,21 +19,23 @@ namespace mantis
     class client_file_writing;
     class run_context_dist;
 
-    class run_client : public callable
+    // run_client was formerlly used in a separate thread, hence the previous use of the callable base class
+
+    class MANTIS_API run_client// : public callable
     {
         public:
             run_client( const param_node& a_node, const std::string& a_exe_name = "unknown" );
             virtual ~run_client();
 
             void execute();
-            void cancel();
+            //void cancel();
 
             int get_return();
 
         private:
             param_node f_config;
             std::string f_exe_name;
-            atomic_bool f_canceled;
+            //atomic_bool f_canceled;
             int f_return;
     };
 

@@ -1,3 +1,5 @@
+#define MANTIS_API_EXPORTS
+
 #include "mt_request_receiver.hh"
 
 #include "mt_broker.hh"
@@ -10,7 +12,7 @@
 #include "mt_run_description.hh"
 #include "mt_version.hh"
 
-#include "MonarchVersion.hpp"
+#include "M3Version.hh"
 
 #include <cstddef>
 #include <signal.h>
@@ -27,7 +29,8 @@ namespace mantis
             f_broker( a_broker ),
             f_run_database( a_run_database ),
             f_queue_condition( a_queue_condition ),
-            f_exe_name( a_exe_name )
+            f_exe_name( a_exe_name ),
+            f_canceled( false )
     {
     }
 
@@ -42,7 +45,7 @@ namespace mantis
         {
             MTERROR( mtlog, "Cannot create connection to AMQP broker" );
             cancel();
-            kill( 0, SIGINT );
+            raise( SIGINT );
             return;
         }
 
@@ -53,9 +56,14 @@ namespace mantis
 
         while( true )
         {
+            if( f_canceled.load() ) return;
+
             // blocking call to wait for incoming message
+            MTDEBUG( mtlog, "Waiting for incoming message" );
             AmqpClient::Envelope::ptr_t t_envelope = t_connection->amqp()->BasicConsumeMessage( t_consumer_tag );
 
+
+            if (f_canceled.load()) return;
 
             param_node* t_msg_node = NULL;
             if( t_envelope->Message()->ContentEncoding() == "application/json" )
@@ -65,22 +73,40 @@ namespace mantis
             else
             {
                 MTERROR( mtlog, "Unable to parse message with content type <" << t_envelope->Message()->ContentEncoding() << ">" );
+                t_connection->amqp()->BasicAck( t_envelope );
                 continue;
             }
 
-            switch( t_msg_node->get_value< unsigned >( "msgop" ) )
+            if( t_msg_node == NULL )
+            {
+                MTERROR( mtlog, "Message body could not be parsed; skipping request" );
+                t_connection->amqp()->BasicAck( t_envelope );
+                continue;
+            }
+
+            const param_node* t_msg_payload = t_msg_node->node_at( "payload" );
+            if( t_msg_payload == NULL )
+            {
+                MTERROR( mtlog, "There was no payload present in the message" );
+                delete t_msg_node;
+                t_connection->amqp()->BasicAck( t_envelope );
+                continue;
+            }
+
+
+            switch( t_msg_node->get_value< unsigned >( "msgop", OP_MANTIS_UNKNOWN ) )
             {
                 case OP_MANTIS_RUN:
                 {
                     MTDEBUG( mtlog, "Run operation request received" );
-                    const param_node* t_msg_payload = t_msg_node->node_at( "payload" );
 
                     // required
                     const param_node* t_file_node = t_msg_payload->node_at( "file" );
                     if( t_file_node == NULL )
                     {
                         MTERROR( mtlog, "No file configuration present; aborting request" );
-                        continue;
+                        t_connection->amqp()->BasicAck( t_envelope );
+                        break;
                     }
 
                     // optional
@@ -100,6 +126,28 @@ namespace mantis
                     f_msc_mutex.lock();
                     t_run_desc->set_mantis_config( f_master_server_config );
                     f_msc_mutex.unlock();
+                    // remove non-enabled devices from the devices node
+                    param_node* t_dev_node = t_run_desc->node_at( "mantis-config" )->node_at( "devices" );
+                    std::vector< std::string > t_devs_to_remove;
+                    for( param_node::iterator t_node_it = t_dev_node->begin(); t_node_it != t_dev_node->end(); ++t_node_it )
+                    {
+                        try
+                        {
+                            if( ! t_node_it->second->as_node().get_value< bool >( "enabled", false ) )
+                            {
+                                t_devs_to_remove.push_back( t_node_it->first );
+                            }
+                        }
+                        catch( exception& e )
+                        {
+                            MTWARN( mtlog, "Found non-node param object in \"devices\"" );
+                        }
+                    }
+                    for( std::vector< std::string >::const_iterator it = t_devs_to_remove.begin(); it != t_devs_to_remove.end(); ++it )
+                    {
+                        t_dev_node->remove( *it );
+                    }
+
 
                     if( t_client_node != NULL )
                     {
@@ -131,7 +179,6 @@ namespace mantis
                 case OP_MANTIS_QUERY:
                 {
                     MTDEBUG( mtlog, "Query request received" );
-                    const param_node* t_msg_payload = t_msg_node->node_at( "payload" );
 
                     std::string t_query_type( t_msg_payload->get_value( "query", "" ) );
                     t_connection->amqp()->BasicAck( t_envelope );
@@ -194,7 +241,6 @@ namespace mantis
                 case OP_MANTIS_CONFIG:
                 {
                     MTDEBUG( mtlog, "Config request received" );
-                    const param_node* t_msg_payload = t_msg_node->node_at( "payload" );
 
                     std::string t_action( t_msg_payload->get_value( "action", "" ) );
                     const param_node* t_config_node = t_msg_payload->node_at( "config" );
@@ -250,9 +296,12 @@ namespace mantis
                 default:
                     MTERROR( mtlog, "Unrecognized message operation: <" << t_msg_node->get_value< unsigned >( "msgop" ) << ">" );
                     break;
-            }
+            } // end switch on message type
+            // nothing should happen after the switch block except deleting objects
             delete t_msg_node;
-        }
+        } // end while (true)
+
+        MTDEBUG( mtlog, "Request receiver is done" );
 
         delete t_connection;
 
@@ -270,6 +319,11 @@ namespace mantis
     void request_receiver::cancel()
     {
         MTDEBUG( mtlog, "Canceling request receiver" );
+        if (! f_canceled.load())
+        {
+            f_canceled.store(true);
+            return;
+        }
         return;
     }
 

@@ -9,8 +9,7 @@
 
 namespace mantis
 {
-
-    class iterator
+    class MANTIS_API iterator
     {
         public:
             iterator( buffer* a_buffer, const std::string& a_name = "default" );

@@ -1,6 +1,6 @@
 #define MANTIS_API_EXPORTS
 
-#include "mt_digitizer_test.hh"
+#include "mt_digitizer_pxie5122.hh"
 
 #include "mt_buffer.hh"
 #include "mt_condition.hh"
@@ -10,6 +10,8 @@
 #include "mt_logger.hh"
 #include "mt_param.hh"
 
+#include "M3Types.hh"
+
 #include <cmath> // for ceil()
 #include <cstdlib> // for exit()
 #include <cstring> // for memset()
@@ -18,21 +20,23 @@
 
 namespace mantis
 {
-    MTLOGGER( mtlog, "digitizer_test" );
+    MTLOGGER( mtlog, "digitizer_pxie5122" );
 
-    MT_REGISTER_DIGITIZER( digitizer_test, "test" );
+    MT_REGISTER_DIGITIZER( digitizer_pxie5122, "pxie5122" );
 
 
-    const unsigned digitizer_test::s_data_type_size = sizeof( digitizer_test::data_type );
-    unsigned digitizer_test::data_type_size_test()
+    const unsigned digitizer_pxie5122::s_data_type_size = sizeof( digitizer_pxie5122::data_type );
+    unsigned digitizer_pxie5122::data_type_size()
     {
-        return digitizer_test::s_data_type_size;
+        return digitizer_pxie5122::s_data_type_size;
     }
 
-    digitizer_test::digitizer_test() :
+    digitizer_pxie5122::digitizer_pxie5122() :
             //f_semaphore( NULL ),
-            f_master_record( NULL ),
+            f_handle(),
+            f_resource_name(),
             f_allocated( false ),
+            f_waveform_info(),
             f_start_time( 0 ),
             f_record_last( 0 ),
             f_record_count( 0 ),
@@ -42,16 +46,14 @@ namespace mantis
             f_canceled( false ),
             f_cancel_condition()
     {
-        get_calib_params( 8, s_data_type_size, -0.25, 0.5, &f_params );
-
         /*
         errno = 0;
-        f_semaphore = sem_open( "/digitizer_test", O_CREAT | O_EXCL );
+        f_semaphore = sem_open( "/digitizer_pxie5122", O_CREAT | O_EXCL );
         if( f_semaphore == SEM_FAILED )
         {
             if( errno == EEXIST )
             {
-                throw exception() << "digitizer_test is already in use";
+                throw exception() << "digitizer_pxie5122 is already in use";
             }
             else
             {
@@ -61,9 +63,12 @@ namespace mantis
         */
     }
 
-    digitizer_test::~digitizer_test()
+    digitizer_pxie5122::~digitizer_pxie5122()
     {
         if( f_allocated ) deallocate();
+     
+        if( f_handle ) handle_error( niScope_close( f_handle ) );
+        
         /*
         if( f_semaphore != SEM_FAILED )
         {
@@ -72,8 +77,20 @@ namespace mantis
         */
     }
 
-    bool digitizer_test::allocate()
+    bool digitizer_pxie5122::allocate()
     {
+        if( f_allocated )
+        {
+            MTERROR( mtlog, "Buffer is already allocated" );
+            return false;
+        }
+
+        if( f_buffer == NULL )
+        {
+            MTERROR( mtlog, "Buffer must be created before allocation" );
+            return false;
+        }
+
         MTINFO( mtlog, "Allocating buffer" );
 
         try
@@ -81,7 +98,7 @@ namespace mantis
             for( unsigned int index = 0; index < f_buffer->size(); ++index )
             {
                 block* t_new_block = block::allocate_block< data_type >( f_buffer->block_size() );
-                t_new_block->set_cleanup( new block_cleanup_test( t_new_block->data_bytes() ) );
+                t_new_block->set_cleanup( new block_cleanup_pxie5122( t_new_block->data_bytes() ) );
                 f_buffer->set_block( index, t_new_block );
             }
         }
@@ -91,22 +108,17 @@ namespace mantis
             return false;
         }
 
-        MTINFO( mtlog, "Creating master record..." );
-
-        if( f_master_record != NULL ) delete [] f_master_record;
-        f_master_record = new data_type [f_buffer->block_size()];
-        for( unsigned index = 0; index < f_buffer->block_size(); ++index )
-        {
-            f_master_record[ index ] = index % f_params.levels;
-        }
-
         f_allocated = true;
         return true;
     }
 
-    bool digitizer_test::deallocate()
+    bool digitizer_pxie5122::deallocate()
     {
-        delete [] f_master_record;
+        if( !f_allocated )
+        {
+            MTWARN( mtlog, "Buffer is not allcoated" );
+            return true;
+        }
 
         MTINFO( mtlog, "Deallocating buffer" );
 
@@ -116,21 +128,103 @@ namespace mantis
         }
         f_allocated = false;
         return true;
-     }
+    }
 
-    bool digitizer_test::initialize( param_node* a_global_config, param_node* a_dev_config )
+    bool digitizer_pxie5122::initialize( param_node* a_global_config, param_node* a_dev_config )
     {
         //MTINFO( mtlog, "resetting counters..." );
 
-        a_dev_config->replace( "voltage-min", param_value() << f_params.v_min );
-        a_dev_config->replace( "voltage-range", param_value() << f_params.v_range );
-        a_dev_config->replace( "dac-gain", param_value() << f_params.dac_gain );
+        //MTINFO( mtlog, "initializing the digitizer" );
+
+        //TODO: allow multiple channels
+        // for now: enforce one channel
+        if( a_dev_config->get_value< unsigned >( "n-channels", 1 ) != 1 )
+        {
+            MTERROR( mtlog, "For now you can only use 1 channel.  Sorry" );
+            return false;
+        }
+
+        // Check data mode and channel mode
+        if( a_dev_config->get_value< uint32_t >( "data-mode" ) != monarch3::sDigitized )
+        {
+            MTERROR( mtlog, "Data can only be taken in <digitized> mode" );
+            return false;
+        }
+        if( a_dev_config->get_value< uint32_t >( "channel-mode" ) != monarch3::sSeparate )
+        {
+            MTERROR( mtlog, "Multi-channel data can only be recorded in <separate> mode" );
+            return false;
+        }
+
+        std::string resourceNameStr = a_dev_config->get_value( "resource-name", "" );
+        if( resourceNameStr.empty() )
+        {
+            MTERROR( mtlog, "No resource name was provided" );
+            return false;
+        }
+        if( ! f_resource_name.empty() && resourceNameStr != f_resource_name )
+        {
+            MTERROR( mtlog, "Resource name must match previously used name: " << f_resource_name );
+            return false;
+        }
+
+        MTDEBUG( mtlog, "Connecting to the 5122 using resource name <" << f_resource_name << ">" );
+        if( f_resource_name.empty() )
+        {
+            f_resource_name == resourceNameStr;
+
+            ViChar* resourceName = new ViChar[ f_resource_name.size() ];
+            strcpy( resourceName, f_resource_name.c_str() );
+            if( !handle_error( niScope_init( resourceName, NISCOPE_VAL_FALSE, NISCOPE_VAL_FALSE, &f_handle ) ) )
+            {
+                delete[] resourceName;
+                return false;
+            }
+            delete[] resourceName;
+        }
+
+        MTDEBUG( mtlog, "Configuring the 5122" );
+        // call to niScpe_ConfigureChanCharacteristics
+        // input impedance may be either 50, or 1000000
+        unsigned t_impedance = a_dev_config->get_value< unsigned >( "input-impedance", 50 );
+        if( t_impedance != 50 && t_impedance != 1000000 )
+        {
+            MTERROR( mtlog, "Input impedance must be either 50 Ohms or 1000000 Ohms; value provided: " << t_impedance );
+            return false;
+        }
+        // for now just use -1 for max input frequency
+        if( !handle_error( niScope_ConfigureChanCharacteristics( f_handle, "1", t_impedance, -1 ) ) )
+        {
+            return false;
+        }
+
+        // call to niScope_ConfigureHorizontalTiming
+        // TODO: the block size request assumes that we're only using 1 channel
+        // Note that the record size request is passed as the 3rd parameter; this is correct regardless of the number of channels in use;
+        // This parameter in the NI function is the minimum number of samples in the record for each channel according to the NI-SCOPE documentation.
+        if( !handle_error( niScope_ConfigureHorizontalTiming( f_handle, a_dev_config->get_value< double >( "rate-req" ),
+            a_dev_config->get_value< unsigned >( "record-size-req" ), 0, 1, VI_TRUE ) ) )
+        {
+            return false;
+        }
+        ViReal64 t_actual_rate;
+        if( !handle_error( niScope_SampleRate( f_handle, &t_actual_rate ) ) )
+        {
+            return false;
+        }
+        a_dev_config->replace( "rate", param_value() << t_actual_rate );
+        ViInt32 t_actual_rec_size;
+        if( !handle_error( niScope_ActualRecordLength( f_handle, &t_actual_rec_size ) ) )
+        {
+            return false;
+        }
+        a_dev_config->replace( "record-size", param_value() << t_actual_rec_size );
 
         // check buffer allocation
         // this section assumes 1 channel, in not multiplying t_actual_rec_size by the number of channels when converting to block size
+        bool t_must_allocate = false; // will be done later, assuming the initialization succeeds
         unsigned t_buffer_size = a_dev_config->get_value< unsigned >( "buffer-size", 512 );
-        unsigned t_rec_size = a_dev_config->get_value< unsigned >( "record-size", 16384 );
-        if( f_buffer != NULL && ( f_buffer->size() != t_buffer_size || f_buffer->block_size() != t_rec_size ) )
+        if( f_buffer != NULL && ( f_buffer->size() != t_buffer_size || f_buffer->block_size() != t_actual_rec_size ) )
         {
             // need to redo the buffer
             if( f_allocated ) deallocate();
@@ -139,7 +233,55 @@ namespace mantis
         }
         if( f_buffer == NULL )
         {
-            f_buffer = new buffer( t_buffer_size, t_rec_size );
+            t_must_allocate = true;
+            f_buffer = new buffer( t_buffer_size, t_actual_rec_size );
+        }
+
+        // call to niScope_ConfigureVertical
+        ViReal64 t_voltage_range = a_dev_config->get_value< ViReal64 >( "voltage-range", 0.5 );
+        ViReal64 t_voltage_offset = a_dev_config->get_value< ViReal64 >( "voltage-offset", 0. );
+        ViInt32 t_coupling = a_dev_config->get_value< ViInt32 >( "input-coupling", NISCOPE_VAL_AC );
+        if( t_coupling != NISCOPE_VAL_AC && t_coupling != NISCOPE_VAL_DC && t_coupling != NISCOPE_VAL_GND )
+        {
+            MTERROR( mtlog, "Invalid input coupling: " << t_coupling );
+            return false;
+        }
+        ViReal64 t_probe_attenuation = a_dev_config->get_value< ViReal64 >( "probe-attenuation", 1. );
+        if( t_probe_attenuation < 0 )
+        {
+            MTERROR( mtlog, "Probe attenuation must be a real, positive number" );
+            return false;
+        }
+        if( !handle_error( niScope_ConfigureVertical( f_handle, "1", t_voltage_range, t_voltage_offset, t_coupling, t_probe_attenuation, true ) ) )
+        {
+            return false;
+        }
+
+        // get the scaling coefficients
+        ViInt32 t_n_coeff_sets;
+        if( !handle_error( niScope_GetScalingCoefficients( f_handle, "1", 0, NULL, &t_n_coeff_sets ) ) )
+        {
+            return false;
+        }
+        niScope_coefficientInfo* t_coeff_info_array = new niScope_coefficientInfo[ t_n_coeff_sets ];
+        if( !handle_error( niScope_GetScalingCoefficients( f_handle, "1", t_n_coeff_sets, t_coeff_info_array, &t_n_coeff_sets ) ) )
+        {
+            return false;
+        }
+        get_calib_params2( 14 /*bit depth*/, s_data_type_size, t_voltage_offset, t_voltage_range, t_coeff_info_array[0].gain, &f_params );
+        a_dev_config->replace( "voltage-min", param_value() << f_params.v_min );
+        a_dev_config->replace( "voltage-range", param_value() << f_params.v_range );
+        a_dev_config->replace( "dac-gain", param_value() << f_params.dac_gain );
+
+        // call to niScope_ConfigureTriggerSoftware to allow for continuous acquisition
+        if( !handle_error( niScope_ConfigureTriggerSoftware( f_handle, 0., 0. ) ) )
+        {
+            return false;
+        }
+
+        // allocate the buffer if needed
+        if( t_must_allocate )
+        {
             allocate();
         }
 
@@ -152,9 +294,9 @@ namespace mantis
         return true;
     }
 
-    void digitizer_test::execute()
+    void digitizer_pxie5122::execute()
     {
-        iterator t_it( f_buffer, "dig_test" );
+        iterator t_it( f_buffer, "dig_pxie5122" );
 
         timespec t_live_start_time;
         timespec t_live_stop_time;
@@ -239,14 +381,14 @@ namespace mantis
                 return;
             }
 
-            //MTDEBUG( mtlog, "digitizer_test:" );
+            //MTDEBUG( mtlog, "digitizer_pxie5122:" );
             //f_buffer->print_states();
 
             t_it->set_acquired();
 
             if( +t_it == false )
             {
-                MTINFO( mtlog, "blocked at <" << t_it.index() << ">" );
+                MTINFO( mtlog, "Blocked at <" << t_it.index() << ">" );
 
                 //stop live timer
                 get_time_monotonic( &t_live_stop_time );
@@ -298,12 +440,6 @@ namespace mantis
             }
             //MTINFO( mtlog, "record count: " << f_record_count );
 
-            // slow things down a bit, since this is for testing purposes, after all
-#ifndef _WIN32
-            usleep( 1000 );
-#else
-            Sleep(1);
-#endif
         }
 
         return;
@@ -312,7 +448,7 @@ namespace mantis
     /* Asyncronous cancelation:
     Main execution loop checks for f_canceled, and exits if it's true.
     */
-    void digitizer_test::cancel()
+    void digitizer_pxie5122::cancel()
     {
         MTDEBUG(mtlog, "Canceling digitizer test");
         //cout << "CANCELLING DIGITIZER TEST" );
@@ -321,11 +457,11 @@ namespace mantis
             f_canceled.store( true );
             f_cancel_condition.wait();
         }
-        //cout << "  digitizer_test is done canceling" );
+        //cout << "  digitizer_pxie5122 is done canceling" );
         return;
     }
 
-    void digitizer_test::finalize( param_node* a_response )
+    void digitizer_pxie5122::finalize( param_node* a_response )
     {
         //MTINFO( mtlog, "calculating statistics..." );
         double t_livetime = (double) (f_live_time) * SEC_PER_NSEC;
@@ -346,17 +482,20 @@ namespace mantis
         return;
     }
 
-    bool digitizer_test::start()
+    bool digitizer_pxie5122::start()
     {
-        return true;
+        return handle_error( niScope_InitiateAcquisition( f_handle ) );
     }
 
-    bool digitizer_test::acquire( block* a_block, timespec& a_stamp_time )
+    bool digitizer_pxie5122::acquire( block* a_block, timespec& a_stamp_time )
     {
         a_block->set_record_id( f_record_count );
         a_block->set_acquisition_id( f_acquisition_count );
 
-        ::memcpy( a_block->data_bytes(), f_master_record, f_buffer->block_size() );
+        if( !handle_error( niScope_FetchBinary16( f_handle, "1", -1 /*infinite timeout*/, a_block->get_data_size(), (ViInt16*)a_block->data_bytes(), &f_waveform_info) ) )
+        {
+            return false;
+        }
 
         // the timestamp is acquired after the data is transferred to avoid the problem on the px1500 where
         // the first record can take unusually long to be acquired.
@@ -369,32 +508,45 @@ namespace mantis
         return true;
     }
 
-    bool digitizer_test::stop()
+    bool digitizer_pxie5122::stop()
     {
         ++f_acquisition_count;
-        return true;
+        return handle_error( niScope_Abort( f_handle ) );
     }
 
-    unsigned digitizer_test::data_type_size()
-    {
-        return digitizer_test::s_data_type_size;
-    }
-
-    bool digitizer_test::get_canceled()
+    bool digitizer_pxie5122::get_canceled()
     {
         return f_canceled.load();
     }
 
-    void digitizer_test::set_canceled( bool a_flag )
+    void digitizer_pxie5122::set_canceled( bool a_flag )
     {
         f_canceled.store( a_flag );
         return;
     }
 
-    bool digitizer_test::run_basic_test()
+    bool digitizer_pxie5122::run_basic_test()
     {
-        MTWARN( mtlog, "Basic test for digitizer_test has not been implemented" );
+        MTWARN( mtlog, "Basic test for digitizer_pxie5122 has not been implemented" );
         return false;
+    }
+
+    bool digitizer_pxie5122::handle_error( ViStatus a_status )
+    {
+        if( a_status == VI_SUCCESS ) return true;
+        const unsigned t_buffer_size = 512;
+        ViChar t_msg_buffer[ t_buffer_size ];
+        niScope_GetErrorMessage( f_handle, a_status, t_buffer_size, t_msg_buffer );
+        if( a_status > 0 )
+        {
+            MTWARN( mtlog, t_msg_buffer );
+            return false;
+        }
+        else // a_status < 0, since VI_SUCCESS == 0
+        {
+            MTERROR( mtlog, t_msg_buffer );
+            return false;
+        }
     }
 
 
@@ -402,16 +554,16 @@ namespace mantis
     // Block Cleanup -- Test Digitizer
     //********************************
 
-    block_cleanup_test::block_cleanup_test( byte_type* a_memblock ) :
+    block_cleanup_pxie5122::block_cleanup_pxie5122( byte_type* a_memblock ) :
             block_cleanup(),
             f_triggered( false ),
             f_memblock( a_memblock )
     {}
 
-    block_cleanup_test::~block_cleanup_test()
+    block_cleanup_pxie5122::~block_cleanup_pxie5122()
     {}
 
-    bool block_cleanup_test::delete_memblock()
+    bool block_cleanup_pxie5122::delete_memblock()
     {
         if( f_triggered ) return true;
         delete [] f_memblock;

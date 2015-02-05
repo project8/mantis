@@ -1,5 +1,5 @@
-#ifndef MT_DIGITIZER_TEST_HH_
-#define MT_DIGITIZER_TEST_HH_
+#ifndef MT_DIGITIZER_PXIE5122_HH_
+#define MT_DIGITIZER_PXIE5122_HH_
 
 #include "mt_digitizer.hh"
 
@@ -8,25 +8,37 @@
 #include "mt_condition.hh"
 #include "mt_mutex.hh"
 
+#include "niScope.h"
+
 #include <stdint.h>
 
 //#include <semaphore.h>
 
 namespace mantis
 {
-    class block_cleanup_test;
+    class block_cleanup_pxie5122;
 
-    class digitizer_test :
-        public digitizer
+    /* Available configuration values
+    -input impedance( "input-impedance" )
+    - minimum sample rate( "rate-req" )
+    - minimum number of points per record( "block-size-req" )
+    - voltage range( "voltage-range" )
+    - voltage offset( "voltage-offset" )
+    - coupling( "input-coupling" )
+    - probe attenuation( "probe-attenuation" )
+    */
+
+
+    class digitizer_pxie5122 : public digitizer
     {
         public:
-            typedef uint8_t data_type;
+            typedef ViInt16 data_type;
 
             static unsigned data_type_size_test();
 
         public:
-            digitizer_test();
-            virtual ~digitizer_test();
+            digitizer_pxie5122();
+            virtual ~digitizer_pxie5122();
 
             bool allocate();
             bool deallocate();
@@ -49,11 +61,16 @@ namespace mantis
         private:
             static const unsigned s_data_type_size;
 
+            bool handle_error( ViStatus a_status );
+
             //sem_t* f_semaphore;
 
-            data_type* f_master_record;
+            ViSession f_handle;
+            std::string f_resource_name;
 
             bool f_allocated;
+
+            niScope_wfmInfo f_waveform_info;
 
             time_nsec_type f_start_time;
 
@@ -72,11 +89,11 @@ namespace mantis
     };
 
 
-    class block_cleanup_test : public block_cleanup
+    class block_cleanup_pxie5122 : public block_cleanup
     {
         public:
-            block_cleanup_test( byte_type* a_memblock );
-            virtual ~block_cleanup_test();
+            block_cleanup_pxie5122( byte_type* a_memblock );
+            virtual ~block_cleanup_pxie5122();
             virtual bool delete_memblock();
         private:
             bool f_triggered;
@@ -85,4 +102,4 @@ namespace mantis
 
 }
 
-#endif
+#endif /* MT_DIGITIZER_PXIE5122_HH_ */

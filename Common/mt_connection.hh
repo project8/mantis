@@ -1,11 +1,13 @@
 #ifndef MT_CONNECTION_HH_
 #define MT_CONNECTION_HH_
 
+#include "mt_constants.hh"
+
 #include "SimpleAmqpClient/SimpleAmqpClient.h"
 
 namespace mantis
 {
-    class connection
+    class MANTIS_API connection
     {
         public:
             connection( AmqpClient::Channel::ptr_t a_chan );

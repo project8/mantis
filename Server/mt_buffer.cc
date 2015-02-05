@@ -1,3 +1,5 @@
+#define MANTIS_API_EXPORTS
+
 #include "mt_buffer.hh"
 
 #include "mt_logger.hh"

@@ -10,7 +10,12 @@ namespace mantis
 {
     class run_description;
 
-    class run_database
+//#ifdef _WIN32
+//    MANTIS_EXPIMP_TEMPLATE template class MANTIS_API std::list< run_description* >;
+//    MANTIS_EXPIMP_TEMPLATE template class MANTIS_API std::map< unsigned, run_description* >;
+//#endif
+    
+    class MANTIS_API run_database
     {
         public:
             run_database();

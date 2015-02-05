@@ -14,11 +14,15 @@
 
 #include <string>
 
+//#ifdef _WIN32
+//MANTIS_EXPIMP_TEMPLATE template class MANTIS_API std::basic_string< char, std::char_traits< char >, std::allocator< char > >;
+//#endif
+
 namespace mantis
 {
     class run_description;
 
-    class device_manager
+    class MANTIS_API device_manager
     {
         public:
             device_manager();
@@ -26,7 +30,7 @@ namespace mantis
 
             bool configure( run_description& a_run_desc );
 
-            bool set_device( const std::string& a_dev, unsigned a_buffer_size, unsigned a_block_size );
+            bool set_device( const std::string& a_dev );
             digitizer* device();
 
             buffer* get_buffer();
@@ -35,10 +39,6 @@ namespace mantis
         private:
             std::string f_device_name;
             digitizer* f_device;
-            condition f_buffer_condition;
-            buffer* f_buffer;
-            unsigned f_buffer_size;
-            unsigned f_block_size;
 
     };
 

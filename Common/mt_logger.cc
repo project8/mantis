@@ -13,6 +13,8 @@
  *      Author: Marco Haag <marco.haag@kit.edu>
  */
 
+#ifndef _WIN32
+
 #include "mt_logger.hh"
 
 #include "mt_mutex.hh"
@@ -23,7 +25,11 @@
 #include <cstring>
 #include <iomanip>
 #include <iterator>
+#ifdef __MACH__
+#include <mach/mach_time.h>
+#else
 #include <sys/time.h>
+#endif
 #include <time.h>
 
 using namespace std;
@@ -43,16 +49,17 @@ namespace mantis
             static mutex sMutex;
 
             static char sDateTimeFormat[16];
-            static time_t sRawTime;
+			static time_t sRawTime;
             static tm* sProcessedTime;
             static char sTimeBuff[512];
             static size_t getTimeAbsoluteStr()
             {
                 time(&logger::Private::sRawTime);
-                sProcessedTime = gmtime(&logger::Private::sRawTime);
-                return strftime(logger::Private::sTimeBuff, 512,
-                        logger::Private::sDateTimeFormat,
-                        logger::Private::sProcessedTime);
+
+				sProcessedTime = gmtime(&logger::Private::sRawTime);
+				return strftime(logger::Private::sTimeBuff, 512,
+					logger::Private::sDateTimeFormat,
+					logger::Private::sProcessedTime);
             }
 
 
@@ -142,9 +149,9 @@ namespace mantis
     mutex logger::Private::sMutex;
 
     char logger::Private::sDateTimeFormat[16];
-    time_t logger::Private::sRawTime;
-    tm* logger::Private::sProcessedTime;
-    char logger::Private::sTimeBuff[512];
+	time_t logger::Private::sRawTime;
+	tm* logger::Private::sProcessedTime;
+	char logger::Private::sTimeBuff[512];
 
     bool logger::Private::fColored = true;
 
@@ -172,8 +179,8 @@ namespace mantis
     {
         fPrivate->fLogger = name.c_str();
         fPrivate->fColored = true;
-        sprintf(logger::Private::sDateTimeFormat,  "%%T");
-        SetLevel(eDebug);
+		sprintf(logger::Private::sDateTimeFormat, "%%T");
+		SetLevel(eDebug);
     }
 
     logger::~logger()
@@ -225,3 +232,5 @@ namespace mantis
         }
     }
 }
+
+#endif

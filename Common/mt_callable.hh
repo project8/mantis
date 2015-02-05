@@ -1,10 +1,12 @@
 #ifndef MT_CALLABLE_HH_
 #define MT_CALLABLE_HH_
 
+#include "mt_constants.hh"
+
 namespace mantis
 {
 
-    class callable
+    class MANTIS_API callable
     {
         public:
             callable();

@@ -5,6 +5,8 @@
  *      Author: nsoblath
  */
 
+#define MANTIS_API_EXPORTS
+
 #include "mt_device_manager.hh"
 
 #include "mt_buffer.hh"
@@ -20,11 +22,7 @@ namespace mantis
 
     device_manager::device_manager() :
             f_device_name(),
-            f_device( NULL ),
-            f_buffer_condition(),
-            f_buffer( NULL ),
-            f_buffer_size( 0 ),
-            f_block_size( 0 )
+            f_device( NULL )
     {
     }
 
@@ -35,27 +33,51 @@ namespace mantis
 
     bool device_manager::configure( run_description& a_run_desc )
     {
-        const param_node* t_mantis_config = a_run_desc.node_at( "mantis-config" );
+        param_node* t_mantis_config = a_run_desc.node_at( "mantis-config" );
         if( t_mantis_config == NULL )
         {
             MTERROR( mtlog, "Mantis configuration is missing" );
             return false;
         }
 
-        //TODO: for multi-device mode, this node will be called "devices", and each device will have its own node(?)
-        const param_node* t_device_config = t_mantis_config->node_at( "device" );
+        param_node* t_device_config = t_mantis_config->node_at( "devices" );
         if( t_device_config == NULL )
         {
             MTERROR( mtlog, "Device configuration is missing" );
+            return false;
         }
 
-        if( ! set_device( t_device_config->get_value( "name"), t_device_config->get_value< unsigned >( "buffer-size" ), t_device_config->get_value< unsigned >( "block-size" ) ) )
+        // For now: find the first device that's enabled
+        // TODO: for mutli-device usage, will use all enabled devices
+        param_node* t_enabled_dev_config = NULL;
+        for( param_node::iterator t_node_it = t_device_config->begin(); t_node_it != t_device_config->end(); ++t_node_it )
+        {
+            try
+            {
+                if( t_node_it->second->as_node().get_value< bool >( "enabled", false ) )
+                {
+                    t_enabled_dev_config = &( t_node_it->second->as_node() );
+                    break;
+                }
+            }
+            catch( exception& e )
+            {
+                MTWARN( mtlog, "Found non-node param object in \"devices\"" );
+            }
+        }
+        if( t_enabled_dev_config == NULL )
+        {
+            MTERROR( mtlog, "Did not find an enabled device" );
+            return false;
+        }
+
+        if( !set_device( t_enabled_dev_config->get_value( "name" ) ) )
         {
             MTERROR( mtlog, "Unable to set device" );
             return false;
         }
 
-        if( ! f_device->initialize( t_mantis_config ) )
+        if( ! f_device->initialize( t_mantis_config, t_enabled_dev_config ) )
         {
             MTERROR( mtlog, "Unable to configure device" );
             return false;
@@ -64,14 +86,8 @@ namespace mantis
         return true;
     }
 
-    bool device_manager::set_device( const std::string& a_dev, unsigned a_buffer_size, unsigned a_block_size )
+    bool device_manager::set_device( const std::string& a_dev )
     {
-        if( f_buffer != NULL && (a_dev != f_device_name || a_buffer_size != f_buffer_size || a_block_size != f_block_size) )
-        {
-            f_device->deallocate( f_buffer );
-            f_buffer = NULL;
-        }
-
         if( a_dev != f_device_name )
         {
             delete f_device;
@@ -96,18 +112,6 @@ namespace mantis
             f_device_name = a_dev;
         }
 
-        if( f_buffer == NULL )
-        {
-            f_buffer = new buffer( a_buffer_size, a_block_size );
-            if(! f_device->allocate( f_buffer, &f_buffer_condition ) )
-            {
-                MTERROR( mtlog, "Device <" << a_dev << "> was not able to allocate the buffer" );
-                return false;
-            }
-            f_buffer_size = a_buffer_size;
-            f_block_size = a_block_size;
-        }
-
         return true;
     }
 
@@ -118,12 +122,12 @@ namespace mantis
 
     buffer* device_manager::get_buffer()
     {
-        return f_buffer;
+        return f_device->get_buffer();
     }
 
     condition* device_manager::buffer_condition()
     {
-        return &f_buffer_condition;
+        return f_device->get_buffer_condition();
     }
 
 
