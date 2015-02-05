@@ -6,8 +6,8 @@ namespace mantis
 {
 
     thread::thread( callable* an_object ) :
-            f_mutex(),
             f_thread(),
+            f_mutex(),
             f_state( e_ready ),
             f_object( an_object )
     {

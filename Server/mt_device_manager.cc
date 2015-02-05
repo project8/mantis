@@ -22,9 +22,7 @@ namespace mantis
 
     device_manager::device_manager() :
             f_device_name(),
-            f_device( NULL ),
-            f_buffer_size( 0 ),
-            f_block_size( 0 )
+            f_device( NULL )
     {
     }
 

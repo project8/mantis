@@ -44,10 +44,8 @@ namespace mantis
         {
             f_type = a_type;
         }
-        bool operator==( const iterator_event& rhs ) { return f_time==rhs.f_time && f_type==rhs.f_type; }
-        bool operator<( const iterator_event& rhs ) {
-            return f_time < rhs.f_time;
-        }
+        bool operator==( const iterator_event& rhs ) const { return f_time==rhs.f_time && f_type==rhs.f_type; }
+        bool operator<( const iterator_event& rhs ) const { return f_time < rhs.f_time; }
     };
 
 #ifdef _WIN32

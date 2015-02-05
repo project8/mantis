@@ -54,8 +54,6 @@ namespace mantis
 
     bool digitizer::run_insitu_test()
     {
-        unsigned t_record_size = 8192;
-
         MTDEBUG( mtlog, "calling allocate" );
         if( ! this->allocate() )
         {
@@ -66,6 +64,7 @@ namespace mantis
         MTDEBUG( mtlog, "calling initialize" );
         param_node t_global_config, t_dev_config;
         t_dev_config.add( "rate", param_value() << 250.0 ); // MHz
+        t_dev_config.add( "record-size", param_value() << 8192 );
         t_global_config.add( "duration", param_value() << 100.0 ); // ms
         if( !initialize( &t_global_config, &t_dev_config ) )
         {

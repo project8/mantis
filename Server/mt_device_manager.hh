@@ -39,8 +39,6 @@ namespace mantis
         private:
             std::string f_device_name;
             digitizer* f_device;
-            unsigned f_buffer_size;
-            unsigned f_block_size;
 
     };
 
