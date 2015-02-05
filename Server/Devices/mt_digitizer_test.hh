@@ -28,10 +28,10 @@ namespace mantis
             digitizer_test();
             virtual ~digitizer_test();
 
-            bool allocate( buffer* a_buffer, condition* a_condition );
-            bool deallocate( buffer* a_buffer );
+            bool allocate();
+            bool deallocate();
 
-            bool initialize( const param_node* a_config );
+            bool initialize( param_node* a_global_config, param_node* a_dev_config );
             void execute();
             void cancel();
             void finalize( param_node* a_response );
@@ -55,9 +55,6 @@ namespace mantis
 
             bool f_allocated;
 
-            buffer* f_buffer;
-            condition* f_condition;
-
             time_nsec_type f_start_time;
 
             record_id_type f_record_last;
@@ -69,7 +66,6 @@ namespace mantis
             atomic_bool f_canceled;
             condition f_cancel_condition;
 
-            bool allocate();
             bool start();
             bool acquire( block* a_block, timespec& a_time_stamp );
             bool stop();

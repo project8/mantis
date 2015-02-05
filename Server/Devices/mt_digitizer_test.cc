@@ -33,8 +33,6 @@ namespace mantis
             //f_semaphore( NULL ),
             f_master_record( NULL ),
             f_allocated( false ),
-            f_buffer( NULL ),
-            f_condition( NULL ),
             f_start_time( 0 ),
             f_record_last( 0 ),
             f_record_count( 0 ),
@@ -65,7 +63,7 @@ namespace mantis
 
     digitizer_test::~digitizer_test()
     {
-        if( f_buffer != NULL ) deallocate( f_buffer );
+        if( f_allocated ) deallocate();
         /*
         if( f_semaphore != SEM_FAILED )
         {
@@ -74,12 +72,9 @@ namespace mantis
         */
     }
 
-    bool digitizer_test::allocate( buffer* a_buffer, condition* a_condition )
+    bool digitizer_test::allocate()
     {
-        f_buffer = a_buffer;
-        f_condition = a_condition;
-
-        MTINFO( mtlog, "allocating buffer..." );
+        MTINFO( mtlog, "Allocating buffer" );
 
         try
         {
@@ -92,11 +87,11 @@ namespace mantis
         }
         catch( exception& e )
         {
-            MTERROR( mtlog, "unable to allocate buffer: " << e.what() );
+            MTERROR( mtlog, "Unable to allocate buffer: " << e.what() );
             return false;
         }
 
-        MTINFO( mtlog, "creating master record..." );
+        MTINFO( mtlog, "Creating master record..." );
 
         if( f_master_record != NULL ) delete [] f_master_record;
         f_master_record = new data_type [f_buffer->block_size()];
@@ -109,31 +104,46 @@ namespace mantis
         return true;
     }
 
-    bool digitizer_test::deallocate( buffer* a_buffer )
+    bool digitizer_test::deallocate()
     {
-        if( f_allocated && a_buffer == f_buffer )
+        delete [] f_master_record;
+
+        MTINFO( mtlog, "Deallocating buffer" );
+
+        for( unsigned int index = 0; index < f_buffer->size(); index++ )
         {
-            delete [] f_master_record;
-
-            MTINFO( mtlog, "deallocating buffer..." );
-
-            for( unsigned int index = 0; index < a_buffer->size(); index++ )
-            {
-                a_buffer->delete_block( index );
-            }
-            f_buffer = NULL; // ownership returned to original owner
-            f_allocated = false;
-            return true;
+            f_buffer->delete_block( index );
         }
-        MTERROR( mtlog, "Cannot deallocate buffer that was not allocated by this digitizer" );
-        return false;
-    }
+        f_allocated = false;
+        return true;
+     }
 
-    bool digitizer_test::initialize( const param_node* a_config )
+    bool digitizer_test::initialize( param_node* a_global_config, param_node* a_dev_config )
     {
         //MTINFO( mtlog, "resetting counters..." );
 
-        f_record_last = (record_id_type) (ceil( (double) (a_config->node_at( "device" )->get_value< double >( "rate" ) * a_config->node_at( "run" )->get_value< double >( "duration" ) * 1.e3) / (double) (f_buffer->block_size()) ));
+        a_dev_config->replace( "voltage-min", param_value() << f_params.v_min );
+        a_dev_config->replace( "voltage-range", param_value() << f_params.v_range );
+        a_dev_config->replace( "dac-gain", param_value() << f_params.dac_gain );
+
+        // check buffer allocation
+        // this section assumes 1 channel, in not multiplying t_actual_rec_size by the number of channels when converting to block size
+        unsigned t_buffer_size = a_dev_config->get_value< unsigned >( "buffer-size", 512 );
+        unsigned t_rec_size = a_dev_config->get_value< unsigned >( "record-size", 16384 );
+        if( f_buffer != NULL && ( f_buffer->size() != t_buffer_size || f_buffer->block_size() != t_rec_size ) )
+        {
+            // need to redo the buffer
+            if( f_allocated ) deallocate();
+            delete f_buffer;
+            f_buffer = NULL;
+        }
+        if( f_buffer == NULL )
+        {
+            f_buffer = new buffer( t_buffer_size, t_rec_size );
+            allocate();
+        }
+
+        f_record_last = ( record_id_type )( ceil( ( double )( a_dev_config->get_value< double >( "rate" ) * a_global_config->node_at( "run" )->get_value< double >( "duration" ) * 1.e3 ) / ( double )( f_buffer->block_size() ) ) );
         f_record_count = 0;
         f_acquisition_count = 0;
         f_live_time = 0;
@@ -154,7 +164,7 @@ namespace mantis
 
         //MTINFO( mtlog, "waiting" );
 
-        f_condition->wait();
+        f_buffer_condition->wait();
 
         MTINFO( mtlog, "Digitizer loose at <" << t_it.index() << ">" );
 
@@ -256,7 +266,7 @@ namespace mantis
                 get_time_monotonic( &t_dead_start_time );
 
                 //wait
-                f_condition->wait();
+                f_buffer_condition->wait();
 
                 //stop dead timer
                 get_time_monotonic( &t_dead_stop_time );

@@ -126,6 +126,28 @@ namespace mantis
                     f_msc_mutex.lock();
                     t_run_desc->set_mantis_config( f_master_server_config );
                     f_msc_mutex.unlock();
+                    // remove non-enabled devices from the devices node
+                    param_node* t_dev_node = t_run_desc->node_at( "mantis-config" )->node_at( "devices" );
+                    std::vector< std::string > t_devs_to_remove;
+                    for( param_node::iterator t_node_it = t_dev_node->begin(); t_node_it != t_dev_node->end(); ++t_node_it )
+                    {
+                        try
+                        {
+                            if( ! t_node_it->second->as_node().get_value< bool >( "enabled", false ) )
+                            {
+                                t_devs_to_remove.push_back( t_node_it->first );
+                            }
+                        }
+                        catch( exception& e )
+                        {
+                            MTWARN( mtlog, "Found non-node param object in \"devices\"" );
+                        }
+                    }
+                    for( std::vector< std::string >::const_iterator it = t_devs_to_remove.begin(); it != t_devs_to_remove.end(); ++it )
+                    {
+                        t_dev_node->remove( *it );
+                    }
+
 
                     if( t_client_node != NULL )
                     {
