@@ -136,13 +136,35 @@ namespace mantis
 
             t_reply_to = t_connection->amqp()->DeclareQueue( "" );
             std::string t_consumer_tag = t_connection->amqp()->BasicConsume( t_reply_to );
-            MTDEBUG( mtlog, "consumer tag for reply: " << t_consumer_tag );
-
+            MTDEBUG( mtlog, "Consumer tag for reply: " << t_consumer_tag );
         }
         else if( t_request_type == "config" )
         {
-            MTERROR( mtlog, "Config requests not yet supported" );
-            f_return = RETURN_ERROR;
+            const param_node* t_config_node = f_config.node_at( "config" );
+            if( t_config_node == NULL )
+            {
+                MTERROR( mtlog, "Particular config was not specified" );
+                f_return = RETURN_ERROR;
+                return;
+            }
+
+            param_node t_request;
+            t_request.add( "msgtype", param_value() << T_MANTIS_REQUEST );
+            t_request.add( "msgop", param_value() << OP_MANTIS_CONFIG );
+            t_request.add( "target", param_value() << "mantis" );
+            t_request.add( "timestamp", param_value() << get_absolute_time_string() );
+            t_request.add( "payload", *t_config_node ); // make a copy of t_query_node
+
+            if(! param_output_json::write_string( t_request, t_request_str, param_output_json::k_compact ) )
+            {
+                MTERROR( mtlog, "Could not convert request to string" );
+                f_return = RETURN_ERROR;
+                return;
+            }
+
+            t_reply_to = t_connection->amqp()->DeclareQueue( "" );
+            std::string t_consumer_tag = t_connection->amqp()->BasicConsume( t_reply_to );
+            MTDEBUG( mtlog, "Consumer tag for reply: " << t_consumer_tag );
             return;
         }
         else
