@@ -65,7 +65,7 @@ namespace mantis
         t_pxie5122_node->add( "name", t_value << "pxie5122" );
         t_pxie5122_node->add( "enabled", t_value << true );
         t_pxie5122_node->add( "resource-name", t_value << "PXI1Slot2" );
-        t_pxie5122_node->add( "rate-req", t_value << 150 );
+        t_pxie5122_node->add( "rate-req", t_value << 100 );
         t_pxie5122_node->add( "n-channels", t_value << 1 );
         t_pxie5122_node->add( "data-mode", t_value << monarch3::sDigitized );
         t_pxie5122_node->add( "channel-mode", t_value << monarch3::sSeparate );
