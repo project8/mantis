@@ -112,20 +112,23 @@ namespace mantis
         }
         else if( t_request_type == "query" )
         {
-            const param_node* t_query_node = f_config.node_at( "query" );
-            if( t_query_node == NULL )
+            string t_query_type = f_config.get_value( "query", "" );
+            if( t_query_type.empty() )
             {
-                MTERROR( mtlog, "Particular query was not specified" );
+                MTERROR( mtlog, "Query type was not specified" );
                 f_return = RETURN_ERROR;
                 return;
             }
+
+            param_node t_payload_node;
+            t_payload_node.add( "query", param_value() << t_query_type );
 
             param_node t_request;
             t_request.add( "msgtype", param_value() << T_MANTIS_REQUEST );
             t_request.add( "msgop", param_value() << OP_MANTIS_QUERY );
             t_request.add( "target", param_value() << "mantis" );
             t_request.add( "timestamp", param_value() << get_absolute_time_string() );
-            t_request.add( "payload", *t_query_node ); // make a copy of t_query_node
+            t_request.add( "payload", t_payload_node );
 
             if(! param_output_json::write_string( t_request, t_request_str, param_output_json::k_compact ) )
             {
@@ -135,25 +138,29 @@ namespace mantis
             }
 
             t_reply_to = t_connection->amqp()->DeclareQueue( "" );
-            std::string t_consumer_tag = t_connection->amqp()->BasicConsume( t_reply_to );
+            t_consumer_tag = t_connection->amqp()->BasicConsume( t_reply_to );
             MTDEBUG( mtlog, "Consumer tag for reply: " << t_consumer_tag );
         }
-        else if( t_request_type == "config" )
+        else if( t_request_type == "set" )
         {
-            const param_node* t_config_node = f_config.node_at( "config" );
-            if( t_config_node == NULL )
+            const param_node* t_set_node = f_config.node_at( "set" );
+            if( t_set_node == NULL )
             {
-                MTERROR( mtlog, "Particular config was not specified" );
+                MTERROR( mtlog, "New setting was not specified" );
                 f_return = RETURN_ERROR;
                 return;
             }
+
+            param_node t_payload_node;
+            t_payload_node.add( "action", param_value() << "merge" );
+            t_payload_node.add( "set", *t_set_node ); // make a copy of t_set_node
 
             param_node t_request;
             t_request.add( "msgtype", param_value() << T_MANTIS_REQUEST );
-            t_request.add( "msgop", param_value() << OP_MANTIS_CONFIG );
+            t_request.add( "msgop", param_value() << OP_MANTIS_SET );
             t_request.add( "target", param_value() << "mantis" );
             t_request.add( "timestamp", param_value() << get_absolute_time_string() );
-            t_request.add( "payload", *t_config_node ); // make a copy of t_query_node
+            t_request.add( "payload", t_payload_node );
 
             if(! param_output_json::write_string( t_request, t_request_str, param_output_json::k_compact ) )
             {
@@ -163,9 +170,8 @@ namespace mantis
             }
 
             t_reply_to = t_connection->amqp()->DeclareQueue( "" );
-            std::string t_consumer_tag = t_connection->amqp()->BasicConsume( t_reply_to );
+            t_consumer_tag = t_connection->amqp()->BasicConsume( t_reply_to );
             MTDEBUG( mtlog, "Consumer tag for reply: " << t_consumer_tag );
-            return;
         }
         else
         {
@@ -196,8 +202,12 @@ namespace mantis
 
         if( ! t_consumer_tag.empty() )  // then we should wait for a reply
         {
+            MTINFO( mtlog, "Waiting for a reply from the server; use ctrl-c to cancel" );
+
             // blocking call to wait for incoming message
             AmqpClient::Envelope::ptr_t t_envelope = t_connection->amqp()->BasicConsumeMessage( t_consumer_tag );
+
+            MTINFO( mtlog, "Response received" );
 
             param_node* t_msg_node = NULL;
             if( t_envelope->Message()->ContentEncoding() == "application/json" )

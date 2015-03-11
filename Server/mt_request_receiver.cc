@@ -250,27 +250,32 @@ namespace mantis
 
                     break;
                 }
-                case OP_MANTIS_CONFIG:
+                case OP_MANTIS_SET:
                 {
-                    MTDEBUG( mtlog, "Config request received" );
+                    MTDEBUG( mtlog, "Set request received:\n" << *t_msg_payload );
 
                     std::string t_action( t_msg_payload->get_value( "action", "" ) );
-                    const param_node* t_config_node = t_msg_payload->node_at( "config" );
+                    const param_node* t_set_node = t_msg_payload->node_at( "set" );
+                    if( t_set_node == NULL )
+                    {
+                        MTWARN( "No setting was provided" );
+                        break;
+                    }
 
                     if( t_action == "merge" )
                     {
-                        f_master_server_config.merge( *t_config_node );
+                        f_master_server_config.merge( *t_set_node );
                     }
                     else if( t_action == "replace" )
                     {
-                        f_master_server_config = *t_config_node;
+                        f_master_server_config = *t_set_node;
                     }
 
                     t_connection->amqp()->BasicAck( t_envelope );
 
                     if( ! t_envelope->Message()->ReplyToIsSet() )
                     {
-                        MTWARN( mtlog, "Config request has no reply-to" );
+                        MTWARN( mtlog, "Set request has no reply-to" );
                         break;
                     }
 

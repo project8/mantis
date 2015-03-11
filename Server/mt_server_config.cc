@@ -37,7 +37,7 @@ namespace mantis
 
         param_node* t_test_node = new param_node();
         t_test_node->add( "name", t_value << "test" );
-        t_test_node->add( "enabled", t_value << false );
+        t_test_node->add( "enabled", t_value << true );
         t_test_node->add( "rate", t_value << 250 );
         t_test_node->add( "n-channels", t_value << 1 );
         t_test_node->add( "data-mode", t_value << monarch3::sDigitized );
@@ -63,7 +63,7 @@ namespace mantis
 
         param_node* t_pxie5122_node = new param_node();
         t_pxie5122_node->add( "name", t_value << "pxie5122" );
-        t_pxie5122_node->add( "enabled", t_value << true );
+        t_pxie5122_node->add( "enabled", t_value << false );
         t_pxie5122_node->add( "resource-name", t_value << "PXI1Slot2" );
         t_pxie5122_node->add( "rate-req", t_value << 100 );
         t_pxie5122_node->add( "n-channels", t_value << 1 );

@@ -38,7 +38,7 @@ namespace mantis
     // Operation constants
 #define OP_MANTIS_RUN    0 // == OP_SENSOR_SET
 #define OP_MANTIS_QUERY  1 // == OP_SENSOR_GET
-#define OP_MANTIS_CONFIG 6 // == OP_SENSOR_CONFIG
+#define OP_MANTIS_SET    6 // == OP_SENSOR_CONFIG
 #define OP_MANTIS_UNKNOWN UINT_MAX
 
     // Message type constants

@@ -529,7 +529,7 @@ namespace mantis
     std::string param_node::get_value( const std::string& a_name ) const
     {
         const param_value* value = value_at( a_name );
-        if( value == NULL ) throw param_exception() << "No value with name <" << a_name << "> is present at this node";
+        if( value == NULL ) throw param_exception() << "No value with name <" << a_name << "> is present at this node:\n" << *this;
         return value->get();
     }
 
