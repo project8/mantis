@@ -97,8 +97,8 @@ namespace mantis
             t_request_payload->add( "client", t_client_node ); // use t_client_node as is
 
             param_node t_request;
-            t_request.add( "msgtype", param_value() << T_MANTIS_REQUEST );
-            t_request.add( "msgop", param_value() << OP_MANTIS_RUN );
+            t_request.add( "msgtype", param_value() << T_REQUEST );
+            t_request.add( "msgop", param_value() << OP_RUN );
             t_request.add( "target", param_value() << "mantis" );
             t_request.add( "timestamp", param_value() << get_absolute_time_string() );
             t_request.add( "payload", t_request_payload ); // use t_request_node as is
@@ -110,22 +110,22 @@ namespace mantis
                 return;
             }
         }
-        else if( t_request_type == "query" )
+        else if( t_request_type == "get" )
         {
-            string t_query_type = f_config.get_value( "query", "" );
+            string t_query_type = f_config.get_value( "get", "" );
             if( t_query_type.empty() )
             {
-                MTERROR( mtlog, "Query type was not specified" );
+                MTERROR( mtlog, "Get type was not specified" );
                 f_return = RETURN_ERROR;
                 return;
             }
 
             param_node t_payload_node;
-            t_payload_node.add( "query", param_value() << t_query_type );
+            t_payload_node.add( "get", param_value() << t_query_type );
 
             param_node t_request;
-            t_request.add( "msgtype", param_value() << T_MANTIS_REQUEST );
-            t_request.add( "msgop", param_value() << OP_MANTIS_QUERY );
+            t_request.add( "msgtype", param_value() << T_REQUEST );
+            t_request.add( "msgop", param_value() << OP_GET );
             t_request.add( "target", param_value() << "mantis" );
             t_request.add( "timestamp", param_value() << get_absolute_time_string() );
             t_request.add( "payload", t_payload_node );
@@ -156,8 +156,8 @@ namespace mantis
             t_payload_node.add( "set", *t_set_node ); // make a copy of t_set_node
 
             param_node t_request;
-            t_request.add( "msgtype", param_value() << T_MANTIS_REQUEST );
-            t_request.add( "msgop", param_value() << OP_MANTIS_SET );
+            t_request.add( "msgtype", param_value() << T_REQUEST );
+            t_request.add( "msgop", param_value() << OP_SET );
             t_request.add( "target", param_value() << "mantis" );
             t_request.add( "timestamp", param_value() << get_absolute_time_string() );
             t_request.add( "payload", t_payload_node );

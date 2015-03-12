@@ -106,9 +106,9 @@ namespace mantis
             }
 
 
-            switch( t_msg_node->get_value< unsigned >( "msgop", OP_MANTIS_UNKNOWN ) )
+            switch( t_msg_node->get_value< unsigned >( "msgop", OP_UNKNOWN ) )
             {
-                case OP_MANTIS_RUN:
+                case OP_RUN:
                 {
                     MTDEBUG( mtlog, "Run operation request received" );
 
@@ -188,11 +188,11 @@ namespace mantis
                     }
                     break;
                 }
-                case OP_MANTIS_QUERY:
+                case OP_GET:
                 {
-                    MTDEBUG( mtlog, "Query request received" );
+                    MTDEBUG( mtlog, "Get request received" );
 
-                    std::string t_query_type( t_msg_payload->get_value( "query", "" ) );
+                    std::string t_query_type( t_msg_payload->get_value( "get", "" ) );
                     t_connection->amqp()->BasicAck( t_envelope );
 
                     if( ! t_envelope->Message()->ReplyToIsSet() )
@@ -207,21 +207,21 @@ namespace mantis
                     if( t_query_type == "config" )
                     {
                         t_reply.add( "payload", f_master_server_config );
-                        t_reply.add( "msgtype", param_value() << T_MANTIS_REPLY );
+                        t_reply.add( "msgtype", param_value() << T_REPLY );
                     }
                     else if( t_query_type == "mantis" )
                     {
                         param_node* t_msg_node = new param_node();
                         t_msg_node->add( "error", param_value() << "Query type <mantis> is not yet supported" );
                         t_reply.add( "payload", t_msg_node );
-                        t_reply.add( "msgtype", param_value() << T_MANTIS_REPLY );
+                        t_reply.add( "msgtype", param_value() << T_REPLY );
                     }
                     else
                     {
                         param_node* t_msg_node = new param_node();
                         t_msg_node->add( "error", param_value() << "Unrecognized query type or no query type provided" );
                         t_reply.add( "payload", t_msg_node );
-                        t_reply.add( "msgtype", param_value() << T_MANTIS_REPLY );
+                        t_reply.add( "msgtype", param_value() << T_REPLY );
                     }
 
                     //t_reply.add( "msgop", param_value() << OP_MANTIS_RUN );
@@ -250,7 +250,7 @@ namespace mantis
 
                     break;
                 }
-                case OP_MANTIS_SET:
+                case OP_SET:
                 {
                     MTDEBUG( mtlog, "Set request received:\n" << *t_msg_payload );
 
@@ -283,8 +283,8 @@ namespace mantis
 
                     param_node t_reply;
                     t_reply.add( "payload", f_master_server_config );
-                    t_reply.add( "msgtype", param_value() << T_MANTIS_REPLY );
-                    //t_reply.add( "msgop", param_value() << OP_MANTIS_RUN );
+                    t_reply.add( "msgtype", param_value() << T_REPLY );
+                    //t_reply.add( "msgop", param_value() << OP_RUN );
                     t_reply.add( "target", param_value() << t_reply_to );
                     t_reply.add( "timestamp", param_value() << get_absolute_time_string() );
 

@@ -34,18 +34,21 @@ namespace mantis
 
     // AMQP message constants
     // Conforming to the dripline standards defined in [dripline]/python/dripline/core/constants.py
+    // Please be sure that these constants are kept in sync with the dripline constants.
 
     // Operation constants
-#define OP_MANTIS_RUN    0 // == OP_SENSOR_SET
-#define OP_MANTIS_QUERY  1 // == OP_SENSOR_GET
-#define OP_MANTIS_SET    6 // == OP_SENSOR_CONFIG
-#define OP_MANTIS_UNKNOWN UINT_MAX
+#define OP_SET  0
+#define OP_GET  1
+    // 6 is reserved for OP_CONFIG
+    // 7 is reserved for OP_SEND
+#define OP_RUN  8
+#define OP_UNKNOWN UINT_MAX
 
     // Message type constants
-#define T_MANTIS_REPLY   2 // == T_REPLY
-#define T_MANTIS_REQUEST 3 // == T_REQUEST
-#define T_MANTIS_ALERT   4 // == T_ALERT
-#define T_MANTIS_INFO    5 // == T_INFO
+#define T_REPLY   2
+#define T_REQUEST 3
+#define T_ALERT   4
+#define T_INFO    5
 
 }
 
