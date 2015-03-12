@@ -258,7 +258,7 @@ namespace mantis
                     const param_node* t_set_node = t_msg_payload->node_at( "set" );
                     if( t_set_node == NULL )
                     {
-                        MTWARN( "No setting was provided" );
+                        MTWARN( mtlog, "No setting was provided" );
                         break;
                     }
 
