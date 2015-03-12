@@ -224,8 +224,8 @@ namespace mantis
                         t_reply.add( "msgtype", param_value() << T_REPLY );
                     }
 
-                    //t_reply.add( "msgop", param_value() << OP_MANTIS_RUN );
-                    t_reply.add( "target", param_value() << t_reply_to );
+                    //t_reply.add( "msgop", param_value() << OP_RUN ); // operations aren't used for replies
+                    //t_reply.add( "target", param_value() << t_reply_to );  // use of the target is now deprecated (3/12/15)
                     t_reply.add( "timestamp", param_value() << get_absolute_time_string() );
 
                     std::string t_reply_str;
@@ -284,8 +284,8 @@ namespace mantis
                     param_node t_reply;
                     t_reply.add( "payload", f_master_server_config );
                     t_reply.add( "msgtype", param_value() << T_REPLY );
-                    //t_reply.add( "msgop", param_value() << OP_RUN );
-                    t_reply.add( "target", param_value() << t_reply_to );
+                    //t_reply.add( "msgop", param_value() << OP_RUN ); // operations aren't used for replies
+                    //t_reply.add( "target", param_value() << t_reply_to );  // use of the target is now deprecated (3/12/15)
                     t_reply.add( "timestamp", param_value() << get_absolute_time_string() );
 
                     std::string t_reply_str;
