@@ -78,6 +78,7 @@ namespace mantis
         t_pxie5122_node->add( "voltage-offset", t_value << -0.25 );
         t_pxie5122_node->add( "input-coupling", t_value << 1 ); // DC coupling
         t_pxie5122_node->add( "probe-attenuation", t_value << 1.0 );
+        t_pxie5122_node->add( "acq-timeout", t_value << 10.0 );
         t_dev_node->add( "pxie5122", t_pxie5122_node );
 
         add( "devices", t_dev_node );

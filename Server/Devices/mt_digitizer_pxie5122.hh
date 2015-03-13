@@ -19,13 +19,14 @@ namespace mantis
     class block_cleanup_pxie5122;
 
     /* Available configuration values
-    -input impedance( "input-impedance" )
-    - minimum sample rate( "rate-req" )
-    - minimum number of points per record( "block-size-req" )
-    - voltage range( "voltage-range" )
-    - voltage offset( "voltage-offset" )
-    - coupling( "input-coupling" )
-    - probe attenuation( "probe-attenuation" )
+    - input impedance [Ohms] ( "input-impedance" )
+    - minimum sample rate [MHz] ( "rate-req" )
+    - minimum number of points per record ( "block-size-req" )
+    - voltage range [V] ( "voltage-range" )
+    - voltage offset [V] ( "voltage-offset" )
+    - coupling ( "input-coupling" )
+    - probe attenuation [dB] ( "probe-attenuation" )
+    - acquisition timeout [sec] ( "acq-timeout" )
     */
 
 
@@ -69,6 +70,8 @@ namespace mantis
             std::string f_resource_name;
 
             bool f_allocated;
+
+            double f_acq_timeout; // seconds
 
             niScope_wfmInfo f_waveform_info;
 

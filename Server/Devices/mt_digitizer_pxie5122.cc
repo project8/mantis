@@ -284,6 +284,9 @@ namespace mantis
             return false;
         }
 
+        // get the acquisition timeout
+        f_acq_timeout = a_dev_config->get_value< double >( "timeout", -1. );
+
         // allocate the buffer if needed
         if( t_must_allocate )
         {
@@ -497,7 +500,7 @@ namespace mantis
         a_block->set_record_id( f_record_count );
         a_block->set_acquisition_id( f_acquisition_count );
 
-        if( !handle_error( niScope_FetchBinary16( f_handle, "1", -1 /*infinite timeout*/, a_block->get_data_size(), (ViInt16*)a_block->data_bytes(), &f_waveform_info) ) )
+        if( !handle_error( niScope_FetchBinary16( f_handle, "1", f_acq_timeout, a_block->get_data_size(), (ViInt16*)a_block->data_bytes(), &f_waveform_info) ) )
         {
             return false;
         }
