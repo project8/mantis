@@ -53,7 +53,7 @@ namespace mantis
                 return;
             }
 
-            t_connection->amqp()->DeclareExchange( "requests", AmqpClient::Channel::EXCHANGE_TYPE_DIRECT, false, true, false );
+            t_connection->amqp()->DeclareExchange( "requests", AmqpClient::Channel::EXCHANGE_TYPE_TOPIC, false, false, false );
 
             t_connection->amqp()->DeclareQueue( "mantis", false, false, true, true );
             t_connection->amqp()->BindQueue( "mantis", "requests", "mantis" );
