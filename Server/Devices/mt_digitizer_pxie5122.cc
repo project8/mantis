@@ -535,8 +535,207 @@ namespace mantis
 
     bool digitizer_pxie5122::run_basic_test()
     {
-        MTWARN( mtlog, "Basic test for digitizer_pxie5122 has not been implemented" );
-        return false;
+        MTINFO( mtlog, "Beginning basic test of the PXIe5122" );
+
+        MTINFO( mtlog, "Connecting to the digitizer" );
+
+        // Resource name options:
+        // - Real digitizer: PXI1Slot2
+        // - Dummy (software) digitizer:
+        std::string resourceNameStr( "PXI1Slot2" );
+        MTDEBUG( mtlog, "Resource name from config: <" << resourceNameStr << ">" );
+        if( resourceNameStr.empty() )
+        {
+            MTERROR( mtlog, "No resource name was provided" );
+            return false;
+        }
+        if( ! f_resource_name.empty() && resourceNameStr != f_resource_name )
+        {
+            MTERROR( mtlog, "Resource name must match previously used name: " << f_resource_name );
+            return false;
+        }
+
+        if( ! f_handle )
+        {
+            f_resource_name = resourceNameStr;
+            MTDEBUG( mtlog, "Connecting to the 5122 using resource name <" << f_resource_name << ">" );
+
+            //ViChar* resourceName = new ViChar[ f_resource_name.size() ];
+            //strcpy( resourceName, f_resource_name.c_str() );
+            if( ! handle_error( niScope_init( const_cast< char* >( f_resource_name.c_str() ), NISCOPE_VAL_FALSE, NISCOPE_VAL_FALSE, &f_handle ) ) )
+            {
+                //delete[] resourceName;
+                return false;
+            }
+            //delete[] resourceName;
+        }
+
+        MTINFO( mtlog, "Connection successful" );
+
+        MTINFO( mtlog, "Configuring the 5122" );
+        // call to niScpe_ConfigureChanCharacteristics
+        // input impedance may be either 50, or 1000000
+        unsigned t_impedance = 50;
+        if( t_impedance != 50 && t_impedance != 1000000 )
+        {
+            MTERROR( mtlog, "Input impedance must be either 50 Ohms or 1000000 Ohms; value provided: " << t_impedance );
+            return false;
+        }
+        // for now just use -1 for max input frequency
+        if( ! handle_error( niScope_ConfigureChanCharacteristics( f_handle, "1", t_impedance, -1 ) ) )
+        {
+            return false;
+        }
+
+        // call to niScope_ConfigureHorizontalTiming
+        // TODO: the block size request assumes that we're only using 1 channel
+        // Note that the record size request is passed as the 3rd parameter; this is correct regardless of the number of channels in use;
+        // This parameter in the NI function is the minimum number of samples in the record for each channel according to the NI-SCOPE documentation.
+        // Must convert MHz rate request to Hz for NI-SCOPE
+        if( ! handle_error( niScope_ConfigureHorizontalTiming( f_handle, 100. * 1.e6,
+                524288, 0, 1, VI_TRUE ) ) )
+        {
+            return false;
+        }
+        ViReal64 t_actual_rate;
+        if( ! handle_error( niScope_SampleRate( f_handle, &t_actual_rate ) ) )
+        {
+            return false;
+        }
+        // convert from Hz to MHz
+        t_actual_rate *= 1.e-6;
+        ViInt32 t_actual_rec_size;
+        if( ! handle_error( niScope_ActualRecordLength( f_handle, &t_actual_rec_size ) ) )
+        {
+            return false;
+        }
+        MTINFO( mtlog, "Actual rate: " << t_actual_rate << " MHz; Actual record size: " << t_actual_rec_size );
+
+        // check buffer allocation
+        // this section assumes 1 channel, in not multiplying t_actual_rec_size by the number of channels when converting to block size
+        bool t_must_allocate = false; // will be done later, assuming the initialization succeeds
+        unsigned t_buffer_size = 512;
+        if( f_buffer != NULL && ( f_buffer->size() != t_buffer_size || f_buffer->block_size() != t_actual_rec_size ) )
+        {
+            // need to redo the buffer
+            if( f_allocated ) deallocate();
+            delete f_buffer;
+            f_buffer = NULL;
+        }
+        if( f_buffer == NULL )
+        {
+            t_must_allocate = true;
+            f_buffer = new buffer( t_buffer_size, t_actual_rec_size );
+        }
+
+        // call to niScope_ConfigureVertical
+        ViReal64 t_voltage_range = 0.5;
+        ViReal64 t_voltage_offset = 0.;
+        ViInt32 t_coupling = NISCOPE_VAL_AC;
+        if( t_coupling != NISCOPE_VAL_AC && t_coupling != NISCOPE_VAL_DC && t_coupling != NISCOPE_VAL_GND )
+        {
+            MTERROR( mtlog, "Invalid input coupling: " << t_coupling );
+            return false;
+        }
+        ViReal64 t_probe_attenuation = 1.;
+        if( t_probe_attenuation < 0 )
+        {
+            MTERROR( mtlog, "Probe attenuation must be a real, positive number" );
+            return false;
+        }
+        if( ! handle_error( niScope_ConfigureVertical( f_handle, "1", t_voltage_range, t_voltage_offset, t_coupling, t_probe_attenuation, true ) ) )
+        {
+            return false;
+        }
+
+        // get the scaling coefficients
+        ViInt32 t_n_coeff_sets;
+        if( ! handle_error( niScope_GetScalingCoefficients( f_handle, "1", 0, NULL, &t_n_coeff_sets ) ) )
+        {
+            return false;
+        }
+        niScope_coefficientInfo* t_coeff_info_array = new niScope_coefficientInfo[ t_n_coeff_sets ];
+        if( ! handle_error( niScope_GetScalingCoefficients( f_handle, "1", t_n_coeff_sets, t_coeff_info_array, &t_n_coeff_sets ) ) )
+        {
+            return false;
+        }
+        get_calib_params2( 14 /*bit depth*/, s_data_type_size, t_voltage_offset, t_voltage_range, t_coeff_info_array[0].gain, &f_params );
+        a_dev_config->replace( "voltage-min", param_value() << f_params.v_min );
+        a_dev_config->replace( "voltage-range", param_value() << f_params.v_range );
+        a_dev_config->replace( "dac-gain", param_value() << f_params.dac_gain );
+
+        // call to niScope_ConfigureTriggerSoftware to allow for continuous acquisition
+        if( ! handle_error( niScope_ConfigureTriggerSoftware( f_handle, 0., 0. ) ) )
+        {
+            return false;
+        }
+
+        // get the acquisition timeout
+        f_acq_timeout = 10.;
+
+        MTINFO( mtlog, "Configuration complete" );
+
+        MTINFO( mtlog, "Allocating the buffer" );
+
+        block* t_block = NULL;
+
+        try
+        {
+            for( unsigned int index = 0; index < f_buffer->size(); ++index )
+            {
+                t_block = block::allocate_block< data_type >( t_actual_rec_size );
+                t_block->set_cleanup( new block_cleanup_pxie5122( t_block->data_bytes() ) );
+            }
+        }
+        catch( exception& e )
+        {
+            MTERROR( mtlog, "Unable to allocate buffer: " << e.what() );
+            return false;
+        }
+
+        MTINFO( mtlog, "Allocation complete" );
+
+        MTINFO( mtlog, "Beginning the run phase" );
+
+        MTDEBUG( mtlog, "Starting acquisition" );
+
+        if( ! handle_error( niScope_InitiateAcquisition( f_handle ) ) )
+        {
+            return false;
+        }
+
+        MTDEBUG( mtlog, "Acquiring a record (" << f_acq_timeout << ", " << t_block->get_data_size() << ", " << t_block->data_bytes() << ")" );
+
+        if( ! handle_error( niScope_FetchBinary16( f_handle, "1", f_acq_timeout, t_block->get_data_size(), (ViInt16*)t_block->data_bytes(), &f_waveform_info) ) )
+        {
+            return false;
+        }
+
+        MTDEBUG( mtlog, "Stopping acquisition..." );
+
+        if( ! handle_error( niScope_Abort( f_handle ) ) )
+        {
+            return false;
+        }
+
+        std::stringstream t_str_buff;
+        for( unsigned i = 0; i < 99; ++i )
+        {
+            t_str_buff << t_block->data_bytes()[ i ] << ", ";
+        }
+        t_str_buff << t_block->data_bytes()[ 99 ];
+        MTDEBUG( mtlog, "The first 100 samples taken:\n" << t_str_buff.str() );
+
+        MTINFO( mtlog, "Run phase complete!\n" );
+
+
+        MTINFO( mtlog, "Deallocating buffer" );
+
+        delete t_block;
+
+        MTINFO( mtlog, "Deallocation complete!\n" );
+
+        return true;
     }
 
     bool digitizer_pxie5122::handle_error( ViStatus a_status )
