@@ -660,10 +660,7 @@ namespace mantis
             return false;
         }
         get_calib_params2( 14 /*bit depth*/, s_data_type_size, t_voltage_offset, t_voltage_range, t_coeff_info_array[0].gain, &f_params );
-        a_dev_config->replace( "voltage-min", param_value() << f_params.v_min );
-        a_dev_config->replace( "voltage-range", param_value() << f_params.v_range );
-        a_dev_config->replace( "dac-gain", param_value() << f_params.dac_gain );
-
+ 
         // call to niScope_ConfigureTriggerSoftware to allow for continuous acquisition
         if( ! handle_error( niScope_ConfigureTriggerSoftware( f_handle, 0., 0. ) ) )
         {
