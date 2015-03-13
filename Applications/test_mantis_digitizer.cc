@@ -25,8 +25,6 @@
 #include "mt_factory.hh"
 #include "mt_logger.hh"
 
-#include "request.pb.h"
-
 #include <string>
 using std::string;
 
