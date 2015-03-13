@@ -53,7 +53,9 @@ namespace mantis
                 return;
             }
 
-            t_connection->amqp()->DeclareQueue( "mantis", false, false, true, false );
+            t_connection->amqp()->DeclareExchange( "requests", AmqpClient::Channel::EXCHANGE_TYPE_DIRECT, false, true, false );
+
+            t_connection->amqp()->DeclareQueue( "mantis", false, false, true, true );
             t_connection->amqp()->BindQueue( "mantis", "requests", "mantis" );
 
             t_consumer_tag = t_connection->amqp()->BasicConsume( "mantis", "mantis", true, false ); // second bool is setting no_ack to false
