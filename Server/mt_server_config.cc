@@ -64,7 +64,7 @@ namespace mantis
         param_node* t_pxie5122_node = new param_node();
         t_pxie5122_node->add( "name", t_value << "pxie5122" );
         t_pxie5122_node->add( "enabled", t_value << false );
-        t_pxie5122_node->add( "resource-name", t_value << "PXI1Slot2" );
+        t_pxie5122_node->add( "resource-name", t_value << "PXI1Slot2" ); // Real digitizer: PXI1Slot2; Simulated digitizer: Dev1
         t_pxie5122_node->add( "rate-req", t_value << 100 );
         t_pxie5122_node->add( "n-channels", t_value << 1 );
         t_pxie5122_node->add( "data-mode", t_value << monarch3::sDigitized );
