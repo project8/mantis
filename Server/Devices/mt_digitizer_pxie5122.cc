@@ -542,7 +542,7 @@ namespace mantis
         // Resource name options:
         // - Real digitizer: PXI1Slot2
         // - Dummy (software) digitizer: Dev1
-        std::string resourceNameStr( "Dev1" );
+        std::string resourceNameStr( "PXI1Slot2" );
         MTDEBUG( mtlog, "Resource name from config: <" << resourceNameStr << ">" );
         if( resourceNameStr.empty() )
         {
@@ -631,8 +631,8 @@ namespace mantis
         // call to niScope_ConfigureVertical
         ViReal64 t_voltage_range = 0.5;
         ViReal64 t_voltage_offset = 0.;
-        ViInt32 t_coupling = NISCOPE_VAL_AC;
-        if( f_resource_name == "Dev1" && t_impedance == 50 ) t_coupling = NISCOPE_VAL_DC; // Dev1 and 50-Ohm impedance apparently requires DC coupling according to an error message from testing (3/16/17)
+        ViInt32 t_coupling = NISCOPE_VAL_DC;
+        if( t_impedance == 50 ) t_coupling = NISCOPE_VAL_DC; // 50-Ohm impedance requires DC coupling according to an error message from testing (3/16/17)
         if( t_coupling != NISCOPE_VAL_AC && t_coupling != NISCOPE_VAL_DC && t_coupling != NISCOPE_VAL_GND )
         {
             MTERROR( mtlog, "Invalid input coupling: " << t_coupling );
@@ -702,7 +702,7 @@ namespace mantis
             return false;
         }
 
-        MTDEBUG( mtlog, "Acquiring a record (" << f_acq_timeout << ", " << t_block->get_data_size() << /* ", " << t_block->data_bytes() << */ ", " << &f_waveform_info << ")" );
+        MTDEBUG( mtlog, "Acquiring a record (" << f_acq_timeout << ", " << t_block->get_data_size() << /* ", " << t_block->data_bytes() << */ ")" );
 
         if( ! handle_error( niScope_FetchBinary16( f_handle, "1", f_acq_timeout, t_block->get_data_size(), (ViInt16*)t_block->data_bytes(), &f_waveform_info) ) )
         {
