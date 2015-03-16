@@ -541,8 +541,8 @@ namespace mantis
 
         // Resource name options:
         // - Real digitizer: PXI1Slot2
-        // - Dummy (software) digitizer:
-        std::string resourceNameStr( "PXI1Slot2" );
+        // - Dummy (software) digitizer: Dev1
+        std::string resourceNameStr( "Dev1" );
         MTDEBUG( mtlog, "Resource name from config: <" << resourceNameStr << ">" );
         if( resourceNameStr.empty() )
         {
@@ -614,7 +614,7 @@ namespace mantis
         // check buffer allocation
         // this section assumes 1 channel, in not multiplying t_actual_rec_size by the number of channels when converting to block size
         bool t_must_allocate = false; // will be done later, assuming the initialization succeeds
-        unsigned t_buffer_size = 512;
+        unsigned t_buffer_size = 1;
         if( f_buffer != NULL && ( f_buffer->size() != t_buffer_size || f_buffer->block_size() != t_actual_rec_size ) )
         {
             // need to redo the buffer
@@ -632,6 +632,7 @@ namespace mantis
         ViReal64 t_voltage_range = 0.5;
         ViReal64 t_voltage_offset = 0.;
         ViInt32 t_coupling = NISCOPE_VAL_AC;
+        if( f_resource_name == "Dev1" && t_impedance == 50 ) t_coupling = NISCOPE_VAL_DC; // Dev1 and 50-Ohm impedance apparently requires DC coupling according to an error message from testing (3/16/17)
         if( t_coupling != NISCOPE_VAL_AC && t_coupling != NISCOPE_VAL_DC && t_coupling != NISCOPE_VAL_GND )
         {
             MTERROR( mtlog, "Invalid input coupling: " << t_coupling );
@@ -701,7 +702,7 @@ namespace mantis
             return false;
         }
 
-        MTDEBUG( mtlog, "Acquiring a record (" << f_acq_timeout << ", " << t_block->get_data_size() << ", " << t_block->data_bytes() << ")" );
+        MTDEBUG( mtlog, "Acquiring a record (" << f_acq_timeout << ", " << t_block->get_data_size() << /* ", " << t_block->data_bytes() << */ ", " << &f_waveform_info << ")" );
 
         if( ! handle_error( niScope_FetchBinary16( f_handle, "1", f_acq_timeout, t_block->get_data_size(), (ViInt16*)t_block->data_bytes(), &f_waveform_info) ) )
         {
@@ -715,10 +716,11 @@ namespace mantis
             return false;
         }
 
+        block_view< ViInt16 > t_block_view( t_block );
         std::stringstream t_str_buff;
         for( unsigned i = 0; i < 99; ++i )
         {
-            t_str_buff << t_block->data_bytes()[ i ] << ", ";
+            t_str_buff << t_block_view.data_view()[ i ] << ", ";
         }
         t_str_buff << t_block->data_bytes()[ 99 ];
         MTDEBUG( mtlog, "The first 100 samples taken:\n" << t_str_buff.str() );
