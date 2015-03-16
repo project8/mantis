@@ -151,7 +151,7 @@ namespace mantis
         unsigned t_total_size = a_prefix_size + a_data_size + a_postfix_size;
 
         t_new_block->f_memblock_nbytes = t_total_size * t_data_type_size;
-        t_new_block->f_memblock_bytes = new byte_type [ t_total_size ];
+        t_new_block->f_memblock_bytes = new byte_type [ t_new_block->f_memblock_nbytes ];
 
         t_new_block->f_prefix_nbytes = a_prefix_size * t_data_type_size;
         t_new_block->f_prefix_bytes = t_new_block->f_memblock_bytes;
