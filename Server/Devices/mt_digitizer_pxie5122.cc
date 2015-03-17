@@ -176,7 +176,7 @@ namespace mantis
 
             //ViChar* resourceName = new ViChar[ f_resource_name.size() ];
             //strcpy( resourceName, f_resource_name.c_str() );
-            if( !handle_error( niScope_init( const_cast< char* >( f_resource_name.c_str() ), NISCOPE_VAL_FALSE, NISCOPE_VAL_FALSE, &f_handle ) ) )
+            if( ! handle_error( niScope_init( const_cast< char* >( f_resource_name.c_str() ), NISCOPE_VAL_FALSE, NISCOPE_VAL_FALSE, &f_handle ) ) )
             {
                 //delete[] resourceName;
                 return false;
@@ -194,7 +194,7 @@ namespace mantis
             return false;
         }
         // for now just use -1 for max input frequency
-        if( !handle_error( niScope_ConfigureChanCharacteristics( f_handle, "1", t_impedance, -1 ) ) )
+        if( ! handle_error( niScope_ConfigureChanCharacteristics( f_handle, "1", t_impedance, -1 ) ) )
         {
             return false;
         }
@@ -204,13 +204,13 @@ namespace mantis
         // Note that the record size request is passed as the 3rd parameter; this is correct regardless of the number of channels in use;
         // This parameter in the NI function is the minimum number of samples in the record for each channel according to the NI-SCOPE documentation.
         // Must convert MHz rate request to Hz for NI-SCOPE
-        if( !handle_error( niScope_ConfigureHorizontalTiming( f_handle, a_dev_config->get_value< double >( "rate-req" ) * 1.e6,
+        if( ! handle_error( niScope_ConfigureHorizontalTiming( f_handle, a_dev_config->get_value< double >( "rate-req" ) * 1.e6,
             a_dev_config->get_value< unsigned >( "record-size-req" ), 0, 1, VI_TRUE ) ) )
         {
             return false;
         }
         ViReal64 t_actual_rate;
-        if( !handle_error( niScope_SampleRate( f_handle, &t_actual_rate ) ) )
+        if( ! handle_error( niScope_SampleRate( f_handle, &t_actual_rate ) ) )
         {
             return false;
         }
@@ -218,7 +218,7 @@ namespace mantis
         t_actual_rate *= 1.e-6;
         a_dev_config->replace( "rate", param_value() << t_actual_rate );
         ViInt32 t_actual_rec_size;
-        if( !handle_error( niScope_ActualRecordLength( f_handle, &t_actual_rec_size ) ) )
+        if( ! handle_error( niScope_ActualRecordLength( f_handle, &t_actual_rec_size ) ) )
         {
             return false;
         }
@@ -257,14 +257,14 @@ namespace mantis
             MTERROR( mtlog, "Probe attenuation must be a real, positive number" );
             return false;
         }
-        if( !handle_error( niScope_ConfigureVertical( f_handle, "1", t_voltage_range, t_voltage_offset, t_coupling, t_probe_attenuation, true ) ) )
+        if( ! handle_error( niScope_ConfigureVertical( f_handle, "1", t_voltage_range, t_voltage_offset, t_coupling, t_probe_attenuation, true ) ) )
         {
             return false;
         }
 
         // get the scaling coefficients
-        ViInt32 t_n_coeff_sets;
-        if( !handle_error( niScope_GetScalingCoefficients( f_handle, "1", 0, NULL, &t_n_coeff_sets ) ) )
+        ViInt32 t_n_coeff_sets; // first determine the size of the array used to store the scaling coefficients
+        if( ! handle_error( niScope_GetScalingCoefficients( f_handle, "1", 0, NULL, &t_n_coeff_sets ) ) )
         {
             return false;
         }
@@ -279,7 +279,13 @@ namespace mantis
         a_dev_config->replace( "dac-gain", param_value() << f_params.dac_gain );
 
         // call to niScope_ConfigureTriggerSoftware to allow for continuous acquisition
-        if( !handle_error( niScope_ConfigureTriggerSoftware( f_handle, 0., 0. ) ) )
+        if( ! handle_error( niScope_ConfigureTriggerSoftware( f_handle, 0., 0. ) ) )
+        {
+            return false;
+        }
+
+        // tell the digitizer to fetch each record starting at the read pointer, which gets moved after each fetch
+        if( ! handle_error( niScope_SetAttributeViInt32( f_handle, VI_NULL, NISCOPE_ATTR_FETCH_RELATIVE_TO, NISCOPE_VAL_READ_POINTER ) ) )
         {
             return false;
         }
