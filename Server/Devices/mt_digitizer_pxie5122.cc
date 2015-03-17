@@ -674,6 +674,11 @@ namespace mantis
             return false;
         }
 
+        if( ! handle_error( niScope_SetAttributeViInt32( f_handle, VI_NULL, NISCOPE_ATTR_FETCH_RELATIVE_TO, NISCOPE_VAL_READ_POINTER ) ) )
+        {
+            return false;
+        }
+
         // get the acquisition timeout
         f_acq_timeout = 10.;
 
