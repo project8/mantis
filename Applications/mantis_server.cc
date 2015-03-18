@@ -64,18 +64,12 @@ int main( int argc, char** argv )
 
         MTINFO( mtlog, "creating objects..." );
 
-        const param_node* t_broker_node = t_configurator.config().node_at( "broker" );
-
-        // AMQP broker
-        broker t_broker( t_broker_node->get_value( "addr" ),
-                         t_broker_node->get_value< unsigned >( "port" ) );
-
         // run database and queue condition
         condition t_queue_condition;
         run_database t_run_database;
 
         // request receiver
-        request_receiver t_receiver( t_configurator.config(), &t_broker, &t_run_database, &t_queue_condition, t_configurator.exe_name() );
+        request_receiver t_receiver( t_configurator.config(), &t_run_database, &t_queue_condition, t_configurator.exe_name() );
 
         // device manager
         device_manager t_dev_mgr;

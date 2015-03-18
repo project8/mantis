@@ -18,7 +18,7 @@ namespace mantis
     class MANTIS_API request_receiver : public callable
     {
         public:
-            request_receiver( const param_node& a_config, broker* a_broker, run_database* a_run_database, condition* a_condition, const std::string& a_exe_name = "unknown" );
+            request_receiver( const param_node& a_config, run_database* a_run_database, condition* a_condition, const std::string& a_exe_name = "unknown" );
             virtual ~request_receiver();
 
             void execute();

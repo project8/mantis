@@ -42,12 +42,12 @@ namespace mantis
 
     void run_client::execute()
     {
-        MTINFO( mtlog, "Connecting to broker" );
+        MTINFO( mtlog, "Connecting to AMQP broker" );
 
-        const param_node* t_broker_node = f_config.node_at( "broker" );
+        const param_node* t_broker_node = f_config.node_at( "amqp" );
 
-        broker t_broker( t_broker_node->get_value( "addr" ),
-                         t_broker_node->get_value< unsigned >( "port" ) );
+        broker t_broker( t_broker_node->get_value( "broker" ),
+                         t_broker_node->get_value< unsigned >( "broker-port" ) );
 
         connection* t_connection = t_broker.create_connection();
         if( t_connection == NULL )
@@ -57,14 +57,16 @@ namespace mantis
             return;
         }
 
+        std::string t_exchange;
         try
         {
-            t_connection->amqp()->DeclareExchange( "requests", AmqpClient::Channel::EXCHANGE_TYPE_DIRECT, true );
+            t_exchange = t_broker_node->get_value( "exchange" );
+            t_connection->amqp()->DeclareExchange( t_exchange, AmqpClient::Channel::EXCHANGE_TYPE_DIRECT, true );
         }
         catch( std::exception& e )
         {
             delete t_connection;
-            MTERROR( mtlog, "Exchange <request> was not present; aborting.\n(" << e.what() << ")" );
+            MTERROR( mtlog, "Unable to declare exchange <" << t_exchange << ">; aborting.\n(" << e.what() << ")" );
             f_return = RETURN_ERROR;
             return;
         }
@@ -190,12 +192,19 @@ namespace mantis
 
         try
         {
-            t_connection->amqp()->BasicPublish( "requests", "mantis", t_message );
+            t_connection->amqp()->BasicPublish( t_exchange, t_broker_node->get_value( "route" ), t_message );
         }
         catch( AmqpClient::MessageReturnedException& e )
         {
             delete t_connection;
             MTERROR( mtlog, "Message could not be sent: " << e.what() );
+            f_return = RETURN_ERROR;
+            return;
+        }
+        catch( std::exception& e )
+        {
+            delete t_connection;
+            MTERROR( mtlog, "Error publishing to queue: " << e.what() );
             f_return = RETURN_ERROR;
             return;
         }

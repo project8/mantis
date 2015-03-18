@@ -24,9 +24,9 @@ namespace mantis
 {
     MTLOGGER( mtlog, "request_receiver" );
 
-    request_receiver::request_receiver( const param_node& a_config, broker* a_broker, run_database* a_run_database, condition* a_queue_condition, const string& a_exe_name ) :
+    request_receiver::request_receiver( const param_node& a_config, run_database* a_run_database, condition* a_queue_condition, const string& a_exe_name ) :
             f_master_server_config( a_config ),
-            f_broker( a_broker ),
+            f_broker( NULL ),
             f_run_database( a_run_database ),
             f_queue_condition( a_queue_condition ),
             f_exe_name( a_exe_name ),
@@ -36,6 +36,7 @@ namespace mantis
 
     request_receiver::~request_receiver()
     {
+        delete f_broker;
     }
 
     void request_receiver::execute()
@@ -44,6 +45,12 @@ namespace mantis
         std::string t_consumer_tag;
         try
         {
+            const param_node* t_broker_node = f_master_server_config.node_at( "amqp" );
+
+            // AMQP broker
+            f_broker = new broker( t_broker_node->get_value( "broker" ),
+                                   t_broker_node->get_value< unsigned >( "broker-port" ) );
+
             t_connection = f_broker->create_connection();
             if( t_connection == NULL )
             {
@@ -53,16 +60,26 @@ namespace mantis
                 return;
             }
 
-            t_connection->amqp()->DeclareExchange( "requests", AmqpClient::Channel::EXCHANGE_TYPE_TOPIC, false, false, false );
+            std::string t_exchange_name( t_broker_node->get_value( "exchange" ) );
+            std::string t_route_name( t_broker_node->get_value( "route" ) );
 
-            t_connection->amqp()->DeclareQueue( "mantis", false, false, true, true );
-            t_connection->amqp()->BindQueue( "mantis", "requests", "mantis" );
+            t_connection->amqp()->DeclareExchange( t_exchange_name, AmqpClient::Channel::EXCHANGE_TYPE_TOPIC, false, false, false );
 
-            t_consumer_tag = t_connection->amqp()->BasicConsume( "mantis", "mantis", true, false ); // second bool is setting no_ack to false
+            t_connection->amqp()->DeclareQueue( t_route_name, false, false, true, true );
+            t_connection->amqp()->BindQueue( t_route_name, t_exchange_name, t_route_name ); // route name used for the queue and the routing key
+
+            t_consumer_tag = t_connection->amqp()->BasicConsume( t_route_name, t_route_name, true, false ); // route name used for the queue and the consumer tag; second bool is setting no_ack to false
         }
         catch( AmqpClient::AmqpException& e )
         {
             MTERROR( mtlog, "AMQP exception caught: " << e.what() );
+            cancel();
+            raise( SIGINT );
+            return;
+        }
+        catch( std::exception& e )
+        {
+            MTERROR( mtlog, "Standard exception caught: " << e.what() );
             cancel();
             raise( SIGINT );
             return;
