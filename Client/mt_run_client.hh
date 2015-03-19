@@ -16,10 +16,11 @@
 namespace mantis
 {
     class broker;
-    class client_file_writing;
-    class run_context_dist;
+    //class client_file_writing;
+    class connection;
+    //class run_context_dist;
 
-    // run_client was formerlly used in a separate thread, hence the previous use of the callable base class
+    // run_client was formerly used in a separate thread, hence the previous use of the callable base class
 
     class MANTIS_API run_client// : public callable
     {
@@ -33,6 +34,10 @@ namespace mantis
             int get_return();
 
         private:
+            bool do_run_request( std::string& a_request_str );
+            bool do_get_request( std::string& a_request_str, connection* a_connection, std::string& a_consumer_tag, std::string& a_reply_to );
+            bool do_set_request( std::string& a_request_str, connection* a_connection, std::string& a_consumer_tag, std::string& a_reply_to );
+
             param_node f_config;
             std::string f_exe_name;
             //atomic_bool f_canceled;
