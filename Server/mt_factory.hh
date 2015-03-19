@@ -68,6 +68,9 @@ namespace mantis
 
             void register_class(const std::string& a_class_name, const base_registrar< XBaseType >* base_registrar);
 
+            FactoryCIt begin() const;
+            FactoryCIt end() const;
+
         protected:
             FactoryMap* fMap;
 
@@ -126,6 +129,19 @@ namespace mantis
     {
         delete fMap;
     }
+
+    template< class XBaseType >
+    typename factory< XBaseType >::FactoryCIt factory< XBaseType >::begin() const
+    {
+        return fMap->begin();
+    }
+
+    template< class XBaseType >
+    typename factory< XBaseType >::FactoryCIt factory< XBaseType >::end() const
+    {
+        return fMap->end();
+    }
+
 
 
 

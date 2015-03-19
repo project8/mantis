@@ -16,7 +16,13 @@ namespace mantis
 {
     class block_cleanup_test16;
 
-    class digitizer_test16 :
+    struct MANTIS_API digitizer_test16_config_template : digitizer_config_template
+    {
+        void add( param_node* a_node, const std::string& a_type );
+    };
+
+
+    class MANTIS_API digitizer_test16 :
         public digitizer
     {
         public:
@@ -72,7 +78,7 @@ namespace mantis
     };
 
 
-    class block_cleanup_test16 : public block_cleanup
+    class MANTIS_API block_cleanup_test16 : public block_cleanup
     {
         public:
             block_cleanup_test16( byte_type* a_memblock );

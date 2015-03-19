@@ -10,6 +10,8 @@
 #include "mt_logger.hh"
 #include "mt_param.hh"
 
+#include "M3Constants.hh"
+
 #include <cmath> // for ceil()
 #include <cstdlib> // for exit()
 #include <cstring> // for memset()
@@ -22,6 +24,20 @@ namespace mantis
 
     MT_REGISTER_DIGITIZER( digitizer_test, "test" );
 
+    void digitizer_test_config_template::add( param_node* a_node, const std::string& a_type )
+    {
+        param_node* t_new_node = new param_node();
+        t_new_node->add( "rate", param_value() << 250 );
+        t_new_node->add( "n-channels", param_value() << 1 );
+        t_new_node->add( "data-mode", param_value() << monarch3::sDigitized );
+        t_new_node->add( "channel-mode", param_value() << monarch3::sInterleaved );
+        t_new_node->add( "sample-size", param_value() << 1 );
+        t_new_node->add( "buffer-size", param_value() << 512 );
+        t_new_node->add( "record-size", param_value() << 4194304 );
+        t_new_node->add( "data-chunk-size", param_value() << 1024 );
+        a_node->add( a_type, t_new_node );
+
+    }
 
     const unsigned digitizer_test::s_data_type_size = sizeof( digitizer_test::data_type );
     unsigned digitizer_test::data_type_size_test()

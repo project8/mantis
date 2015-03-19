@@ -22,8 +22,23 @@ namespace mantis
 
     device_manager::device_manager() :
             f_device_name(),
-            f_device( NULL )
+            f_device( NULL ),
+            f_device_config_templates()
     {
+        factory< digitizer_config_template >* t_dev_ct_factory = factory< digitizer_config_template >::get_instance();
+        for( factory< digitizer_config_template >::FactoryCIt it = t_dev_ct_factory->begin();
+                it != t_dev_ct_factory->end(); ++it )
+        {
+            digitizer_config_template* t_dev_ct = t_dev_ct_factory->create( it );
+            if( t_dev_ct == NULL )
+            {
+                MTWARN( mtlog, "Unable to add device config template for device type <" << it->first << ">" );
+                continue;
+            }
+            MTDEBUG( mtlog, "Adding device config template for <" << it->first << ">" );
+            t_dev_ct->add( &f_device_config_templates, it->first );
+            delete t_dev_ct;
+        }
     }
 
     device_manager::~device_manager()
@@ -130,6 +145,11 @@ namespace mantis
         return f_device->get_buffer_condition();
     }
 
-
+    param_node* device_manager::get_device_config( const std::string& a_device_type )
+    {
+        const param_node* t_device_config = f_device_config_templates.node_at( a_device_type );
+        if( t_device_config == NULL ) return NULL;
+        return new param_node( *t_device_config );
+    }
 
 } /* namespace mantis */

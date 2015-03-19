@@ -11,6 +11,7 @@
 #include "mt_digitizer.hh"
 
 #include "mt_condition.hh"
+#include "mt_param.hh"
 
 #include <string>
 
@@ -36,10 +37,13 @@ namespace mantis
             buffer* get_buffer();
             condition* buffer_condition();
 
+            param_node* get_device_config( const std::string& a_device_type );
+
         private:
             std::string f_device_name;
             digitizer* f_device;
 
+            param_node f_device_config_templates;
     };
 
 } /* namespace mantis */

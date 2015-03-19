@@ -25,6 +25,28 @@ namespace mantis
     MT_REGISTER_DIGITIZER( digitizer_pxie5122, "pxie5122" );
 
 
+    void digitizer_pxie5122_config_template::add( param_node* a_node, const std::string& a_type )
+    {
+        param_node* t_new_node = new param_node();
+        t_new_node->add( "resource-name", param_value() << "PXI1Slot2" ); // Real digitizer: PXI1Slot2; Simulated digitizer: Dev1
+        t_new_node->add( "rate-req", param_value() << 100 );
+        t_new_node->add( "n-channels", param_value() << 1 );
+        t_new_node->add( "data-mode", param_value() << monarch3::sDigitized );
+        t_new_node->add( "channel-mode", param_value() << monarch3::sSeparate );
+        t_new_node->add( "sample-size", param_value() << 1 );
+        t_new_node->add( "buffer-size", param_value() << 512 );
+        t_new_node->add( "record-size-req", param_value() << 524288 );// 1048576 );
+        t_new_node->add( "data-chunk-size", param_value() << 1024 );
+        t_new_node->add( "input-impedance", param_value() << 50 );
+        t_new_node->add( "voltage-range", param_value() << 0.5 );
+        t_new_node->add( "voltage-offset", param_value() << -0.25 );
+        t_new_node->add( "input-coupling", param_value() << 1 ); // DC coupling
+        t_new_node->add( "probe-attenuation", param_value() << 1.0 );
+        t_new_node->add( "acq-timeout", param_value() << 10.0 );
+        a_node->add( a_type, t_new_node );
+
+    }
+
     const unsigned digitizer_pxie5122::s_data_type_size = sizeof( digitizer_pxie5122::data_type );
     unsigned digitizer_pxie5122::data_type_size()
     {

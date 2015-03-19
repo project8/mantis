@@ -7,6 +7,7 @@
 #include "mt_condition.hh"
 #include "mt_connection.hh"
 #include "mt_constants.hh"
+#include "mt_device_manager.hh"
 #include "mt_logger.hh"
 #include "mt_run_database.hh"
 #include "mt_run_description.hh"
@@ -363,8 +364,15 @@ namespace mantis
                     }
 
                     // get the config template from the device manager
-                    param_node* t_device_config = NULL; //TODO
+                    param_node* t_device_config = f_dev_mgr->get_device_config( t_device_type );
+                    if( t_device_config == NULL )
+                    {
+                        *t_reply_node.value_at( "return-code" ) << RETURN_ERROR;
+                        *t_reply_node.value_at( "return-msg" ) << "Did not find device of type <" << t_device_type << ">";
+                        acknowledge_and_reply( t_reply_node, a_envelope, a_connection );
+                    }
                     t_device_config->add( "type", param_value() << t_device_type );
+                    t_device_config->add( "enabled", param_value() << 0 );
 
                     // add the configuration to the master config
                     f_master_server_config.node_at( "devices" )->add( t_device_name, t_device_config );

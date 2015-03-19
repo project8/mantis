@@ -28,9 +28,13 @@ namespace mantis
     - probe attenuation [dB] ( "probe-attenuation" )
     - acquisition timeout [sec] ( "acq-timeout" )
     */
+    struct MANTIS_API digitizer_pxie5122_config_template : digitizer_config_template
+    {
+        void add( param_node* a_node, const std::string& a_type );
+    };
 
 
-    class digitizer_pxie5122 : public digitizer
+    class MANTIS_API digitizer_pxie5122 : public digitizer
     {
         public:
             typedef ViInt16 data_type;
@@ -92,7 +96,7 @@ namespace mantis
     };
 
 
-    class block_cleanup_pxie5122 : public block_cleanup
+    class MANTIS_API block_cleanup_pxie5122 : public block_cleanup
     {
         public:
             block_cleanup_pxie5122( byte_type* a_memblock );

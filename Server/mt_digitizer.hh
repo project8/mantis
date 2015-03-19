@@ -13,6 +13,12 @@ namespace mantis
     class condition;
     class param_node;
 
+    struct MANTIS_API digitizer_config_template
+    {
+        virtual ~digitizer_config_template() {};
+        virtual void add( param_node* a_node, const std::string& a_type ) = 0;
+    };
+
     class MANTIS_API digitizer : public callable
     {
         public:
@@ -45,7 +51,8 @@ namespace mantis
     };
 
 #define MT_REGISTER_DIGITIZER(dig_class, dig_name) \
-        static registrar< digitizer, dig_class > s_##dig_class##_digitizer_registrar( dig_name );
+        static registrar< digitizer, dig_class > s_##dig_class##_digitizer_registrar( dig_name ); \
+        static registrar< digitizer_config_template, dig_class##_config_template > s_##dig_class##_config_template_registrar( dig_name );
 
 }
 
