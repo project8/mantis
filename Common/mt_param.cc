@@ -404,6 +404,7 @@ namespace mantis
         {
             delete f_contents[ ind ];
         }
+        f_contents.clear();
         return;
     }
 
@@ -740,6 +741,7 @@ namespace mantis
         {
             delete it->second;
         }
+        f_contents.clear();
         return;
     }
 
