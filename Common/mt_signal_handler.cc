@@ -115,6 +115,10 @@ namespace mantis
 #endif
         }
         f_mutex.unlock();
+
+#ifdef _WIN32
+        ExitProcess( 1 );
+#endif
         return;
     }
 
