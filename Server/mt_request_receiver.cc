@@ -320,6 +320,7 @@ namespace mantis
 
         param_node t_reply_node;
         t_reply_node.add( "return-code", param_value() << RETURN_SUCCESS );
+        t_reply_node.add( "return-msg", param_value() << "Request succeeded" );
 
         string t_instruction( a_msg_payload.get_value( "action", "" ) );
         const param_node* t_instruction_node = a_msg_payload.node_at( t_instruction );
@@ -358,7 +359,7 @@ namespace mantis
                     if( f_master_server_config.node_at( "devices" )->has( t_device_name ) )
                     {
                         *t_reply_node.value_at( "return-code" ) << RETURN_ERROR;
-                        *t_reply_node.value_at( "return-msg" ) << "The master config already has device <" << t_device_name << ">";
+                        *t_reply_node.value_at( "return-msg" ) << "The master config already has device <" + t_device_name + ">";
                         acknowledge_and_reply( t_reply_node, a_envelope, a_connection );
                         return false;
                     }
@@ -368,8 +369,9 @@ namespace mantis
                     if( t_device_config == NULL )
                     {
                         *t_reply_node.value_at( "return-code" ) << RETURN_ERROR;
-                        *t_reply_node.value_at( "return-msg" ) << "Did not find device of type <" << t_device_type << ">";
+                        *t_reply_node.value_at( "return-msg" ) << "Did not find device of type <" + t_device_type + ">";
                         acknowledge_and_reply( t_reply_node, a_envelope, a_connection );
+                        return false;
                     }
                     t_device_config->add( "type", param_value() << t_device_type );
                     t_device_config->add( "enabled", param_value() << 0 );
@@ -380,7 +382,7 @@ namespace mantis
                 catch( exception& e )
                 {
                     *t_reply_node.value_at( "return-code" ) << RETURN_ERROR;
-                    *t_reply_node.value_at( "return-msg" ) << "add/device instruction was not formatted properly:\n" << t_instruction_node;
+                    *t_reply_node.value_at( "return-msg" ) << "add/device instruction was not formatted properly" ;
                     acknowledge_and_reply( t_reply_node, a_envelope, a_connection );
                     return false;
                 }
@@ -388,10 +390,12 @@ namespace mantis
             else
             {
                 *t_reply_node.value_at( "return-code" ) << RETURN_ERROR;
-                *t_reply_node.value_at( "return-msg" ) << "Invalid set-add instruction:\n" << t_instruction_node;
+                *t_reply_node.value_at( "return-msg" ) << "Invalid set-add instruction";
                 acknowledge_and_reply( t_reply_node, a_envelope, a_connection );
                 return false;
             }
+
+            t_reply_node.add( "master-config", f_master_server_config );
         }
         else if( t_instruction == "remove" )
         {
@@ -400,14 +404,13 @@ namespace mantis
             {
                 try
                  {
-                     const param_node* t_device_node = t_instruction_node->node_at( "device" );
-                     string t_device_name = t_device_node->begin()->first;
+                     string t_device_name = t_instruction_node->get_value( "device" );
 
                      // check if we have a device of this name
                      if( ! f_master_server_config.node_at( "devices" )->has( t_device_name ) )
                      {
                          *t_reply_node.value_at( "return-code" ) << RETURN_ERROR;
-                         *t_reply_node.value_at( "return-msg" ) << "The master config does not have device <" << t_device_name << ">";
+                         *t_reply_node.value_at( "return-msg" ) << "The master config does not have device <" + t_device_name + ">";
                          acknowledge_and_reply( t_reply_node, a_envelope, a_connection );
                          return false;
                      }
@@ -418,7 +421,7 @@ namespace mantis
                  catch( exception& e )
                  {
                      *t_reply_node.value_at( "return-code" ) << RETURN_ERROR;
-                     *t_reply_node.value_at( "return-msg" ) << "remove/device instruction was not formatted properly:\n" << t_instruction_node;
+                     *t_reply_node.value_at( "return-msg" ) << "remove/device instruction was not formatted properly";
                      acknowledge_and_reply( t_reply_node, a_envelope, a_connection );
                      return false;
                  }
@@ -426,10 +429,12 @@ namespace mantis
             else
             {
                 *t_reply_node.value_at( "return-code" ) << RETURN_ERROR;
-                *t_reply_node.value_at( "return-msg" ) << "Invalid set-remove instruction:\n" << t_instruction_node;
+                *t_reply_node.value_at( "return-msg" ) << "Invalid set-remove instruction";
                 acknowledge_and_reply( t_reply_node, a_envelope, a_connection );
                 return false;
             }
+
+            t_reply_node.add( "master-config", f_master_server_config );
         }
 
         acknowledge_and_reply( t_reply_node, a_envelope, a_connection );

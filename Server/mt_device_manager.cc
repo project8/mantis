@@ -48,54 +48,62 @@ namespace mantis
 
     bool device_manager::configure( run_description& a_run_desc )
     {
-        param_node* t_mantis_config = a_run_desc.node_at( "mantis-config" );
-        if( t_mantis_config == NULL )
+        try
         {
-            MTERROR( mtlog, "Mantis configuration is missing" );
-            return false;
-        }
-
-        param_node* t_device_config = t_mantis_config->node_at( "devices" );
-        if( t_device_config == NULL )
-        {
-            MTERROR( mtlog, "Device configuration is missing" );
-            return false;
-        }
-
-        // For now: find the first device that's enabled
-        // TODO: for mutli-device usage, will use all enabled devices
-        param_node* t_enabled_dev_config = NULL;
-        for( param_node::iterator t_node_it = t_device_config->begin(); t_node_it != t_device_config->end(); ++t_node_it )
-        {
-            try
+            param_node* t_mantis_config = a_run_desc.node_at( "mantis-config" );
+            if( t_mantis_config == NULL )
             {
-                if( t_node_it->second->as_node().get_value< bool >( "enabled", false ) )
+                MTERROR( mtlog, "Mantis configuration is missing" );
+                return false;
+            }
+
+            param_node* t_device_config = t_mantis_config->node_at( "devices" );
+            if( t_device_config == NULL )
+            {
+                MTERROR( mtlog, "Device configuration is missing" );
+                return false;
+            }
+
+            // For now: find the first device that's enabled
+            // TODO: for mutli-device usage, will use all enabled devices
+            param_node* t_enabled_dev_config = NULL;
+            param_node::iterator t_node_it;
+            for( t_node_it = t_device_config->begin(); t_node_it != t_device_config->end(); ++t_node_it )
+            {
+                try
                 {
-                    t_enabled_dev_config = &( t_node_it->second->as_node() );
-                    break;
+                    if( t_node_it->second->as_node().get_value< bool >( "enabled", false ) )
+                    {
+                        t_enabled_dev_config = &( t_node_it->second->as_node() );
+                        break;
+                    }
+                }
+                catch( exception& e )
+                {
+                    MTWARN( mtlog, "Found non-node param object in \"devices\"" );
                 }
             }
-            catch( exception& e )
+            if( t_enabled_dev_config == NULL )
             {
-                MTWARN( mtlog, "Found non-node param object in \"devices\"" );
+                MTERROR( mtlog, "Did not find an enabled device" );
+                return false;
+            }
+
+            if( ! set_device( t_node_it->first ) )
+            {
+                MTERROR( mtlog, "Unable to set device" );
+                return false;
+            }
+
+            if( ! f_device->initialize( t_mantis_config, t_enabled_dev_config ) )
+            {
+                MTERROR( mtlog, "Unable to configure device" );
+                return false;
             }
         }
-        if( t_enabled_dev_config == NULL )
+        catch( exception& e )
         {
-            MTERROR( mtlog, "Did not find an enabled device" );
-            return false;
-        }
-
-        if( !set_device( t_enabled_dev_config->get_value( "name" ) ) )
-        {
-            MTERROR( mtlog, "Unable to set device" );
-            return false;
-        }
-
-        if( ! f_device->initialize( t_mantis_config, t_enabled_dev_config ) )
-        {
-            MTERROR( mtlog, "Unable to configure device" );
-            return false;
+            MTERROR( mtlog, "An exception was thrown while configuring the device manager:\n\t" << e.what() );
         }
 
         return true;

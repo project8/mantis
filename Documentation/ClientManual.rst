@@ -44,7 +44,7 @@ For "set" requests:
   set/[config option to modify]=[new config value]
   load/json=[json config file to be used by the server; not to be confused with the "config" option for the client]
   add/device/[digitizer type]=[name]
-  remove/device/[name]
+  remove/device=[name]
   
 For "get" requests
   get=config save/json=[filename]

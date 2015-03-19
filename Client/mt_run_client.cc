@@ -284,22 +284,25 @@ namespace mantis
         }
 
         // for the load instruction, the instruction node should be replaced by the contents of the file specified
-        if( t_instruction_node->has( "json" ) )
+        if( t_instruction == "load" )
         {
-            string t_load_filename( t_instruction_node->value_at( "json" )->get() );
-            delete t_instruction_node;
-            t_instruction_node = param_input_json::read_file( t_load_filename );
-            if( t_instruction_node == NULL )
+            if( t_instruction_node->has( "json" ) )
             {
-                MTERROR( mtlog, "Unable to read JSON file <" << t_load_filename << ">" );
+                string t_load_filename( t_instruction_node->value_at( "json" )->get() );
+                delete t_instruction_node;
+                t_instruction_node = param_input_json::read_file( t_load_filename );
+                if( t_instruction_node == NULL )
+                {
+                    MTERROR( mtlog, "Unable to read JSON file <" << t_load_filename << ">" );
+                    return false;
+                }
+            }
+            else
+            {
+                delete t_instruction_node;
+                MTERROR( mtlog, "Load instruction did not contain a valid file type");
                 return false;
             }
-        }
-        else
-        {
-            delete t_instruction_node;
-            MTERROR( mtlog, "Load instruction did not contain a valid file type");
-            return false;
         }
 
         t_payload_node.add( "action", param_value() << t_instruction );
