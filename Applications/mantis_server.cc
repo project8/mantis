@@ -68,11 +68,11 @@ int main( int argc, char** argv )
         condition t_queue_condition;
         run_database t_run_database;
 
-        // request receiver
-        request_receiver t_receiver( t_configurator.config(), &t_run_database, &t_queue_condition, t_configurator.exe_name() );
-
         // device manager
         device_manager t_dev_mgr;
+
+        // request receiver
+        request_receiver t_receiver( t_configurator.config(), &t_dev_mgr, &t_run_database, &t_queue_condition, t_configurator.exe_name() );
 
         // server worker
         server_worker t_worker( &t_dev_mgr, &t_run_database, &t_queue_condition );

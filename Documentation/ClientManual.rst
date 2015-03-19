@@ -10,8 +10,14 @@ Usage examples
 * Specify the broker address
     mantis_client amqp/broker=myrna.local
 
-mantis_client request=set set/device/pxie1/enable=1
-mantis_client request=set add/device/roach1=my_roach1
+* Add a PXIe5122 digitizer called pxie1
+    mantis_client request=set add/device/pxie5122=pxie1
+
+* Set the "enable" value of the pxie1 digitizer to 1
+    mantis_client request=set set/device/pxie1/enable=1
+    
+* Get the master configuration from the server
+    mantis_client request=get get=config
 
 
 Full option list
