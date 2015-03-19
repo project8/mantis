@@ -78,6 +78,7 @@ namespace mantis
         std::string t_request_type( f_config.get_value( "request", "" ) );
 
         std::string t_reply_to, t_correlation_id, t_request_str, t_consumer_tag;
+        param_node t_save_node;
         // t_consumer_tag will be used to determine whether we should wait for a reply message.
         // if it's empty, we will not wait
         if( t_request_type == "run" )
@@ -91,7 +92,7 @@ namespace mantis
         }
         else if( t_request_type == "get" )
         {
-            if( ! do_get_request( t_request_str, t_connection, t_consumer_tag, t_reply_to ) )
+            if( ! do_get_request( t_request_str, t_connection, t_consumer_tag, t_reply_to, t_save_node ) )
             {
                 MTERROR( mtlog, "There was an error while processing the get request" );
                 f_return = RETURN_ERROR;
@@ -161,6 +162,30 @@ namespace mantis
             }
 
             MTINFO( mtlog, "Response from Mantis:\n" << *t_msg_node->node_at( "payload" ) );
+
+            // optionally save "master-config" from the response
+            if( t_save_node.size() != 0 )
+            {
+                if( t_save_node.has( "json" ) )
+                {
+                    string t_save_filename( t_save_node.get_value( "json" ) );
+                    const param_node* t_master_config_node = t_msg_node->node_at( "payload" )->node_at( "master-config" );
+                    if( t_master_config_node == NULL )
+                    {
+                        MTERROR( mtlog, "Node \"master-config\" is not present to save" );
+                    }
+                    else
+                    {
+                        param_output_json::write_file( *t_master_config_node, t_save_filename, param_output_json::k_pretty );
+                    }
+                }
+                else
+                {
+                    MTERROR( mtlog, "Save instruction did not contain a valid file type");
+                }
+
+            }
+
             delete t_msg_node;
         }
 
@@ -216,7 +241,7 @@ namespace mantis
         return true;
     }
 
-    bool run_client::do_get_request( std::string& a_request_str, connection* a_connection, std::string& a_consumer_tag, std::string& a_reply_to )
+    bool run_client::do_get_request( std::string& a_request_str, connection* a_connection, std::string& a_consumer_tag, std::string& a_reply_to, param_node& a_save_node )
     {
         string t_query_type = f_config.get_value( "get", "" );
         if( t_query_type.empty() )
@@ -244,6 +269,13 @@ namespace mantis
         a_reply_to = a_connection->amqp()->DeclareQueue( "" );
         a_consumer_tag = a_connection->amqp()->BasicConsume( a_reply_to );
         MTDEBUG( mtlog, "Consumer tag for reply: " << a_consumer_tag );
+
+        // check for whether we'll be saving the result
+        a_save_node.clear();
+        if( f_config.has( "save" ) )
+        {
+            a_save_node = *(f_config.node_at( "save" ));
+        }
 
         return true;
     }
@@ -288,7 +320,7 @@ namespace mantis
         {
             if( t_instruction_node->has( "json" ) )
             {
-                string t_load_filename( t_instruction_node->value_at( "json" )->get() );
+                string t_load_filename( t_instruction_node->get_value( "json" ) );
                 delete t_instruction_node;
                 t_instruction_node = param_input_json::read_file( t_load_filename );
                 if( t_instruction_node == NULL )

@@ -268,14 +268,19 @@ namespace mantis
         param_node t_reply;
         if( t_query_type == "config" )
         {
-            t_reply.add( "payload", f_master_server_config );
+            param_node t_payload_node;
+            t_payload_node.add( "master-config", f_master_server_config );
+            t_payload_node.add( "return-code", param_value() << RETURN_SUCCESS );
+            t_payload_node.add( "return-msg", param_value() << "Get request succeeded" );
+            t_reply.add( "payload", t_payload_node );
             t_reply.add( "msgtype", param_value() << T_REPLY );
         }
         else if( t_query_type == "mantis" )
         {
-            param_node* t_msg_node = new param_node();
-            t_msg_node->add( "error", param_value() << "Query type <mantis> is not yet supported" );
-            t_reply.add( "payload", t_msg_node );
+            param_node t_payload_node;
+            t_payload_node.add( "return-code", param_value() << RETURN_ERROR );
+            t_payload_node.add( "return-msg", param_value() << "Query type <mantis> is not yet supported" );
+            t_reply.add( "payload", t_payload_node );
             t_reply.add( "msgtype", param_value() << T_REPLY );
         }
         else
