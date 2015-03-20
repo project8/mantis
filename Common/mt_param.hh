@@ -64,6 +64,25 @@ namespace mantis
             const param_array& as_array() const;
             const param_node& as_node() const;
 
+            /// Assumes that the parameter is a value, and returns a reference to itself.
+            const param_value& operator()() const;
+            /// Assumes that the parameter is a value, and returns a reference to itself.
+            param_value& operator()();
+
+            /// Assumes that the parameter is an array, and returns a reference to the KTParam at aIndex.
+            /// Behavior is undefined if aIndex is out-of-range.
+            const param& operator[]( unsigned a_index ) const;
+            /// Assumes that the parameter is an array, and returns a reference to the KTParam at aIndex.
+            /// Behavior is undefined if aIndex is out-of-range.
+            param& operator[]( unsigned a_index );
+
+            /// Assumes that the parameter is a node, and returns a reference to the KTParam corresponding to aName.
+            /// Throws an KTException if aName is not present.
+            const param& operator[]( const std::string& a_name ) const;
+            /// Assumes that the parameter is a node, and returns a reference to the KTParam corresponding to aName.
+            /// Adds a new Value if aName is not present.
+            param& operator[]( const std::string& a_name );
+
             virtual std::string to_string() const;
 
             static unsigned s_indent_level;
@@ -299,6 +318,7 @@ namespace mantis
             virtual bool is_node() const;
 
             unsigned size() const;
+            bool empty() const;
 
             bool has( const std::string& a_name ) const;
             unsigned count( const std::string& a_name ) const;

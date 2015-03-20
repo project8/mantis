@@ -114,6 +114,36 @@ namespace mantis
         return *t_cast_ptr;
     }
 
+    const param_value& param::operator()() const
+    {
+        return as_value();
+    }
+
+    param_value& param::operator()()
+    {
+        return as_value();
+    }
+
+    const param& param::operator[]( unsigned a_index ) const
+    {
+        return as_array()[ a_index ];
+    }
+
+    param& param::operator[]( unsigned a_index )
+    {
+        return as_array()[ a_index ];
+    }
+
+    const param& param::operator[]( const std::string& a_name ) const
+    {
+        return as_node()[ a_name ];
+    }
+
+    param& param::operator[]( const std::string& a_name )
+    {
+        return as_node()[ a_name ];
+    }
+
     std::string param::to_string() const
     {
         return string();
@@ -516,6 +546,11 @@ namespace mantis
     {
         return f_contents.size();
     }
+    bool param_node::empty() const
+    {
+        return f_contents.empty();
+    }
+
 
     bool param_node::has( const std::string& a_name ) const
     {
