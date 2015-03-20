@@ -29,7 +29,7 @@ namespace mantis
         param_node* t_new_node = new param_node();
         t_new_node->add( "rate", param_value() << 250 );
         t_new_node->add( "n-channels", param_value() << 1 );
-        t_new_node->add( "data-mode", param_value() << monarch3::sDigitized );
+        t_new_node->add( "data-mode", param_value() << monarch3::sDigitizedUS );
         t_new_node->add( "channel-mode", param_value() << monarch3::sInterleaved );
         t_new_node->add( "sample-size", param_value() << 1 );
         t_new_node->add( "buffer-size", param_value() << 512 );

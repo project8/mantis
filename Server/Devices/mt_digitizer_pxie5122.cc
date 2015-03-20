@@ -31,7 +31,7 @@ namespace mantis
         t_new_node->add( "resource-name", param_value() << "PXI1Slot2" ); // Real digitizer: PXI1Slot2; Simulated digitizer: Dev1
         t_new_node->add( "rate-req", param_value() << 100 );
         t_new_node->add( "n-channels", param_value() << 1 );
-        t_new_node->add( "data-mode", param_value() << monarch3::sDigitized );
+        t_new_node->add( "data-mode", param_value() << monarch3::sDigitizedS );
         t_new_node->add( "channel-mode", param_value() << monarch3::sSeparate );
         t_new_node->add( "sample-size", param_value() << 1 );
         t_new_node->add( "buffer-size", param_value() << 512 );
