@@ -89,7 +89,7 @@ namespace mantis
                 return false;
             }
 
-            if( ! set_device( t_node_it->first ) )
+            if( ! set_device( t_node_it->second->as_node().get_value( "type" ) ) )
             {
                 MTERROR( mtlog, "Unable to set device" );
                 return false;
