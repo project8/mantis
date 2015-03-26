@@ -88,6 +88,13 @@ pbuilder_add_ext_libraries( ${Boost_LIBRARIES} )
 include_directories( BEFORE ${PROJECT_SOURCE_DIR}/RapidJSON )
 
 
+############
+# msgpack-c (as included with Mantis)
+############
+
+include_directories( BEFORE ${PROJECT_SOURCE_DIR}/msgpack-c )
+
+
 ##########
 # Monarch
 ##########
