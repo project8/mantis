@@ -268,8 +268,9 @@ namespace mantis
 
         // call to niScope_ConfigureVertical
         ViReal64 t_voltage_range = a_dev_config->get_value< ViReal64 >( "voltage-range", 0.5 );
+        ViReal64 t_voltage_min = a_dev_config->get_value< ViReal64 >( "voltage-min", -0.5 * t_voltage_range );
         // the voltage offset is the center of the voltage range chosen
-        ViReal64 t_voltage_offset = a_dev_config->get_value< ViReal64 >( "voltage-min", -0.5 * t_voltage_range ) + 0.5 * t_voltage_range;
+        ViReal64 t_voltage_offset = t_voltage_min + 0.5 * t_voltage_range;
         ViInt32 t_coupling = a_dev_config->get_value< ViInt32 >( "input-coupling", NISCOPE_VAL_AC );
         if( t_coupling != NISCOPE_VAL_AC && t_coupling != NISCOPE_VAL_DC && t_coupling != NISCOPE_VAL_GND )
         {
@@ -298,7 +299,7 @@ namespace mantis
         {
             return false;
         }
-        get_calib_params2( 14 /*bit depth*/, s_data_type_size, t_voltage_offset, t_voltage_range, t_coeff_info_array[0].gain, &f_params );
+        get_calib_params2( 14 /*bit depth*/, s_data_type_size, t_voltage_min, t_voltage_range, t_coeff_info_array[0].gain, &f_params );
         a_dev_config->replace( "voltage-min", param_value() << f_params.v_min );
         a_dev_config->replace( "voltage-range", param_value() << f_params.v_range );
         a_dev_config->replace( "dac-gain", param_value() << f_params.dac_gain );
