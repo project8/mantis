@@ -13,6 +13,7 @@ set( MANTIS_COMMON_HEADERFILES
     mt_logger.hh
     mt_mutex.hh
     mt_param.hh
+    mt_param_json.hh
     mt_parser.hh
     mt_signal_handler.hh
     mt_thread.hh
@@ -28,6 +29,7 @@ set( MANTIS_COMMON_SOURCEFILES
     mt_logger.cc
     mt_mutex.cc
     mt_param.cc
+    mt_param_json.cc
     mt_parser.cc
     mt_signal_handler.cc
     mt_thread.cc

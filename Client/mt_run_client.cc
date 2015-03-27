@@ -14,7 +14,7 @@
 #include "mt_constants.hh"
 #include "mt_exception.hh"
 #include "mt_logger.hh"
-#include "mt_param.hh"
+#include "mt_param_json.hh"
 #include "mt_version.hh"
 #include "thorax.hh"
 
