@@ -39,7 +39,7 @@ namespace mantis
         t_new_node->add( "data-chunk-size", param_value() << 1024 );
         t_new_node->add( "input-impedance", param_value() << 50 );
         t_new_node->add( "voltage-range", param_value() << 0.5 );
-        t_new_node->add( "voltage-offset", param_value() << -0.25 );
+        t_new_node->add( "voltage-min", param_value() << -0.25 );
         t_new_node->add( "input-coupling", param_value() << 1 ); // DC coupling
         t_new_node->add( "probe-attenuation", param_value() << 1.0 );
         t_new_node->add( "acq-timeout", param_value() << 10.0 );
@@ -58,6 +58,7 @@ namespace mantis
             f_handle(),
             f_resource_name(),
             f_allocated( false ),
+            f_acq_timeout( 0. ),
             f_waveform_info(),
             f_start_time( 0 ),
             f_record_last( 0 ),
@@ -167,7 +168,8 @@ namespace mantis
         }
 
         // Check data mode and channel mode
-        if( a_dev_config->get_value< uint32_t >( "data-mode" ) != monarch3::sDigitized )
+        uint32_t t_data_mode = a_dev_config->get_value< uint32_t >( "data-mode" );
+        if( t_data_mode != monarch3::sDigitizedUS && t_data_mode != monarch3::sDigitizedS )
         {
             MTERROR( mtlog, "Data can only be taken in <digitized> mode" );
             return false;
@@ -266,7 +268,8 @@ namespace mantis
 
         // call to niScope_ConfigureVertical
         ViReal64 t_voltage_range = a_dev_config->get_value< ViReal64 >( "voltage-range", 0.5 );
-        ViReal64 t_voltage_offset = a_dev_config->get_value< ViReal64 >( "voltage-offset", 0. );
+        // the voltage offset is the center of the voltage range chosen
+        ViReal64 t_voltage_offset = a_dev_config->get_value< ViReal64 >( "voltage-min", -0.5 * t_voltage_range ) + 0.5 * t_voltage_range;
         ViInt32 t_coupling = a_dev_config->get_value< ViInt32 >( "input-coupling", NISCOPE_VAL_AC );
         if( t_coupling != NISCOPE_VAL_AC && t_coupling != NISCOPE_VAL_DC && t_coupling != NISCOPE_VAL_GND )
         {
