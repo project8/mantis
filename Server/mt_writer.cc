@@ -171,12 +171,11 @@ namespace mantis
         double t_mb_written = (double) (4 * f_record_count);
 
         param_node* t_resp_node = new param_node();
-        param_value t_value;
-        t_resp_node->add( "record-count", t_value << f_record_count );
-        t_resp_node->add( "acquisition-count", t_value << f_acquisition_count );
-        t_resp_node->add( "livetime", t_value << t_livetime );
-        t_resp_node->add( "mb-written", t_value << t_mb_written );
-        t_resp_node->add( "writer-rate", t_value << t_mb_written / t_livetime );
+        t_resp_node->add( "record-count", param_value( f_record_count ) );
+        t_resp_node->add( "acquisition-count", param_value( f_acquisition_count ) );
+        t_resp_node->add( "livetime", param_value( t_livetime ) );
+        t_resp_node->add( "mb-written", param_value( t_mb_written ) );
+        t_resp_node->add( "writer-rate", param_value( t_mb_written / t_livetime ) );
 
         a_response->add( "file-writer", t_resp_node );
 

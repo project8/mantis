@@ -117,6 +117,8 @@ namespace mantis
                 continue;
             }
 
+            MTDEBUG( mtlog, "Message received:\n" << *t_msg_node );
+
             const param_node* t_msg_payload = t_msg_node->node_at( "payload" );
             if( t_msg_payload == NULL )
             {
@@ -126,6 +128,18 @@ namespace mantis
                 continue;
             }
 
+            t_msg_node->add( "testing1", param_value( 2 ) );
+            t_msg_node->add( "testing2", param_value( 6666666 ) );
+
+            MTDEBUG( mtlog, "Is it the same?:\n" << *t_msg_node );
+
+            std::cout << "msgop value: <" << t_msg_node->get_value< uint64_t >( "msgop" ) << ">" << std::endl;
+            std::cout << "msgtype value: <" << t_msg_node->get_value< uint64_t >( "msgtype" ) << ">" << std::endl;
+
+            std::cout << "testing 1: <" << t_msg_node->get_value< unsigned >( "testing1" ) << ">" << std::endl;
+            std::cout << "testing 2: <" << t_msg_node->get_value< unsigned >( "testing2" ) << ">" << std::endl;
+
+            std::cout << "action: <" << t_msg_payload->get_value( "action" ) << ">" << std::endl;
 
             switch( t_msg_node->get_value< unsigned >( "msgop", OP_UNKNOWN ) )
             {
@@ -270,30 +284,30 @@ namespace mantis
         {
             param_node t_payload_node;
             t_payload_node.add( "master-config", f_master_server_config );
-            t_payload_node.add( "return-code", param_value() << RETURN_SUCCESS );
-            t_payload_node.add( "return-msg", param_value() << "Get request succeeded" );
+            t_payload_node.add( "return-code", param_value( RETURN_SUCCESS ) );
+            t_payload_node.add( "return-msg", param_value( "Get request succeeded" ) );
             t_reply.add( "payload", t_payload_node );
-            t_reply.add( "msgtype", param_value() << T_REPLY );
+            t_reply.add( "msgtype", param_value( T_REPLY ) );
         }
         else if( t_query_type == "mantis" )
         {
             param_node t_payload_node;
-            t_payload_node.add( "return-code", param_value() << RETURN_ERROR );
-            t_payload_node.add( "return-msg", param_value() << "Query type <mantis> is not yet supported" );
+            t_payload_node.add( "return-code", param_value( RETURN_ERROR ) );
+            t_payload_node.add( "return-msg", param_value( "Query type <mantis> is not yet supported" ) );
             t_reply.add( "payload", t_payload_node );
-            t_reply.add( "msgtype", param_value() << T_REPLY );
+            t_reply.add( "msgtype", param_value( T_REPLY ) );
         }
         else
         {
             param_node* t_msg_node = new param_node();
-            t_msg_node->add( "error", param_value() << "Unrecognized query type or no query type provided" );
+            t_msg_node->add( "error", param_value( "Unrecognized query type or no query type provided" ) );
             t_reply.add( "payload", t_msg_node );
-            t_reply.add( "msgtype", param_value() << T_REPLY );
+            t_reply.add( "msgtype", param_value( T_REPLY ) );
         }
 
         //t_reply.add( "msgop", param_value() << OP_RUN ); // operations aren't used for replies
         //t_reply.add( "target", param_value() << t_reply_to );  // use of the target is now deprecated (3/12/15)
-        t_reply.add( "timestamp", param_value() << get_absolute_time_string() );
+        t_reply.add( "timestamp", param_value( get_absolute_time_string() ) );
 
         std::string t_reply_str;
         if(! param_output_json::write_string( t_reply, t_reply_str, param_output_json::k_compact ) )
@@ -324,15 +338,15 @@ namespace mantis
         MTDEBUG( mtlog, "Set request received:\n" << a_msg_payload );
 
         param_node t_reply_node;
-        t_reply_node.add( "return-code", param_value() << RETURN_SUCCESS );
-        t_reply_node.add( "return-msg", param_value() << "Request succeeded" );
+        t_reply_node.add( "return-code", param_value( RETURN_SUCCESS ) );
+        t_reply_node.add( "return-msg", param_value( "Request succeeded" ) );
 
         string t_instruction( a_msg_payload.get_value( "action", "" ) );
         const param_node* t_instruction_node = a_msg_payload.node_at( t_instruction );
         if( t_instruction_node == NULL )
         {
-            *t_reply_node.value_at( "return-code" ) << RETURN_ERROR;
-            *t_reply_node.value_at( "return-msg" ) << "No set instruction was provided";
+            t_reply_node.value_at( "return-code" )->set( RETURN_ERROR );
+            t_reply_node.value_at( "return-msg" )->set( "No set instruction was provided" );
             acknowledge_and_reply( t_reply_node, a_envelope, a_connection );
             return false;
         }
@@ -363,8 +377,8 @@ namespace mantis
                     // check if we have a device of this name
                     if( f_master_server_config.node_at( "devices" )->has( t_device_name ) )
                     {
-                        *t_reply_node.value_at( "return-code" ) << RETURN_ERROR;
-                        *t_reply_node.value_at( "return-msg" ) << "The master config already has device <" + t_device_name + ">";
+                        t_reply_node.value_at( "return-code" )->set( RETURN_ERROR );
+                        t_reply_node.value_at( "return-msg" )->set( "The master config already has device <" + t_device_name + ">" );
                         acknowledge_and_reply( t_reply_node, a_envelope, a_connection );
                         return false;
                     }
@@ -373,29 +387,29 @@ namespace mantis
                     param_node* t_device_config = f_dev_mgr->get_device_config( t_device_type );
                     if( t_device_config == NULL )
                     {
-                        *t_reply_node.value_at( "return-code" ) << RETURN_ERROR;
-                        *t_reply_node.value_at( "return-msg" ) << "Did not find device of type <" + t_device_type + ">";
+                        t_reply_node.value_at( "return-code" )->set( RETURN_ERROR );
+                        t_reply_node.value_at( "return-msg" )->set( "Did not find device of type <" + t_device_type + ">" );
                         acknowledge_and_reply( t_reply_node, a_envelope, a_connection );
                         return false;
                     }
-                    t_device_config->add( "type", param_value() << t_device_type );
-                    t_device_config->add( "enabled", param_value() << 0 );
+                    t_device_config->add( "type", param_value( t_device_type ) );
+                    t_device_config->add( "enabled", param_value( 0 ) );
 
                     // add the configuration to the master config
                     f_master_server_config.node_at( "devices" )->add( t_device_name, t_device_config );
                 }
                 catch( exception& e )
                 {
-                    *t_reply_node.value_at( "return-code" ) << RETURN_ERROR;
-                    *t_reply_node.value_at( "return-msg" ) << "add/device instruction was not formatted properly" ;
+                    t_reply_node.value_at( "return-code" )->set( RETURN_ERROR );
+                    t_reply_node.value_at( "return-msg" )->set( "add/device instruction was not formatted properly" );
                     acknowledge_and_reply( t_reply_node, a_envelope, a_connection );
                     return false;
                 }
             }
             else
             {
-                *t_reply_node.value_at( "return-code" ) << RETURN_ERROR;
-                *t_reply_node.value_at( "return-msg" ) << "Invalid set-add instruction";
+                t_reply_node.value_at( "return-code" )->set( RETURN_ERROR );
+                t_reply_node.value_at( "return-msg" )->set( "Invalid set-add instruction" );
                 acknowledge_and_reply( t_reply_node, a_envelope, a_connection );
                 return false;
             }
@@ -414,8 +428,8 @@ namespace mantis
                      // check if we have a device of this name
                      if( ! f_master_server_config.node_at( "devices" )->has( t_device_name ) )
                      {
-                         *t_reply_node.value_at( "return-code" ) << RETURN_ERROR;
-                         *t_reply_node.value_at( "return-msg" ) << "The master config does not have device <" + t_device_name + ">";
+                         t_reply_node.value_at( "return-code" )->set( RETURN_ERROR );
+                         t_reply_node.value_at( "return-msg" )->set( "The master config does not have device <" + t_device_name + ">" );
                          acknowledge_and_reply( t_reply_node, a_envelope, a_connection );
                          return false;
                      }
@@ -425,16 +439,16 @@ namespace mantis
                  }
                  catch( exception& e )
                  {
-                     *t_reply_node.value_at( "return-code" ) << RETURN_ERROR;
-                     *t_reply_node.value_at( "return-msg" ) << "remove/device instruction was not formatted properly";
+                     t_reply_node.value_at( "return-code" )->set( RETURN_ERROR );
+                     t_reply_node.value_at( "return-msg" )->set( "remove/device instruction was not formatted properly" );
                      acknowledge_and_reply( t_reply_node, a_envelope, a_connection );
                      return false;
                  }
             }
             else
             {
-                *t_reply_node.value_at( "return-code" ) << RETURN_ERROR;
-                *t_reply_node.value_at( "return-msg" ) << "Invalid set-remove instruction";
+                t_reply_node.value_at( "return-code" )->set( RETURN_ERROR );
+                t_reply_node.value_at( "return-msg" )->set( "Invalid set-remove instruction" );
                 acknowledge_and_reply( t_reply_node, a_envelope, a_connection );
                 return false;
             }
@@ -460,10 +474,10 @@ namespace mantis
 
         param_node t_reply;
         t_reply.add( "payload", a_reply_node );
-        t_reply.add( "msgtype", param_value() << T_REPLY );
+        t_reply.add( "msgtype", param_value( T_REPLY ) );
         //t_reply.add( "msgop", param_value() << OP_RUN ); // operations aren't used for replies
         //t_reply.add( "target", param_value() << t_reply_to );  // use of the target is now deprecated (3/12/15)
-        t_reply.add( "timestamp", param_value() << get_absolute_time_string() );
+        t_reply.add( "timestamp", param_value( get_absolute_time_string() ) );
 
         std::string t_reply_str;
         if(! param_output_json::write_string( t_reply, t_reply_str, param_output_json::k_compact ) )

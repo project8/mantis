@@ -17,7 +17,6 @@ using std::stringstream;
 
 
 #include <cstdio>
-using std::string;
 
 
 namespace mantis
@@ -134,45 +133,31 @@ namespace mantis
         }
         if( a_value.IsString() )
         {
-            param_value* t_config_value = new param_value();
-            (*t_config_value) << a_value.GetString();
-            return t_config_value;
+            return new param_value( a_value.GetString() );
         }
         if( a_value.IsBool() )
         {
-            param_value* t_config_value = new param_value();
-            (*t_config_value) << a_value.GetBool();
-            return t_config_value;
+            return new param_value( a_value.GetBool() );
         }
         if( a_value.IsInt() )
         {
-            param_value* t_config_value = new param_value();
-            (*t_config_value) << a_value.GetInt();
-            return t_config_value;
+            return new param_value( (int64_t)a_value.GetInt() );
         }
         if( a_value.IsUint() )
         {
-            param_value* t_config_value = new param_value();
-            (*t_config_value) << a_value.GetUint();
-            return t_config_value;
+            return new param_value( (uint64_t)a_value.GetUint() );
         }
         if( a_value.IsInt64() )
         {
-            param_value* t_config_value = new param_value();
-            (*t_config_value) << a_value.GetInt64();
-            return t_config_value;
+            return new param_value( a_value.GetInt64() );
         }
         if( a_value.IsUint64() )
         {
-            param_value* t_config_value = new param_value();
-            (*t_config_value) << a_value.GetUint64();
-            return t_config_value;
+            return new param_value( a_value.GetUint64() );
         }
         if( a_value.IsDouble() )
         {
-            param_value* t_config_value = new param_value();
-            (*t_config_value) << a_value.GetDouble();
-            return t_config_value;
+            return new param_value( a_value.GetDouble() );
         }
         MTWARN( mtlog, "(config_reader_json) unknown type; returning null value" );
         return new param();

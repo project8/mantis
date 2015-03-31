@@ -24,7 +24,7 @@ namespace mantis
         size_t t_div_pos = a_addr.find( '/' );
         if( t_div_pos == a_addr.npos )
         {
-            a_parent->add( a_addr, param_value() << a_value );
+            a_parent->add( a_addr, param_value( a_value ) );
             MTDEBUG( mtlog, "parsed cl value: " << *this );
             return;
         }
@@ -49,9 +49,7 @@ namespace mantis
     {
         if( an_argc > 0)
         {
-            param_value* exe_value = new param_value();
-            *exe_value << an_argv[ 0 ];
-            this->replace( "executable", exe_value );
+            this->replace( "executable", param_value( an_argv[ 0 ] ) );
         }
 
         for( int t_index = 1; t_index < an_argc; t_index++ )

@@ -5,6 +5,8 @@
  *      Author: nsoblath
  */
 
+#ifndef MT_CONSTANTS_HH_
+#define MT_CONSTANTS_HH_
 
 namespace mantis
 {
@@ -52,3 +54,4 @@ namespace mantis
 
 }
 
+#endif /* MT_CONSTANTS_HH_ */

@@ -29,14 +29,14 @@ namespace mantis
     void digitizer_test16_config_template::add( param_node* a_node, const std::string& a_type )
     {
         param_node* t_new_node = new param_node();
-        t_new_node->add( "rate", param_value() << 250 );
-        t_new_node->add( "n-channels", param_value() << 1 );
-        t_new_node->add( "data-mode", param_value() << monarch3::sDigitizedUS );
-        t_new_node->add( "channel-mode", param_value() << monarch3::sInterleaved );
-        t_new_node->add( "sample-size", param_value() << 1 );
-        t_new_node->add( "buffer-size", param_value() << 512 );
-        t_new_node->add( "record-size", param_value() << 4194304 );
-        t_new_node->add( "data-chunk-size", param_value() << 1024 );
+        t_new_node->add( "rate", param_value( 250 ) );
+        t_new_node->add( "n-channels", param_value( 1 ) );
+        t_new_node->add( "data-mode", param_value( monarch3::sDigitizedUS ) );
+        t_new_node->add( "channel-mode", param_value( monarch3::sInterleaved ) );
+        t_new_node->add( "sample-size", param_value( 1 ) );
+        t_new_node->add( "buffer-size", param_value( 512 ) );
+        t_new_node->add( "record-size", param_value( 4194304 ) );
+        t_new_node->add( "data-chunk-size", param_value( 1024 ) );
         a_node->add( a_type, t_new_node );
 
     }
@@ -142,9 +142,9 @@ namespace mantis
     {
         //MTINFO( mtlog, "resetting counters..." );
 
-        a_dev_config->replace( "voltage-min", param_value() << f_params.v_min );
-        a_dev_config->replace( "voltage-range", param_value() << f_params.v_range );
-        a_dev_config->replace( "dac-gain", param_value() << f_params.dac_gain );
+        a_dev_config->replace( "voltage-min", param_value( f_params.v_min ) );
+        a_dev_config->replace( "voltage-range", param_value( f_params.v_range ) );
+        a_dev_config->replace( "dac-gain", param_value( f_params.dac_gain ) );
 
         // check buffer allocation
         // this section assumes 1 channel, in not multiplying t_actual_rec_size by the number of channels when converting to block size
@@ -379,13 +379,12 @@ namespace mantis
         double t_mb_recorded = (double) (4 * f_record_count);
 
         param_node* t_resp_node = new param_node();
-        param_value t_value;
-        t_resp_node->add( "record-count", t_value << f_record_count );
-        t_resp_node->add( "acquisition-count", t_value << f_acquisition_count );
-        t_resp_node->add( "livetime", t_value << t_livetime );
-        t_resp_node->add( "deadtime", t_value << t_deadtime );
-        t_resp_node->add( "mb-recorded", t_value << t_mb_recorded );
-        t_resp_node->add( "digitization-rate", t_value << t_mb_recorded / t_livetime );
+        t_resp_node->add( "record-count", param_value( f_record_count ) );
+        t_resp_node->add( "acquisition-count", param_value( f_acquisition_count ) );
+        t_resp_node->add( "livetime", param_value( t_livetime ) );
+        t_resp_node->add( "deadtime", param_value( t_deadtime ) );
+        t_resp_node->add( "mb-recorded", param_value( t_mb_recorded ) );
+        t_resp_node->add( "digitization-rate", param_value( t_mb_recorded / t_livetime ) );
 
         a_response->add( "digitizer-test16", t_resp_node );
 
