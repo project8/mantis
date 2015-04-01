@@ -153,51 +153,11 @@ namespace mantis
     //***********  DATA  *****************
     //************************************
 
-/*
-    param_value* param_value::create( const std::string& a_value )
-    {
-        return new param_value_string( a_value );
-    }
-
-    param_value* param_value::create( const char* a_value )
-    {
-        return new param_value_string( a_value );
-    }
-
-    param_value* param_value::create( bool a_value )
-    {
-        return new param_value_typed< bool >( a_value );
-    }
-
-    param_value* param_value::create( uint32_t a_value )
-    {
-        return new param_value_typed< uint32_t >( a_value );
-    }
-
-    param_value* param_value::create( uint64_t a_value )
-    {
-        return new param_value_typed< uint64_t >( a_value );
-    }
-
-    param_value* param_value::create( int32_t a_value )
-    {
-        return new param_value_typed< int32_t >( a_value );
-    }
-
-    param_value* param_value::create( int64_t a_value )
-    {
-        return new param_value_typed< int64_t >( a_value );
-    }
-
-    param_value* param_value::create( double a_value )
-    {
-        return new param_value_typed< double >( a_value );
-    }
-*/
     param_value::param_value() :
             param(),
             f_value_type( k_invalid )
     {
+        //MTWARN( mtlog, "param_value constructor: k_invalid" );
     }
 
     param_value::param_value( bool a_value ) :
@@ -205,6 +165,7 @@ namespace mantis
             f_value_type( k_bool )
     {
         f_value.f_bool = a_value;
+        //MTWARN( mtlog, "param_value constructor: bool --> bool" );
     }
 
     param_value::param_value( uint8_t a_value ) :
@@ -212,6 +173,7 @@ namespace mantis
             f_value_type( k_uint )
     {
         f_value.f_uint = a_value;
+        //MTWARN( mtlog, "param_value constructor: uint8 --> uint" );
     }
 
     param_value::param_value( uint16_t a_value ) :
@@ -219,6 +181,7 @@ namespace mantis
             f_value_type( k_uint )
     {
         f_value.f_uint = a_value;
+        //MTWARN( mtlog, "param_value constructor: uint16 --> uint" );
     }
 
     param_value::param_value( uint32_t a_value ) :
@@ -226,6 +189,7 @@ namespace mantis
             f_value_type( k_uint )
     {
         f_value.f_uint = a_value;
+        //MTWARN( mtlog, "param_value constructor: uint32 --> uint" );
     }
 
     param_value::param_value( uint64_t a_value ) :
@@ -233,6 +197,7 @@ namespace mantis
             f_value_type( k_uint )
     {
         f_value.f_uint = a_value;
+        //MTWARN( mtlog, "param_value constructor: uint64 --> uint" );
     }
 
     param_value::param_value( int8_t a_value ) :
@@ -240,6 +205,7 @@ namespace mantis
             f_value_type( k_int )
     {
         f_value.f_int = a_value;
+        //MTWARN( mtlog, "param_value constructor: int8 --> int" );
     }
 
     param_value::param_value( int16_t a_value ) :
@@ -247,6 +213,7 @@ namespace mantis
             f_value_type( k_int )
     {
         f_value.f_int = a_value;
+        //MTWARN( mtlog, "param_value constructor: int16 --> int" );
     }
 
 
@@ -255,6 +222,7 @@ namespace mantis
             f_value_type( k_int )
     {
         f_value.f_int = a_value;
+        //MTWARN( mtlog, "param_value constructor: int32 --> int" );
     }
 
     param_value::param_value( int64_t a_value ) :
@@ -262,6 +230,7 @@ namespace mantis
             f_value_type( k_int )
     {
         f_value.f_int = a_value;
+        //MTWARN( mtlog, "param_value constructor: int64 --> int" );
     }
 
     param_value::param_value( float a_value ) :
@@ -269,6 +238,7 @@ namespace mantis
             f_value_type( k_double )
     {
         f_value.f_double = a_value;
+        //MTWARN( mtlog, "param_value constructor: float --> double" );
     }
 
     param_value::param_value( double a_value ) :
@@ -276,6 +246,7 @@ namespace mantis
             f_value_type( k_double )
     {
         f_value.f_double = a_value;
+        //MTWARN( mtlog, "param_value constructor: double --> double" );
     }
 
     param_value::param_value( const char* a_value ) :
@@ -283,6 +254,7 @@ namespace mantis
             f_value_type( k_string )
     {
         f_value.f_string = new string( a_value );
+        //MTWARN( mtlog, "param_value constructor: char* --> k_string" );
     }
 
     param_value::param_value( const string& a_value ) :
@@ -290,6 +262,7 @@ namespace mantis
             f_value_type( k_string )
     {
         f_value.f_string = new string( a_value );
+        //MTWARN( mtlog, "param_value constructor: string --> k_string" );
     }
 
     param_value::param_value( const param_value& orig ) :
@@ -301,6 +274,7 @@ namespace mantis
         {
             f_value.f_string = new string( *orig.f_value.f_string );
         }
+        //MTWARN( mtlog, "param_value copy constructor: " << type() );
     }
 
     param_value::~param_value()
@@ -333,44 +307,30 @@ namespace mantis
         return *this;
     }
 
-    param* param_value::clone() const
+    std::string param_value::type() const
     {
-        return new param_value( *this );
-    }
-
-    bool param_value::is_null() const
-    {
-        return false;
-    }
-
-    bool param_value::is_value() const
-    {
-        return true;
-    }
-
-    bool param_value::is_bool() const
-    {
-        return f_value_type == k_bool;
-    }
-
-    bool param_value::is_uint() const
-    {
-        return f_value_type == k_uint;
-    }
-
-    bool param_value::is_int() const
-    {
-        return f_value_type == k_int;
-    }
-
-    bool param_value::is_double() const
-    {
-        return f_value_type == k_double;
-    }
-
-    bool param_value::is_string() const
-    {
-        return f_value_type == k_string;
+        switch( f_value_type )
+        {
+            case k_invalid:
+                return string( "invalid" );
+                break;
+            case k_bool:
+                return string( "bool" );
+                break;
+            case k_uint:
+                return string( "uint" );
+                break;
+            case k_int:
+                return string( "int" );
+               break;
+            case k_double:
+                return string( "double" );
+                break;
+            case k_string:
+                return string( "string" );
+                break;
+        }
+        return string( "unknown" );
     }
 
     bool param_value::as_bool() const
@@ -384,7 +344,6 @@ namespace mantis
             return ! f_value.f_string->empty();
         }
         return false;
-
     }
 
     uint64_t param_value::as_uint() const
@@ -424,7 +383,7 @@ namespace mantis
         if( f_value_type == k_bool ) return f_value.f_bool;
         else if( f_value_type == k_uint ) return (double)f_value.f_uint;
         else if( f_value_type == k_int ) return (double)f_value.f_int;
-        else if( f_value_type == k_double ) return (double)f_value.f_double;
+        else if( f_value_type == k_double ) return f_value.f_double;
         else if( f_value_type == k_string )
         {
             std::stringstream t_conv;
@@ -448,116 +407,6 @@ namespace mantis
         return t_conv.str();
     }
 
-    void param_value::set( bool a_value )
-    {
-        if( f_value_type == k_string ) delete f_value.f_string;
-        f_value_type = k_bool;
-        f_value.f_bool = a_value;
-        return;
-    }
-
-    void param_value::set( uint8_t a_value )
-    {
-        if( f_value_type == k_string ) delete f_value.f_string;
-        f_value_type = k_uint;
-        f_value.f_uint = a_value;
-        return;
-    }
-
-    void param_value::set( uint16_t a_value )
-    {
-        if( f_value_type == k_string ) delete f_value.f_string;
-        f_value_type = k_uint;
-        f_value.f_uint = a_value;
-        return;
-    }
-
-    void param_value::set( uint32_t a_value )
-    {
-        if( f_value_type == k_string ) delete f_value.f_string;
-        f_value_type = k_uint;
-        f_value.f_uint = a_value;
-        return;
-    }
-
-    void param_value::set( uint64_t a_value )
-    {
-        if( f_value_type == k_string ) delete f_value.f_string;
-        f_value_type = k_uint;
-        f_value.f_uint = a_value;
-        return;
-    }
-
-    void param_value::set( int8_t a_value )
-    {
-        if( f_value_type == k_string ) delete f_value.f_string;
-        f_value_type = k_int;
-        f_value.f_int = a_value;
-        return;
-    }
-
-    void param_value::set( int16_t a_value )
-    {
-        if( f_value_type == k_string ) delete f_value.f_string;
-        f_value_type = k_int;
-        f_value.f_int = a_value;
-        return;
-    }
-
-    void param_value::set( int32_t a_value )
-    {
-        if( f_value_type == k_string ) delete f_value.f_string;
-        f_value_type = k_int;
-        f_value.f_int = a_value;
-        return;
-    }
-
-    void param_value::set( int64_t a_value )
-    {
-        if( f_value_type == k_string ) delete f_value.f_string;
-        f_value_type = k_int;
-        f_value.f_int = a_value;
-        return;
-    }
-
-    void param_value::set( float a_value )
-    {
-        if( f_value_type == k_string ) delete f_value.f_string;
-        f_value_type = k_double;
-        f_value.f_double = a_value;
-        return;
-    }
-
-    void param_value::set( double a_value )
-    {
-        if( f_value_type == k_string ) delete f_value.f_string;
-        f_value_type = k_double;
-        f_value.f_double = a_value;
-        return;
-    }
-
-    void param_value::set( const std::string& a_value )
-    {
-        if( f_value_type == k_string ) delete f_value.f_string;
-        f_value_type = k_string;
-        f_value.f_string = new string( a_value );
-        return;
-    }
-
-    void param_value::set( const char* a_value )
-    {
-        if( f_value_type == k_string ) delete f_value.f_string;
-        f_value_type = k_string;
-        f_value.f_string = new string( a_value );
-        return;
-    }
-
-
-    string param_value::to_string() const
-    {
-        return as_string();
-    }
-
     void param_value::clear()
     {
         if( f_value_type == k_bool ) f_value.f_bool = false;
@@ -569,236 +418,6 @@ namespace mantis
     }
 
 
-    //const string& param_value::get() const
-    //{
-    //     return f_value;
-    //}
-/*
-    void param_value::do_get( std::string& a_return ) const
-    {
-        a_return.clear();
-        return;
-    }
-
-    void param_value::do_set( const std::string& a_value )
-    {
-        return;
-    }
-
-    void param_value::do_set( const char* a_value )
-    {
-        return;
-    }
-
-    void param_value::do_get( bool& a_return) const
-    {
-        a_return = 0.;
-        return;
-    }
-
-    void param_value::do_set( bool a_value )
-    {
-        return;
-    }
-
-    void param_value::do_get( uint32_t& a_return ) const
-    {
-        a_return = 0.;
-        return;
-    }
-
-    void param_value::do_set( uint32_t a_value )
-    {
-        return;
-    }
-
-    void param_value::do_get( uint64_t& a_return ) const
-    {
-        a_return = 0.;
-        return;
-    }
-
-    void param_value::do_set( uint64_t a_value )
-    {
-        return;
-    }
-
-    void param_value::do_get( int32_t& a_return ) const
-    {
-        a_return = 0.;
-        return;
-    }
-
-    void param_value::do_set( int32_t a_value )
-    {
-        return;
-    }
-
-    void param_value::do_get( int64_t& a_return ) const
-    {
-        a_return = 0.;
-        return;
-    }
-
-    void param_value::do_set( int64_t a_value )
-    {
-        return;
-    }
-
-    void param_value::do_get(double& a_return) const
-    {
-        a_return = 0.;
-        return;
-    }
-
-    void param_value::do_set( double a_value )
-    {
-        return;
-    }
-*/
-    //*********
-/*
-    param_value_string::param_value_string() :
-            param_value(),
-            f_value()
-    {
-    }
-
-    param_value_string::param_value_string( const std::string& a_value ) :
-            param_value(),
-            f_value( a_value )
-    {
-    }
-
-    param_value_string::param_value_string( const char* a_value ) :
-            param_value(),
-            f_value( string( a_value ) )
-    {
-    }
-
-    param_value_string::param_value_string( const param_value_string& orig ) :
-            param_value( orig ),
-            f_value( orig.f_value )
-    {
-    }
-
-    param_value_string::~param_value_string()
-    {
-    }
-
-    param_value_string& param_value_string::operator=( const param_value_string& rhs )
-    {
-        f_value = rhs.f_value;
-        return *this;
-    }
-
-    param* param_value_string::clone() const
-    {
-        return new param_value_string( *this );
-    }
-
-    bool param_value_string::empty() const
-    {
-        return f_value.empty();
-    }
-
-    void param_value_string::clear()
-    {
-        f_value.clear();
-        return;
-    }
-
-    std::string param_value_string::to_string() const
-    {
-        return string( f_value );
-    }
-
-    void param_value_string::do_get( std::string& a_return ) const
-    {
-        a_return = f_value;
-        return;
-    }
-
-    void param_value_string::do_set( const std::string& a_value )
-    {
-        f_value = a_value;
-        return;
-    }
-
-    void param_value_string::do_set( const char* a_value )
-    {
-        f_value = string( a_value );
-        return;
-    }
-*/
-    //*********
-
-
-    //*********
-/*
-    param_value_double::param_value_double() :
-            param_value(),
-            f_value()
-    {
-    }
-
-    param_value_double::param_value_double( double a_value ) :
-            param_value(),
-            f_value( a_value )
-    {
-    }
-
-    param_value_double::param_value_double( const param_value_double& orig ) :
-            param_value( orig ),
-            f_value( orig.f_value )
-    {
-    }
-
-    param_value_double::~param_value_double()
-    {
-    }
-
-    param_value_double& param_value_double::operator=( const param_value_double& rhs )
-    {
-        f_value = rhs.f_value;
-        return *this;
-    }
-
-    param* param_value_double::clone() const
-    {
-        return new param_value_double( *this );
-    }
-
-    bool param_value_double::empty() const
-    {
-        return f_value == 0.;
-    }
-
-    void param_value_double::clear()
-    {
-        f_value = 0.;
-        return;
-    }
-
-    std::string param_value_double::to_string() const
-    {
-        stringstream t_conv;
-        t_conv << f_value;
-        return string( t_conv.str() );
-    }
-
-    void param_value_double::do_get( double& a_return ) const
-    {
-        a_return = f_value;
-        return;
-    }
-
-    void param_value_double::do_set( double a_value )
-    {
-        f_value = a_value;
-        return;
-    }
-*/
 
     //************************************
     //***********  ARRAY  ****************

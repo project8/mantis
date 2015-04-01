@@ -118,7 +118,31 @@ namespace mantis
     bool param_output_json::write_param_value( const param_value& a_to_write, XWriter* a_writer )
     {
         //MTWARN( mtlog_param_json, "writing value" );
-        a_writer->String(a_to_write.to_string().c_str());
+        if( a_to_write.is_string() )
+        {
+            a_writer->String( a_to_write.as_string().c_str() );
+            //MTWARN( mtlog_param_json, "writing string to json: " << a_to_write.as_string() );
+        }
+        else if( a_to_write.is_bool() )
+        {
+            a_writer->Bool( a_to_write.as_bool() );
+            //MTWARN( mtlog_param_json, "writing bool to json: " << a_to_write.as_bool() );
+        }
+        else if( a_to_write.is_int() )
+        {
+            a_writer->Int64( a_to_write.as_int() );
+            //MTWARN( mtlog_param_json, "writing int to json: " << a_to_write.as_int() );
+        }
+        else if( a_to_write.is_uint() )
+        {
+            a_writer->Uint64( a_to_write.as_uint() );
+            //MTWARN( mtlog_param_json, "writing uint to json: " << a_to_write.as_uint() );
+        }
+        else if( a_to_write.is_double() )
+        {
+            a_writer->Double( a_to_write.as_double() );
+            //MTWARN( mtlog_param_json, "writing double to json: " << a_to_write.as_double() );
+        }
         return true;
     }
     template< class XWriter >

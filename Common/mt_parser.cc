@@ -5,6 +5,8 @@
 #include "mt_exception.hh"
 #include "mt_logger.hh"
 
+#include <sstream>
+
 namespace mantis
 {
     MTLOGGER( mtlog, "parser" );
@@ -24,8 +26,52 @@ namespace mantis
         size_t t_div_pos = a_addr.find( '/' );
         if( t_div_pos == a_addr.npos )
         {
-            a_parent->add( a_addr, param_value( a_value ) );
-            MTDEBUG( mtlog, "parsed cl value: " << *this );
+            // we've found the value; now check if it's a number or a string
+            // if "true" or "false", then bool
+            if( a_value == "true" )
+            {
+                a_parent->add( a_addr, param_value( true ) );
+                MTDEBUG( mtlog, "Parsed CL value (" << a_value << ") as bool(true)" << *this );
+            }
+            else if( a_value == "false" )
+            {
+                a_parent->add( a_addr, param_value( false ) );
+                MTDEBUG( mtlog, "Parsed CL value (" << a_value << ") as bool(false):" << *this );
+            }
+            else
+            {
+                // test streaming to double as the most general test of whether the string is some sort of number
+                double t_double;
+                std::stringstream t_conv_double( a_value );
+                if( ! (t_conv_double >> t_double).fail() )
+                {
+                    // now we know the value is numeric
+                    if( a_value.find( '.' ) != std::string::npos )
+                    {
+                        // value is a floating-point number, since it has a decimal point
+                        a_parent->add( a_addr, param_value( t_double ) );
+                        MTDEBUG( mtlog, "Parsed CL value (" << a_value << ") as double(" << t_double << "):" << *this );
+                    }
+                    else if( a_value[ 0 ] == '-' )
+                    {
+                        // value is a signed integer
+                        a_parent->add( a_addr, param_value( (int64_t)t_double ) );
+                        MTDEBUG( mtlog, "Parsed CL value (" << a_value << ") as int(" << (int64_t)t_double << "):" << *this );
+                    }
+                    else
+                    {
+                        // value is an unsigned integer
+                        a_parent->add( a_addr, param_value( (uint64_t)t_double ) );
+                        MTDEBUG( mtlog, "Parsed CL value (" << a_value << ") as uint(" << (uint64_t)t_double << ");" << *this );
+                    }
+                }
+                else
+                {
+                    // value is not numeric; treat as a string
+                    a_parent->add( a_addr, param_value( a_value ) );
+                    MTDEBUG( mtlog, "Parsed CL value (" << a_value << ") as a string:" << *this );
+                }
+            }
             return;
         }
         param_node* t_new_node = new param_node();

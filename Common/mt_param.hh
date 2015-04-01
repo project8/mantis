@@ -88,41 +88,9 @@ namespace mantis
             static unsigned s_indent_level;
     };
 
-/*
-    class param_value_string;
-    template< typename XValueType >
-    class param_value_typed;
 
-    struct dispatcher
-    {
-            template< typename XReturnType >
-            XReturnType dispatch( const param_value_string& a_param );
-            template< typename XReturnType >
-            XReturnType dispatch( const param_value_typed< bool >& a_param );
-            template< typename XReturnType >
-            XReturnType dispatch( const param_value_typed< uint32_t >& a_param );
-            template< typename XReturnType >
-            XReturnType dispatch( const param_value_typed< uint64_t >& a_param );
-            template< typename XReturnType >
-            XReturnType dispatch( const param_value_typed< int32_t >& a_param );
-            template< typename XReturnType >
-            XReturnType dispatch( const param_value_typed< int64_t >& a_param );
-            template< typename XReturnType >
-            XReturnType dispatch( const param_value_typed< double >& a_param );
-    };
-*/
     class MANTIS_API param_value : public param
     {
-        public:
-            //static param_value* create( const std::string& a_value );
-            //static param_value* create( const char* a_value );
-            //static param_value* create( bool a_value );
-            //static param_value* create( uint32_t a_value );
-            //static param_value* create( uint64_t a_value );
-            //static param_value* create( int32_t a_value );
-            //static param_value* create( int64_t a_value );
-            //static param_value* create( double a_value );
-
         public:
             param_value();
             param_value( bool a_value );
@@ -150,6 +118,7 @@ namespace mantis
             virtual bool is_null() const;
             virtual bool is_value() const;
 
+            std::string type() const;
             bool is_bool() const;
             bool is_uint() const;
             bool is_int() const;
@@ -162,9 +131,6 @@ namespace mantis
             double as_double() const;
             std::string as_string() const;
 
-            //virtual void visit( dispatcher& ) const;
-
-            //const std::string& get() const;
             template< typename XValType >
             XValType get() const;
 
@@ -211,96 +177,7 @@ namespace mantis
                 k_invalid
             } f_value_type;
 
-        protected:
-            //virtual void do_get( std::string& a_return ) const;
-            //virtual void do_set( const std::string& a_value );
-
-            //virtual void do_set( const char* a_value );
-
-            //virtual void do_get( bool& a_return ) const;
-            //virtual void do_set( bool a_value );
-
-            //virtual void do_get( uint32_t& a_return ) const;
-            //virtual void do_set( uint32_t a_value );
-
-            //virtual void do_get( uint64_t& a_return ) const;
-            //virtual void do_set( uint64_t a_value );
-
-            //virtual void do_get( int32_t& a_return ) const;
-            //virtual void do_set( int32_t a_value );
-
-            //virtual void do_get( int64_t& a_return ) const;
-            //virtual void do_set( int64_t a_value );
-
-            //virtual void do_get( double& a_return ) const;
-            //virtual void do_set( double a_value );
-/*
-            template< typename XReturnType >
-            XReturnType  do_get_as( const param_value_typed< bool >& a_param ) const
-            {
-                return a_param.get_as< XReturnType >();
-            }
-            template< typename XReturnType >
-            XReturnType  do_get_as( const param_value_typed< uint32_t >& a_param ) const
-            {
-                return a_param.get_as< XReturnType >();
-            }
-            template< typename XReturnType >
-            XReturnType  do_get_as( const param_value_typed< uint64_t >& a_param ) const
-            {
-                return a_param.get_as< XReturnType >();
-            }
-            template< typename XReturnType >
-            XReturnType  do_get_as( const param_value_typed< int32_t >& a_param ) const
-            {
-                return a_param.get_as< XReturnType >();
-            }
-            template< typename XReturnType >
-            XReturnType  do_get_as( const param_value_typed< int64_t >& a_param ) const
-            {
-                return a_param.get_as< XReturnType >();
-            }
-            template< typename XReturnType >
-            XReturnType do_get_as( const param_value_typed< double >& a_param ) const
-            {
-                return a_param.get_as< XReturnType >();
-            }
-*/
-
-            //template< typename XValType >
-            //void do_get( XValType& a_return ) const;
-
-            //template< typename XValType >
-            //void do_set( XValType& a_value );
     };
-/*
-    template< typename XStreamableType >
-    param_value::param_value( XStreamableType a_streamable ) :
-            param(),
-            f_value()
-    {
-        (*this) << a_streamable;
-    }
-*//*
-    template< typename XValType >
-    XValType param_value::get() const
-    {
-        XValType t_return;
-        std::stringstream t_buffer;
-        t_buffer << f_value;
-        t_buffer >> t_return;
-        return t_return;
-    }
-*//*
-    template< typename XStreamableType >
-    param_value& param_value::operator<<( const XStreamableType& a_streamable )
-    {
-        //std::stringstream t_buffer;
-        //t_buffer << a_streamable;
-        //f_value = t_buffer.str();
-        return *this;
-    }
-*/
 
     template< typename XValType >
     XValType param_value::get() const
@@ -325,272 +202,156 @@ namespace mantis
     {
         return as_string();
     }
-/*
-    template< typename XValType >
-    void param_value::set( XValType a_value )
+
+
+    inline param* param_value::clone() const
     {
-        do_set( a_value );
-        return;
-    }
-*//*
-    template< typename XValType >
-    void param_value::do_get( XValType& a_return ) const
-    {
-        XValType t_return;
-        do_get( t_return );
-        return;
-    }
-*/
-/*
-    class MANTIS_API param_value_string : public param_value
-    {
-        public:
-            param_value_string();
-            param_value_string( const std::string& a_value );
-            param_value_string( const char* a_value );
-            template< typename XStreamableType >
-            param_value_string( XStreamableType a_streamable );
-            param_value_string(const param_value_string& orig);
-            virtual ~param_value_string();
-
-            param_value_string& operator=( const param_value_string& rhs );
-
-            virtual param* clone() const;
-
-            virtual bool empty() const;
-
-            virtual void visit( dispatcher& a_disp ) const
-            {
-                a_disp.dispatch< std::string >( *this );
-            }
-            void do_something() const
-            {
-                std::cout << "here i am!" << std::endl;
-            }
-
-            //template< typename XStreamableType >
-            //param_value& operator<<( const XStreamableType& a_streamable );
-
-            virtual std::string to_string() const;
-
-            virtual void clear();
-
-        protected:
-            virtual void do_get( std::string& a_return ) const;
-            virtual void do_set( const std::string& a_value );
-
-            virtual void do_set( const char* a_value );
-
-            std::string f_value;
-    };
-
-    template< typename XStreamableType >
-    param_value_string::param_value_string( XStreamableType a_streamable ) :
-            param_value(),
-            f_value()
-    {
-        (*this) << a_streamable;
+        return new param_value( *this );
     }
 
-    template< typename XValueType >
-    class MANTIS_API param_value_typed : public param_value
+    inline bool param_value::is_null() const
     {
-        public:
-            param_value_typed();
-            param_value_typed( XValueType a_double );
-            param_value_typed(const param_value_typed& orig);
-            virtual ~param_value_typed();
-
-            param_value_typed& operator=( const param_value_typed& rhs );
-
-            virtual param* clone() const;
-
-            bool empty() const;
-
-            virtual void visit( dispatcher& a_disp ) const
-            {
-                a_disp.dispatch( *this );
-            }
-            void do_something() const
-            {
-                std::cout << "here i am!" << std::endl;
-            }
-
-            //template< typename XStreamableType >
-            //param_value& operator<<( const XStreamableType& a_streamable );
-
-            template< typename XReturnType >
-            XReturnType get_as() const
-            {
-                return static_cast< XReturnType >( f_value );
-            }
-
-            virtual std::string to_string() const;
-
-            void clear();
-
-        protected:
-            virtual void do_get( XValueType& a_return ) const;
-            virtual void do_set( XValueType a_value );
-
-            XValueType f_value;
-    };
-
-    template< typename XValueType >
-    param_value_typed< XValueType >::param_value_typed() :
-            param_value(),
-            f_value()
-    {
+        return false;
     }
 
-    template< typename XValueType >
-    param_value_typed< XValueType >::param_value_typed( XValueType a_value ) :
-            param_value(),
-            f_value( a_value )
+    inline bool param_value::is_value() const
     {
+        return true;
     }
 
-    template< typename XValueType >
-    param_value_typed< XValueType >::param_value_typed( const param_value_typed< XValueType >& orig ) :
-            param_value( orig ),
-            f_value( orig.f_value )
+    inline bool param_value::is_bool() const
     {
+        return f_value_type == k_bool;
     }
 
-    template< typename XValueType >
-    param_value_typed< XValueType >::~param_value_typed()
+    inline bool param_value::is_uint() const
     {
+        return f_value_type == k_uint;
     }
 
-    template< typename XValueType >
-    param_value_typed< XValueType >& param_value_typed< XValueType >::operator=( const param_value_typed< XValueType >& rhs )
+    inline bool param_value::is_int() const
     {
-        f_value = rhs.f_value;
-        return *this;
+        return f_value_type == k_int;
     }
 
-    template< typename XValueType >
-    param* param_value_typed< XValueType >::clone() const
+    inline bool param_value::is_double() const
     {
-        return new param_value_typed< XValueType >( *this );
+        return f_value_type == k_double;
     }
 
-    template< typename XValueType >
-    bool param_value_typed< XValueType >::empty() const
+    inline bool param_value::is_string() const
     {
-        return f_value == false;
+        return f_value_type == k_string;
     }
 
-    template< typename XValueType >
-    void param_value_typed< XValueType >::clear()
+    inline void param_value::set( bool a_value )
     {
-        f_value = false;
+        if( f_value_type == k_string ) delete f_value.f_string;
+        f_value_type = k_bool;
+        f_value.f_bool = a_value;
         return;
     }
 
-    template< typename XValueType >
-    std::string param_value_typed< XValueType >::to_string() const
+    inline void param_value::set( uint8_t a_value )
     {
-        std::stringstream t_conv;
-        t_conv << f_value;
-        return std::string( t_conv.str() );
-    }
-
-    template< typename XValueType >
-    void param_value_typed< XValueType >::do_get( XValueType& a_return ) const
-    {
-        a_return = f_value;
+        if( f_value_type == k_string ) delete f_value.f_string;
+        f_value_type = k_uint;
+        f_value.f_uint = a_value;
         return;
     }
 
-    template< typename XValueType >
-    void param_value_typed< XValueType >::do_set( XValueType a_value )
+    inline void param_value::set( uint16_t a_value )
     {
-        f_value = a_value;
+        if( f_value_type == k_string ) delete f_value.f_string;
+        f_value_type = k_uint;
+        f_value.f_uint = a_value;
         return;
     }
 
-
-
-    //struct dispatcher_imp : dispatcher
-    //{
-        //virtual ~dispatcher_imp() {}
-    template< typename XReturnType >
-    XReturnType dispatcher::dispatch( const param_value_string& a_param )
+    inline void param_value::set( uint32_t a_value )
     {
-        std::cout << "string!" << std::endl;
-        a_param.do_something();
+        if( f_value_type == k_string ) delete f_value.f_string;
+        f_value_type = k_uint;
+        f_value.f_uint = a_value;
+        return;
     }
-    template< typename XReturnType >
-    XReturnType dispatcher::dispatch( const param_value_typed< bool >& a_param )
+
+    inline void param_value::set( uint64_t a_value )
     {
-        std::cout << "bool!" << std::endl;
-        a_param.do_something();
+        if( f_value_type == k_string ) delete f_value.f_string;
+        f_value_type = k_uint;
+        f_value.f_uint = a_value;
+        return;
     }
-    template< typename XReturnType >
-    XReturnType dispatcher::dispatch( const param_value_typed< uint32_t >& a_param )
+
+    inline void param_value::set( int8_t a_value )
     {
-        std::cout << "uint32_t!" << std::endl;
-        a_param.do_something();
+        if( f_value_type == k_string ) delete f_value.f_string;
+        f_value_type = k_int;
+        f_value.f_int = a_value;
+        return;
     }
-    template< typename XReturnType >
-    XReturnType dispatcher::dispatch( const param_value_typed< uint64_t >& a_param )
+
+    inline void param_value::set( int16_t a_value )
     {
-        std::cout << "uint64_t!" << std::endl;
-        a_param.do_something();
+        if( f_value_type == k_string ) delete f_value.f_string;
+        f_value_type = k_int;
+        f_value.f_int = a_value;
+        return;
     }
-    template< typename XReturnType >
-    XReturnType dispatcher::dispatch( const param_value_typed< int32_t >& a_param )
+
+    inline void param_value::set( int32_t a_value )
     {
-        std::cout << "int32_t!" << std::endl;
-        a_param.do_something();
+        if( f_value_type == k_string ) delete f_value.f_string;
+        f_value_type = k_int;
+        f_value.f_int = a_value;
+        return;
     }
-    template< typename XReturnType >
-    XReturnType dispatcher::dispatch( const param_value_typed< int64_t >& a_param )
+
+    inline void param_value::set( int64_t a_value )
     {
-        std::cout << "int64_t!" << std::endl;
-        a_param.do_something();
+        if( f_value_type == k_string ) delete f_value.f_string;
+        f_value_type = k_int;
+        f_value.f_int = a_value;
+        return;
     }
-    template< typename XReturnType >
-    XReturnType dispatcher::dispatch( const param_value_typed< double >& a_param )
+
+    inline void param_value::set( float a_value )
     {
-        std::cout << "double!" << std::endl;
-        a_param.do_something();
+        if( f_value_type == k_string ) delete f_value.f_string;
+        f_value_type = k_double;
+        f_value.f_double = a_value;
+        return;
     }
-*/
 
-
-/*
-    class MANTIS_API param_value_double : public param_value
+    inline void param_value::set( double a_value )
     {
-        public:
-            param_value_double();
-            param_value_double( double a_double );
-            param_value_double(const param_value_double& orig);
-            virtual ~param_value_double();
+        if( f_value_type == k_string ) delete f_value.f_string;
+        f_value_type = k_double;
+        f_value.f_double = a_value;
+        return;
+    }
 
-            param_value_double& operator=( const param_value_double& rhs );
+    inline void param_value::set( const std::string& a_value )
+    {
+        if( f_value_type == k_string ) delete f_value.f_string;
+        f_value_type = k_string;
+        f_value.f_string = new std::string( a_value );
+        return;
+    }
 
-            virtual param* clone() const;
+    inline void param_value::set( const char* a_value )
+    {
+        if( f_value_type == k_string ) delete f_value.f_string;
+        f_value_type = k_string;
+        f_value.f_string = new std::string( a_value );
+        return;
+    }
 
-            bool empty() const;
-
-            //template< typename XStreamableType >
-            //param_value& operator<<( const XStreamableType& a_streamable );
-
-            virtual std::string to_string() const;
-
-            void clear();
-
-        protected:
-            virtual void do_get( double& a_return ) const;
-            virtual void do_set( double a_value );
-
-            double f_value;
-    };
-*/
-
-
+    inline std::string param_value::to_string() const
+    {
+        return as_string();
+    }
 
 
 //#ifdef _WIN32

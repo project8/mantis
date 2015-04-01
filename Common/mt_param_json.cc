@@ -133,30 +133,37 @@ namespace mantis
         }
         if( a_value.IsString() )
         {
+            //MTWARN( mtlog, "reading string from json: " << a_value.GetString() );
             return new param_value( a_value.GetString() );
         }
         if( a_value.IsBool() )
         {
+            //MTWARN( mtlog, "reading bool from json: " << a_value.GetBool() );
             return new param_value( a_value.GetBool() );
         }
         if( a_value.IsInt() )
         {
-            return new param_value( (int64_t)a_value.GetInt() );
+            //MTWARN( mtlog, "reading int from json: " << a_value.GetInt() );
+            return new param_value( a_value.GetInt() );
         }
         if( a_value.IsUint() )
         {
-            return new param_value( (uint64_t)a_value.GetUint() );
+            //MTWARN( mtlog, "reading uint from json: " << a_value.GetUint() );
+            return new param_value( a_value.GetUint() );
         }
         if( a_value.IsInt64() )
         {
+            //MTWARN( mtlog, "reading int64 from json: " << a_value.GetInt64() );
             return new param_value( a_value.GetInt64() );
         }
         if( a_value.IsUint64() )
         {
+            //MTWARN( mtlog, "reading uint64 from json: " << a_value.GetUint64() );
             return new param_value( a_value.GetUint64() );
         }
         if( a_value.IsDouble() )
         {
+            //MTWARN( mtlog, "reading double from json: " << a_value.GetDouble() );
             return new param_value( a_value.GetDouble() );
         }
         MTWARN( mtlog, "(config_reader_json) unknown type; returning null value" );

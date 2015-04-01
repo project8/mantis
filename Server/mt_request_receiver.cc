@@ -128,19 +128,6 @@ namespace mantis
                 continue;
             }
 
-            t_msg_node->add( "testing1", param_value( 2 ) );
-            t_msg_node->add( "testing2", param_value( 6666666 ) );
-
-            MTDEBUG( mtlog, "Is it the same?:\n" << *t_msg_node );
-
-            std::cout << "msgop value: <" << t_msg_node->get_value< uint64_t >( "msgop" ) << ">" << std::endl;
-            std::cout << "msgtype value: <" << t_msg_node->get_value< uint64_t >( "msgtype" ) << ">" << std::endl;
-
-            std::cout << "testing 1: <" << t_msg_node->get_value< unsigned >( "testing1" ) << ">" << std::endl;
-            std::cout << "testing 2: <" << t_msg_node->get_value< unsigned >( "testing2" ) << ">" << std::endl;
-
-            std::cout << "action: <" << t_msg_payload->get_value( "action" ) << ">" << std::endl;
-
             switch( t_msg_node->get_value< unsigned >( "msgop", OP_UNKNOWN ) )
             {
                 case OP_RUN:
@@ -335,7 +322,7 @@ namespace mantis
 
     bool request_receiver::do_set_request( const param_node& a_msg_payload, AmqpClient::Envelope::ptr_t a_envelope, connection* a_connection )
     {
-        MTDEBUG( mtlog, "Set request received:\n" << a_msg_payload );
+        MTDEBUG( mtlog, "Set request received" );
 
         param_node t_reply_node;
         t_reply_node.add( "return-code", param_value( RETURN_SUCCESS ) );

@@ -343,8 +343,6 @@ namespace mantis
         param_node t_request;
         t_request.add( "msgtype", param_value( T_REQUEST ) );
         t_request.add( "msgop", param_value( OP_SET ) );
-        std::cout << "msgop value: <" << t_request.get_value< unsigned >( "msgop" ) << ">" << std::endl;
-        std::cout << "msgtype value: <" << t_request.get_value< unsigned >( "msgtype" ) << ">" << std::endl;
         //t_request.add( "target", param_value( "mantis" ) ); // use of the target is now deprecated (3/12/15)
         t_request.add( "timestamp", param_value( get_absolute_time_string() ) );
         t_request.add( "payload", t_payload_node );
