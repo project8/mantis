@@ -8,6 +8,8 @@
 #ifndef MT_RUN_DESCRIPTION_HH_
 #define MT_RUN_DESCRIPTION_HH_
 
+#include "mt_param.hh"
+
 namespace mantis
 {
 
