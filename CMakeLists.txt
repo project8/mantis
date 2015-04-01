@@ -93,6 +93,7 @@ include_directories( BEFORE ${PROJECT_SOURCE_DIR}/RapidJSON )
 ############
 
 include_directories( BEFORE ${PROJECT_SOURCE_DIR}/msgpack-c )
+include_directories( BEFORE ${PROJECT_SOURCE_DIR}/msgpack-c/include )
 
 
 ##########
