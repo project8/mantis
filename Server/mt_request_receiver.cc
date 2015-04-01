@@ -9,6 +9,8 @@
 #include "mt_constants.hh"
 #include "mt_device_manager.hh"
 #include "mt_logger.hh"
+#include "mt_param_json.hh"
+#include "mt_param_msgpack.hh"
 #include "mt_run_database.hh"
 #include "mt_run_description.hh"
 #include "mt_version.hh"
@@ -102,6 +104,10 @@ namespace mantis
             if( t_envelope->Message()->ContentEncoding() == "application/json" )
             {
                 t_msg_node = param_input_json::read_string( t_envelope->Message()->Body() );
+            }
+            else if( t_envelope->Message()->ContentEncoding() == "application/msgpack" )
+            {
+                t_msg_node = param_input_msgpack::read_string( t_envelope->Message()->Body() );
             }
             else
             {

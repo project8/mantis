@@ -45,7 +45,7 @@ namespace mantis
             //static param_node* read_file( const std::string& a_filename );
             static param_node* read_string( const std::string& a_msgpack_str );
             //static param_node* read_document( const rapidjson::Document& a_document );
-            static param* read_value( const rapidjson::Value& a_value );
+            //static param* read_value( const rapidjson::Value& a_value );
     };
 
     //***************************************
@@ -55,10 +55,10 @@ namespace mantis
     class MANTIS_API param_output_msgpack
     {
         public:
-            typedef rapidjson::Writer< rapidjson::FileStream, rapidjson::UTF8<>, rapidjson::MemoryPoolAllocator<> > rj_file_writer;
-            typedef rapidjson::PrettyWriter< rapidjson::FileStream, rapidjson::UTF8<>, rapidjson::MemoryPoolAllocator<> > rj_pretty_file_writer;
-            typedef rapidjson::Writer< rapidjson::StringBuffer, rapidjson::UTF8<>, rapidjson::MemoryPoolAllocator<> > rj_string_writer;
-            typedef rapidjson::PrettyWriter< rapidjson::StringBuffer, rapidjson::UTF8<>, rapidjson::MemoryPoolAllocator<> > rj_pretty_string_writer;
+            //typedef rapidjson::Writer< rapidjson::FileStream, rapidjson::UTF8<>, rapidjson::MemoryPoolAllocator<> > rj_file_writer;
+            //typedef rapidjson::PrettyWriter< rapidjson::FileStream, rapidjson::UTF8<>, rapidjson::MemoryPoolAllocator<> > rj_pretty_file_writer;
+            //typedef rapidjson::Writer< rapidjson::StringBuffer, rapidjson::UTF8<>, rapidjson::MemoryPoolAllocator<> > rj_string_writer;
+            //typedef rapidjson::PrettyWriter< rapidjson::StringBuffer, rapidjson::UTF8<>, rapidjson::MemoryPoolAllocator<> > rj_pretty_string_writer;
 
             enum json_writing_style
             {
@@ -118,7 +118,31 @@ namespace mantis
     bool param_output_msgpack::write_param_value( const param_value& a_to_write, XWriter* a_writer )
     {
         //MTWARN( mtlog_param_msgpack, "writing value" );
-        a_writer->String(a_to_write.to_string().c_str());
+        if( a_to_write.is_string() )
+        {
+            a_writer->String( a_to_write.as_string().c_str() );
+            //MTWARN( mtlog_param_msgpack, "writing string to msgpack: " << a_to_write.as_string() );
+        }
+        else if( a_to_write.is_bool() )
+        {
+            a_writer->Bool( a_to_write.as_bool() );
+            //MTWARN( mtlog_param_msgpack, "writing bool to msgpack: " << a_to_write.as_bool() );
+        }
+        else if( a_to_write.is_int() )
+        {
+            a_writer->Int64( a_to_write.as_int() );
+            //MTWARN( mtlog_param_msgpack, "writing int to msgpack: " << a_to_write.as_int() );
+        }
+        else if( a_to_write.is_uint() )
+        {
+            a_writer->Uint64( a_to_write.as_uint() );
+            //MTWARN( mtlog_param_msgpack, "writing uint to msgpack: " << a_to_write.as_uint() );
+        }
+        else if( a_to_write.is_double() )
+        {
+            a_writer->Double( a_to_write.as_double() );
+            //MTWARN( mtlog_param_msgpack, "writing double to msgpack: " << a_to_write.as_double() );
+        }
         return true;
     }
     template< class XWriter >
@@ -158,4 +182,4 @@ namespace mantis
 
 } /* namespace mantis */
 
-#endif /* MT_PARAM_HH_ */
+#endif /* MT_PARAM_MSGPACK_HH_ */
