@@ -22,9 +22,6 @@
 #include <sstream>
 #include <string>
 
-//#ifdef _WIN32
-//MANTIS_EXPIMP_TEMPLATE template class MANTIS_API std::basic_string< char, std::char_traits< char >, std::allocator< char > >;
-//#endif
 
 namespace mantis
 {
@@ -178,6 +175,330 @@ namespace mantis
             } f_value_type;
 
     };
+
+
+    class MANTIS_API param_array : public param
+    {
+        public:
+            typedef std::deque< param* > contents;
+            typedef contents::iterator iterator;
+            typedef contents::const_iterator const_iterator;
+            typedef contents::reverse_iterator reverse_iterator;
+            typedef contents::const_reverse_iterator const_reverse_iterator;
+            typedef contents::value_type contents_type;
+
+        public:
+            param_array();
+            param_array( const param_array& orig );
+            virtual ~param_array();
+
+            param_array& operator=( const param_array& rhs );
+
+            virtual param* clone() const;
+
+            virtual bool is_null() const;
+            virtual bool is_array() const;
+
+            unsigned size() const;
+            bool empty() const;
+
+            /// sets the size of the array
+            /// if smaller than the current size, extra elements are deleted
+            void resize( unsigned a_size );
+
+            /// Returns the result of ParamValue::get if a_name is present and is of type ParamValue
+            /// Throws an exception if a_name is not present or is not of type ParamValue
+            std::string get_value( unsigned a_index ) const;
+            /// Returns the result of ParamValue::get if a_name is present and is of type ParamValue
+            /// Throws an exception if a_name is not present or is not of type ParamValue
+            template< typename XValType >
+            XValType get_value( unsigned a_index ) const;
+
+            /// Returns the result of ParamValue::get if a_name is present and is of type ParamValue
+            /// Returns a_default if a_name is not present or is not of type ParamValue
+            std::string get_value( unsigned a_index, const std::string& a_default ) const;
+            std::string get_value( unsigned a_index, const char* a_default ) const;
+            /// Returns the result of ParamValue::get if a_name is present and is of type ParamValue
+            /// Returns a_default if a_name is not present or is not of type ParamValue
+            template< typename XValType >
+            XValType get_value( unsigned a_index, XValType a_default ) const;
+
+            /// Returns a pointer to the param corresponding to a_name.
+            /// Returns NULL if a_name is not present.
+            const param* at( unsigned a_index ) const;
+            /// Returns a pointer to the param corresponding to a_name.
+            /// Returns NULL if a_name is not present.
+            param* at( unsigned a_index );
+
+            /// Returns a pointer to the param_value (static-ly cast) corresponding to a_name.
+            /// Returns NULL if a_name is not present.
+            const param_value* value_at( unsigned a_index ) const;
+            /// Returns a pointer to the param_value (static-ly cast) corresponding to a_name.
+            /// Returns NULL if a_name is not present.
+            param_value* value_at( unsigned a_index );
+
+            /// Returns a pointer to the param_array (static-ly cast) corresponding to a_name.
+            /// Returns NULL if a_name is not present.
+            const param_array* array_at( unsigned a_index ) const;
+            /// Returns a pointer to the param_array (static-ly cast) corresponding to a_name.
+            /// Returns NULL if a_name is not present.
+            param_array* array_at( unsigned a_index );
+
+            /// Returns a pointer to the param_node (static-ly cast) corresponding to a_name.
+            /// Returns NULL if a_name is not present.
+            const param_node* node_at( unsigned a_index ) const;
+            /// Returns a pointer to the param_node (static-ly cast) corresponding to a_name.
+            /// Returns NULL if a_name is not present.
+            param_node* node_at( unsigned a_index );
+
+            /// Returns a reference to the param at a_index.
+            /// Behavior is undefined if a_index is out-of-range.
+            const param& operator[]( unsigned a_index ) const;
+            /// Returns a reference to the param at a_index.
+            /// Behavior is undefined if a_index is out-of-range.
+            param& operator[]( unsigned a_index );
+
+            const param* front() const;
+            param* front();
+
+            const param* back() const;
+            param* back();
+
+            // assign a copy of a_value to the array at a_index
+            void assign( unsigned a_index, const param& a_value );
+            // directly assign a_value_ptr to the array at a_index
+            void assign( unsigned a_index, param* a_value_ptr );
+
+            void push_back( const param& a_value );
+            void push_back( param* a_value_ptr );
+
+            void push_front( const param& a_value );
+            void push_front( param* a_value_ptr );
+
+            void append( const param_array& an_array );
+
+            void erase( unsigned a_index );
+            param* remove( unsigned a_index );
+            void clear();
+
+            iterator begin();
+            const_iterator begin() const;
+
+            iterator end();
+            const_iterator end() const;
+
+            reverse_iterator rbegin();
+            const_reverse_iterator rbegin() const;
+
+            reverse_iterator rend();
+            const_reverse_iterator rend() const;
+
+            virtual std::string to_string() const;
+
+        protected:
+            contents f_contents;
+    };
+
+
+
+    class MANTIS_API param_node : public param
+    {
+        public:
+            typedef std::map< std::string, param* > contents;
+            typedef contents::iterator iterator;
+            typedef contents::const_iterator const_iterator;
+            typedef contents::value_type contents_type;
+
+            param_node();
+            param_node( const param_node& orig );
+            virtual ~param_node();
+
+            param_node& operator=( const param_node& rhs );
+
+            virtual param* clone() const;
+
+            virtual bool is_null() const;
+            virtual bool is_node() const;
+
+            unsigned size() const;
+            bool empty() const;
+
+            bool has( const std::string& a_name ) const;
+            unsigned count( const std::string& a_name ) const;
+
+            /// Returns the result of ParamValue::get if a_name is present and is of type ParamValue
+            /// Throws an exception if a_name is not present or is not of type ParamValue
+            std::string get_value( const std::string& a_name ) const;
+            /// Returns the result of ParamValue::get if a_name is present and is of type ParamValue
+            /// Throws an exception if a_name is not present or is not of type ParamValue
+            template< typename XValType >
+            XValType get_value( const std::string& a_name ) const;
+
+            /// Returns the result of ParamValue::get if a_name is present and is of type ParamValue
+            /// Returns a_default if a_name is not present or is not of type ParamValue
+            std::string get_value( const std::string& a_name, const std::string& a_default ) const;
+            std::string get_value( const std::string& a_name, const char* a_default ) const;
+            /// Returns the result of ParamValue::get if a_name is present and is of type ParamValue
+            /// Returns a_default if a_name is not present or is not of type ParamValue
+            template< typename XValType >
+            XValType get_value( const std::string& a_name, XValType a_default ) const;
+
+            /// Returns a pointer to the param corresponding to a_name.
+            /// Returns NULL if a_name is not present.
+            const param* at( const std::string& a_name ) const;
+            /// Returns a pointer to the param corresponding to a_name.
+            /// Returns NULL if a_name is not present.
+            param* at( const std::string& a_name );
+
+            const param_value* value_at( const std::string& a_name ) const;
+            param_value* value_at( const std::string& a_name );
+
+            const param_array* array_at( const std::string& a_name ) const;
+            param_array* array_at( const std::string& a_name );
+
+            const param_node* node_at( const std::string& a_name ) const;
+            param_node* node_at( const std::string& a_name );
+
+            /// Returns a reference to the param corresponding to a_name.
+            /// Throws an exception if a_name is not present.
+            const param& operator[]( const std::string& a_name ) const;
+            /// Returns a reference to the param corresponding to a_name.
+            /// Adds a new value if a_name is not present.
+            param& operator[]( const std::string& a_name );
+
+            /// creates a copy of a_value
+            bool add( const std::string& a_name, const param& a_value );
+            /// directly adds (without copying) a_value_ptr
+            bool add( const std::string& a_name, param* a_value_ptr );
+
+            /// creates a copy of a_value
+            void replace( const std::string& a_name, const param& a_value );
+            /// directly adds (without copying) a_value_ptr
+            void replace( const std::string& a_name, param* a_value_ptr );
+
+            /// Merges the contents of a_object into this object.
+            /// If names in the contents of a_object exist in this object,
+            /// the values in this object corresponding to the matching names will be replaced.
+            void merge( const param_node& a_object );
+
+            void erase( const std::string& a_name );
+            param* remove( const std::string& a_name );
+            void clear();
+
+            iterator begin();
+            const_iterator begin() const;
+
+            iterator end();
+            const_iterator end() const;
+
+            virtual std::string to_string() const;
+
+        protected:
+            contents f_contents;
+
+    };
+
+    inline param* param::clone() const
+    {
+        return new param( *this );
+    }
+
+    inline bool param::is_null() const
+    {
+        return true;
+    }
+
+    inline bool param::is_value() const
+    {
+        return false;
+    }
+
+    inline bool param::is_array() const
+    {
+        return false;
+    }
+
+    inline bool param::is_node() const
+    {
+        return false;
+    }
+
+    inline param_value& param::as_value()
+    {
+        param_value* t_cast_ptr = dynamic_cast< param_value* >( this );
+        return *t_cast_ptr;
+    }
+
+    inline param_array& param::as_array()
+    {
+        param_array* t_cast_ptr = dynamic_cast< param_array* >( this );
+        return *t_cast_ptr;
+    }
+
+    inline param_node& param::as_node()
+    {
+        param_node* t_cast_ptr = dynamic_cast< param_node* >( this );
+        return *t_cast_ptr;
+    }
+
+    inline const param_value& param::as_value() const
+    {
+        const param_value* t_cast_ptr = dynamic_cast< const param_value* >( this );
+        return *t_cast_ptr;
+    }
+
+    inline const param_array& param::as_array() const
+    {
+        const param_array* t_cast_ptr = dynamic_cast< const param_array* >( this );
+        return *t_cast_ptr;
+    }
+
+    inline const param_node& param::as_node() const
+    {
+        const param_node* t_cast_ptr = dynamic_cast< const param_node* >( this );
+        return *t_cast_ptr;
+    }
+
+    inline const param_value& param::operator()() const
+    {
+        return as_value();
+    }
+
+    inline param_value& param::operator()()
+    {
+        return as_value();
+    }
+
+    inline const param& param::operator[]( unsigned a_index ) const
+    {
+        return as_array()[ a_index ];
+    }
+
+    inline param& param::operator[]( unsigned a_index )
+    {
+        return as_array()[ a_index ];
+    }
+
+    inline const param& param::operator[]( const std::string& a_name ) const
+    {
+        return as_node()[ a_name ];
+    }
+
+    inline param& param::operator[]( const std::string& a_name )
+    {
+        return as_node()[ a_name ];
+    }
+
+    inline std::string param::to_string() const
+    {
+        return std::string();
+    }
+
+
+    //************************************
+    //***********  VALUE  ****************
+    //************************************
+
 
     template< typename XValType >
     XValType param_value::get() const
@@ -354,131 +675,10 @@ namespace mantis
     }
 
 
-//#ifdef _WIN32
-//    MANTIS_EXPIMP_TEMPLATE template class MANTIS_API std::deque< param* >;
-//#endif
 
-    class MANTIS_API param_array : public param
-    {
-        public:
-            typedef std::deque< param* > contents;
-            typedef contents::iterator iterator;
-            typedef contents::const_iterator const_iterator;
-            typedef contents::reverse_iterator reverse_iterator;
-            typedef contents::const_reverse_iterator const_reverse_iterator;
-            typedef contents::value_type contents_type;
-
-        public:
-            param_array();
-            param_array( const param_array& orig );
-            virtual ~param_array();
-
-            param_array& operator=( const param_array& rhs );
-
-            virtual param* clone() const;
-
-            virtual bool is_null() const;
-            virtual bool is_array() const;
-
-            unsigned size() const;
-            bool empty() const;
-
-            /// sets the size of the array
-            /// if smaller than the current size, extra elements are deleted
-            void resize( unsigned a_size );
-
-            /// Returns the result of ParamValue::get if a_name is present and is of type ParamValue
-            /// Throws an exception if a_name is not present or is not of type ParamValue
-            std::string get_value( unsigned a_index ) const;
-            /// Returns the result of ParamValue::get if a_name is present and is of type ParamValue
-            /// Throws an exception if a_name is not present or is not of type ParamValue
-            template< typename XValType >
-            XValType get_value( unsigned a_index ) const;
-
-            /// Returns the result of ParamValue::get if a_name is present and is of type ParamValue
-            /// Returns a_default if a_name is not present or is not of type ParamValue
-            std::string get_value( unsigned a_index, const std::string& a_default ) const;
-            std::string get_value( unsigned a_index, const char* a_default ) const;
-            /// Returns the result of ParamValue::get if a_name is present and is of type ParamValue
-            /// Returns a_default if a_name is not present or is not of type ParamValue
-            template< typename XValType >
-            XValType get_value( unsigned a_index, XValType a_default ) const;
-
-            /// Returns a pointer to the param corresponding to a_name.
-            /// Returns NULL if a_name is not present.
-            const param* at( unsigned a_index ) const;
-            /// Returns a pointer to the param corresponding to a_name.
-            /// Returns NULL if a_name is not present.
-            param* at( unsigned a_index );
-
-            /// Returns a pointer to the param_value (static-ly cast) corresponding to a_name.
-            /// Returns NULL if a_name is not present.
-            const param_value* value_at( unsigned a_index ) const;
-            /// Returns a pointer to the param_value (static-ly cast) corresponding to a_name.
-            /// Returns NULL if a_name is not present.
-            param_value* value_at( unsigned a_index );
-
-            /// Returns a pointer to the param_array (static-ly cast) corresponding to a_name.
-            /// Returns NULL if a_name is not present.
-            const param_array* array_at( unsigned a_index ) const;
-            /// Returns a pointer to the param_array (static-ly cast) corresponding to a_name.
-            /// Returns NULL if a_name is not present.
-            param_array* array_at( unsigned a_index );
-
-            /// Returns a pointer to the param_node (static-ly cast) corresponding to a_name.
-            /// Returns NULL if a_name is not present.
-            const param_node* node_at( unsigned a_index ) const;
-            /// Returns a pointer to the param_node (static-ly cast) corresponding to a_name.
-            /// Returns NULL if a_name is not present.
-            param_node* node_at( unsigned a_index );
-
-            /// Returns a reference to the param at a_index.
-            /// Behavior is undefined if a_index is out-of-range.
-            const param& operator[]( unsigned a_index ) const;
-            /// Returns a reference to the param at a_index.
-            /// Behavior is undefined if a_index is out-of-range.
-            param& operator[]( unsigned a_index );
-
-            const param* front() const;
-            param* front();
-
-            const param* back() const;
-            param* back();
-
-            // assign a copy of a_value to the array at a_index
-            void assign( unsigned a_index, const param& a_value );
-            // directly assign a_value_ptr to the array at a_index
-            void assign( unsigned a_index, param* a_value_ptr );
-
-            void push_back( const param& a_value );
-            void push_back( param* a_value_ptr );
-
-            void push_front( const param& a_value );
-            void push_front( param* a_value_ptr );
-
-            void append( const param_array& an_array );
-
-            void erase( unsigned a_index );
-            param* remove( unsigned a_index );
-            void clear();
-
-            iterator begin();
-            const_iterator begin() const;
-
-            iterator end();
-            const_iterator end() const;
-
-            reverse_iterator rbegin();
-            const_reverse_iterator rbegin() const;
-
-            reverse_iterator rend();
-            const_reverse_iterator rend() const;
-
-            virtual std::string to_string() const;
-
-        protected:
-            contents f_contents;
-    };
+    //************************************
+    //***********  ARRAY  ****************
+    //************************************
 
     template< typename XValType >
     XValType param_array::get_value( unsigned a_index ) const
@@ -496,111 +696,232 @@ namespace mantis
         return value->get< XValType >();
     }
 
-
-
-//#ifdef _WIN32
-//    MANTIS_EXPIMP_TEMPLATE template class MANTIS_API std::map< std::string, param* >;
-//#endif
-
-    class MANTIS_API param_node : public param
+    inline param* param_array::clone() const
     {
-        public:
-            typedef std::map< std::string, param* > contents;
-            typedef contents::iterator iterator;
-            typedef contents::const_iterator const_iterator;
-            typedef contents::value_type contents_type;
+        return new param_array( *this );
+    }
 
-            param_node();
-            param_node( const param_node& orig );
-            virtual ~param_node();
+    inline bool param_array::is_null() const
+    {
+        return false;
+    }
 
-            param_node& operator=( const param_node& rhs );
+    inline bool param_array::is_array() const
+    {
+        return true;
+    }
 
-            virtual param* clone() const;
+    inline unsigned param_array::size() const
+    {
+        return f_contents.size();
+    }
+    inline bool param_array::empty() const
+    {
+        return f_contents.empty();
+    }
 
-            virtual bool is_null() const;
-            virtual bool is_node() const;
+    inline std::string param_array::get_value( unsigned a_index ) const
+    {
+        const param_value* value = value_at( a_index );
+        if( value == NULL ) throw param_exception() << "No value at <" << a_index << "> is present at this node";
+        return value->to_string();
+    }
 
-            unsigned size() const;
-            bool empty() const;
+    inline std::string param_array::get_value( unsigned a_index, const std::string& a_default ) const
+    {
+        const param_value* value = value_at( a_index );
+        if( value == NULL ) return a_default;
+        return value->to_string();
+    }
 
-            bool has( const std::string& a_name ) const;
-            unsigned count( const std::string& a_name ) const;
+    inline std::string param_array::get_value( unsigned a_index, const char* a_default ) const
+    {
+        return get_value( a_index, std::string( a_default ) );
+    }
 
-            /// Returns the result of ParamValue::get if a_name is present and is of type ParamValue
-            /// Throws an exception if a_name is not present or is not of type ParamValue
-            std::string get_value( const std::string& a_name ) const;
-            /// Returns the result of ParamValue::get if a_name is present and is of type ParamValue
-            /// Throws an exception if a_name is not present or is not of type ParamValue
-            template< typename XValType >
-            XValType get_value( const std::string& a_name ) const;
+    inline const param* param_array::at( unsigned a_index ) const
+    {
+        if( a_index >= f_contents.size() ) return NULL;
+        return f_contents[ a_index ];
+    }
+    inline param* param_array::at( unsigned a_index )
+    {
+        if( a_index >= f_contents.size() ) return NULL;
+        return f_contents[ a_index ];
+    }
 
-            /// Returns the result of ParamValue::get if a_name is present and is of type ParamValue
-            /// Returns a_default if a_name is not present or is not of type ParamValue
-            std::string get_value( const std::string& a_name, const std::string& a_default ) const;
-            std::string get_value( const std::string& a_name, const char* a_default ) const;
-            /// Returns the result of ParamValue::get if a_name is present and is of type ParamValue
-            /// Returns a_default if a_name is not present or is not of type ParamValue
-            template< typename XValType >
-            XValType get_value( const std::string& a_name, XValType a_default ) const;
+    inline const param_value* param_array::value_at( unsigned a_index ) const
+    {
+        if( a_index >= f_contents.size() ) return NULL;
+        return &f_contents[ a_index ]->as_value();
+    }
+    inline param_value* param_array::value_at( unsigned a_index )
+    {
+        if( a_index >= f_contents.size() ) return NULL;
+        return &f_contents[ a_index ]->as_value();
+    }
 
-            /// Returns a pointer to the param corresponding to a_name.
-            /// Returns NULL if a_name is not present.
-            const param* at( const std::string& a_name ) const;
-            /// Returns a pointer to the param corresponding to a_name.
-            /// Returns NULL if a_name is not present.
-            param* at( const std::string& a_name );
+    inline const param_array* param_array::array_at( unsigned a_index ) const
+    {
+        if( a_index >= f_contents.size() ) return NULL;
+        return &f_contents[ a_index ]->as_array();
+    }
+    inline param_array* param_array::array_at( unsigned a_index )
+    {
+        if( a_index >= f_contents.size() ) return NULL;
+        return &f_contents[ a_index ]->as_array();
+    }
 
-            const param_value* value_at( const std::string& a_name ) const;
-            param_value* value_at( const std::string& a_name );
+    inline const param_node* param_array::node_at( unsigned a_index ) const
+    {
+        if( a_index >= f_contents.size() ) return NULL;
+        return &f_contents[ a_index ]->as_node();
+    }
+    inline param_node* param_array::node_at( unsigned a_index )
+    {
+        if( a_index >= f_contents.size() ) return NULL;
+        return &f_contents[ a_index ]->as_node();
+    }
 
-            const param_array* array_at( const std::string& a_name ) const;
-            param_array* array_at( const std::string& a_name );
+    inline const param& param_array::operator[]( unsigned a_index ) const
+    {
+        return *f_contents[ a_index ];
+    }
+    inline param& param_array::operator[]( unsigned a_index )
+    {
+        return *f_contents[ a_index ];
+    }
 
-            const param_node* node_at( const std::string& a_name ) const;
-            param_node* node_at( const std::string& a_name );
+    inline const param* param_array::front() const
+    {
+        return f_contents.front();
+    }
+    inline param* param_array::front()
+    {
+        return f_contents.front();
+    }
 
-            /// Returns a reference to the param corresponding to a_name.
-            /// Throws an exception if a_name is not present.
-            const param& operator[]( const std::string& a_name ) const;
-            /// Returns a reference to the param corresponding to a_name.
-            /// Adds a new value if a_name is not present.
-            param& operator[]( const std::string& a_name );
+    inline const param* param_array::back() const
+    {
+        return f_contents.back();
+    }
+    inline param* param_array::back()
+    {
+        return f_contents.back();
+    }
 
-            /// creates a copy of a_value
-            bool add( const std::string& a_name, const param& a_value );
-            /// directly adds (without copying) a_value_ptr
-            bool add( const std::string& a_name, param* a_value_ptr );
+    // assign a copy of a_value to the array at a_index
+    inline void param_array::assign( unsigned a_index, const param& a_value )
+    {
+        erase( a_index );
+        f_contents[ a_index ] = a_value.clone();
+        return;
+    }
+    // directly assign a_value_ptr to the array at a_index
+    inline void param_array::assign( unsigned a_index, param* a_value_ptr )
+    {
+        erase( a_index );
+        f_contents[ a_index ] = a_value_ptr;
+        return;
+    }
 
-            /// creates a copy of a_value
-            void replace( const std::string& a_name, const param& a_value );
-            /// directly adds (without copying) a_value_ptr
-            void replace( const std::string& a_name, param* a_value_ptr );
+    inline void param_array::push_back( const param& a_value )
+    {
+        f_contents.push_back( a_value.clone() );
+        return;
+    }
+    inline void param_array::push_back( param* a_value_ptr )
+    {
+        f_contents.push_back( a_value_ptr );
+        return;
+    }
 
-            /// Merges the contents of a_object into this object.
-            /// If names in the contents of a_object exist in this object,
-            /// the values in this object corresponding to the matching names will be replaced.
-            void merge( const param_node& a_object );
+    inline void param_array::push_front( const param& a_value )
+    {
+        f_contents.push_front( a_value.clone() );
+        return;
+    }
+    inline void param_array::push_front( param* a_value_ptr )
+    {
+        f_contents.push_front( a_value_ptr );
+        return;
+    }
 
-            void erase( const std::string& a_name );
-            param* remove( const std::string& a_name );
-            void clear();
+    inline void param_array::append( const param_array& an_array )
+    {
+        for( param_array::const_iterator it = an_array.begin(); it != an_array.end(); ++it )
+        {
+            push_back( *(*it) );
+        }
+        return;
+    }
 
-            iterator begin();
-            const_iterator begin() const;
+    inline void param_array::erase( unsigned a_index )
+    {
+        delete f_contents[ a_index ];
+        return;
+    }
+    inline param* param_array::remove( unsigned a_index )
+    {
+        param* t_current = f_contents[ a_index ];
+        f_contents[ a_index ] = NULL;
+        return t_current;
+    }
+    inline void param_array::clear()
+    {
+        for( unsigned ind = 0; ind < f_contents.size(); ++ind )
+        {
+            delete f_contents[ ind ];
+        }
+        f_contents.clear();
+        return;
+    }
 
-            iterator end();
-            const_iterator end() const;
+    inline param_array::iterator param_array::begin()
+    {
+        return f_contents.begin();
+    }
+    inline param_array::const_iterator param_array::begin() const
+    {
+        return f_contents.begin();
+    }
 
-            virtual std::string to_string() const;
+    inline param_array::iterator param_array::end()
+    {
+        return f_contents.end();
+    }
+    inline param_array::const_iterator param_array::end() const
+    {
+        return f_contents.end();
+    }
 
-        protected:
-            contents f_contents;
+    inline param_array::reverse_iterator param_array::rbegin()
+    {
+        return f_contents.rbegin();
+    }
+    inline param_array::const_reverse_iterator param_array::rbegin() const
+    {
+        return f_contents.rbegin();
+    }
 
-    };
+    inline param_array::reverse_iterator param_array::rend()
+    {
+        return f_contents.rend();
+    }
+    inline param_array::const_reverse_iterator param_array::rend() const
+    {
+        return f_contents.rend();
+    }
+
+
+
+    //************************************
+    //***********  NODE  *****************
+    //************************************
+
 
     template< typename XValType >
-    XValType param_node::get_value( const std::string& a_name ) const
+    inline XValType param_node::get_value( const std::string& a_name ) const
     {
         const param_value* value = value_at( a_name );
         if( value == NULL ) throw exception() << "No value with name <" << a_name << "> is present at this node";
@@ -608,11 +929,249 @@ namespace mantis
     }
 
     template< typename XValType >
-    XValType param_node::get_value( const std::string& a_name, XValType a_default ) const
+    inline XValType param_node::get_value( const std::string& a_name, XValType a_default ) const
     {
         const param_value* value = value_at( a_name );
         if( value == NULL ) return a_default;
         return value->get< XValType >();
+    }
+
+    inline param* param_node::clone() const
+    {
+        return new param_node( *this );
+    }
+
+    inline bool param_node::is_null() const
+    {
+        return false;
+    }
+
+    inline bool param_node::is_node() const
+    {
+        return true;
+    }
+
+    inline unsigned param_node::size() const
+    {
+        return f_contents.size();
+    }
+    inline bool param_node::empty() const
+    {
+        return f_contents.empty();
+    }
+
+
+    inline bool param_node::has( const std::string& a_name ) const
+    {
+        return f_contents.count( a_name ) > 0;
+    }
+
+    inline unsigned param_node::count( const std::string& a_name ) const
+    {
+        return f_contents.count( a_name );
+    }
+
+    inline std::string param_node::get_value( const std::string& a_name ) const
+    {
+        const param_value* value = value_at( a_name );
+        if( value == NULL ) throw param_exception() << "No value with name <" << a_name << "> is present at this node:\n" << *this;
+        return value->to_string();
+    }
+
+    inline std::string param_node::get_value( const std::string& a_name, const std::string& a_default ) const
+    {
+        const param_value* value = value_at( a_name );
+        if( value == NULL ) return a_default;
+        return value->to_string();
+    }
+
+    inline std::string param_node::get_value( const std::string& a_name, const char* a_default ) const
+    {
+        return get_value( a_name, std::string( a_default ) );
+    }
+
+    inline const param* param_node::at( const std::string& a_name ) const
+    {
+        const_iterator it = f_contents.find( a_name );
+        if( it == f_contents.end() )
+        {
+            return NULL;
+        }
+        return it->second;
+    }
+
+    inline param* param_node::at( const std::string& a_name )
+    {
+        iterator it = f_contents.find( a_name );
+        if( it == f_contents.end() )
+        {
+            return NULL;
+        }
+        return it->second;
+    }
+
+    inline const param_value* param_node::value_at( const std::string& a_name ) const
+    {
+        const_iterator it = f_contents.find( a_name );
+        if( it == f_contents.end() )
+        {
+            return NULL;
+        }
+        return &it->second->as_value();
+    }
+
+    inline param_value* param_node::value_at( const std::string& a_name )
+    {
+        iterator it = f_contents.find( a_name );
+        if( it == f_contents.end() )
+        {
+            return NULL;
+        }
+        return &it->second->as_value();
+    }
+
+    inline const param_array* param_node::array_at( const std::string& a_name ) const
+    {
+        const_iterator it = f_contents.find( a_name );
+        if( it == f_contents.end() )
+        {
+            return NULL;
+        }
+        return &it->second->as_array();
+    }
+
+    inline param_array* param_node::array_at( const std::string& a_name )
+    {
+        iterator it = f_contents.find( a_name );
+        if( it == f_contents.end() )
+        {
+            return NULL;
+        }
+        return &it->second->as_array();
+    }
+
+    inline const param_node* param_node::node_at( const std::string& a_name ) const
+    {
+        const_iterator it = f_contents.find( a_name );
+        if( it == f_contents.end() )
+        {
+            return NULL;
+        }
+        return &it->second->as_node();
+    }
+
+    inline param_node* param_node::node_at( const std::string& a_name )
+    {
+        iterator it = f_contents.find( a_name );
+        if( it == f_contents.end() )
+        {
+            return NULL;
+        }
+        return &it->second->as_node();
+    }
+
+    inline const param& param_node::operator[]( const std::string& a_name ) const
+    {
+        const_iterator it = f_contents.find( a_name );
+        if( it == f_contents.end() )
+        {
+            throw param_exception() << "No value present corresponding to name <" << a_name << ">\n";
+        }
+        return *(it->second);
+    }
+
+    inline param& param_node::operator[]( const std::string& a_name )
+    {
+        return *f_contents[ a_name ];
+    }
+
+    inline bool param_node::add( const std::string& a_name, const param& a_value )
+    {
+        iterator it = f_contents.find( a_name );
+        if( it == f_contents.end() )
+        {
+            f_contents.insert( contents_type( a_name, a_value.clone() ) );
+            return true;
+        }
+        return false;
+    }
+
+    inline bool param_node::add( const std::string& a_name, param* a_value )
+    {
+        iterator it = f_contents.find( a_name );
+        if( it == f_contents.end() )
+        {
+            f_contents.insert( contents_type( a_name, a_value ) );
+            return true;
+        }
+        return false;
+    }
+
+    inline void param_node::replace( const std::string& a_name, const param& a_value )
+    {
+        erase( a_name );
+        f_contents[ a_name ] = a_value.clone();
+        return;
+    }
+
+    inline void param_node::replace( const std::string& a_name, param* a_value )
+    {
+        erase( a_name );
+        f_contents[ a_name ] = a_value;
+        return;
+    }
+
+    inline void param_node::erase( const std::string& a_name )
+    {
+        iterator it = f_contents.find( a_name );
+        if( it != f_contents.end() )
+        {
+            delete it->second;
+            f_contents.erase( it );
+        }
+        return;
+    }
+
+    inline param* param_node::remove( const std::string& a_name )
+    {
+        iterator it = f_contents.find( a_name );
+        if( it != f_contents.end() )
+        {
+            param* removed = it->second;
+            f_contents.erase( it );
+            return removed;
+        }
+        return NULL;
+    }
+
+    inline void param_node::clear()
+    {
+        for( iterator it = f_contents.begin(); it != f_contents.end(); ++it )
+        {
+            delete it->second;
+        }
+        f_contents.clear();
+        return;
+    }
+
+    inline param_node::iterator param_node::begin()
+    {
+        return f_contents.begin();
+    }
+
+    inline param_node::const_iterator param_node::begin() const
+    {
+        return f_contents.begin();
+    }
+
+    inline param_node::iterator param_node::end()
+    {
+        return f_contents.end();
+    }
+
+    inline param_node::const_iterator param_node::end() const
+    {
+        return f_contents.end();
     }
 
 
