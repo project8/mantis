@@ -45,10 +45,12 @@ namespace mantis
     {
         MTINFO( mtlog, "Connecting to AMQP broker" );
 
-        const param_node* t_broker_node = f_config.node_at( "amqp" );
+        param_node* t_broker_node = &f_config.remove( "amqp" )->as_node();
 
         broker t_broker( t_broker_node->get_value( "broker" ),
                          t_broker_node->get_value< unsigned >( "broker-port" ) );
+
+        delete t_broker_node;
 
         connection* t_connection = t_broker.create_connection();
         if( t_connection == NULL )
@@ -75,8 +77,15 @@ namespace mantis
 
         MTINFO( mtlog, "Creating request" );
 
-        std::string t_request_type( f_config.get_value( "request", "" ) );
+        std::string t_request_type( f_config.get_value( "do", "" ) );
+        f_config.erase( "do" );
 
+        std::string t_routing_key( f_config.get_value( "dest", "mantis" ) );
+        f_config.erase( "dest" );
+
+        // now all that remains in f_config should be values to pass to the server as arguments to the request
+
+        // strings for passing to the various do_[type]_request functions
         std::string t_reply_to, t_correlation_id, t_request_str, t_consumer_tag;
         param_node t_save_node;
         // t_consumer_tag will be used to determine whether we should wait for a reply message.
@@ -99,11 +108,11 @@ namespace mantis
                 return;
             }
         }
-        else if( t_request_type == "set" )
+        else if( t_request_type == "config" )
         {
-            if( ! do_set_request( t_request_str, t_connection, t_consumer_tag, t_reply_to ) )
+            if( ! do_config_request( t_request_str, t_connection, t_consumer_tag, t_reply_to ) )
             {
-                MTERROR( mtlog, "There was an error while processing the set request" );
+                MTERROR( mtlog, "There was an error while processing the config request" );
                 f_return = RETURN_ERROR;
                 return;
             }
@@ -125,7 +134,7 @@ namespace mantis
 
         try
         {
-            t_connection->amqp()->BasicPublish( t_exchange, t_broker_node->get_value( "route" ), t_message );
+            t_connection->amqp()->BasicPublish( t_exchange, t_routing_key, t_message );
         }
         catch( AmqpClient::MessageReturnedException& e )
         {
@@ -210,7 +219,7 @@ namespace mantis
     bool run_client::do_run_request( std::string& a_request_str )
     {
         const param_node* t_file_node = f_config.node_at( "file" );
-        if( t_file_node == NULL )
+        if( ! f_config.has( "file" ) )
         {
             MTERROR( mtlog, "No file configuration is present" );
             return false;
@@ -221,16 +230,15 @@ namespace mantis
         t_client_node->add( "exe", param_value( f_exe_name ) );
         t_client_node->add( "version", param_value( TOSTRING(Mantis_VERSION) ) );
 
-        param_node* t_request_payload = new param_node();
-        t_request_payload->add( "file", *t_file_node ); // make a copy of t_file_node
-        t_request_payload->add( "client", t_client_node ); // use t_client_node as is
+        param_node* t_payload_node = new param_node( f_config ); // copy of f_config, which should consist of only the request arguments
+        t_payload_node->add( "client", t_client_node ); // use t_client_node as is
 
         param_node t_request;
         t_request.add( "msgtype", param_value( T_REQUEST ) );
         t_request.add( "msgop", param_value( OP_RUN ) );
         //t_request.add( "target", param_value( "mantis" ) );  // use of the target is now deprecated (3/12/15)
         t_request.add( "timestamp", param_value( get_absolute_time_string() ) );
-        t_request.add( "payload", t_request_payload ); // use t_request_node as is
+        t_request.add( "payload", t_payload_node ); // use t_payload_node as is
 
         if(! param_output_json::write_string( t_request, a_request_str, param_output_json::k_compact ) )
         {
@@ -243,22 +251,12 @@ namespace mantis
 
     bool run_client::do_get_request( std::string& a_request_str, connection* a_connection, std::string& a_consumer_tag, std::string& a_reply_to, param_node& a_save_node )
     {
-        string t_query_type = f_config.get_value( "get", "" );
-        if( t_query_type.empty() )
-        {
-            MTERROR( mtlog, "Get type was not specified" );
-            return false;
-        }
-
-        param_node t_payload_node;
-        t_payload_node.add( "get", param_value( t_query_type ) );
-
         param_node t_request;
         t_request.add( "msgtype", param_value( T_REQUEST ) );
         t_request.add( "msgop", param_value( OP_GET ) );
        //t_request.add( "target", param_value( "mantis" ) );  // use of the target is now deprecated (3/12/15)
         t_request.add( "timestamp", param_value( get_absolute_time_string() ) );
-        t_request.add( "payload", t_payload_node );
+        t_request.add( "payload", new param() );
 
         if(! param_output_json::write_string( t_request, a_request_str, param_output_json::k_compact ) )
         {
@@ -280,50 +278,18 @@ namespace mantis
         return true;
     }
 
-    bool run_client::do_set_request( std::string& a_request_str, connection* a_connection, std::string& a_consumer_tag, std::string& a_reply_to )
+    bool run_client::do_config_request( std::string& a_request_str, connection* a_connection, std::string& a_consumer_tag, std::string& a_reply_to )
     {
-        param_node t_payload_node;
-
-        string t_instruction;
-        if( f_config.has( "set" ) )
-        {
-            t_instruction = "set";
-        }
-        else if( f_config.has( "load" ) )
-        {
-            t_instruction = "load";
-        }
-        else if( f_config.has( "add" ) )
-        {
-            t_instruction = "add";
-        }
-        else if( f_config.has( "remove" ) )
-        {
-            t_instruction = "remove";
-        }
-        else
-        {
-            MTERROR( mtlog, "No valid set instruction was specified" );
-            return false;
-        }
-
-        param_node* t_instruction_node = new param_node( *f_config.node_at( t_instruction ));
-        if( t_instruction_node == NULL )
-        {
-            delete t_instruction_node;
-            MTERROR( mtlog, "Instruction for <" << t_instruction << "> was not specified" );
-            return false;
-        }
+        param_node* t_payload_node = NULL;
 
         // for the load instruction, the instruction node should be replaced by the contents of the file specified
-        if( t_instruction == "load" )
+        if( f_config.has( "load" ) )
         {
-            if( t_instruction_node->has( "json" ) )
+            if( f_config.node_at( "load" )->has( "json" ) )
             {
-                string t_load_filename( t_instruction_node->get_value( "json" ) );
-                delete t_instruction_node;
-                t_instruction_node = param_input_json::read_file( t_load_filename );
-                if( t_instruction_node == NULL )
+                string t_load_filename( f_config.node_at( "load" )->get_value( "json" ) );
+                t_payload_node = param_input_json::read_file( t_load_filename );
+                if( t_payload_node == NULL )
                 {
                     MTERROR( mtlog, "Unable to read JSON file <" << t_load_filename << ">" );
                     return false;
@@ -331,21 +297,21 @@ namespace mantis
             }
             else
             {
-                delete t_instruction_node;
                 MTERROR( mtlog, "Load instruction did not contain a valid file type");
                 return false;
             }
         }
-
-        t_payload_node.add( "action", param_value( t_instruction ) );
-        t_payload_node.add( t_instruction, t_instruction_node ); // use t_instruction_node itself, so it doesn't have to be deleted
+        else
+        {
+            t_payload_node = new param_node( f_config ); // copy f_config
+        }
 
         param_node t_request;
         t_request.add( "msgtype", param_value( T_REQUEST ) );
         t_request.add( "msgop", param_value( OP_SET ) );
         //t_request.add( "target", param_value( "mantis" ) ); // use of the target is now deprecated (3/12/15)
         t_request.add( "timestamp", param_value( get_absolute_time_string() ) );
-        t_request.add( "payload", t_payload_node );
+        t_request.add( "payload", t_payload_node ); // use t_payload_node as is
 
         MTDEBUG( mtlog, "Sending message:\n" << t_request );
 

@@ -36,7 +36,7 @@ namespace mantis
         private:
             bool do_run_request( std::string& a_request_str );
             bool do_get_request( std::string& a_request_str, connection* a_connection, std::string& a_consumer_tag, std::string& a_reply_to, param_node& a_save_node );
-            bool do_set_request( std::string& a_request_str, connection* a_connection, std::string& a_consumer_tag, std::string& a_reply_to );
+            bool do_config_request( std::string& a_request_str, connection* a_connection, std::string& a_consumer_tag, std::string& a_reply_to );
 
             param_node f_config;
             std::string f_exe_name;

@@ -1,4 +1,21 @@
 
+mantis_client do=config dest=devices.pxie1.enable value=1
+mantis_client do=config dest=run.duration value=100
+
+mantis_client do=config load.json=my_config.json
+
+mantis_client do=config dest=add.device pxie5122=my_pxie
+
+mantis_client do=config dest=remove.device dev=my_pxie
+
+mantis_client do=get dest=config save.json=my_config.json
+
+mantis_client do=run file.filename=my_file.egg file.desc="some sort of data"
+
+
+
+
+//**************************//
 
 mantis_client [options]
 
@@ -14,7 +31,7 @@ Usage examples
     mantis_client request=set add/device/pxie5122=pxie1
 
 * Set the "enable" value of the pxie1 digitizer to 1
-    mantis_client request=set set/device/pxie1/enable=1
+    mantis_client request=set set/devices/pxie1/enable=1
     
 * Get the master configuration from the server
     mantis_client request=get get=config
