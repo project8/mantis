@@ -14,7 +14,7 @@
 #include "mt_constants.hh"
 #include "mt_exception.hh"
 #include "mt_logger.hh"
-#include "mt_param.hh"
+#include "mt_param_json.hh"
 #include "mt_version.hh"
 #include "thorax.hh"
 
@@ -217,19 +217,19 @@ namespace mantis
         }
 
         param_node* t_client_node = new param_node();
-        t_client_node->add( "commit", param_value() << TOSTRING(Mantis_GIT_COMMIT) );
-        t_client_node->add( "exe", param_value() << f_exe_name );
-        t_client_node->add( "version", param_value() << TOSTRING(Mantis_VERSION) );
+        t_client_node->add( "commit", param_value( TOSTRING(Mantis_GIT_COMMIT) ) );
+        t_client_node->add( "exe", param_value( f_exe_name ) );
+        t_client_node->add( "version", param_value( TOSTRING(Mantis_VERSION) ) );
 
         param_node* t_request_payload = new param_node();
         t_request_payload->add( "file", *t_file_node ); // make a copy of t_file_node
         t_request_payload->add( "client", t_client_node ); // use t_client_node as is
 
         param_node t_request;
-        t_request.add( "msgtype", param_value() << T_REQUEST );
-        t_request.add( "msgop", param_value() << OP_RUN );
-        //t_request.add( "target", param_value() << "mantis" );  // use of the target is now deprecated (3/12/15)
-        t_request.add( "timestamp", param_value() << get_absolute_time_string() );
+        t_request.add( "msgtype", param_value( T_REQUEST ) );
+        t_request.add( "msgop", param_value( OP_RUN ) );
+        //t_request.add( "target", param_value( "mantis" ) );  // use of the target is now deprecated (3/12/15)
+        t_request.add( "timestamp", param_value( get_absolute_time_string() ) );
         t_request.add( "payload", t_request_payload ); // use t_request_node as is
 
         if(! param_output_json::write_string( t_request, a_request_str, param_output_json::k_compact ) )
@@ -251,13 +251,13 @@ namespace mantis
         }
 
         param_node t_payload_node;
-        t_payload_node.add( "get", param_value() << t_query_type );
+        t_payload_node.add( "get", param_value( t_query_type ) );
 
         param_node t_request;
-        t_request.add( "msgtype", param_value() << T_REQUEST );
-        t_request.add( "msgop", param_value() << OP_GET );
-        //t_request.add( "target", param_value() << "mantis" );  // use of the target is now deprecated (3/12/15)
-        t_request.add( "timestamp", param_value() << get_absolute_time_string() );
+        t_request.add( "msgtype", param_value( T_REQUEST ) );
+        t_request.add( "msgop", param_value( OP_GET ) );
+       //t_request.add( "target", param_value( "mantis" ) );  // use of the target is now deprecated (3/12/15)
+        t_request.add( "timestamp", param_value( get_absolute_time_string() ) );
         t_request.add( "payload", t_payload_node );
 
         if(! param_output_json::write_string( t_request, a_request_str, param_output_json::k_compact ) )
@@ -337,15 +337,17 @@ namespace mantis
             }
         }
 
-        t_payload_node.add( "action", param_value() << t_instruction );
+        t_payload_node.add( "action", param_value( t_instruction ) );
         t_payload_node.add( t_instruction, t_instruction_node ); // use t_instruction_node itself, so it doesn't have to be deleted
 
         param_node t_request;
-        t_request.add( "msgtype", param_value() << T_REQUEST );
-        t_request.add( "msgop", param_value() << OP_SET );
-        //t_request.add( "target", param_value() << "mantis" ); // use of the target is now deprecated (3/12/15)
-        t_request.add( "timestamp", param_value() << get_absolute_time_string() );
+        t_request.add( "msgtype", param_value( T_REQUEST ) );
+        t_request.add( "msgop", param_value( OP_SET ) );
+        //t_request.add( "target", param_value( "mantis" ) ); // use of the target is now deprecated (3/12/15)
+        t_request.add( "timestamp", param_value( get_absolute_time_string() ) );
         t_request.add( "payload", t_payload_node );
+
+        MTDEBUG( mtlog, "Sending message:\n" << t_request );
 
         if(! param_output_json::write_string( t_request, a_request_str, param_output_json::k_compact ) )
         {

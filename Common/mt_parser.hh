@@ -2,6 +2,7 @@
 #define MT_PARSER_HH_
 
 #include "mt_param.hh"
+#include "mt_param_json.hh"
 
 #include <string>
 

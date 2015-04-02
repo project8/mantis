@@ -37,8 +37,7 @@ namespace mantis
 
     void run_description::set_id( unsigned a_id )
     {
-        param_value t_value;
-        this->replace( "id", t_value << a_id );
+        this->replace( "id", param_value( a_id ) );
         return;
     }
 
@@ -49,8 +48,7 @@ namespace mantis
 
     void run_description::set_status( status a_status )
     {
-        param_value t_value;
-        this->replace( "status", t_value << (unsigned)a_status );
+        this->replace( "status", param_value( (unsigned)a_status ) );
         return;
     }
 
@@ -61,57 +59,49 @@ namespace mantis
 
     void run_description::set_client_exe( const std::string& a_exe )
     {
-        param_value t_value;
-        this->node_at( "client" )->replace( "exe", t_value << a_exe );
+        this->node_at( "client" )->replace( "exe", param_value( a_exe ) );
         return;
     }
 
     void run_description::set_client_version( const std::string& a_ver )
     {
-        param_value t_value;
-        this->node_at( "client" )->replace( "version", t_value << a_ver );
+        this->node_at( "client" )->replace( "version", param_value( a_ver ) );
         return;
     }
 
     void run_description::set_client_commit( const std::string& a_ver )
     {
-        param_value t_value;
-        this->node_at( "client" )->replace( "commit", t_value << a_ver );
+        this->node_at( "client" )->replace( "commit", param_value( a_ver ) );
         return;
     }
 
     void run_description::set_mantis_server_exe( const std::string& a_exe )
     {
-        param_value t_value;
-        this->node_at( "mantis" )->replace( "exe", t_value << a_exe );
+        this->node_at( "mantis" )->replace( "exe", param_value( a_exe ) );
         return;
     }
 
     void run_description::set_mantis_server_version( const std::string& a_ver )
     {
-        param_value t_value;
-        this->node_at( "mantis" )->replace( "version", t_value << a_ver );
+        this->node_at( "mantis" )->replace( "version", param_value( a_ver ) );
         return;
     }
 
     void run_description::set_mantis_server_commit( const std::string& a_ver )
     {
-        param_value t_value;
-        this->node_at( "mantis" )->replace( "commit", t_value << a_ver );
+        this->node_at( "mantis" )->replace( "commit", param_value( a_ver ) );
         return;
     }
 
     void run_description::set_monarch_version( const std::string& a_ver )
     {
-        param_value t_value;
-        this->node_at( "monarch" )->replace( "version", t_value << a_ver );
+        this->node_at( "monarch" )->replace( "version", param_value( a_ver ) );
         return;
     }
 
     void run_description::set_monarch_commit( const std::string& a_ver )
     {
-        param_value t_value;
-        this->node_at( "monarch" )->replace( "commit", t_value << a_ver );
+        this->node_at( "monarch" )->replace( "commit", param_value( a_ver ) );
         return;
     }
 

@@ -28,6 +28,7 @@ namespace mantis
     void digitizer_pxie5122_config_template::add( param_node* a_node, const std::string& a_type )
     {
         param_node* t_new_node = new param_node();
+<<<<<<< HEAD
         t_new_node->add( "resource-name", param_value() << "PXI1Slot2" ); // Real digitizer: PXI1Slot2; Simulated digitizer: Dev1
         t_new_node->add( "rate-req", param_value() << 100 );
         t_new_node->add( "n-channels", param_value() << 1 );
@@ -43,6 +44,23 @@ namespace mantis
         t_new_node->add( "input-coupling", param_value() << 1 ); // DC coupling
         t_new_node->add( "probe-attenuation", param_value() << 1.0 );
         t_new_node->add( "acq-timeout", param_value() << 10.0 );
+=======
+        t_new_node->add( "resource-name", param_value( "PXI1Slot2" ) ); // Real digitizer: PXI1Slot2; Simulated digitizer: Dev1
+        t_new_node->add( "rate-req", param_value( 100 ) );
+        t_new_node->add( "n-channels", param_value( 1 ) );
+        t_new_node->add( "data-mode", param_value( monarch3::sDigitizedS ) );
+        t_new_node->add( "channel-mode", param_value( monarch3::sSeparate ) );
+        t_new_node->add( "sample-size", param_value( 1 ) );
+        t_new_node->add( "buffer-size", param_value( 512 ) );
+        t_new_node->add( "record-size-req", param_value( 524288 ) );// 1048576 );
+        t_new_node->add( "data-chunk-size", param_value( 1024 ) );
+        t_new_node->add( "input-impedance", param_value( 50 ) );
+        t_new_node->add( "voltage-range", param_value( 0.5 ) );
+        t_new_node->add( "voltage-offset", param_value( -0.25 ) );
+        t_new_node->add( "input-coupling", param_value( 1 ) ); // DC coupling
+        t_new_node->add( "probe-attenuation", param_value( 1.0 ) );
+        t_new_node->add( "acq-timeout", param_value( 10.0 ) );
+>>>>>>> msgpack
         a_node->add( a_type, t_new_node );
 
     }
@@ -240,13 +258,13 @@ namespace mantis
         }
         // convert from Hz to MHz
         t_actual_rate *= 1.e-6;
-        a_dev_config->replace( "rate", param_value() << t_actual_rate );
+        a_dev_config->replace( "rate", param_value( t_actual_rate ) );
         ViInt32 t_actual_rec_size;
         if( ! handle_error( niScope_ActualRecordLength( f_handle, &t_actual_rec_size ) ) )
         {
             return false;
         }
-        a_dev_config->replace( "record-size", param_value() << t_actual_rec_size );
+        a_dev_config->replace( "record-size", param_value( t_actual_rec_size ) );
         MTINFO( mtlog, "Actual rate: " << t_actual_rate << " MHz; Actual record size: " << t_actual_rec_size );
 
         // check buffer allocation
@@ -298,9 +316,9 @@ namespace mantis
             return false;
         }
         get_calib_params2( 14 /*bit depth*/, s_data_type_size, t_voltage_offset, t_voltage_range, t_coeff_info_array[0].gain, &f_params );
-        a_dev_config->replace( "voltage-offset", param_value() << f_params.v_offset );
-        a_dev_config->replace( "voltage-range", param_value() << f_params.v_range );
-        a_dev_config->replace( "dac-gain", param_value() << f_params.dac_gain );
+        a_dev_config->replace( "voltage-min", param_value( f_params.v_offset ) );
+        a_dev_config->replace( "voltage-range", param_value( f_params.v_range ) );
+        a_dev_config->replace( "dac-gain", param_value( f_params.dac_gain ) );
 
         // call to niScope_ConfigureTriggerSoftware to allow for continuous acquisition
         if( ! handle_error( niScope_ConfigureTriggerSoftware( f_handle, 0., 0. ) ) )
@@ -507,13 +525,12 @@ namespace mantis
         double t_mb_recorded = (double) (4 * f_record_count);
 
         param_node* t_resp_node = new param_node();
-        param_value t_value;
-        t_resp_node->add( "record-count", t_value << f_record_count );
-        t_resp_node->add( "acquisition-count", t_value << f_acquisition_count );
-        t_resp_node->add( "livetime", t_value << t_livetime );
-        t_resp_node->add( "deadtime", t_value << t_deadtime );
-        t_resp_node->add( "mb-recorded", t_value << t_mb_recorded );
-        t_resp_node->add( "digitization-rate", t_value << t_mb_recorded / t_livetime );
+        t_resp_node->add( "record-count", param_value( f_record_count ) );
+        t_resp_node->add( "acquisition-count", param_value( f_acquisition_count ) );
+        t_resp_node->add( "livetime", param_value( t_livetime ) );
+        t_resp_node->add( "deadtime", param_value( t_deadtime ) );
+        t_resp_node->add( "mb-recorded", param_value( t_mb_recorded ) );
+        t_resp_node->add( "digitization-rate", param_value( t_mb_recorded / t_livetime ) );
 
         a_response->add( "digitizer-test", t_resp_node );
 
