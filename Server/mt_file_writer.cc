@@ -123,7 +123,7 @@ namespace mantis
 
                 for( std::vector< unsigned >::const_iterator it = t_chan_vec.begin(); it != t_chan_vec.end(); ++it )
                 {
-                    f_header->GetChannelHeaders()[ *it ].SetVoltageMin( t_device_config->get_value< double >( "voltage-min" ) );
+                    f_header->GetChannelHeaders()[ *it ].SetVoltageOffset( t_device_config->get_value< double >( "voltage-offset" ) );
                     f_header->GetChannelHeaders()[ *it ].SetVoltageRange( t_device_config->get_value< double >( "voltage-range" ) );
                     f_header->GetChannelHeaders()[ *it ].SetDACGain( t_device_config->get_value< double >( "dac-gain" ) );
                 }

@@ -142,7 +142,7 @@ namespace mantis
     {
         //MTINFO( mtlog, "resetting counters..." );
 
-        a_dev_config->replace( "voltage-min", param_value() << f_params.v_min );
+        a_dev_config->replace( "voltage-offset", param_value() << f_params.v_offset );
         a_dev_config->replace( "voltage-range", param_value() << f_params.v_range );
         a_dev_config->replace( "dac-gain", param_value() << f_params.dac_gain );
 
