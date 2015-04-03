@@ -1,15 +1,27 @@
+// set a particular value in master-config.run
+// expects a single value in the payload called "value"
+mantis_client do=config dest=devices.pxie1.enable=1
+mantis_client do=config dest=duration=100
 
-mantis_client do=config dest=devices.pxie1.enable value=1
-mantis_client do=config dest=run.duration value=100
-
+// replace the master-config.run configuration with the contents of my_config.json
+// client will read my_config.json and put the contents in the payload
 mantis_client do=config load.json=my_config.json
 
-mantis_client do=config dest=add.device pxie5122=my_pxie
+// add a device of a particular type, and give it a name
+// the payload should contain a single name:value pair with the name being the device type, and the value being the name to be used for the device
+mantis_client do=config dest=add.device pxie5122=my_pxie [other devices]
 
-mantis_client do=config dest=remove.device dev=my_pxie
+// remove a device with a particular name
+// the payload will not be used
+mantis_client do=config dest=remove.device.my_pxie
 
+// return server configuration information and optionally save it in a file
+// dest=config returns master-config.run
+// dest=server-config returns master-config
 mantis_client do=get dest=config save.json=my_config.json
 
+// adds a run to the queue
+// payload should contain a single node with at least the filename
 mantis_client do=run file.filename=my_file.egg file.desc="some sort of data"
 
 

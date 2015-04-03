@@ -28,15 +28,20 @@ namespace mantis
         if( t_div_pos == a_addr.npos )
         {
             // we've found the value; now check if it's a number or a string
+            if( a_value.empty() )
+            {
+                a_parent->add( a_addr, new param() );
+                MTDEBUG( mtlog, "Parsed CL value as NULL" );
+            }
             // if "true" or "false", then bool
             if( a_value == "true" )
             {
-                a_parent->add( a_addr, param_value( true ) );
+                a_parent->add( a_addr, new param_value( true ) );
                 MTDEBUG( mtlog, "Parsed CL value (" << a_value << ") as bool(true)" << *this );
             }
             else if( a_value == "false" )
             {
-                a_parent->add( a_addr, param_value( false ) );
+                a_parent->add( a_addr, new param_value( false ) );
                 MTDEBUG( mtlog, "Parsed CL value (" << a_value << ") as bool(false):" << *this );
             }
             else
@@ -50,26 +55,26 @@ namespace mantis
                     if( a_value.find( '.' ) != std::string::npos )
                     {
                         // value is a floating-point number, since it has a decimal point
-                        a_parent->add( a_addr, param_value( t_double ) );
+                        a_parent->add( a_addr, new param_value( t_double ) );
                         MTDEBUG( mtlog, "Parsed CL value (" << a_value << ") as double(" << t_double << "):" << *this );
                     }
                     else if( a_value[ 0 ] == '-' )
                     {
                         // value is a signed integer if it's negative
-                        a_parent->add( a_addr, param_value( (int64_t)t_double ) );
+                        a_parent->add( a_addr, new param_value( (int64_t)t_double ) );
                         MTDEBUG( mtlog, "Parsed CL value (" << a_value << ") as int(" << (int64_t)t_double << "):" << *this );
                     }
                     else
                     {
                         // value is assumed to be unsigned if it's positive
-                        a_parent->add( a_addr, param_value( (uint64_t)t_double ) );
+                        a_parent->add( a_addr, new param_value( (uint64_t)t_double ) );
                         MTDEBUG( mtlog, "Parsed CL value (" << a_value << ") as uint(" << (uint64_t)t_double << ");" << *this );
                     }
                 }
                 else
                 {
                     // value is not numeric; treat as a string
-                    a_parent->add( a_addr, param_value( a_value ) );
+                    a_parent->add( a_addr, new param_value( a_value ) );
                     MTDEBUG( mtlog, "Parsed CL value (" << a_value << ") as a string:" << *this );
                 }
             }
@@ -106,22 +111,18 @@ namespace mantis
             size_t t_val_pos = t_argument.find_first_of( f_separator );
             if( t_val_pos != std::string::npos )
             {
-                //std::string t_name(t_argument.substr( 0, t_val_pos ));
-
-                //param_value* new_value = new param_value();
-                //*new_value << t_argument.substr( t_val_pos + 1 );
-
-                //std::cout << "(parser) adding < " << t_name << "<" << t_type << "> > = <" << new_value.value() << ">" << std::endl;
-
-                //this->replace( t_name, new_value );
-
                 cl_arg t_arg( t_argument.substr( 0, t_val_pos ), t_argument.substr( t_val_pos + 1 ) );
                 this->merge( t_arg );
-
                 continue;
             }
-
-            throw exception() << "argument <" << t_argument << "> does not match <name>=<value> pattern";
+            else
+            {
+                cl_arg t_arg( t_argument );
+                this->merge( t_arg );
+                continue;
+            }
+            // value-less CL args now allowed (Noah -- 4/3/15)
+            //throw exception() << "argument <" << t_argument << "> does not match <name>=<value> pattern";
         }
 
         return;

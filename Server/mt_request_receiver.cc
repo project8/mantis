@@ -11,6 +11,7 @@
 #include "mt_logger.hh"
 #include "mt_param_json.hh"
 #include "mt_param_msgpack.hh"
+#include "mt_parser.hh"
 #include "mt_run_database.hh"
 #include "mt_run_description.hh"
 #include "mt_version.hh"
@@ -66,7 +67,7 @@ namespace mantis
             f_broker->get_connection().amqp()->DeclareExchange( t_exchange_name, AmqpClient::Channel::EXCHANGE_TYPE_TOPIC, false, false, false );
 
             f_broker->get_connection().amqp()->DeclareQueue( t_queue_name, false, false, true, true );
-            f_broker->get_connection().amqp()->BindQueue( t_queue_name, t_exchange_name, t_queue_name ); // queue name used for the queue and the routing key
+            f_broker->get_connection().amqp()->BindQueue( t_queue_name, t_exchange_name ); // all routing keys accepted (because a routing key is not specified)
 
             t_consumer_tag = f_broker->get_connection().amqp()->BasicConsume( t_queue_name, t_queue_name, true, false ); // route name used for the queue and the consumer tag; second bool is setting no_ack to false
         }
@@ -199,7 +200,7 @@ namespace mantis
         t_run_desc->set_monarch_version( TOSTRING(Monarch_VERSION ) );
 
         f_msc_mutex.lock();
-        t_run_desc->set_mantis_config( f_master_server_config );
+        t_run_desc->set_mantis_config( *f_master_server_config.node_at( "run" ) );
         f_msc_mutex.unlock();
         // remove non-enabled devices from the devices node
         param_node* t_dev_node = t_run_desc->node_at( "mantis-config" )->node_at( "devices" );
@@ -253,11 +254,11 @@ namespace mantis
         return true;
     }
 
-    bool request_receiver::do_get_request( const param_node& a_msg_payload, AmqpClient::Envelope::ptr_t a_envelope )
+    bool request_receiver::do_get_request( const param_node& /*a_msg_payload*/, AmqpClient::Envelope::ptr_t a_envelope )
     {
         MTDEBUG( mtlog, "Get request received" );
 
-        std::string t_query_type( a_msg_payload.get_value( "get", "" ) );
+        std::string t_query_type( a_envelope->RoutingKey() );
         f_broker->get_connection().amqp()->BasicAck( a_envelope );
 
         if( ! a_envelope->Message()->ReplyToIsSet() )
@@ -270,6 +271,15 @@ namespace mantis
 
         param_node t_reply;
         if( t_query_type == "config" )
+        {
+            param_node t_payload_node;
+            t_payload_node.add( "master-run-config", *f_master_server_config.node_at( "run" ) );
+            t_payload_node.add( "return-code", param_value( RETURN_SUCCESS ) );
+            t_payload_node.add( "return-msg", param_value( "Get request succeeded" ) );
+            t_reply.add( "payload", t_payload_node );
+            t_reply.add( "msgtype", param_value( T_REPLY ) );
+        }
+        else if( t_query_type == "server-config" )
         {
             param_node t_payload_node;
             t_payload_node.add( "master-config", f_master_server_config );
@@ -330,62 +340,60 @@ namespace mantis
         t_reply_node.add( "return-code", param_value( RETURN_SUCCESS ) );
         t_reply_node.add( "return-msg", param_value( "Request succeeded" ) );
 
-        string t_instruction( a_msg_payload.get_value( "action", "" ) );
-        const param_node* t_instruction_node = a_msg_payload.node_at( t_instruction );
-        if( t_instruction_node == NULL )
+        string t_routing_key = a_envelope->RoutingKey();
+        if( t_routing_key.empty() )
         {
             t_reply_node.value_at( "return-code" )->set( RETURN_ERROR );
-            t_reply_node.value_at( "return-msg" )->set( "No set instruction was provided" );
+            t_reply_node.value_at( "return-msg" )->set( "No routing key was provided" );
             acknowledge_and_reply( t_reply_node, a_envelope );
             return false;
         }
+        cl_arg t_dest_node( t_routing_key );
 
-        if( t_instruction == "set" )
+        string t_instruction( t_dest_node.begin()->first );
+        if( t_instruction == "load" )
         {
-            // instruction contents modify an option (or options) in the master config
-            f_master_server_config.merge( *t_instruction_node );
-            t_reply_node.add( "master-config", f_master_server_config );
-        }
-        else if( t_instruction == "load" )
-        {
-            // instruction contents should replace the master config
-            f_master_server_config = *t_instruction_node;
-            t_reply_node.add( "master-config", f_master_server_config );
+            // payload contents should replace the run config
+            (*f_master_server_config.node_at( "run" )) = a_msg_payload;
         }
         else if( t_instruction == "add" )
         {
             // add something to the master config
-            if( t_instruction_node->has( "device" ) )
+            if( t_dest_node.node_at( t_instruction )->has( "device" ) )
             {
+                // it's expected that any values in the payload are digitizers to be added
                 try
                 {
-                    const param_node* t_device_node = t_instruction_node->node_at( "device" );
-                    string t_device_type = t_device_node->begin()->first;
-                    string t_device_name = t_device_node->get_value( t_device_type );
-
-                    // check if we have a device of this name
-                    if( f_master_server_config.node_at( "devices" )->has( t_device_name ) )
+                    param_node* t_devices_node = f_master_server_config.node_at( "run" )->node_at( "devices" );
+                    for( param_node::const_iterator t_dev_it = a_msg_payload.begin(); t_dev_it != a_msg_payload.end(); ++t_dev_it )
                     {
-                        t_reply_node.value_at( "return-code" )->set( RETURN_ERROR );
-                        t_reply_node.value_at( "return-msg" )->set( "The master config already has device <" + t_device_name + ">" );
-                        acknowledge_and_reply( t_reply_node, a_envelope );
-                        return false;
-                    }
+                        string t_device_type = t_dev_it->first;
+                        string t_device_name = t_dev_it->second->as_value().as_string();
 
-                    // get the config template from the device manager
-                    param_node* t_device_config = f_dev_mgr->get_device_config( t_device_type );
-                    if( t_device_config == NULL )
-                    {
-                        t_reply_node.value_at( "return-code" )->set( RETURN_ERROR );
-                        t_reply_node.value_at( "return-msg" )->set( "Did not find device of type <" + t_device_type + ">" );
-                        acknowledge_and_reply( t_reply_node, a_envelope );
-                        return false;
-                    }
-                    t_device_config->add( "type", param_value( t_device_type ) );
-                    t_device_config->add( "enabled", param_value( 0 ) );
+                        // check if we have a device of this name
+                        if( t_devices_node->has( t_device_name ) )
+                        {
+                            t_reply_node.value_at( "return-code" )->set( RETURN_ERROR );
+                            t_reply_node.value_at( "return-msg" )->set( "The master config already has device <" + t_device_name + ">" );
+                            acknowledge_and_reply( t_reply_node, a_envelope );
+                            return false;
+                        }
 
-                    // add the configuration to the master config
-                    f_master_server_config.node_at( "devices" )->add( t_device_name, t_device_config );
+                        // get the config template from the device manager
+                        param_node* t_device_config = f_dev_mgr->get_device_config( t_device_type );
+                        if( t_device_config == NULL )
+                        {
+                            t_reply_node.value_at( "return-code" )->set( RETURN_ERROR );
+                            t_reply_node.value_at( "return-msg" )->set( "Did not find device of type <" + t_device_type + ">" );
+                            acknowledge_and_reply( t_reply_node, a_envelope );
+                            return false;
+                        }
+                        t_device_config->add( "type", param_value( t_device_type ) );
+                        t_device_config->add( "enabled", param_value( 0 ) );
+
+                        // add the configuration to the master config
+                        t_devices_node->add( t_device_name, t_device_config );
+                    }
                 }
                 catch( exception& e )
                 {
@@ -398,21 +406,19 @@ namespace mantis
             else
             {
                 t_reply_node.value_at( "return-code" )->set( RETURN_ERROR );
-                t_reply_node.value_at( "return-msg" )->set( "Invalid set-add instruction" );
+                t_reply_node.value_at( "return-msg" )->set( "Invalid add instruction" );
                 acknowledge_and_reply( t_reply_node, a_envelope );
                 return false;
             }
-
-            t_reply_node.add( "master-config", f_master_server_config );
         }
         else if( t_instruction == "remove" )
         {
             // remove something from the master config
-            if( t_instruction_node->has( "device" ) )
+            if( t_dest_node.node_at( t_instruction )->has( "device" ) )
             {
                 try
                  {
-                     string t_device_name = t_instruction_node->get_value( "device" );
+                     string t_device_name = t_dest_node.node_at( t_instruction )->begin()->first;
 
                      // check if we have a device of this name
                      if( ! f_master_server_config.node_at( "devices" )->has( t_device_name ) )
@@ -441,9 +447,15 @@ namespace mantis
                 acknowledge_and_reply( t_reply_node, a_envelope );
                 return false;
             }
-
-            t_reply_node.add( "master-config", f_master_server_config );
         }
+        else
+        {
+            // apply a configuration setting
+            // the destination node should specify the configuration to set
+            f_master_server_config.merge( t_dest_node );
+        }
+
+        t_reply_node.add( "master-config", f_master_server_config );
 
         acknowledge_and_reply( t_reply_node, a_envelope );
         return true;
