@@ -50,8 +50,6 @@ namespace mantis
         broker t_broker( t_broker_node->get_value( "broker" ),
                          t_broker_node->get_value< unsigned >( "broker-port" ) );
 
-        delete t_broker_node;
-
         connection* t_connection = t_broker.create_connection();
         if( t_connection == NULL )
         {
@@ -73,6 +71,8 @@ namespace mantis
             f_return = RETURN_ERROR;
             return;
         }
+
+        delete t_broker_node;
 
 
         MTINFO( mtlog, "Creating request" );
