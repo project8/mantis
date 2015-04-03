@@ -31,11 +31,11 @@ namespace mantis
         private:
             void apply_config( const std::string& a_config_addr, const param_value& a_value );
 
-            bool do_run_request( const param_node& a_msg_payload, AmqpClient::Envelope::ptr_t a_envelope, connection* a_connection );
-            bool do_get_request( const param_node& a_msg_payload, AmqpClient::Envelope::ptr_t a_envelope, connection* a_connection );
-            bool do_set_request( const param_node& a_msg_payload, AmqpClient::Envelope::ptr_t a_envelope, connection* a_connection );
+            bool do_run_request( const param_node& a_msg_payload, AmqpClient::Envelope::ptr_t a_envelope );
+            bool do_get_request( const param_node& a_msg_payload, AmqpClient::Envelope::ptr_t a_envelope );
+            bool do_set_request( const param_node& a_msg_payload, AmqpClient::Envelope::ptr_t a_envelope );
 
-            void acknowledge_and_reply( const param_node& a_reply_node, AmqpClient::Envelope::ptr_t a_envelope, connection* a_connection );
+            void acknowledge_and_reply( const param_node& a_reply_node, AmqpClient::Envelope::ptr_t a_envelope );
 
             mutex f_msc_mutex;
             param_node f_master_server_config;

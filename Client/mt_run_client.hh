@@ -25,7 +25,7 @@ namespace mantis
     class MANTIS_API run_client// : public callable
     {
         public:
-            run_client( const param_node& a_node, const std::string& a_exe_name = "unknown" );
+            run_client( const param_node& a_node, const std::string& a_exe_name, const std::string& a_exchange );
             virtual ~run_client();
 
             void execute();
@@ -35,11 +35,12 @@ namespace mantis
 
         private:
             bool do_run_request( std::string& a_request_str );
-            bool do_get_request( std::string& a_request_str, connection* a_connection, std::string& a_consumer_tag, std::string& a_reply_to, param_node& a_save_node );
-            bool do_config_request( std::string& a_request_str, connection* a_connection, std::string& a_consumer_tag, std::string& a_reply_to );
+            bool do_get_request( std::string& a_request_str, std::string& a_consumer_tag, std::string& a_reply_to, param_node& a_save_node );
+            bool do_config_request( std::string& a_request_str, std::string& a_consumer_tag, std::string& a_reply_to );
 
             param_node f_config;
             std::string f_exe_name;
+            std::string f_exchange;
             //atomic_bool f_canceled;
             int f_return;
     };

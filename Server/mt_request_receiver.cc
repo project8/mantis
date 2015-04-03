@@ -40,7 +40,6 @@ namespace mantis
 
     request_receiver::~request_receiver()
     {
-        delete f_broker;
     }
 
     void request_receiver::execute()
@@ -51,28 +50,25 @@ namespace mantis
         {
             const param_node* t_broker_node = f_master_server_config.node_at( "amqp" );
 
-            // AMQP broker
-            f_broker = new broker( t_broker_node->get_value( "broker" ),
-                                   t_broker_node->get_value< unsigned >( "broker-port" ) );
+            f_broker = broker::get_instance();
 
-            t_connection = f_broker->create_connection();
-            if( t_connection == NULL )
+            if( ! f_broker->is_connected() )
             {
-                MTERROR( mtlog, "Cannot create connection to AMQP broker" );
+                MTERROR( mtlog, "Not connected to AMQP broker" );
                 cancel();
                 raise( SIGINT );
                 return;
             }
 
             std::string t_exchange_name( t_broker_node->get_value( "exchange" ) );
-            std::string t_route_name( t_broker_node->get_value( "route" ) );
+            std::string t_queue_name( t_broker_node->get_value( "queue" ) );
 
-            t_connection->amqp()->DeclareExchange( t_exchange_name, AmqpClient::Channel::EXCHANGE_TYPE_TOPIC, false, false, false );
+            f_broker->get_connection().amqp()->DeclareExchange( t_exchange_name, AmqpClient::Channel::EXCHANGE_TYPE_TOPIC, false, false, false );
 
-            t_connection->amqp()->DeclareQueue( t_route_name, false, false, true, true );
-            t_connection->amqp()->BindQueue( t_route_name, t_exchange_name, t_route_name ); // route name used for the queue and the routing key
+            f_broker->get_connection().amqp()->DeclareQueue( t_queue_name, false, false, true, true );
+            f_broker->get_connection().amqp()->BindQueue( t_queue_name, t_exchange_name, t_queue_name ); // queue name used for the queue and the routing key
 
-            t_consumer_tag = t_connection->amqp()->BasicConsume( t_route_name, t_route_name, true, false ); // route name used for the queue and the consumer tag; second bool is setting no_ack to false
+            t_consumer_tag = f_broker->get_connection().amqp()->BasicConsume( t_queue_name, t_queue_name, true, false ); // route name used for the queue and the consumer tag; second bool is setting no_ack to false
         }
         catch( AmqpClient::AmqpException& e )
         {
@@ -95,7 +91,7 @@ namespace mantis
 
             // blocking call to wait for incoming message
             MTDEBUG( mtlog, "Waiting for incoming message" );
-            AmqpClient::Envelope::ptr_t t_envelope = t_connection->amqp()->BasicConsumeMessage( t_consumer_tag );
+            AmqpClient::Envelope::ptr_t t_envelope = f_broker->get_connection().amqp()->BasicConsumeMessage( t_consumer_tag );
 
 
             if (f_canceled.load()) return;
@@ -112,14 +108,14 @@ namespace mantis
             else
             {
                 MTERROR( mtlog, "Unable to parse message with content type <" << t_envelope->Message()->ContentEncoding() << ">" );
-                t_connection->amqp()->BasicAck( t_envelope );
+                f_broker->get_connection().amqp()->BasicAck( t_envelope );
                 continue;
             }
 
             if( t_msg_node == NULL )
             {
                 MTERROR( mtlog, "Message body could not be parsed; skipping request" );
-                t_connection->amqp()->BasicAck( t_envelope );
+                f_broker->get_connection().amqp()->BasicAck( t_envelope );
                 continue;
             }
 
@@ -130,7 +126,7 @@ namespace mantis
             {
                 MTERROR( mtlog, "There was no payload present in the message" );
                 delete t_msg_node;
-                t_connection->amqp()->BasicAck( t_envelope );
+                f_broker->get_connection().amqp()->BasicAck( t_envelope );
                 continue;
             }
 
@@ -138,17 +134,17 @@ namespace mantis
             {
                 case OP_RUN:
                 {
-                    do_run_request( *t_msg_payload, t_envelope, t_connection );
+                    do_run_request( *t_msg_payload, t_envelope );
                     break;
                 }
                 case OP_GET:
                 {
-                    do_get_request( *t_msg_payload, t_envelope, t_connection );
+                    do_get_request( *t_msg_payload, t_envelope );
                     break;
                 } // end "get" operation
                 case OP_SET:
                 {
-                    do_set_request( *t_msg_payload, t_envelope, t_connection );
+                    do_set_request( *t_msg_payload, t_envelope );
                     break;
                 } // end "set" operation
                 default:
@@ -175,7 +171,7 @@ namespace mantis
         return;
     }
 
-    bool request_receiver::do_run_request( const param_node& a_msg_payload, AmqpClient::Envelope::ptr_t a_envelope, connection* a_connection )
+    bool request_receiver::do_run_request( const param_node& a_msg_payload, AmqpClient::Envelope::ptr_t a_envelope )
     {
         MTDEBUG( mtlog, "Run operation request received" );
 
@@ -184,7 +180,7 @@ namespace mantis
         if( t_file_node == NULL )
         {
             MTERROR( mtlog, "No file configuration present; aborting request" );
-            a_connection->amqp()->BasicAck( a_envelope );
+            f_broker->get_connection().amqp()->BasicAck( a_envelope );
             return false;
         }
 
@@ -241,7 +237,7 @@ namespace mantis
             t_run_desc->set_client_version( "N/A" );
         }
 
-        a_connection->amqp()->BasicAck( a_envelope );
+        f_broker->get_connection().amqp()->BasicAck( a_envelope );
         t_run_desc->set_status( run_description::acknowledged );
 
         MTINFO( mtlog, "Queuing request" );
@@ -257,12 +253,12 @@ namespace mantis
         return true;
     }
 
-    bool request_receiver::do_get_request( const param_node& a_msg_payload, AmqpClient::Envelope::ptr_t a_envelope, connection* a_connection )
+    bool request_receiver::do_get_request( const param_node& a_msg_payload, AmqpClient::Envelope::ptr_t a_envelope )
     {
         MTDEBUG( mtlog, "Get request received" );
 
         std::string t_query_type( a_msg_payload.get_value( "get", "" ) );
-        a_connection->amqp()->BasicAck( a_envelope );
+        f_broker->get_connection().amqp()->BasicAck( a_envelope );
 
         if( ! a_envelope->Message()->ReplyToIsSet() )
         {
@@ -315,7 +311,7 @@ namespace mantis
 
         try
         {
-            a_connection->amqp()->BasicPublish( "", a_envelope->Message()->ReplyTo(), t_reply_msg );
+            f_broker->get_connection().amqp()->BasicPublish( "", a_envelope->Message()->ReplyTo(), t_reply_msg );
         }
         catch( AmqpClient::MessageReturnedException& e )
         {
@@ -326,7 +322,7 @@ namespace mantis
         return true;
     }
 
-    bool request_receiver::do_set_request( const param_node& a_msg_payload, AmqpClient::Envelope::ptr_t a_envelope, connection* a_connection )
+    bool request_receiver::do_set_request( const param_node& a_msg_payload, AmqpClient::Envelope::ptr_t a_envelope )
     {
         MTDEBUG( mtlog, "Set request received" );
 
@@ -340,7 +336,7 @@ namespace mantis
         {
             t_reply_node.value_at( "return-code" )->set( RETURN_ERROR );
             t_reply_node.value_at( "return-msg" )->set( "No set instruction was provided" );
-            acknowledge_and_reply( t_reply_node, a_envelope, a_connection );
+            acknowledge_and_reply( t_reply_node, a_envelope );
             return false;
         }
 
@@ -372,7 +368,7 @@ namespace mantis
                     {
                         t_reply_node.value_at( "return-code" )->set( RETURN_ERROR );
                         t_reply_node.value_at( "return-msg" )->set( "The master config already has device <" + t_device_name + ">" );
-                        acknowledge_and_reply( t_reply_node, a_envelope, a_connection );
+                        acknowledge_and_reply( t_reply_node, a_envelope );
                         return false;
                     }
 
@@ -382,7 +378,7 @@ namespace mantis
                     {
                         t_reply_node.value_at( "return-code" )->set( RETURN_ERROR );
                         t_reply_node.value_at( "return-msg" )->set( "Did not find device of type <" + t_device_type + ">" );
-                        acknowledge_and_reply( t_reply_node, a_envelope, a_connection );
+                        acknowledge_and_reply( t_reply_node, a_envelope );
                         return false;
                     }
                     t_device_config->add( "type", param_value( t_device_type ) );
@@ -395,7 +391,7 @@ namespace mantis
                 {
                     t_reply_node.value_at( "return-code" )->set( RETURN_ERROR );
                     t_reply_node.value_at( "return-msg" )->set( "add/device instruction was not formatted properly" );
-                    acknowledge_and_reply( t_reply_node, a_envelope, a_connection );
+                    acknowledge_and_reply( t_reply_node, a_envelope );
                     return false;
                 }
             }
@@ -403,7 +399,7 @@ namespace mantis
             {
                 t_reply_node.value_at( "return-code" )->set( RETURN_ERROR );
                 t_reply_node.value_at( "return-msg" )->set( "Invalid set-add instruction" );
-                acknowledge_and_reply( t_reply_node, a_envelope, a_connection );
+                acknowledge_and_reply( t_reply_node, a_envelope );
                 return false;
             }
 
@@ -423,7 +419,7 @@ namespace mantis
                      {
                          t_reply_node.value_at( "return-code" )->set( RETURN_ERROR );
                          t_reply_node.value_at( "return-msg" )->set( "The master config does not have device <" + t_device_name + ">" );
-                         acknowledge_and_reply( t_reply_node, a_envelope, a_connection );
+                         acknowledge_and_reply( t_reply_node, a_envelope );
                          return false;
                      }
 
@@ -434,7 +430,7 @@ namespace mantis
                  {
                      t_reply_node.value_at( "return-code" )->set( RETURN_ERROR );
                      t_reply_node.value_at( "return-msg" )->set( "remove/device instruction was not formatted properly" );
-                     acknowledge_and_reply( t_reply_node, a_envelope, a_connection );
+                     acknowledge_and_reply( t_reply_node, a_envelope );
                      return false;
                  }
             }
@@ -442,20 +438,20 @@ namespace mantis
             {
                 t_reply_node.value_at( "return-code" )->set( RETURN_ERROR );
                 t_reply_node.value_at( "return-msg" )->set( "Invalid set-remove instruction" );
-                acknowledge_and_reply( t_reply_node, a_envelope, a_connection );
+                acknowledge_and_reply( t_reply_node, a_envelope );
                 return false;
             }
 
             t_reply_node.add( "master-config", f_master_server_config );
         }
 
-        acknowledge_and_reply( t_reply_node, a_envelope, a_connection );
+        acknowledge_and_reply( t_reply_node, a_envelope );
         return true;
     }
 
-    void request_receiver::acknowledge_and_reply( const param_node& a_reply_node, AmqpClient::Envelope::ptr_t a_envelope, connection* a_connection )
+    void request_receiver::acknowledge_and_reply( const param_node& a_reply_node, AmqpClient::Envelope::ptr_t a_envelope )
     {
-        a_connection->amqp()->BasicAck( a_envelope );
+        f_broker->get_connection().amqp()->BasicAck( a_envelope );
 
         if( ! a_envelope->Message()->ReplyToIsSet() )
         {
@@ -485,7 +481,7 @@ namespace mantis
 
         try
         {
-            a_connection->amqp()->BasicPublish( "", a_envelope->Message()->ReplyTo(), t_reply_msg );
+            f_broker->get_connection().amqp()->BasicPublish( "", a_envelope->Message()->ReplyTo(), t_reply_msg );
         }
         catch( AmqpClient::MessageReturnedException& e )
         {

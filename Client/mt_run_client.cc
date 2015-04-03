@@ -28,10 +28,11 @@ namespace mantis
 {
     MTLOGGER( mtlog, "run_client" );
 
-    run_client::run_client( const param_node& a_node, const string& a_exe_name ) :
+    run_client::run_client( const param_node& a_node, const string& a_exe_name, const string& a_exchange ) :
             //callable(),
             f_config( a_node ),
             f_exe_name( a_exe_name ),
+            f_exchange( a_exchange ),
             //f_canceled( false ),
             f_return( 0 )
     {
@@ -43,37 +44,7 @@ namespace mantis
 
     void run_client::execute()
     {
-        MTINFO( mtlog, "Connecting to AMQP broker" );
-
-        param_node* t_broker_node = &f_config.remove( "amqp" )->as_node();
-
-        broker t_broker( t_broker_node->get_value( "broker" ),
-                         t_broker_node->get_value< unsigned >( "broker-port" ) );
-
-        connection* t_connection = t_broker.create_connection();
-        if( t_connection == NULL )
-        {
-            MTERROR( mtlog, "Cannot create connection to AMQP broker" );
-            f_return = RETURN_ERROR;
-            return;
-        }
-
-        std::string t_exchange;
-        try
-        {
-            t_exchange = t_broker_node->get_value( "exchange" );
-            t_connection->amqp()->DeclareExchange( t_exchange, AmqpClient::Channel::EXCHANGE_TYPE_DIRECT, true );
-        }
-        catch( std::exception& e )
-        {
-            delete t_connection;
-            MTERROR( mtlog, "Unable to declare exchange <" << t_exchange << ">; aborting.\n(" << e.what() << ")" );
-            f_return = RETURN_ERROR;
-            return;
-        }
-
-        delete t_broker_node;
-
+        broker* t_broker = broker::get_instance();
 
         MTINFO( mtlog, "Creating request" );
 
@@ -101,7 +72,7 @@ namespace mantis
         }
         else if( t_request_type == "get" )
         {
-            if( ! do_get_request( t_request_str, t_connection, t_consumer_tag, t_reply_to, t_save_node ) )
+            if( ! do_get_request( t_request_str, t_consumer_tag, t_reply_to, t_save_node ) )
             {
                 MTERROR( mtlog, "There was an error while processing the get request" );
                 f_return = RETURN_ERROR;
@@ -110,7 +81,7 @@ namespace mantis
         }
         else if( t_request_type == "config" )
         {
-            if( ! do_config_request( t_request_str, t_connection, t_consumer_tag, t_reply_to ) )
+            if( ! do_config_request( t_request_str, t_consumer_tag, t_reply_to ) )
             {
                 MTERROR( mtlog, "There was an error while processing the config request" );
                 f_return = RETURN_ERROR;
@@ -134,18 +105,16 @@ namespace mantis
 
         try
         {
-            t_connection->amqp()->BasicPublish( t_exchange, t_routing_key, t_message );
+            t_broker->get_connection().amqp()->BasicPublish( f_exchange, t_routing_key, t_message );
         }
         catch( AmqpClient::MessageReturnedException& e )
         {
-            delete t_connection;
             MTERROR( mtlog, "Message could not be sent: " << e.what() );
             f_return = RETURN_ERROR;
             return;
         }
         catch( std::exception& e )
         {
-            delete t_connection;
             MTERROR( mtlog, "Error publishing to queue: " << e.what() );
             f_return = RETURN_ERROR;
             return;
@@ -156,7 +125,7 @@ namespace mantis
             MTINFO( mtlog, "Waiting for a reply from the server; use ctrl-c to cancel" );
 
             // blocking call to wait for incoming message
-            AmqpClient::Envelope::ptr_t t_envelope = t_connection->amqp()->BasicConsumeMessage( t_consumer_tag );
+            AmqpClient::Envelope::ptr_t t_envelope = t_broker->get_connection().amqp()->BasicConsumeMessage( t_consumer_tag );
 
             MTINFO( mtlog, "Response received" );
 
@@ -198,8 +167,6 @@ namespace mantis
             delete t_msg_node;
         }
 
-        delete t_connection;
-
         f_return = RETURN_SUCCESS;
 
         return;
@@ -218,7 +185,6 @@ namespace mantis
 
     bool run_client::do_run_request( std::string& a_request_str )
     {
-        const param_node* t_file_node = f_config.node_at( "file" );
         if( ! f_config.has( "file" ) )
         {
             MTERROR( mtlog, "No file configuration is present" );
@@ -232,6 +198,7 @@ namespace mantis
 
         param_node* t_payload_node = new param_node( f_config ); // copy of f_config, which should consist of only the request arguments
         t_payload_node->add( "client", t_client_node ); // use t_client_node as is
+        t_payload_node->add( "file", *f_config.at( "file ") ); // copy the file node
 
         param_node t_request;
         t_request.add( "msgtype", param_value( T_REQUEST ) );
@@ -249,7 +216,7 @@ namespace mantis
         return true;
     }
 
-    bool run_client::do_get_request( std::string& a_request_str, connection* a_connection, std::string& a_consumer_tag, std::string& a_reply_to, param_node& a_save_node )
+    bool run_client::do_get_request( std::string& a_request_str, std::string& a_consumer_tag, std::string& a_reply_to, param_node& a_save_node )
     {
         param_node t_request;
         t_request.add( "msgtype", param_value( T_REQUEST ) );
@@ -264,8 +231,8 @@ namespace mantis
             return false;
         }
 
-        a_reply_to = a_connection->amqp()->DeclareQueue( "" );
-        a_consumer_tag = a_connection->amqp()->BasicConsume( a_reply_to );
+        a_reply_to = broker::get_instance()->get_connection().amqp()->DeclareQueue( "" );
+        a_consumer_tag = broker::get_instance()->get_connection().amqp()->BasicConsume( a_reply_to );
         MTDEBUG( mtlog, "Consumer tag for reply: " << a_consumer_tag );
 
         // check for whether we'll be saving the result
@@ -278,7 +245,7 @@ namespace mantis
         return true;
     }
 
-    bool run_client::do_config_request( std::string& a_request_str, connection* a_connection, std::string& a_consumer_tag, std::string& a_reply_to )
+    bool run_client::do_config_request( std::string& a_request_str, std::string& a_consumer_tag, std::string& a_reply_to )
     {
         param_node* t_payload_node = NULL;
 
@@ -321,8 +288,8 @@ namespace mantis
             return false;
         }
 
-        a_reply_to = a_connection->amqp()->DeclareQueue( "" );
-        a_consumer_tag = a_connection->amqp()->BasicConsume( a_reply_to );
+        a_reply_to = broker::get_instance()->get_connection().amqp()->DeclareQueue( "" );
+        a_consumer_tag = broker::get_instance()->get_connection().  amqp()->BasicConsume( a_reply_to );
         MTDEBUG( mtlog, "Consumer tag for reply: " << a_consumer_tag );
 
         return true;
