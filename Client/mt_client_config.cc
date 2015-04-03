@@ -20,10 +20,9 @@ namespace mantis
         // default client configuration
 
         param_node* t_amqp_node = new param_node();
-        t_amqp_node->add( "broker-port", param_value( 5672 ) );
-        t_amqp_node->add( "broker", param_value( "localhost" ) );
-        t_amqp_node->add( "exchange", param_value( "requests" ) );
-        t_amqp_node->add( "route", param_value( "mantis" ) );
+        t_amqp_node->add( "broker-port", new param_value( 5672 ) );
+        t_amqp_node->add( "broker", new param_value( "localhost" ) );
+        t_amqp_node->add( "exchange", new param_value( "requests" ) );
         add( "amqp", t_amqp_node );
     }
 

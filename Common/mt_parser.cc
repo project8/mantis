@@ -23,7 +23,8 @@ namespace mantis
 
     void cl_arg::add_next( param_node* a_parent, const std::string& a_addr, const std::string& a_value )
     {
-        size_t t_div_pos = a_addr.find( '/' );
+        static const char t_separator = '.';
+        size_t t_div_pos = a_addr.find( t_separator );
         if( t_div_pos == a_addr.npos )
         {
             // we've found the value; now check if it's a number or a string
@@ -54,13 +55,13 @@ namespace mantis
                     }
                     else if( a_value[ 0 ] == '-' )
                     {
-                        // value is a signed integer
+                        // value is a signed integer if it's negative
                         a_parent->add( a_addr, param_value( (int64_t)t_double ) );
                         MTDEBUG( mtlog, "Parsed CL value (" << a_value << ") as int(" << (int64_t)t_double << "):" << *this );
                     }
                     else
                     {
-                        // value is an unsigned integer
+                        // value is assumed to be unsigned if it's positive
                         a_parent->add( a_addr, param_value( (uint64_t)t_double ) );
                         MTDEBUG( mtlog, "Parsed CL value (" << a_value << ") as uint(" << (uint64_t)t_double << ");" << *this );
                     }

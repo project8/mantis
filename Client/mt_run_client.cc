@@ -125,7 +125,7 @@ namespace mantis
         }
 
 
-        MTINFO( mtlog, "Sending request" );
+        MTINFO( mtlog, "Sending request with routing key <" << t_routing_key << ">" );
 
         AmqpClient::BasicMessage::ptr_t t_message = AmqpClient::BasicMessage::Create( t_request_str );
         t_message->ContentEncoding( "application/json" );
