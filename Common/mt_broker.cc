@@ -27,12 +27,12 @@ namespace mantis
 
     broker::~broker()
     {
-        delete f_connection;
+        if( f_connection != NULL ) disconnect();
     }
 
     bool broker::connect( const std::string& a_address, unsigned a_port )
     {
-        if( f_connection == NULL )
+        if( f_connection != NULL )
         {
             MTERROR( mtlog, "Broker is already connected to " << f_address << ":" << f_port );
             return false;
@@ -69,6 +69,7 @@ namespace mantis
         }
 
         delete f_connection;
+        f_connection = NULL;
         f_address.clear();
         f_port = 0;
 

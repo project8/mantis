@@ -8,11 +8,11 @@
 
 namespace mantis
 {
-    class MANTIS_API cl_arg : public param_node
+    class MANTIS_API parsable : public param_node
     {
         public:
-            cl_arg( const std::string& a_addr, const std::string& a_value = "" );
-            ~cl_arg();
+            parsable( const std::string& a_addr, const std::string& a_value = "" );
+            ~parsable();
 
         private:
             void add_next( param_node* a_parent, const std::string& a_addr, const std::string& a_value );

@@ -11,17 +11,17 @@ namespace mantis
 {
     MTLOGGER( mtlog, "parser" );
 
-    cl_arg::cl_arg( const std::string& a_addr, const std::string& a_value ) :
+    parsable::parsable( const std::string& a_addr, const std::string& a_value ) :
             param_node()
     {
         add_next( this, a_addr, a_value );
     }
 
-    cl_arg::~cl_arg()
+    parsable::~parsable()
     {
     }
 
-    void cl_arg::add_next( param_node* a_parent, const std::string& a_addr, const std::string& a_value )
+    void parsable::add_next( param_node* a_parent, const std::string& a_addr, const std::string& a_value )
     {
         static const char t_separator = '.';
         size_t t_div_pos = a_addr.find( t_separator );
@@ -111,13 +111,13 @@ namespace mantis
             size_t t_val_pos = t_argument.find_first_of( f_separator );
             if( t_val_pos != std::string::npos )
             {
-                cl_arg t_arg( t_argument.substr( 0, t_val_pos ), t_argument.substr( t_val_pos + 1 ) );
+                parsable t_arg( t_argument.substr( 0, t_val_pos ), t_argument.substr( t_val_pos + 1 ) );
                 this->merge( t_arg );
                 continue;
             }
             else
             {
-                cl_arg t_arg( t_argument );
+                parsable t_arg( t_argument );
                 this->merge( t_arg );
                 continue;
             }

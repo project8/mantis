@@ -348,7 +348,7 @@ namespace mantis
             acknowledge_and_reply( t_reply_node, a_envelope );
             return false;
         }
-        cl_arg t_dest_node( t_routing_key );
+        parsable t_dest_node( t_routing_key );
 
         string t_instruction( t_dest_node.begin()->first );
         if( t_instruction == "load" )
