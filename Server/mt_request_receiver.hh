@@ -31,16 +31,19 @@ namespace mantis
         private:
             void apply_config( const std::string& a_config_addr, const param_value& a_value );
 
-            bool do_run_request( const param_node& a_msg_payload, AmqpClient::Envelope::ptr_t a_envelope, connection* a_connection );
-            bool do_get_request( const param_node& a_msg_payload, AmqpClient::Envelope::ptr_t a_envelope, connection* a_connection );
-            bool do_set_request( const param_node& a_msg_payload, AmqpClient::Envelope::ptr_t a_envelope, connection* a_connection );
+            bool do_run_request( const param_node& a_msg_payload, AmqpClient::Envelope::ptr_t a_envelope );
+            bool do_get_request( const param_node& a_msg_payload, AmqpClient::Envelope::ptr_t a_envelope );
+            bool do_set_request( const param_node& a_msg_payload, AmqpClient::Envelope::ptr_t a_envelope );
 
-            void acknowledge_and_reply( const param_node& a_reply_node, AmqpClient::Envelope::ptr_t a_envelope, connection* a_connection );
+            bool acknowledge_and_reply( const param_node& a_reply_node, unsigned a_return_code, AmqpClient::Envelope::ptr_t a_envelope );
 
             mutex f_msc_mutex;
             param_node f_master_server_config;
 
             broker* f_broker;
+            std::string f_queue_name;
+            std::string f_consumer_tag;
+
             device_manager* f_dev_mgr;
             run_database* f_run_database;
             condition* f_queue_condition;

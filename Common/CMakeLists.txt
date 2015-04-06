@@ -9,6 +9,7 @@ set( MANTIS_COMMON_HEADERFILES
     mt_configurator.hh
     mt_connection.hh
     mt_constants.hh
+    mt_destroyer.hh
     mt_exception.hh
     mt_logger.hh
     mt_mutex.hh
@@ -17,6 +18,7 @@ set( MANTIS_COMMON_HEADERFILES
     mt_param_msgpack.hh
     mt_parser.hh
     mt_signal_handler.hh
+    mt_singleton.hh
     mt_thread.hh
 )
 

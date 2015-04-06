@@ -28,6 +28,23 @@ namespace mantis
     void digitizer_pxie5122_config_template::add( param_node* a_node, const std::string& a_type )
     {
         param_node* t_new_node = new param_node();
+<<<<<<< HEAD
+        t_new_node->add( "resource-name", param_value() << "PXI1Slot2" ); // Real digitizer: PXI1Slot2; Simulated digitizer: Dev1
+        t_new_node->add( "rate-req", param_value() << 100 );
+        t_new_node->add( "n-channels", param_value() << 1 );
+        t_new_node->add( "data-mode", param_value() << monarch3::sDigitizedS );
+        t_new_node->add( "channel-mode", param_value() << monarch3::sSeparate );
+        t_new_node->add( "sample-size", param_value() << 1 );
+        t_new_node->add( "buffer-size", param_value() << 512 );
+        t_new_node->add( "record-size-req", param_value() << 524288 );// 1048576 );
+        t_new_node->add( "data-chunk-size", param_value() << 1024 );
+        t_new_node->add( "input-impedance", param_value() << 50 );
+        t_new_node->add( "voltage-range", param_value() << 0.5 );
+        t_new_node->add( "voltage-offset", param_value() << 0. );
+        t_new_node->add( "input-coupling", param_value() << 1 ); // DC coupling
+        t_new_node->add( "probe-attenuation", param_value() << 1.0 );
+        t_new_node->add( "acq-timeout", param_value() << 10.0 );
+=======
         t_new_node->add( "resource-name", param_value( "PXI1Slot2" ) ); // Real digitizer: PXI1Slot2; Simulated digitizer: Dev1
         t_new_node->add( "rate-req", param_value( 100 ) );
         t_new_node->add( "n-channels", param_value( 1 ) );
@@ -43,6 +60,7 @@ namespace mantis
         t_new_node->add( "input-coupling", param_value( 1 ) ); // DC coupling
         t_new_node->add( "probe-attenuation", param_value( 1.0 ) );
         t_new_node->add( "acq-timeout", param_value( 10.0 ) );
+>>>>>>> msgpack
         a_node->add( a_type, t_new_node );
 
     }
@@ -58,6 +76,7 @@ namespace mantis
             f_handle(),
             f_resource_name(),
             f_allocated( false ),
+            f_acq_timeout( 0. ),
             f_waveform_info(),
             f_start_time( 0 ),
             f_record_last( 0 ),
@@ -167,7 +186,8 @@ namespace mantis
         }
 
         // Check data mode and channel mode
-        if( a_dev_config->get_value< uint32_t >( "data-mode" ) != monarch3::sDigitized )
+        uint32_t t_data_mode = a_dev_config->get_value< uint32_t >( "data-mode" );
+        if( t_data_mode != monarch3::sDigitizedUS && t_data_mode != monarch3::sDigitizedS )
         {
             MTERROR( mtlog, "Data can only be taken in <digitized> mode" );
             return false;
@@ -296,7 +316,7 @@ namespace mantis
             return false;
         }
         get_calib_params2( 14 /*bit depth*/, s_data_type_size, t_voltage_offset, t_voltage_range, t_coeff_info_array[0].gain, &f_params );
-        a_dev_config->replace( "voltage-min", param_value( f_params.v_min ) );
+        a_dev_config->replace( "voltage-offset", param_value( f_params.v_offset ) );
         a_dev_config->replace( "voltage-range", param_value( f_params.v_range ) );
         a_dev_config->replace( "dac-gain", param_value( f_params.dac_gain ) );
 
@@ -321,7 +341,7 @@ namespace mantis
             allocate();
         }
 
-        f_record_last = ( record_id_type )( ceil( ( double )( a_dev_config->get_value< double >( "rate" ) * a_global_config->node_at( "run" )->get_value< double >( "duration" ) * 1.e3 ) / ( double )( f_buffer->block_size() ) ) );
+        f_record_last = ( record_id_type )( ceil( ( double )( a_dev_config->get_value< double >( "rate" ) * a_global_config->get_value< double >( "duration" ) * 1.e3 ) / ( double )( f_buffer->block_size() ) ) );
         f_record_count = 0;
         f_acquisition_count = 0;
         f_live_time = 0;

@@ -8,14 +8,21 @@
 
 namespace mantis
 {
-    class MANTIS_API cl_arg : public param_node
+    class MANTIS_API parsable : public param_node
     {
         public:
-            cl_arg( const std::string& a_addr, const std::string& a_value );
-            ~cl_arg();
+            parsable( const std::string& a_addr_with_value );
+            parsable( const std::string& a_addr, const std::string& a_value );
+            ~parsable();
 
         private:
             void add_next( param_node* a_parent, const std::string& a_addr, const std::string& a_value );
+
+        public:
+            static const char f_value_separator = '=';
+            static const char f_node_separator = '.';
+
+
     };
 
 
@@ -26,10 +33,6 @@ namespace mantis
             virtual ~parser();
 
             void parse( int an_argc, char** an_argv );
-
-        private:
-            static const char f_separator = '=';
-
     };
 
 }

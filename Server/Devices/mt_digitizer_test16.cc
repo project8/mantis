@@ -142,7 +142,7 @@ namespace mantis
     {
         //MTINFO( mtlog, "resetting counters..." );
 
-        a_dev_config->replace( "voltage-min", param_value( f_params.v_min ) );
+        a_dev_config->replace( "voltage-offset", param_value( f_params.v_offset ) );
         a_dev_config->replace( "voltage-range", param_value( f_params.v_range ) );
         a_dev_config->replace( "dac-gain", param_value( f_params.dac_gain ) );
 
@@ -163,7 +163,7 @@ namespace mantis
             allocate();
         }
 
-        f_record_last = (record_id_type) (ceil( (double) (a_dev_config->get_value< double >( "rate" ) * a_global_config->node_at( "run" )->get_value< double >( "duration" ) * 1.e3) / (double) (f_buffer->block_size()) ));
+        f_record_last = (record_id_type) (ceil( (double) (a_dev_config->get_value< double >( "rate" ) * a_global_config->get_value< double >( "duration" ) * 1.e3) / (double) (f_buffer->block_size()) ));
         f_record_count = 0;
         f_acquisition_count = 0;
         f_live_time = 0;

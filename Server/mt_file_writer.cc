@@ -57,10 +57,9 @@ namespace mantis
             return false;
         }
         const param_node* t_all_devs_config = t_mantis_config->node_at( "devices" );
-        const param_node* t_run_config = t_mantis_config->node_at( "run" );
-        if( t_all_devs_config == NULL || t_run_config == NULL )
+        if( t_all_devs_config == NULL )
         {
-            MTERROR( mtlog, "Either the device configuration (" << t_all_devs_config << ") or run config (" << t_run_config << ") is missing" );
+            MTERROR( mtlog, "The device configuration is missing" );
             return false;
         }
 
@@ -80,7 +79,7 @@ namespace mantis
 
             // run header information
             f_header->SetFilename( t_filename );
-            f_header->SetRunDuration( t_run_config->get_value< double >( "duration" ) );
+            f_header->SetRunDuration( t_mantis_config->get_value< double >( "duration" ) );
             char t_timestamp[64];
             get_time_absolute_str( t_timestamp );
             f_header->SetTimestamp( t_timestamp );
@@ -123,7 +122,7 @@ namespace mantis
 
                 for( std::vector< unsigned >::const_iterator it = t_chan_vec.begin(); it != t_chan_vec.end(); ++it )
                 {
-                    f_header->GetChannelHeaders()[ *it ].SetVoltageMin( t_device_config->get_value< double >( "voltage-min" ) );
+                    f_header->GetChannelHeaders()[ *it ].SetVoltageOffset( t_device_config->get_value< double >( "voltage-offset" ) );
                     f_header->GetChannelHeaders()[ *it ].SetVoltageRange( t_device_config->get_value< double >( "voltage-range" ) );
                     f_header->GetChannelHeaders()[ *it ].SetDACGain( t_device_config->get_value< double >( "dac-gain" ) );
                 }
