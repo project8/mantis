@@ -11,6 +11,20 @@ namespace mantis
 {
     MTLOGGER( mtlog, "parser" );
 
+    parsable::parsable( const std::string& a_addr_with_value ) :
+            param_node()
+    {
+        size_t t_val_pos = a_addr_with_value.find_first_of( f_value_separator );
+        if( t_val_pos != std::string::npos )
+        {
+            add_next( this, a_addr_with_value.substr( 0, t_val_pos ), a_addr_with_value.substr( t_val_pos + 1 ) );
+        }
+        else
+        {
+            add_next( this, a_addr_with_value, "" );
+        }
+    }
+
     parsable::parsable( const std::string& a_addr, const std::string& a_value ) :
             param_node()
     {
@@ -23,26 +37,25 @@ namespace mantis
 
     void parsable::add_next( param_node* a_parent, const std::string& a_addr, const std::string& a_value )
     {
-        static const char t_separator = '.';
-        size_t t_div_pos = a_addr.find( t_separator );
+        size_t t_div_pos = a_addr.find( f_node_separator );
         if( t_div_pos == a_addr.npos )
         {
             // we've found the value; now check if it's a number or a string
             if( a_value.empty() )
             {
                 a_parent->add( a_addr, new param() );
-                MTDEBUG( mtlog, "Parsed CL value as NULL" );
+                MTDEBUG( mtlog, "Parsed value as NULL" << *this );
             }
             // if "true" or "false", then bool
-            if( a_value == "true" )
+            else if( a_value == "true" )
             {
                 a_parent->add( a_addr, new param_value( true ) );
-                MTDEBUG( mtlog, "Parsed CL value (" << a_value << ") as bool(true)" << *this );
+                MTDEBUG( mtlog, "Parsed value (" << a_value << ") as bool(true)" << *this );
             }
             else if( a_value == "false" )
             {
                 a_parent->add( a_addr, new param_value( false ) );
-                MTDEBUG( mtlog, "Parsed CL value (" << a_value << ") as bool(false):" << *this );
+                MTDEBUG( mtlog, "Parsed value (" << a_value << ") as bool(false):" << *this );
             }
             else
             {
@@ -56,26 +69,26 @@ namespace mantis
                     {
                         // value is a floating-point number, since it has a decimal point
                         a_parent->add( a_addr, new param_value( t_double ) );
-                        MTDEBUG( mtlog, "Parsed CL value (" << a_value << ") as double(" << t_double << "):" << *this );
+                        MTDEBUG( mtlog, "Parsed value (" << a_value << ") as double(" << t_double << "):" << *this );
                     }
                     else if( a_value[ 0 ] == '-' )
                     {
                         // value is a signed integer if it's negative
                         a_parent->add( a_addr, new param_value( (int64_t)t_double ) );
-                        MTDEBUG( mtlog, "Parsed CL value (" << a_value << ") as int(" << (int64_t)t_double << "):" << *this );
+                        MTDEBUG( mtlog, "Parsed value (" << a_value << ") as int(" << (int64_t)t_double << "):" << *this );
                     }
                     else
                     {
                         // value is assumed to be unsigned if it's positive
                         a_parent->add( a_addr, new param_value( (uint64_t)t_double ) );
-                        MTDEBUG( mtlog, "Parsed CL value (" << a_value << ") as uint(" << (uint64_t)t_double << ");" << *this );
+                        MTDEBUG( mtlog, "Parsed value (" << a_value << ") as uint(" << (uint64_t)t_double << ");" << *this );
                     }
                 }
                 else
                 {
                     // value is not numeric; treat as a string
                     a_parent->add( a_addr, new param_value( a_value ) );
-                    MTDEBUG( mtlog, "Parsed CL value (" << a_value << ") as a string:" << *this );
+                    MTDEBUG( mtlog, "Parsed value (" << a_value << ") as a string:" << *this );
                 }
             }
             return;
@@ -107,22 +120,8 @@ namespace mantis
         for( int t_index = 1; t_index < an_argc; t_index++ )
         {
             //t_argument.assign( an_argv[ t_index ] );
-            std::string t_argument( an_argv[ t_index ] );
-            size_t t_val_pos = t_argument.find_first_of( f_separator );
-            if( t_val_pos != std::string::npos )
-            {
-                parsable t_arg( t_argument.substr( 0, t_val_pos ), t_argument.substr( t_val_pos + 1 ) );
-                this->merge( t_arg );
-                continue;
-            }
-            else
-            {
-                parsable t_arg( t_argument );
-                this->merge( t_arg );
-                continue;
-            }
-            // value-less CL args now allowed (Noah -- 4/3/15)
-            //throw exception() << "argument <" << t_argument << "> does not match <name>=<value> pattern";
+            parsable t_arg( an_argv[ t_index ] );
+            merge( t_arg );
         }
 
         return;

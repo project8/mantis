@@ -41,6 +41,9 @@ namespace mantis
             param_node f_master_server_config;
 
             broker* f_broker;
+            std::string f_queue_name;
+            std::string f_consumer_tag;
+
             device_manager* f_dev_mgr;
             run_database* f_run_database;
             condition* f_queue_condition;

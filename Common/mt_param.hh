@@ -400,6 +400,7 @@ namespace mantis
 
     inline param* param::clone() const
     {
+        //std::cout << "param::clone()" << std::endl;
         return new param( *this );
     }
 
@@ -527,6 +528,7 @@ namespace mantis
 
     inline param* param_value::clone() const
     {
+        //std::cout << "param_value::clone" << std::endl;
         return new param_value( *this );
     }
 
@@ -938,6 +940,7 @@ namespace mantis
 
     inline param* param_node::clone() const
     {
+        //std::cout << "param_node::clone" << std::endl;
         return new param_node( *this );
     }
 

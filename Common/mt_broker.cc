@@ -27,7 +27,10 @@ namespace mantis
 
     broker::~broker()
     {
-        if( f_connection != NULL ) disconnect();
+        if( f_connection != NULL )
+        {
+            disconnect();
+        }
     }
 
     bool broker::connect( const std::string& a_address, unsigned a_port )
@@ -54,6 +57,8 @@ namespace mantis
             return false;
         }
 
+        MTDEBUG( mtlog, "Connected to AMQP broker" );
+
         f_address = a_address;
         f_port = a_port;
         f_connection = t_connection;
@@ -68,6 +73,7 @@ namespace mantis
             return;
         }
 
+        MTDEBUG( mtlog, "Disconnecting from AMQP broker" );
         delete f_connection;
         f_connection = NULL;
         f_address.clear();

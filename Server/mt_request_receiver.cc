@@ -31,6 +31,8 @@ namespace mantis
     request_receiver::request_receiver( const param_node& a_config, device_manager* a_dev_mgr, run_database* a_run_database, condition* a_queue_condition, const string& a_exe_name ) :
             f_master_server_config( a_config ),
             f_broker( NULL ),
+            f_queue_name(),
+            f_consumer_tag(),
             f_dev_mgr( a_dev_mgr ),
             f_run_database( a_run_database ),
             f_queue_condition( a_queue_condition ),
@@ -41,12 +43,28 @@ namespace mantis
 
     request_receiver::~request_receiver()
     {
+        /* can't do this, because the amqp connection may already be broken, in which case this results in a segmentation fault
+        if( f_broker != NULL )
+        {
+            if( ! f_consumer_tag.empty() )
+            {
+                MTDEBUG( mtlog, "Canceling consume of tag <" << f_consumer_tag << ">" );
+                f_broker->get_connection().amqp()->BasicCancel( f_consumer_tag );
+                f_consumer_tag.clear();
+            }
+            if( ! f_queue_name.empty() )
+            {
+                MTDEBUG( mtlog, "Deleting queue <" << f_queue_name << ">" );
+                f_broker->get_connection().amqp()->DeleteQueue( f_queue_name, false );
+                f_queue_name.clear();
+            }
+        }
+        */
     }
 
     void request_receiver::execute()
     {
-        connection* t_connection = NULL;
-        std::string t_consumer_tag;
+        std::string t_exchange_name;
         try
         {
             const param_node* t_broker_node = f_master_server_config.node_at( "amqp" );
@@ -61,15 +79,15 @@ namespace mantis
                 return;
             }
 
-            std::string t_exchange_name( t_broker_node->get_value( "exchange" ) );
-            std::string t_queue_name( t_broker_node->get_value( "queue" ) );
+            t_exchange_name = t_broker_node->get_value( "exchange" );
+            f_queue_name = t_broker_node->get_value( "queue" );
 
             f_broker->get_connection().amqp()->DeclareExchange( t_exchange_name, AmqpClient::Channel::EXCHANGE_TYPE_TOPIC, false, false, false );
 
-            f_broker->get_connection().amqp()->DeclareQueue( t_queue_name, false, false, true, true );
-            f_broker->get_connection().amqp()->BindQueue( t_queue_name, t_exchange_name ); // all routing keys accepted (because a routing key is not specified)
+            f_broker->get_connection().amqp()->DeclareQueue( f_queue_name, false, false, true, true );
+            f_broker->get_connection().amqp()->BindQueue( f_queue_name, t_exchange_name, f_queue_name + string( ".#" ) ); // all routing keys prepended with the queue name are accepted
 
-            t_consumer_tag = f_broker->get_connection().amqp()->BasicConsume( t_queue_name, t_queue_name, true, false ); // route name used for the queue and the consumer tag; second bool is setting no_ack to false
+            f_consumer_tag = f_broker->get_connection().amqp()->BasicConsume( f_queue_name, f_queue_name, true, false ); // route name used for the queue and the consumer tag; second bool is setting no_ack to false
         }
         catch( AmqpClient::AmqpException& e )
         {
@@ -92,7 +110,7 @@ namespace mantis
 
             // blocking call to wait for incoming message
             MTDEBUG( mtlog, "Waiting for incoming message" );
-            AmqpClient::Envelope::ptr_t t_envelope = f_broker->get_connection().amqp()->BasicConsumeMessage( t_consumer_tag );
+            AmqpClient::Envelope::ptr_t t_envelope = f_broker->get_connection().amqp()->BasicConsumeMessage( f_consumer_tag );
 
 
             if (f_canceled.load()) return;
@@ -122,13 +140,18 @@ namespace mantis
 
             MTDEBUG( mtlog, "Message received:\n" << *t_msg_node );
 
-            const param_node* t_msg_payload = t_msg_node->node_at( "payload" );
-            if( t_msg_payload == NULL )
+            param_node* t_msg_payload = NULL;
+            param* t_payload_param = t_msg_node->remove( "payload" );
+            if( t_payload_param == NULL ) t_msg_payload = new param_node();
+            else
             {
-                MTERROR( mtlog, "There was no payload present in the message" );
-                delete t_msg_node;
-                f_broker->get_connection().amqp()->BasicAck( t_envelope );
-                continue;
+                if( t_payload_param->is_node() ) t_msg_payload = static_cast< param_node* >( t_payload_param );
+                else
+                {
+                    MTWARN( mtlog, "Non-node payload is present; it will be ignored" );
+                    t_msg_payload = new param_node();
+                    delete t_payload_param;
+                }
             }
 
             switch( t_msg_node->get_value< unsigned >( "msgop", OP_UNKNOWN ) )
@@ -155,11 +178,18 @@ namespace mantis
 
             // nothing should happen after the switch block except deleting objects
             delete t_msg_node;
+            delete t_msg_payload;
         } // end while (true)
 
         MTDEBUG( mtlog, "Request receiver is done" );
 
-        delete t_connection;
+        MTDEBUG( mtlog, "Canceling consume of tag <" << f_consumer_tag << ">" );
+        f_broker->get_connection().amqp()->BasicCancel( f_consumer_tag );
+        f_consumer_tag.clear();
+
+        MTDEBUG( mtlog, "Deleting queue <" << f_queue_name << ">" );
+        f_broker->get_connection().amqp()->DeleteQueue( f_queue_name, false );
+        f_queue_name.clear();
 
         return;
     }
@@ -258,7 +288,6 @@ namespace mantis
     {
         MTDEBUG( mtlog, "Get request received" );
 
-        std::string t_query_type( a_envelope->RoutingKey() );
         f_broker->get_connection().amqp()->BasicAck( a_envelope );
 
         if( ! a_envelope->Message()->ReplyToIsSet() )
@@ -268,6 +297,11 @@ namespace mantis
         }
 
         std::string t_reply_to( a_envelope->Message()->ReplyTo() );
+
+        parsable t_routing_key_node( a_envelope->RoutingKey() );
+        MTDEBUG( mtlog, "Parsed routing key:\n" << t_routing_key_node );
+        std::string t_query_type( t_routing_key_node.node_at( f_queue_name )->begin()->first );
+        MTDEBUG( mtlog, "Query type: " << t_query_type );
 
         param_node t_reply;
         if( t_query_type == "config" )
@@ -288,7 +322,7 @@ namespace mantis
             t_reply.add( "payload", t_payload_node );
             t_reply.add( "msgtype", param_value( T_REPLY ) );
         }
-        else if( t_query_type == "mantis" )
+        else if( t_query_type == "status" )
         {
             param_node t_payload_node;
             t_payload_node.add( "return-code", param_value( RETURN_ERROR ) );
@@ -334,7 +368,7 @@ namespace mantis
 
     bool request_receiver::do_set_request( const param_node& a_msg_payload, AmqpClient::Envelope::ptr_t a_envelope )
     {
-        MTDEBUG( mtlog, "Set request received" );
+        MTDEBUG( mtlog, "Config request received" );
 
         param_node t_reply_node;
         t_reply_node.add( "return-code", param_value( RETURN_SUCCESS ) );
@@ -348,11 +382,14 @@ namespace mantis
             acknowledge_and_reply( t_reply_node, a_envelope );
             return false;
         }
-        parsable t_dest_node( t_routing_key );
+        parsable t_routing_key_node( t_routing_key );
+        MTDEBUG( mtlog, "Parsed routing key:\n" << t_routing_key_node );
+        param_node t_dest_node( *t_routing_key_node.node_at( f_queue_name ) );
 
         string t_instruction( t_dest_node.begin()->first );
         if( t_instruction == "load" )
         {
+            MTDEBUG( mtlog, "Loading a full configuration" );
             // payload contents should replace the run config
             (*f_master_server_config.node_at( "run" )) = a_msg_payload;
         }
@@ -361,6 +398,7 @@ namespace mantis
             // add something to the master config
             if( t_dest_node.node_at( t_instruction )->has( "device" ) )
             {
+                MTDEBUG( mtlog, "Attempting to add a device" );
                 // it's expected that any values in the payload are digitizers to be added
                 try
                 {
@@ -416,6 +454,7 @@ namespace mantis
             // remove something from the master config
             if( t_dest_node.node_at( t_instruction )->has( "device" ) )
             {
+                MTDEBUG( mtlog, "Attempting to remove a device" );
                 try
                  {
                      string t_device_name = t_dest_node.node_at( t_instruction )->begin()->first;
@@ -450,9 +489,12 @@ namespace mantis
         }
         else
         {
+            MTDEBUG( mtlog, "Applying a configuration setting" );
             // apply a configuration setting
             // the destination node should specify the configuration to set
-            f_master_server_config.merge( t_dest_node );
+            t_routing_key += string( "=" ) + a_msg_payload.get_value( "value" );
+            parsable t_routing_key_node_with_value( t_routing_key );
+            f_master_server_config.merge( *t_routing_key_node_with_value.node_at( f_queue_name ) );
         }
 
         t_reply_node.add( "master-config", f_master_server_config );

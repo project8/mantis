@@ -105,7 +105,7 @@ namespace mantis
 
         try
         {
-            t_broker->get_connection().amqp()->BasicPublish( f_exchange, t_routing_key, t_message );
+            t_broker->get_connection().amqp()->BasicPublish( f_exchange, t_routing_key, t_message, true, true );
         }
         catch( AmqpClient::MessageReturnedException& e )
         {
