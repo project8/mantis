@@ -35,7 +35,7 @@ namespace mantis
             bool do_get_request( const param_node& a_msg_payload, AmqpClient::Envelope::ptr_t a_envelope );
             bool do_set_request( const param_node& a_msg_payload, AmqpClient::Envelope::ptr_t a_envelope );
 
-            void acknowledge_and_reply( const param_node& a_reply_node, AmqpClient::Envelope::ptr_t a_envelope );
+            bool acknowledge_and_reply( const param_node& a_reply_node, unsigned a_return_code, AmqpClient::Envelope::ptr_t a_envelope );
 
             mutex f_msc_mutex;
             param_node f_master_server_config;

@@ -63,7 +63,7 @@ namespace mantis
         // if it's empty, we will not wait
         if( t_request_type == "run" )
         {
-            if( ! do_run_request( t_request_str ) )
+            if( ! do_run_request( t_request_str, t_consumer_tag, t_reply_to ) )
             {
                 MTERROR( mtlog, "There was an error while processing the run request" );
                 f_return = RETURN_ERROR;
@@ -183,7 +183,7 @@ namespace mantis
         return f_return;
     }
 
-    bool run_client::do_run_request( std::string& a_request_str )
+    bool run_client::do_run_request( std::string& a_request_str, std::string& a_consumer_tag, std::string& a_reply_to )
     {
         if( ! f_config.has( "file" ) )
         {
@@ -212,6 +212,10 @@ namespace mantis
             MTERROR( mtlog, "Could not convert request to string" );
             return false;
         }
+
+        a_reply_to = broker::get_instance()->get_connection().amqp()->DeclareQueue( "" );
+        a_consumer_tag = broker::get_instance()->get_connection().amqp()->BasicConsume( a_reply_to );
+        MTDEBUG( mtlog, "Consumer tag for reply: " << a_consumer_tag );
 
         return true;
     }

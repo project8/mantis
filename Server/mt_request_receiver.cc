@@ -205,13 +205,16 @@ namespace mantis
     bool request_receiver::do_run_request( const param_node& a_msg_payload, AmqpClient::Envelope::ptr_t a_envelope )
     {
         MTDEBUG( mtlog, "Run operation request received" );
+        f_broker->get_connection().amqp()->BasicAck( a_envelope );
 
         // required
         const param_node* t_file_node = a_msg_payload.node_at( "file" );
         if( t_file_node == NULL )
         {
-            MTERROR( mtlog, "No file configuration present; aborting request" );
-            f_broker->get_connection().amqp()->BasicAck( a_envelope );
+            MTWARN( mtlog, "No file configuration present; aborting run request" );
+            param_node t_reply_node;
+            t_reply_node.add( "return-msg", param_value( "No file configuration present; aborting request" ) );
+            acknowledge_and_reply( t_reply_node, R_MESSAGE_ERROR_BAD_PAYLOAD, a_envelope );
             return false;
         }
 
@@ -268,8 +271,15 @@ namespace mantis
             t_run_desc->set_client_version( "N/A" );
         }
 
-        f_broker->get_connection().amqp()->BasicAck( a_envelope );
         t_run_desc->set_status( run_description::acknowledged );
+
+        param_node t_reply_node;
+        t_reply_node.add( "return-msg", param_value( "Run request succeeded" ) );
+        t_reply_node.add( "run-description", *t_run_desc );
+        if( ! acknowledge_and_reply( t_reply_node, R_SUCCESS, a_envelope ) )
+        {
+            MTWARN( mtlog, "Failed to send reply regarding the run request" );
+        }
 
         MTINFO( mtlog, "Queuing request" );
         f_run_database->enqueue( t_run_desc );
@@ -306,80 +316,47 @@ namespace mantis
         param_node t_reply;
         if( t_query_type == "config" )
         {
-            param_node t_payload_node;
-            t_payload_node.add( "master-run-config", *f_master_server_config.node_at( "run" ) );
-            t_payload_node.add( "return-code", param_value( RETURN_SUCCESS ) );
-            t_payload_node.add( "return-msg", param_value( "Get request succeeded" ) );
-            t_reply.add( "payload", t_payload_node );
-            t_reply.add( "msgtype", param_value( T_REPLY ) );
+            param_node t_reply_node;
+            t_reply_node.add( "return-msg", param_value( "Get request succeeded" ) );
+            t_reply_node.add( "master-run-config", *f_master_server_config.node_at( "run" ) );
+            return acknowledge_and_reply( t_reply_node, R_SUCCESS, a_envelope );
         }
         else if( t_query_type == "server-config" )
         {
-            param_node t_payload_node;
-            t_payload_node.add( "master-config", f_master_server_config );
-            t_payload_node.add( "return-code", param_value( RETURN_SUCCESS ) );
-            t_payload_node.add( "return-msg", param_value( "Get request succeeded" ) );
-            t_reply.add( "payload", t_payload_node );
-            t_reply.add( "msgtype", param_value( T_REPLY ) );
+            param_node t_reply_node;
+            t_reply_node.add( "return-msg", param_value( "Get request succeeded" ) );
+            t_reply_node.add( "master-config", f_master_server_config );
+            return acknowledge_and_reply( t_reply_node, R_SUCCESS, a_envelope );
         }
         else if( t_query_type == "status" )
         {
-            param_node t_payload_node;
-            t_payload_node.add( "return-code", param_value( RETURN_ERROR ) );
-            t_payload_node.add( "return-msg", param_value( "Query type <mantis> is not yet supported" ) );
-            t_reply.add( "payload", t_payload_node );
-            t_reply.add( "msgtype", param_value( T_REPLY ) );
+            param_node t_reply_node;
+            t_reply_node.add( "return-msg", param_value( "Query type <status> is not yet supported" ) );
+            t_reply_node.add( "master-config", f_master_server_config );
+            return acknowledge_and_reply( t_reply_node, R_MESSAGE_ERROR_BAD_PAYLOAD, a_envelope );
         }
         else
         {
-            param_node* t_msg_node = new param_node();
-            t_msg_node->add( "error", param_value( "Unrecognized query type or no query type provided" ) );
-            t_reply.add( "payload", t_msg_node );
-            t_reply.add( "msgtype", param_value( T_REPLY ) );
+            param_node t_reply_node;
+            t_reply_node.add( "return-msg", param_value( "Unrecognized query type or no query type provided" ) );
+            t_reply_node.add( "master-config", f_master_server_config );
+            return acknowledge_and_reply( t_reply_node, R_MESSAGE_ERROR_BAD_PAYLOAD, a_envelope );
         }
-
-        //t_reply.add( "msgop", param_value() << OP_RUN ); // operations aren't used for replies
-        //t_reply.add( "target", param_value() << t_reply_to );  // use of the target is now deprecated (3/12/15)
-        t_reply.add( "timestamp", param_value( get_absolute_time_string() ) );
-
-        std::string t_reply_str;
-        if(! param_output_json::write_string( t_reply, t_reply_str, param_output_json::k_compact ) )
-        {
-            MTERROR( mtlog, "Could not convert reply to string" );
-            return false;
-        }
-
-        AmqpClient::BasicMessage::ptr_t t_reply_msg = AmqpClient::BasicMessage::Create( t_reply_str );
-        t_reply_msg->ContentEncoding( "application/json" );
-        t_reply_msg->CorrelationId( a_envelope->Message()->CorrelationId() );
-
-        try
-        {
-            f_broker->get_connection().amqp()->BasicPublish( "", a_envelope->Message()->ReplyTo(), t_reply_msg );
-        }
-        catch( AmqpClient::MessageReturnedException& e )
-        {
-            MTERROR( mtlog, "Reply message could not be sent: " << e.what() );
-            return false;
-        }
-
-        return true;
     }
 
     bool request_receiver::do_set_request( const param_node& a_msg_payload, AmqpClient::Envelope::ptr_t a_envelope )
     {
         MTDEBUG( mtlog, "Config request received" );
+        f_broker->get_connection().amqp()->BasicAck( a_envelope );
 
         param_node t_reply_node;
-        t_reply_node.add( "return-code", param_value( RETURN_SUCCESS ) );
         t_reply_node.add( "return-msg", param_value( "Request succeeded" ) );
 
         string t_routing_key = a_envelope->RoutingKey();
         if( t_routing_key.empty() )
         {
-            t_reply_node.value_at( "return-code" )->set( RETURN_ERROR );
             t_reply_node.value_at( "return-msg" )->set( "No routing key was provided" );
-            acknowledge_and_reply( t_reply_node, a_envelope );
+            acknowledge_and_reply( t_reply_node, R_AMQP_ERROR_ROUTINGKEY_NOTFOUND, a_envelope );
             return false;
         }
         parsable t_routing_key_node( t_routing_key );
@@ -411,9 +388,8 @@ namespace mantis
                         // check if we have a device of this name
                         if( t_devices_node->has( t_device_name ) )
                         {
-                            t_reply_node.value_at( "return-code" )->set( RETURN_ERROR );
                             t_reply_node.value_at( "return-msg" )->set( "The master config already has device <" + t_device_name + ">" );
-                            acknowledge_and_reply( t_reply_node, a_envelope );
+                            acknowledge_and_reply( t_reply_node, R_DEVICE_ERROR, a_envelope );
                             return false;
                         }
 
@@ -421,9 +397,8 @@ namespace mantis
                         param_node* t_device_config = f_dev_mgr->get_device_config( t_device_type );
                         if( t_device_config == NULL )
                         {
-                            t_reply_node.value_at( "return-code" )->set( RETURN_ERROR );
                             t_reply_node.value_at( "return-msg" )->set( "Did not find device of type <" + t_device_type + ">" );
-                            acknowledge_and_reply( t_reply_node, a_envelope );
+                            acknowledge_and_reply( t_reply_node, R_DEVICE_ERROR, a_envelope );
                             return false;
                         }
                         t_device_config->add( "type", param_value( t_device_type ) );
@@ -435,17 +410,15 @@ namespace mantis
                 }
                 catch( exception& e )
                 {
-                    t_reply_node.value_at( "return-code" )->set( RETURN_ERROR );
-                    t_reply_node.value_at( "return-msg" )->set( "add/device instruction was not formatted properly" );
-                    acknowledge_and_reply( t_reply_node, a_envelope );
+                    t_reply_node.value_at( "return-msg" )->set( "add.device instruction was not formatted properly" );
+                    acknowledge_and_reply( t_reply_node, R_AMQP_ERROR_ROUTINGKEY_NOTFOUND, a_envelope );
                     return false;
                 }
             }
             else
             {
-                t_reply_node.value_at( "return-code" )->set( RETURN_ERROR );
                 t_reply_node.value_at( "return-msg" )->set( "Invalid add instruction" );
-                acknowledge_and_reply( t_reply_node, a_envelope );
+                acknowledge_and_reply( t_reply_node, R_AMQP_ERROR_ROUTINGKEY_NOTFOUND, a_envelope );
                 return false;
             }
         }
@@ -462,9 +435,8 @@ namespace mantis
                      // check if we have a device of this name
                      if( ! f_master_server_config.node_at( "devices" )->has( t_device_name ) )
                      {
-                         t_reply_node.value_at( "return-code" )->set( RETURN_ERROR );
                          t_reply_node.value_at( "return-msg" )->set( "The master config does not have device <" + t_device_name + ">" );
-                         acknowledge_and_reply( t_reply_node, a_envelope );
+                         acknowledge_and_reply( t_reply_node, R_DEVICE_ERROR, a_envelope );
                          return false;
                      }
 
@@ -473,17 +445,15 @@ namespace mantis
                  }
                  catch( exception& e )
                  {
-                     t_reply_node.value_at( "return-code" )->set( RETURN_ERROR );
                      t_reply_node.value_at( "return-msg" )->set( "remove/device instruction was not formatted properly" );
-                     acknowledge_and_reply( t_reply_node, a_envelope );
+                     acknowledge_and_reply( t_reply_node, R_MESSAGE_ERROR_INVALID_VALUE, a_envelope );
                      return false;
                  }
             }
             else
             {
-                t_reply_node.value_at( "return-code" )->set( RETURN_ERROR );
-                t_reply_node.value_at( "return-msg" )->set( "Invalid set-remove instruction" );
-                acknowledge_and_reply( t_reply_node, a_envelope );
+                t_reply_node.value_at( "return-msg" )->set( "Invalid remove instruction" );
+                acknowledge_and_reply( t_reply_node, R_AMQP_ERROR_ROUTINGKEY_NOTFOUND, a_envelope );
                 return false;
             }
         }
@@ -499,25 +469,23 @@ namespace mantis
 
         t_reply_node.add( "master-config", f_master_server_config );
 
-        acknowledge_and_reply( t_reply_node, a_envelope );
-        return true;
+        return acknowledge_and_reply( t_reply_node, R_SUCCESS, a_envelope );
     }
 
-    void request_receiver::acknowledge_and_reply( const param_node& a_reply_node, AmqpClient::Envelope::ptr_t a_envelope )
+    bool request_receiver::acknowledge_and_reply( const param_node& a_reply_node, unsigned a_return_code, AmqpClient::Envelope::ptr_t a_envelope )
     {
-        f_broker->get_connection().amqp()->BasicAck( a_envelope );
-
         if( ! a_envelope->Message()->ReplyToIsSet() )
         {
             MTWARN( mtlog, "Set request has no reply-to" );
-            return;
+            return false;
         }
 
         std::string t_reply_to( a_envelope->Message()->ReplyTo() );
 
         param_node t_reply;
-        t_reply.add( "payload", a_reply_node );
         t_reply.add( "msgtype", param_value( T_REPLY ) );
+        t_reply.add( "retcode", param_value( a_return_code ) );
+        t_reply.add( "payload", a_reply_node );
         //t_reply.add( "msgop", param_value() << OP_RUN ); // operations aren't used for replies
         //t_reply.add( "target", param_value() << t_reply_to );  // use of the target is now deprecated (3/12/15)
         t_reply.add( "timestamp", param_value( get_absolute_time_string() ) );
@@ -526,7 +494,7 @@ namespace mantis
         if(! param_output_json::write_string( t_reply, t_reply_str, param_output_json::k_compact ) )
         {
             MTERROR( mtlog, "Could not convert reply to string" );
-            return;
+            return false;
         }
 
         AmqpClient::BasicMessage::ptr_t t_reply_msg = AmqpClient::BasicMessage::Create( t_reply_str );
@@ -540,9 +508,10 @@ namespace mantis
         catch( AmqpClient::MessageReturnedException& e )
         {
             MTERROR( mtlog, "Reply message could not be sent: " << e.what() );
+            return false;
         }
 
-        return;
+        return true;
     }
 
 
