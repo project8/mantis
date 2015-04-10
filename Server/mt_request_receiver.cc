@@ -171,6 +171,10 @@ namespace mantis
                     do_set_request( *t_msg_payload, t_envelope );
                     break;
                 } // end "set" operation
+                case OP_CMD:
+                {
+                    do_cmd_request( *t_msg_payload, t_envelope );
+                }
                 default:
                     MTERROR( mtlog, "Unrecognized message operation: <" << t_msg_node->get_value< unsigned >( "msgop" ) << ">" );
                     break;
@@ -346,7 +350,36 @@ namespace mantis
 
     bool request_receiver::do_set_request( const param_node& a_msg_payload, AmqpClient::Envelope::ptr_t a_envelope )
     {
-        MTDEBUG( mtlog, "Config request received" );
+        MTDEBUG( mtlog, "Set request received" );
+        f_broker->get_connection().amqp()->BasicAck( a_envelope );
+
+        param_node t_reply_node;
+        t_reply_node.add( "return-msg", param_value( "Request succeeded" ) );
+
+        string t_routing_key = a_envelope->RoutingKey();
+        if( t_routing_key.empty() )
+        {
+            t_reply_node.value_at( "return-msg" )->set( "No routing key was provided" );
+            acknowledge_and_reply( t_reply_node, R_AMQP_ERROR_ROUTINGKEY_NOTFOUND, a_envelope );
+            return false;
+        }
+
+        MTDEBUG( mtlog, "Applying a setting" );
+        // apply a configuration setting
+        // the destination node should specify the configuration to set
+        t_routing_key += string( "=" ) + a_msg_payload.get_value( "value" );
+        parsable t_routing_key_node_with_value( t_routing_key );
+        MTDEBUG( mtlog, "Parsed routing key and added value:\n" << t_routing_key_node_with_value );
+        f_master_server_config.merge( *t_routing_key_node_with_value.node_at( f_queue_name ) );
+
+        t_reply_node.add( "master-config", f_master_server_config );
+
+        return acknowledge_and_reply( t_reply_node, R_SUCCESS, a_envelope );
+    }
+
+    bool request_receiver::do_cmd_request( const param_node& a_msg_payload, AmqpClient::Envelope::ptr_t a_envelope )
+    {
+        MTDEBUG( mtlog, "Cmd request received" );
         f_broker->get_connection().amqp()->BasicAck( a_envelope );
 
         param_node t_reply_node;
@@ -459,12 +492,10 @@ namespace mantis
         }
         else
         {
-            MTDEBUG( mtlog, "Applying a configuration setting" );
-            // apply a configuration setting
-            // the destination node should specify the configuration to set
-            t_routing_key += string( "=" ) + a_msg_payload.get_value( "value" );
-            parsable t_routing_key_node_with_value( t_routing_key );
-            f_master_server_config.merge( *t_routing_key_node_with_value.node_at( f_queue_name ) );
+            MTWARN( mtlog, "Instruction <" << t_instruction << "> not understood" );
+            t_reply_node.value_at( "return-msg" )->set( "Instruction <" + t_instruction + "> not understood" );
+            acknowledge_and_reply( t_reply_node, R_MESSAGE_ERROR_BAD_PAYLOAD, a_envelope );
+            return false;
         }
 
         t_reply_node.add( "master-config", f_master_server_config );

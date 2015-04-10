@@ -79,11 +79,20 @@ namespace mantis
                 return;
             }
         }
-        else if( t_request_type == "config" )
+        else if( t_request_type == "set" )
         {
-            if( ! do_config_request( t_request_str, t_consumer_tag, t_reply_to ) )
+            if( ! do_set_request( t_request_str, t_consumer_tag, t_reply_to ) )
             {
-                MTERROR( mtlog, "There was an error while processing the config request" );
+                MTERROR( mtlog, "There was an error while processing the set request" );
+                f_return = RETURN_ERROR;
+                return;
+            }
+        }
+        else if( t_request_type == "cmd" )
+        {
+            if( ! do_cmd_request( t_request_str, t_consumer_tag, t_reply_to ) )
+            {
+                MTERROR( mtlog, "There was an error while processing the cmd request" );
                 f_return = RETURN_ERROR;
                 return;
             }
@@ -225,7 +234,7 @@ namespace mantis
         param_node t_request;
         t_request.add( "msgtype", param_value( T_REQUEST ) );
         t_request.add( "msgop", param_value( OP_GET ) );
-       //t_request.add( "target", param_value( "mantis" ) );  // use of the target is now deprecated (3/12/15)
+        //t_request.add( "target", param_value( "mantis" ) );  // use of the target is now deprecated (3/12/15)
         t_request.add( "timestamp", param_value( get_absolute_time_string() ) );
         t_request.add( "payload", new param() );
 
@@ -249,7 +258,35 @@ namespace mantis
         return true;
     }
 
-    bool run_client::do_config_request( std::string& a_request_str, std::string& a_consumer_tag, std::string& a_reply_to )
+    bool run_client::do_set_request( std::string& a_request_str, std::string& a_consumer_tag, std::string& a_reply_to )
+    {
+        param_node* t_payload_node = NULL;
+
+        t_payload_node = new param_node( f_config ); // copy f_config
+
+        param_node t_request;
+        t_request.add( "msgtype", param_value( T_REQUEST ) );
+        t_request.add( "msgop", param_value( OP_SET ) );
+        //t_request.add( "target", param_value( "mantis" ) ); // use of the target is now deprecated (3/12/15)
+        t_request.add( "timestamp", param_value( get_absolute_time_string() ) );
+        t_request.add( "payload", t_payload_node ); // use t_payload_node as is
+
+        MTDEBUG( mtlog, "Sending message:\n" << t_request );
+
+        if(! param_output_json::write_string( t_request, a_request_str, param_output_json::k_compact ) )
+        {
+            MTERROR( mtlog, "Could not convert request to string" );
+            return false;
+        }
+
+        a_reply_to = broker::get_instance()->get_connection().amqp()->DeclareQueue( "" );
+        a_consumer_tag = broker::get_instance()->get_connection().  amqp()->BasicConsume( a_reply_to );
+        MTDEBUG( mtlog, "Consumer tag for reply: " << a_consumer_tag );
+
+        return true;
+    }
+
+    bool run_client::do_cmd_request( std::string& a_request_str, std::string& a_consumer_tag, std::string& a_reply_to )
     {
         param_node* t_payload_node = NULL;
 
@@ -279,7 +316,7 @@ namespace mantis
 
         param_node t_request;
         t_request.add( "msgtype", param_value( T_REQUEST ) );
-        t_request.add( "msgop", param_value( OP_SET ) );
+        t_request.add( "msgop", param_value( OP_CMD ) );
         //t_request.add( "target", param_value( "mantis" ) ); // use of the target is now deprecated (3/12/15)
         t_request.add( "timestamp", param_value( get_absolute_time_string() ) );
         t_request.add( "payload", t_payload_node ); // use t_payload_node as is

@@ -44,6 +44,7 @@ namespace mantis
     // 6 is reserved for OP_CONFIG
     // 7 is reserved for OP_SEND
 #define OP_RUN  8
+#define OP_CMD  9
 #define OP_UNKNOWN UINT_MAX
 
     // Message type constants
