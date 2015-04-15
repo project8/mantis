@@ -107,7 +107,8 @@ namespace mantis
                 MTWARN( mtlog, "type unrecognized: " << a_msgpack_element.type );
                 break;
         }
-        return t_config;
+        MTWARN( mtlog, "something should have returned before ever getting here, something went wrong" );
+        return NULL;
     }
 
     param_output_msgpack::param_output_msgpack()
