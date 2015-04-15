@@ -63,12 +63,9 @@ namespace mantis
     param* param_input_msgpack::read_msgpack_element( const msgpack::object& a_msgpack_element )
     {
         MTDEBUG( mtlog, "case will be: " << a_msgpack_element.type );
-        param* t_config = new param(); // wish i could use this
-        param_array* t_config_array = new param_array();
-        param_node* t_config_node = new param_node();
         switch ( a_msgpack_element.type ){
             case 0: // NULL
-                return t_config;
+                return new param();
                 break;
             case 1: // BOOL
                 return new param_value( a_msgpack_element.as<bool>() );
@@ -86,25 +83,33 @@ namespace mantis
                 return new param_value( a_msgpack_element.as<std::string>() );
                 break;
             case 6: // array
-                for( unsigned iElement=0; iElement < a_msgpack_element.via.array.size; ++iElement)
                 {
-                    t_config_array->push_back( param_input_msgpack::read_msgpack_element(a_msgpack_element.via.array.ptr[iElement]) );
+                    param_array* t_config_array = new param_array();
+                    for( unsigned iElement=0; iElement < a_msgpack_element.via.array.size; ++iElement )
+                    {
+                        t_config_array->push_back( param_input_msgpack::read_msgpack_element(a_msgpack_element.via.array.ptr[iElement]) );
+                    }
+                    return t_config_array;
+                    break;
                 }
-                return t_config_array;
-                break;
             case 7: // map
-                for( unsigned iElement=0; iElement < a_msgpack_element.via.array.size; ++iElement)
                 {
-                    t_config_node->replace( a_msgpack_element.via.array.ptr[2*iElement].as<std::string>(), 
-                                            param_input_msgpack::read_msgpack_element( a_msgpack_element.via.array.ptr[2*iElement+1] ));
+                    param_node* t_config_node = new param_node();
+                    for( unsigned iElement=0; iElement < a_msgpack_element.via.array.size; ++iElement)
+                    {
+                        t_config_node->replace( a_msgpack_element.via.array.ptr[2*iElement].as<std::string>(), 
+                                                param_input_msgpack::read_msgpack_element( a_msgpack_element.via.array.ptr[2*iElement+1] ));
+                    }
+                    return t_config_node;
+                    break;
                 }
-                return t_config_node;
-                break;
             case 8: // BIN
                 MTWARN( mtlog, "not sure how to deal with a 'bin'" );
+                return NULL;
                 break;
             default:
                 MTWARN( mtlog, "type unrecognized: " << a_msgpack_element.type );
+                return NULL;
                 break;
         }
         MTWARN( mtlog, "something should have returned before ever getting here, something went wrong" );
