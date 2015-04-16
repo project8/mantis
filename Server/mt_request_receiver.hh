@@ -31,10 +31,10 @@ namespace mantis
         private:
             void apply_config( const std::string& a_config_addr, const param_value& a_value );
 
-            bool do_run_request( const param_node& a_msg_payload, AmqpClient::Envelope::ptr_t a_envelope );
-            bool do_get_request( const param_node& a_msg_payload, AmqpClient::Envelope::ptr_t a_envelope );
-            bool do_set_request( const param_node& a_msg_payload, AmqpClient::Envelope::ptr_t a_envelope );
-            bool do_cmd_request( const param_node& a_msg_payload, AmqpClient::Envelope::ptr_t a_envelope );
+            bool do_run_request( const param_node& a_msg_payload, AmqpClient::Envelope::ptr_t a_envelope, param_node& a_reply_node );
+            bool do_get_request( const param_node& a_msg_payload, AmqpClient::Envelope::ptr_t a_envelope, param_node& a_reply_node );
+            bool do_set_request( const param_node& a_msg_payload, AmqpClient::Envelope::ptr_t a_envelope, param_node& a_reply_node );
+            bool do_cmd_request( const param_node& a_msg_payload, AmqpClient::Envelope::ptr_t a_envelope, param_node& a_reply_node );
 
             bool acknowledge_and_reply( const param_node& a_reply_node, unsigned a_return_code, AmqpClient::Envelope::ptr_t a_envelope );
 
