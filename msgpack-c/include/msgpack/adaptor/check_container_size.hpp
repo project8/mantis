@@ -42,7 +42,7 @@ inline void check_container_size(std::size_t size) {
 }
 
 template <>
-inline void check_container_size<4>(std::size_t size) {
+inline void check_container_size<4>(std::size_t /*size*/) {
 }
 
 } // namespace detail

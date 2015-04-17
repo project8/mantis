@@ -28,10 +28,11 @@ namespace mantis
 {
     MTLOGGER( mtlog, "run_client" );
 
-    run_client::run_client( const param_node& a_node, const string& a_exe_name ) :
+    run_client::run_client( const param_node& a_node, const string& a_exe_name, const string& a_exchange ) :
             //callable(),
             f_config( a_node ),
             f_exe_name( a_exe_name ),
+            f_exchange( a_exchange ),
             //f_canceled( false ),
             f_return( 0 )
     {
@@ -43,44 +44,26 @@ namespace mantis
 
     void run_client::execute()
     {
-        MTINFO( mtlog, "Connecting to AMQP broker" );
-
-        const param_node* t_broker_node = f_config.node_at( "amqp" );
-
-        broker t_broker( t_broker_node->get_value( "broker" ),
-                         t_broker_node->get_value< unsigned >( "broker-port" ) );
-
-        connection* t_connection = t_broker.create_connection();
-        if( t_connection == NULL )
-        {
-            MTERROR( mtlog, "Cannot create connection to AMQP broker" );
-            f_return = RETURN_ERROR;
-            return;
-        }
-
-        std::string t_exchange;
-        try
-        {
-            t_exchange = t_broker_node->get_value( "exchange" );
-            t_connection->amqp()->DeclareExchange( t_exchange, AmqpClient::Channel::EXCHANGE_TYPE_DIRECT, true );
-        }
-        catch( std::exception& e )
-        {
-            delete t_connection;
-            MTERROR( mtlog, "Unable to declare exchange <" << t_exchange << ">; aborting.\n(" << e.what() << ")" );
-            f_return = RETURN_ERROR;
-            return;
-        }
-
+        broker* t_broker = broker::get_instance();
 
         MTINFO( mtlog, "Creating request" );
 
-        std::string t_request_type( f_config.get_value( "request", "" ) );
+        std::string t_request_type( f_config.get_value( "do", "" ) );
+        f_config.erase( "do" );
 
-        std::string t_reply_to, t_correlation_id, t_request_str, t_consumer_tag;
+        std::string t_routing_key( f_config.get_value( "dest", "mantis" ) );
+        f_config.erase( "dest" );
+
         param_node t_save_node;
-        // t_consumer_tag will be used to determine whether we should wait for a reply message.
-        // if it's empty, we will not wait
+        if( f_config.has( "save" ) )
+        {
+            t_save_node = *(f_config.node_at( "save" ));
+        }
+        f_config.erase( "save" );
+
+        // now all that remains in f_config should be values to pass to the server as arguments to the request
+
+        std::string t_request_str;
         if( t_request_type == "run" )
         {
             if( ! do_run_request( t_request_str ) )
@@ -92,7 +75,7 @@ namespace mantis
         }
         else if( t_request_type == "get" )
         {
-            if( ! do_get_request( t_request_str, t_connection, t_consumer_tag, t_reply_to, t_save_node ) )
+            if( ! do_get_request( t_request_str ) )
             {
                 MTERROR( mtlog, "There was an error while processing the get request" );
                 f_return = RETURN_ERROR;
@@ -101,9 +84,18 @@ namespace mantis
         }
         else if( t_request_type == "set" )
         {
-            if( ! do_set_request( t_request_str, t_connection, t_consumer_tag, t_reply_to ) )
+            if( ! do_set_request( t_request_str ) )
             {
                 MTERROR( mtlog, "There was an error while processing the set request" );
+                f_return = RETURN_ERROR;
+                return;
+            }
+        }
+        else if( t_request_type == "cmd" )
+        {
+            if( ! do_cmd_request( t_request_str ) )
+            {
+                MTERROR( mtlog, "There was an error while processing the cmd request" );
                 f_return = RETURN_ERROR;
                 return;
             }
@@ -116,27 +108,31 @@ namespace mantis
         }
 
 
-        MTINFO( mtlog, "Sending request" );
+        // strings for passing to the various do_[type]_request functions
+        std::string t_reply_to = broker::get_instance()->get_connection().amqp()->DeclareQueue( "" );
+        std::string t_consumer_tag = broker::get_instance()->get_connection().  amqp()->BasicConsume( t_reply_to );
+        MTDEBUG( mtlog, "Consumer tag for reply: " << t_consumer_tag );
+
+        MTINFO( mtlog, "Sending request with routing key <" << t_routing_key << ">" );
 
         AmqpClient::BasicMessage::ptr_t t_message = AmqpClient::BasicMessage::Create( t_request_str );
         t_message->ContentEncoding( "application/json" );
+        std::string t_correlation_id;
         t_message->CorrelationId( t_correlation_id ); // currently always ""
         t_message->ReplyTo( t_reply_to );
 
         try
         {
-            t_connection->amqp()->BasicPublish( t_exchange, t_broker_node->get_value( "route" ), t_message );
+            t_broker->get_connection().amqp()->BasicPublish( f_exchange, t_routing_key, t_message, true, true );
         }
         catch( AmqpClient::MessageReturnedException& e )
         {
-            delete t_connection;
             MTERROR( mtlog, "Message could not be sent: " << e.what() );
             f_return = RETURN_ERROR;
             return;
         }
         catch( std::exception& e )
         {
-            delete t_connection;
             MTERROR( mtlog, "Error publishing to queue: " << e.what() );
             f_return = RETURN_ERROR;
             return;
@@ -147,7 +143,7 @@ namespace mantis
             MTINFO( mtlog, "Waiting for a reply from the server; use ctrl-c to cancel" );
 
             // blocking call to wait for incoming message
-            AmqpClient::Envelope::ptr_t t_envelope = t_connection->amqp()->BasicConsumeMessage( t_consumer_tag );
+            AmqpClient::Envelope::ptr_t t_envelope = t_broker->get_connection().amqp()->BasicConsumeMessage( t_consumer_tag );
 
             MTINFO( mtlog, "Response received" );
 
@@ -169,7 +165,7 @@ namespace mantis
                 if( t_save_node.has( "json" ) )
                 {
                     string t_save_filename( t_save_node.get_value( "json" ) );
-                    const param_node* t_master_config_node = t_msg_node->node_at( "payload" )->node_at( "master-config" );
+                    const param_node* t_master_config_node = t_msg_node->node_at( "payload" )->node_at( "content" );
                     if( t_master_config_node == NULL )
                     {
                         MTERROR( mtlog, "Node \"master-config\" is not present to save" );
@@ -189,8 +185,6 @@ namespace mantis
             delete t_msg_node;
         }
 
-        delete t_connection;
-
         f_return = RETURN_SUCCESS;
 
         return;
@@ -209,8 +203,7 @@ namespace mantis
 
     bool run_client::do_run_request( std::string& a_request_str )
     {
-        const param_node* t_file_node = f_config.node_at( "file" );
-        if( t_file_node == NULL )
+        if( ! f_config.has( "file" ) )
         {
             MTERROR( mtlog, "No file configuration is present" );
             return false;
@@ -221,16 +214,16 @@ namespace mantis
         t_client_node->add( "exe", param_value( f_exe_name ) );
         t_client_node->add( "version", param_value( TOSTRING(Mantis_VERSION) ) );
 
-        param_node* t_request_payload = new param_node();
-        t_request_payload->add( "file", *t_file_node ); // make a copy of t_file_node
-        t_request_payload->add( "client", t_client_node ); // use t_client_node as is
+        param_node* t_payload_node = new param_node( f_config ); // copy of f_config, which should consist of only the request arguments
+        t_payload_node->add( "client", t_client_node ); // use t_client_node as is
+        t_payload_node->add( "file", *f_config.at( "file ") ); // copy the file node
 
         param_node t_request;
         t_request.add( "msgtype", param_value( T_REQUEST ) );
         t_request.add( "msgop", param_value( OP_RUN ) );
         //t_request.add( "target", param_value( "mantis" ) );  // use of the target is now deprecated (3/12/15)
         t_request.add( "timestamp", param_value( get_absolute_time_string() ) );
-        t_request.add( "payload", t_request_payload ); // use t_request_node as is
+        t_request.add( "payload", t_payload_node ); // use t_payload_node as is
 
         if(! param_output_json::write_string( t_request, a_request_str, param_output_json::k_compact ) )
         {
@@ -241,24 +234,14 @@ namespace mantis
         return true;
     }
 
-    bool run_client::do_get_request( std::string& a_request_str, connection* a_connection, std::string& a_consumer_tag, std::string& a_reply_to, param_node& a_save_node )
+    bool run_client::do_get_request( std::string& a_request_str )
     {
-        string t_query_type = f_config.get_value( "get", "" );
-        if( t_query_type.empty() )
-        {
-            MTERROR( mtlog, "Get type was not specified" );
-            return false;
-        }
-
-        param_node t_payload_node;
-        t_payload_node.add( "get", param_value( t_query_type ) );
-
         param_node t_request;
         t_request.add( "msgtype", param_value( T_REQUEST ) );
         t_request.add( "msgop", param_value( OP_GET ) );
-       //t_request.add( "target", param_value( "mantis" ) );  // use of the target is now deprecated (3/12/15)
+        //t_request.add( "target", param_value( "mantis" ) );  // use of the target is now deprecated (3/12/15)
         t_request.add( "timestamp", param_value( get_absolute_time_string() ) );
-        t_request.add( "payload", t_payload_node );
+        t_request.add( "payload", new param_node() );
 
         if(! param_output_json::write_string( t_request, a_request_str, param_output_json::k_compact ) )
         {
@@ -266,86 +249,29 @@ namespace mantis
             return false;
         }
 
-        a_reply_to = a_connection->amqp()->DeclareQueue( "" );
-        a_consumer_tag = a_connection->amqp()->BasicConsume( a_reply_to );
-        MTDEBUG( mtlog, "Consumer tag for reply: " << a_consumer_tag );
-
-        // check for whether we'll be saving the result
-        a_save_node.clear();
-        if( f_config.has( "save" ) )
-        {
-            a_save_node = *(f_config.node_at( "save" ));
-        }
-
         return true;
     }
 
-    bool run_client::do_set_request( std::string& a_request_str, connection* a_connection, std::string& a_consumer_tag, std::string& a_reply_to )
+    bool run_client::do_set_request( std::string& a_request_str )
     {
-        param_node t_payload_node;
-
-        string t_instruction;
-        if( f_config.has( "set" ) )
+        if( ! f_config.has( "value" ) )
         {
-            t_instruction = "set";
-        }
-        else if( f_config.has( "load" ) )
-        {
-            t_instruction = "load";
-        }
-        else if( f_config.has( "add" ) )
-        {
-            t_instruction = "add";
-        }
-        else if( f_config.has( "remove" ) )
-        {
-            t_instruction = "remove";
-        }
-        else
-        {
-            MTERROR( mtlog, "No valid set instruction was specified" );
+            MTERROR( mtlog, "No \"value\" option given" );
             return false;
         }
 
-        param_node* t_instruction_node = new param_node( *f_config.node_at( t_instruction ));
-        if( t_instruction_node == NULL )
-        {
-            delete t_instruction_node;
-            MTERROR( mtlog, "Instruction for <" << t_instruction << "> was not specified" );
-            return false;
-        }
+        param_array* t_values_array = new param_array();
+        t_values_array->push_back( f_config.remove( "value" ) );
 
-        // for the load instruction, the instruction node should be replaced by the contents of the file specified
-        if( t_instruction == "load" )
-        {
-            if( t_instruction_node->has( "json" ) )
-            {
-                string t_load_filename( t_instruction_node->get_value( "json" ) );
-                delete t_instruction_node;
-                t_instruction_node = param_input_json::read_file( t_load_filename );
-                if( t_instruction_node == NULL )
-                {
-                    MTERROR( mtlog, "Unable to read JSON file <" << t_load_filename << ">" );
-                    return false;
-                }
-            }
-            else
-            {
-                delete t_instruction_node;
-                MTERROR( mtlog, "Load instruction did not contain a valid file type");
-                return false;
-            }
-        }
-
-        t_payload_node.add( "action", param_value( t_instruction ) );
-        t_payload_node.add( t_instruction, t_instruction_node ); // use t_instruction_node itself, so it doesn't have to be deleted
+        param_node* t_payload_node = new param_node();
+        t_payload_node->add( "values", t_values_array );
 
         param_node t_request;
         t_request.add( "msgtype", param_value( T_REQUEST ) );
         t_request.add( "msgop", param_value( OP_SET ) );
         //t_request.add( "target", param_value( "mantis" ) ); // use of the target is now deprecated (3/12/15)
         t_request.add( "timestamp", param_value( get_absolute_time_string() ) );
-        t_request.add( "payload", t_payload_node );
+        t_request.add( "payload", t_payload_node ); // use t_payload_node as is
 
         MTDEBUG( mtlog, "Sending message:\n" << t_request );
 
@@ -355,9 +281,53 @@ namespace mantis
             return false;
         }
 
-        a_reply_to = a_connection->amqp()->DeclareQueue( "" );
-        a_consumer_tag = a_connection->amqp()->BasicConsume( a_reply_to );
-        MTDEBUG( mtlog, "Consumer tag for reply: " << a_consumer_tag );
+        return true;
+    }
+
+    bool run_client::do_cmd_request( std::string& a_request_str )
+    {
+        param_node* t_payload_node = new param_node();
+
+        // for the load instruction, the instruction node should be replaced by the contents of the file specified
+        if( f_config.has( "load" ) )
+        {
+            if( ! f_config.node_at( "load" )->has( "json" ) )
+            {
+                MTERROR( mtlog, "Load instruction did not contain a valid file type");
+                delete t_payload_node;
+                return false;
+            }
+
+            string t_load_filename( f_config.node_at( "load" )->get_value( "json" ) );
+            param_node* t_node_from_file = param_input_json::read_file( t_load_filename );
+            if( t_node_from_file == NULL )
+            {
+                MTERROR( mtlog, "Unable to read JSON file <" << t_load_filename << ">" );
+                delete t_payload_node;
+                return false;
+            }
+
+            t_payload_node->merge( *t_node_from_file );
+            f_config.erase( "load" );
+        }
+
+        // at this point, all that remains in f_config should be other options that we want to add to the payload node
+        t_payload_node->merge( f_config ); // copy f_config
+
+        param_node t_request;
+        t_request.add( "msgtype", param_value( T_REQUEST ) );
+        t_request.add( "msgop", param_value( OP_CMD ) );
+        //t_request.add( "target", param_value( "mantis" ) ); // use of the target is now deprecated (3/12/15)
+        t_request.add( "timestamp", param_value( get_absolute_time_string() ) );
+        t_request.add( "payload", t_payload_node ); // use t_payload_node as is
+
+        MTDEBUG( mtlog, "Sending message:\n" << t_request );
+
+        if(! param_output_json::write_string( t_request, a_request_str, param_output_json::k_compact ) )
+        {
+            MTERROR( mtlog, "Could not convert request to string" );
+            return false;
+        }
 
         return true;
     }

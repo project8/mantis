@@ -44,6 +44,7 @@ namespace mantis
     // 6 is reserved for OP_CONFIG
     // 7 is reserved for OP_SEND
 #define OP_RUN  8
+#define OP_CMD  9
 #define OP_UNKNOWN UINT_MAX
 
     // Message type constants
@@ -51,6 +52,24 @@ namespace mantis
 #define T_REQUEST 3
 #define T_ALERT   4
 #define T_INFO    5
+
+
+    // Return codes
+#define R_SUCCESS  0
+
+#define R_AMQP_ERROR                100
+#define R_AMQP_ERROR_BROKER_CONNECTION    101
+#define R_AMQP_ERROR_ROUTINGKEY_NOTFOUND  102
+
+#define R_DEVICE_ERROR       200
+#define R_DEVICE_ERROR_CONNECTION  201
+#define R_DEVICE_ERROR_NO_RESP     202
+
+#define R_MESSAGE_ERROR          300
+#define R_MESSAGE_ERROR_NO_ENCODING    301
+#define R_MESSAGE_ERROR_DECODING_FAIL  302
+#define R_MESSAGE_ERROR_BAD_PAYLOAD    303
+#define R_MESSAGE_ERROR_INVALID_VALUE  304
 
 }
 

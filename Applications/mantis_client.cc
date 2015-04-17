@@ -20,6 +20,7 @@
  */
 
 #include "mt_broker.hh"
+#include "mt_connection.hh"
 #include "mt_constants.hh"
 #include "mt_logger.hh"
 #include "mt_client_config.hh"
@@ -39,9 +40,54 @@ int main( int argc, char** argv )
         client_config t_cc;
         configurator t_configurator( argc, argv, &t_cc );
 
-        run_client the_client( t_configurator.config(), t_configurator.exe_name() );
+        MTINFO( mtlog, "Connecting to AMQP broker" );
+
+        param_node* t_broker_node = &t_configurator.config().remove( "amqp" )->as_node();
+
+        broker* t_broker = broker::get_instance();
+
+        if( ! t_broker->is_connected() )
+        {
+            if(! t_broker->connect( t_broker_node->get_value( "broker" ),
+                    t_broker_node->get_value< unsigned >( "broker-port" ) ) )
+            {
+                MTERROR( mtlog, "Cannot create connection to AMQP broker" );
+                return RETURN_ERROR;
+            }
+        }
+        else
+        {
+            if( t_broker->get_address() != t_broker_node->get_value( "broker" ) ||
+                    t_broker->get_port() != t_broker_node->get_value< unsigned >( "broker-port" ) )
+            {
+                MTERROR( mtlog, "Already connected to a different AMQP broker: " << t_broker->get_address() << ":" << t_broker->get_port() );
+                return RETURN_ERROR;
+            }
+        }
+
+        std::string t_exchange;
+        try
+        {
+            t_exchange = t_broker_node->get_value( "exchange" );
+            t_broker->get_connection().amqp()->DeclareExchange( t_exchange, AmqpClient::Channel::EXCHANGE_TYPE_DIRECT, true );
+        }
+        catch( std::exception& e )
+        {
+            MTERROR( mtlog, "Unable to declare exchange <" << t_exchange << ">; aborting.\n(" << e.what() << ")" );
+            t_broker->disconnect();
+            return RETURN_ERROR;
+        }
+
+        delete t_broker_node;
+
+
+        // Run the client
+
+        run_client the_client( t_configurator.config(), t_configurator.exe_name(), t_exchange );
 
         the_client.execute();
+
+        t_broker->disconnect();
 
         return the_client.get_return();
     }

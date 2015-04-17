@@ -405,7 +405,7 @@ namespace mantis
     {
         for( const_iterator it = orig.f_contents.begin(); it != orig.f_contents.end(); ++it )
         {
-            this->replace( it->first, *it->second );
+            add( it->first, it->second->clone() );
         }
     }
 
@@ -438,7 +438,7 @@ namespace mantis
             param& t_param = (*this)[ it->first ];
             if( t_param.is_value() )
             {
-                //MTDEBUG( mtlog, "replacing the value <" << it->first << "> with <" << *it->second << ">" );
+                //MTDEBUG( mtlog, "replacing the value of \"" << it->first << "\" <" << get_value( it->first ) << "> with <" << *it->second << ">" );
                 replace( it->first, *it->second );
                 continue;
             }

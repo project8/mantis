@@ -24,7 +24,6 @@ if( Mantis_BUILD_SERVER )
         #mt_bit_shift_modifier.hh
         mt_block.hh
         mt_buffer.hh
-        mt_destroyer.hh
         mt_device_manager.hh
         mt_digitizer.hh
         mt_factory.hh
@@ -37,7 +36,6 @@ if( Mantis_BUILD_SERVER )
         mt_run_description.hh
         mt_server_config.hh
         mt_server_worker.hh
-        mt_singleton.hh
         mt_writer.hh
         ${DIGITIZER_HEADERFILES}
     )

@@ -35,61 +35,85 @@ namespace mantis
 
     param_node* param_input_msgpack::read_string( const std::string& a_msgpack_string )
     {
-        //param_node* t_config = new param_node();
-
+        // deserialize the buffer
         msgpack::unpacked result;
         msgpack::unpack(result, a_msgpack_string.data(), a_msgpack_string.size());
         msgpack::object deserialized = result.get();
         MTDEBUG( mtlog, "msgpack deserialization result is:\n" << deserialized );
+        MTDEBUG( mtlog, "with size: " << deserialized.via.array.size );
+        MTWARN( mtlog, "deserialized type is " << deserialized.type );
 
-
-        msgpack::object_array deserialized_array = deserialized.via.array;
-        param_node* t_config = param_input_msgpack::read_msgpack_array( deserialized_array );
+        
+        // convert it to a param node
+        if ( deserialized.type != 7 ) // message payload should deserialize to a map
+        {
+            return NULL;
+        }
+        param_node* t_config = new param_node();
+        for( unsigned iElement=0; iElement < deserialized.via.array.size; ++iElement)
+        {
+            t_config->replace( deserialized.via.array.ptr[2*iElement].as<std::string>(), 
+                               param_input_msgpack::read_msgpack_element( deserialized.via.array.ptr[2*iElement+1] ));
+            MTDEBUG( mtlog, "config is now:" << std::endl << *t_config );
+        }
 
         return t_config;
     }
 
-    param_node* param_input_msgpack::read_msgpack_array( const msgpack::object_array& a_msgpack_array )
+    param* param_input_msgpack::read_msgpack_element( const msgpack::object& a_msgpack_element )
     {
-        param_node* t_config = new param_node();
-
-        for (unsigned Iparam=0; Iparam < a_msgpack_array.size; ++Iparam)
-        {
-//            MTDEBUG( mtlog, "param_node so far is: " << *t_config );
-//            MTDEBUG( mtlog, "param " << Iparam << " addition -> " << a_msgpack_array.ptr[2*Iparam] << " : " << a_msgpack_array.ptr[2*Iparam+1] );
-//            MTDEBUG( mtlog, "case will be " << a_msgpack_array.ptr[2*Iparam+1].type);
-            switch ( a_msgpack_array.ptr[2*Iparam+1].type ){
-                case 0: // NULL
-                    t_config->add( a_msgpack_array.ptr[2*Iparam].as<std::string>(), new param() );
+        MTDEBUG( mtlog, "case will be: " << a_msgpack_element.type );
+        switch ( a_msgpack_element.type ){
+            case 0: // NULL
+                return new param();
+                break;
+            case 1: // BOOL
+                return new param_value( a_msgpack_element.as<bool>() );
+                break;
+            case 2: // positive int
+                return new param_value( a_msgpack_element.as<unsigned>() );
+                break;
+            case 3: // negative int
+                return new param_value( a_msgpack_element.as<int>() );
+                break;
+            case 4: // float
+                return new param_value( a_msgpack_element.as<float>() );
+                break;
+            case 5: // string
+                return new param_value( a_msgpack_element.as<std::string>() );
+                break;
+            case 6: // array
+                {
+                    param_array* t_config_array = new param_array();
+                    for( unsigned iElement=0; iElement < a_msgpack_element.via.array.size; ++iElement )
+                    {
+                        t_config_array->push_back( param_input_msgpack::read_msgpack_element(a_msgpack_element.via.array.ptr[iElement]) );
+                    }
+                    return t_config_array;
                     break;
-                case 1: // BOOL
-                    t_config->add( a_msgpack_array.ptr[2*Iparam].as<std::string>(), param_value(a_msgpack_array.ptr[2*Iparam+1].as<bool>()) );
+                }
+            case 7: // map
+                {
+                    param_node* t_config_node = new param_node();
+                    for( unsigned iElement=0; iElement < a_msgpack_element.via.array.size; ++iElement)
+                    {
+                        t_config_node->replace( a_msgpack_element.via.array.ptr[2*iElement].as<std::string>(), 
+                                                param_input_msgpack::read_msgpack_element( a_msgpack_element.via.array.ptr[2*iElement+1] ));
+                    }
+                    return t_config_node;
                     break;
-                case 2: // positive int
-                    t_config->add( a_msgpack_array.ptr[2*Iparam].as<std::string>(), param_value(a_msgpack_array.ptr[2*Iparam+1].as<unsigned>()) );
-                    break;
-                case 3: // negative int
-                    t_config->add( a_msgpack_array.ptr[2*Iparam].as<std::string>(), param_value(a_msgpack_array.ptr[2*Iparam+1].as<int>()) );
-                    break;
-                case 4: // float
-                    t_config->add( a_msgpack_array.ptr[2*Iparam].as<std::string>(), param_value(a_msgpack_array.ptr[2*Iparam+1].as<float>()) );
-                    break;
-                case 5: // string
-                    t_config->add( a_msgpack_array.ptr[2*Iparam].as<std::string>(), param_value(a_msgpack_array.ptr[2*Iparam+1].as<std::string>()) );
-                    break;
-                case 6: // array
-                    t_config->add( a_msgpack_array.ptr[2*Iparam].as<std::string>(), param_input_json::read_string(a_msgpack_array.ptr[2*Iparam+1].via.array.ptr[0].as<std::string>()));
-                    #include "mt_param_json.hh"
-                    break;
-                case 7: // map
-                case 8: // BIN
-                default:
-                    MTWARN( mtlog, "type unrecognized: " << a_msgpack_array.ptr[2*Iparam+1].type );
-                    break;
-            }
+                }
+            case 8: // BIN
+                MTWARN( mtlog, "not sure how to deal with a 'bin'" );
+                return NULL;
+                break;
+            default:
+                MTWARN( mtlog, "type unrecognized: " << a_msgpack_element.type );
+                return NULL;
+                break;
         }
-        MTDEBUG( mtlog, "returning: " << *t_config );
-        return t_config;
+        MTWARN( mtlog, "something should have returned before ever getting here, something went wrong" );
+        return NULL;
     }
 
     param_output_msgpack::param_output_msgpack()
@@ -98,7 +122,7 @@ namespace mantis
     param_output_msgpack::~param_output_msgpack()
     {}
 
-    bool param_output_msgpack::write_string( const param& a_to_write, std::string& a_string, json_writing_style a_style )
+    bool param_output_msgpack::write_string( const param& /*a_to_write*/, std::string& /*a_string*/, json_writing_style /*a_style*/ )
     {
         return true;
     }
