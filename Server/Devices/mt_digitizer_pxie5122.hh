@@ -72,6 +72,7 @@ namespace mantis
 
             ViSession f_handle;
             std::string f_resource_name;
+            std::string f_chan_string;
 
             bool f_allocated;
 

@@ -57,6 +57,7 @@ namespace mantis
             //f_semaphore( NULL ),
             f_handle(),
             f_resource_name(),
+            f_chan_string(),
             f_allocated( false ),
             f_acq_timeout( 0. ),
             f_waveform_info(),
@@ -167,6 +168,8 @@ namespace mantis
             return false;
         }
 
+        f_chan_string = "0";
+
         // Check data mode and channel mode
         uint32_t t_data_mode = a_dev_config->get_value< uint32_t >( "data-mode" );
         if( t_data_mode != monarch3::sDigitizedUS && t_data_mode != monarch3::sDigitizedS )
@@ -218,7 +221,7 @@ namespace mantis
             return false;
         }
         // for now just use -1 for max input frequency
-        if( ! handle_error( niScope_ConfigureChanCharacteristics( f_handle, "1", t_impedance, -1 ) ) )
+        if( ! handle_error( niScope_ConfigureChanCharacteristics( f_handle, f_chan_string.c_str(), t_impedance, -1 ) ) )
         {
             return false;
         }
@@ -281,19 +284,19 @@ namespace mantis
             MTERROR( mtlog, "Probe attenuation must be a real, positive number" );
             return false;
         }
-        if( ! handle_error( niScope_ConfigureVertical( f_handle, "1", t_voltage_range, t_voltage_offset, t_coupling, t_probe_attenuation, true ) ) )
+        if( ! handle_error( niScope_ConfigureVertical( f_handle, f_chan_string.c_str(), t_voltage_range, t_voltage_offset, t_coupling, t_probe_attenuation, true ) ) )
         {
             return false;
         }
 
         // get the scaling coefficients
         ViInt32 t_n_coeff_sets; // first determine the size of the array used to store the scaling coefficients
-        if( ! handle_error( niScope_GetScalingCoefficients( f_handle, "1", 0, NULL, &t_n_coeff_sets ) ) )
+        if( ! handle_error( niScope_GetScalingCoefficients( f_handle, f_chan_string.c_str(), 0, NULL, &t_n_coeff_sets ) ) )
         {
             return false;
         }
         niScope_coefficientInfo* t_coeff_info_array = new niScope_coefficientInfo[ t_n_coeff_sets ];
-        if( !handle_error( niScope_GetScalingCoefficients( f_handle, "1", t_n_coeff_sets, t_coeff_info_array, &t_n_coeff_sets ) ) )
+        if( !handle_error( niScope_GetScalingCoefficients( f_handle, f_chan_string.c_str(), t_n_coeff_sets, t_coeff_info_array, &t_n_coeff_sets ) ) )
         {
             return false;
         }
@@ -301,6 +304,11 @@ namespace mantis
         a_dev_config->replace( "voltage-offset", param_value( f_params.v_offset ) );
         a_dev_config->replace( "voltage-range", param_value( f_params.v_range ) );
         a_dev_config->replace( "dac-gain", param_value( f_params.dac_gain ) );
+
+        if( !handle_error( niScope_ConfigureClock( f_handle, NISCOPE_VAL_PXI_CLOCK, NISCOPE_VAL_NO_SOURCE, NISCOPE_VAL_NO_SOURCE , VI_FALSE ) ) )
+        {
+            return false;
+        }
 
         // call to niScope_ConfigureTriggerSoftware to allow for continuous acquisition
         if( ! handle_error( niScope_ConfigureTriggerSoftware( f_handle, 0., 0. ) ) )
@@ -529,7 +537,7 @@ namespace mantis
         a_block->set_record_id( f_record_count );
         a_block->set_acquisition_id( f_acquisition_count );
 
-        if( !handle_error( niScope_FetchBinary16( f_handle, "1", f_acq_timeout, a_block->get_data_size(), (ViInt16*)a_block->data_bytes(), &f_waveform_info) ) )
+        if( !handle_error( niScope_FetchBinary16( f_handle, f_chan_string.c_str(), f_acq_timeout, a_block->get_data_size(), (ViInt16*)a_block->data_bytes(), &f_waveform_info) ) )
         {
             return false;
         }
@@ -593,8 +601,8 @@ namespace mantis
             //strcpy( resourceName, f_resource_name.c_str() );
             if( ! handle_error( niScope_init( const_cast< char* >( f_resource_name.c_str() ), NISCOPE_VAL_FALSE, NISCOPE_VAL_FALSE, &f_handle ) ) )
             {
-                //delete[] resourceName;
-                return false;
+//delete[] resourceName;
+return false;
             }
             //delete[] resourceName;
         }
@@ -602,6 +610,8 @@ namespace mantis
         MTINFO( mtlog, "Connection successful" );
 
         MTINFO( mtlog, "Configuring the 5122" );
+        f_chan_string = "1";
+
         // call to niScpe_ConfigureChanCharacteristics
         // input impedance may be either 50, or 1000000
         unsigned t_impedance = 50;
@@ -611,7 +621,7 @@ namespace mantis
             return false;
         }
         // for now just use -1 for max input frequency
-        if( ! handle_error( niScope_ConfigureChanCharacteristics( f_handle, "1", t_impedance, -1 ) ) )
+        if( !handle_error( niScope_ConfigureChanCharacteristics( f_handle, f_chan_string.c_str(), t_impedance, -1 ) ) )
         {
             return false;
         }
@@ -621,20 +631,20 @@ namespace mantis
         // Note that the record size request is passed as the 3rd parameter; this is correct regardless of the number of channels in use;
         // This parameter in the NI function is the minimum number of samples in the record for each channel according to the NI-SCOPE documentation.
         // Must convert MHz rate request to Hz for NI-SCOPE
-        if( ! handle_error( niScope_ConfigureHorizontalTiming( f_handle, 100. * 1.e6,
-                524288, 0, 1, VI_TRUE ) ) )
+        if( !handle_error( niScope_ConfigureHorizontalTiming( f_handle, 100. * 1.e6,
+            524288, 0, 1, VI_TRUE ) ) )
         {
             return false;
         }
         ViReal64 t_actual_rate;
-        if( ! handle_error( niScope_SampleRate( f_handle, &t_actual_rate ) ) )
+        if( !handle_error( niScope_SampleRate( f_handle, &t_actual_rate ) ) )
         {
             return false;
         }
         // convert from Hz to MHz
         t_actual_rate *= 1.e-6;
         ViInt32 t_actual_rec_size;
-        if( ! handle_error( niScope_ActualRecordLength( f_handle, &t_actual_rec_size ) ) )
+        if( !handle_error( niScope_ActualRecordLength( f_handle, &t_actual_rec_size ) ) )
         {
             return false;
         }
@@ -673,24 +683,30 @@ namespace mantis
             MTERROR( mtlog, "Probe attenuation must be a real, positive number" );
             return false;
         }
-        if( ! handle_error( niScope_ConfigureVertical( f_handle, "1", t_voltage_range, t_voltage_offset, t_coupling, t_probe_attenuation, true ) ) )
+        if( !handle_error( niScope_ConfigureVertical( f_handle, f_chan_string.c_str(), t_voltage_range, t_voltage_offset, t_coupling, t_probe_attenuation, true ) ) )
         {
             return false;
         }
 
         // get the scaling coefficients
         ViInt32 t_n_coeff_sets;
-        if( ! handle_error( niScope_GetScalingCoefficients( f_handle, "1", 0, NULL, &t_n_coeff_sets ) ) )
+        if( !handle_error( niScope_GetScalingCoefficients( f_handle, f_chan_string.c_str(), 0, NULL, &t_n_coeff_sets ) ) )
         {
             return false;
         }
         niScope_coefficientInfo* t_coeff_info_array = new niScope_coefficientInfo[ t_n_coeff_sets ];
-        if( ! handle_error( niScope_GetScalingCoefficients( f_handle, "1", t_n_coeff_sets, t_coeff_info_array, &t_n_coeff_sets ) ) )
+        if( !handle_error( niScope_GetScalingCoefficients( f_handle, f_chan_string.c_str(), t_n_coeff_sets, t_coeff_info_array, &t_n_coeff_sets ) ) )
         {
             return false;
         }
-        get_calib_params2( 14 /*bit depth*/, s_data_type_size, t_voltage_offset, t_voltage_range, t_coeff_info_array[0].gain, &f_params );
- 
+        get_calib_params2( 14 /*bit depth*/, s_data_type_size, t_voltage_offset, t_voltage_range, t_coeff_info_array[ 0 ].gain, &f_params );
+
+        // configure the clock to use the PXIe crate's timing, which is syncronized to the lab atomic clock
+        if( !handle_error( niScope_ConfigureClock( f_handle, NISCOPE_VAL_NO_SOURCE, NISCOPE_VAL_NO_SOURCE, NISCOPE_VAL_NO_SOURCE, VI_FALSE ) ) )
+        {
+            return false;
+        }
+
         // call to niScope_ConfigureTriggerSoftware to allow for continuous acquisition
         if( ! handle_error( niScope_ConfigureTriggerSoftware( f_handle, 0., 0. ) ) )
         {
@@ -738,7 +754,7 @@ namespace mantis
 
         MTDEBUG( mtlog, "Acquiring a record (" << f_acq_timeout << ", " << t_block->get_data_size() << /* ", " << t_block->data_bytes() << */ ")" );
 
-        if( ! handle_error( niScope_FetchBinary16( f_handle, "1", f_acq_timeout, t_block->get_data_size(), (ViInt16*)t_block->data_bytes(), &f_waveform_info) ) )
+        if( !handle_error( niScope_FetchBinary16( f_handle, f_chan_string.c_str(), f_acq_timeout, t_block->get_data_size(), ( ViInt16* )t_block->data_bytes(), &f_waveform_info ) ) )
         {
             return false;
         }
