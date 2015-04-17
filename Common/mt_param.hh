@@ -17,6 +17,7 @@
 #include "prettywriter.h"
 #include "stringbuffer.h"
 
+#include <cstdint>
 #include <deque>
 #include <map>
 #include <sstream>
