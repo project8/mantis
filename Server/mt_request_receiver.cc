@@ -232,23 +232,23 @@ namespace mantis
         // optional
         const param_node* t_client_node = a_msg_payload.node_at( "client" );
 
-        acq_request* t_run_desc = new acq_request();
-        t_run_desc->set_status( acq_request::created );
+        acq_request* t_acq_req = new acq_request();
+        t_acq_req->set_status( acq_request::created );
 
-        t_run_desc->set_file_config( *t_file_node );
-        if( a_msg_payload.has( "description" ) ) t_run_desc->set_description_config( *(a_msg_payload.value_at( "description" ) ) );
+        t_acq_req->set_file_config( *t_file_node );
+        if( a_msg_payload.has( "description" ) ) t_acq_req->set_description_config( *(a_msg_payload.value_at( "description" ) ) );
 
-        t_run_desc->set_mantis_server_commit( TOSTRING(Mantis_GIT_COMMIT) );
-        t_run_desc->set_mantis_server_exe( f_exe_name );
-        t_run_desc->set_mantis_server_version( TOSTRING(Mantis_VERSION) );
-        t_run_desc->set_monarch_commit( TOSTRING(Monarch_GIT_COMMIT) );
-        t_run_desc->set_monarch_version( TOSTRING(Monarch_VERSION ) );
+        t_acq_req->set_mantis_server_commit( TOSTRING(Mantis_GIT_COMMIT) );
+        t_acq_req->set_mantis_server_exe( f_exe_name );
+        t_acq_req->set_mantis_server_version( TOSTRING(Mantis_VERSION) );
+        t_acq_req->set_monarch_commit( TOSTRING(Monarch_GIT_COMMIT) );
+        t_acq_req->set_monarch_version( TOSTRING(Monarch_VERSION ) );
 
         f_msc_mutex.lock();
-        t_run_desc->set_mantis_config( *f_master_server_config.node_at( "run" ) );
+        t_acq_req->set_mantis_config( *f_master_server_config.node_at( "acq" ) );
         f_msc_mutex.unlock();
         // remove non-enabled devices from the devices node
-        param_node* t_dev_node = t_run_desc->node_at( "mantis-config" )->node_at( "devices" );
+        param_node* t_dev_node = t_acq_req->node_at( "mantis-config" )->node_at( "devices" );
         std::vector< std::string > t_devs_to_remove;
         for( param_node::iterator t_node_it = t_dev_node->begin(); t_node_it != t_dev_node->end(); ++t_node_it )
         {
@@ -272,28 +272,28 @@ namespace mantis
 
         if( t_client_node != NULL )
         {
-            t_run_desc->set_client_commit( t_client_node->get_value( "commit", "N/A" ) );
-            t_run_desc->set_client_exe( t_client_node->get_value( "exe", "N/A" ) );
-            t_run_desc->set_client_version( t_client_node->get_value( "version", "N/A" ) );
+            t_acq_req->set_client_commit( t_client_node->get_value( "commit", "N/A" ) );
+            t_acq_req->set_client_exe( t_client_node->get_value( "exe", "N/A" ) );
+            t_acq_req->set_client_version( t_client_node->get_value( "version", "N/A" ) );
         }
         else
         {
-            t_run_desc->set_client_commit( "N/A" );
-            t_run_desc->set_client_exe( "N/A" );
-            t_run_desc->set_client_version( "N/A" );
+            t_acq_req->set_client_commit( "N/A" );
+            t_acq_req->set_client_exe( "N/A" );
+            t_acq_req->set_client_version( "N/A" );
         }
 
-        t_run_desc->set_status( acq_request::acknowledged );
+        t_acq_req->set_status( acq_request::acknowledged );
 
         a_reply_node.value_at( "return-msg")->set( "Run request succeeded" );
-        a_reply_node.node_at( "content" )->merge( *t_run_desc );
+        a_reply_node.node_at( "content" )->merge( *t_acq_req );
         if( ! acknowledge_and_reply( a_reply_node, R_SUCCESS, a_envelope ) )
         {
             MTWARN( mtlog, "Failed to send reply regarding the run request" );
         }
 
         MTINFO( mtlog, "Queuing request" );
-        f_acq_request_db->enqueue( t_run_desc );
+        f_acq_request_db->enqueue( t_acq_req );
 
         // if the queue condition is waiting, release it
         if( f_queue_condition->is_waiting() == true )
@@ -325,10 +325,10 @@ namespace mantis
         MTDEBUG( mtlog, "Query type: " << t_query_type );
 
         param_node t_reply;
-        if( t_query_type == "run-config" )
+        if( t_query_type == "acq-config" )
         {
             a_reply_node.value_at( "return-msg")->set( "Get request succeeded" );
-            a_reply_node.node_at( "content" )->merge( *f_master_server_config.node_at( "run" ) );
+            a_reply_node.node_at( "content" )->merge( *f_master_server_config.node_at( "acq" ) );
             return acknowledge_and_reply( a_reply_node, R_SUCCESS, a_envelope );
         }
         else if( t_query_type == "server-config" )
@@ -393,11 +393,11 @@ namespace mantis
         param_node t_dest_node( *t_routing_key_node.node_at( f_queue_name ) );
 
         string t_instruction( t_dest_node.begin()->first );
-        if( t_instruction == "run-config" )
+        if( t_instruction == "acq-config" )
         {
             MTDEBUG( mtlog, "Loading a full configuration" );
             // payload contents should replace the run config
-            (*f_master_server_config.node_at( "run" )) = a_msg_payload;
+            (*f_master_server_config.node_at( "acq" )) = a_msg_payload;
         }
         else if( t_instruction == "add" )
         {
@@ -408,7 +408,7 @@ namespace mantis
                 // it's expected that any values in the payload are digitizers to be added
                 try
                 {
-                    param_node* t_devices_node = f_master_server_config.node_at( "run" )->node_at( "devices" );
+                    param_node* t_devices_node = f_master_server_config.node_at( "acq" )->node_at( "devices" );
                     for( param_node::const_iterator t_dev_it = a_msg_payload.begin(); t_dev_it != a_msg_payload.end(); ++t_dev_it )
                     {
                         string t_device_type = t_dev_it->first;
@@ -462,7 +462,7 @@ namespace mantis
                      string t_device_name = t_dest_node.node_at( t_instruction )->node_at( "device" )->begin()->first;
 
                      // check if we have a device of this name
-                     if( ! f_master_server_config.node_at( "run" )->node_at( "devices" )->has( t_device_name ) )
+                     if( ! f_master_server_config.node_at( "acq" )->node_at( "devices" )->has( t_device_name ) )
                      {
                          a_reply_node.value_at( "return-msg" )->set( "The master config does not have device <" + t_device_name + ">" );
                          acknowledge_and_reply( a_reply_node, R_DEVICE_ERROR, a_envelope );
@@ -495,7 +495,7 @@ namespace mantis
         }
 
         a_reply_node.value_at( "return-msg" )->set( "Request succeeded" );
-        a_reply_node.node_at( "content" )->merge( *f_master_server_config.node_at( "run" ) );
+        a_reply_node.node_at( "content" )->merge( *f_master_server_config.node_at( "acq" ) );
 
         return acknowledge_and_reply( a_reply_node, R_SUCCESS, a_envelope );
     }

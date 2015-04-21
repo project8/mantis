@@ -131,4 +131,4 @@ namespace mantis
         return;
     }
 
-} /* namespace Katydid */
+} /* namespace mantis */
