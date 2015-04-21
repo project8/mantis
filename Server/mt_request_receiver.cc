@@ -368,7 +368,7 @@ namespace mantis
         t_routing_key += string( "=" ) + a_msg_payload.array_at( "values" )->get_value( 0 );
         parsable t_routing_key_node_with_value( t_routing_key );
         MTDEBUG( mtlog, "Parsed routing key and added value:\n" << t_routing_key_node_with_value );
-        f_master_server_config.node_at( "run" )->merge( *t_routing_key_node_with_value.node_at( f_queue_name ) );
+        f_master_server_config.node_at( "acq" )->merge( *t_routing_key_node_with_value.node_at( f_queue_name ) );
 
         a_reply_node.value_at( "return-msg" )->set( "Request succeeded" );
         a_reply_node.node_at( "content" )->add( "master-config", f_master_server_config );
@@ -470,7 +470,7 @@ namespace mantis
                      }
 
                      // add the configuration to the master config
-                     f_master_server_config.node_at( "run" )->node_at( "devices" )->erase( t_device_name );
+                     f_master_server_config.node_at( "acq" )->node_at( "devices" )->erase( t_device_name );
                  }
                  catch( exception& e )
                  {

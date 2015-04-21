@@ -31,13 +31,13 @@ Queue name is assumed to be ``mantis``.  The first two examples show the usage o
 
     mantis_client do=set dest=mantis.duration value=100
     
-* Get the master run configuration from the server; the option to save the configuration as a JSON file is used::
+* Get the master acquisition configuration from the server; the option to save the configuration as a JSON file is used::
 
-    mantis_client do=get dest=mantis.run-config save.json=my_config.json
+    mantis_client do=get dest=mantis.acq-config save.json=my_config.json
 
-* Replace the server's master run configuration with the contents of the specified file::
+* Replace the server's master acquisition configuration with the contents of the specified file::
 
-    mantis_client do=cmd dest=mantis.run-config load.json=my_config.json
+    mantis_client do=cmd dest=mantis.acq-config load.json=my_config.json
 
 * Submit an acquisition request to the queue::
 
@@ -71,9 +71,9 @@ Tell Mantis what type of instruction it's receiving.
 
 The available commands are:
 
-:run: ``do=run`` -- Queue an acquisition with the current run configuration
+:run: ``do=run`` -- Queue an acquisition with the current acquisition configuration
 :get: ``do=get`` -- Request information from the server
-:set: ``do=set`` -- Change a setting in the run configuration
+:set: ``do=set`` -- Change a setting in the acquisition configuration
 :cmd: ``do=cmd`` -- Run a command (see below)
   
 Target
@@ -92,14 +92,14 @@ The target is used in different ways for different commands:
     See the instruction options below.
 
 :get:
-  ``dest=[queue].run-config`` -- Returns the current run configuration.
+  ``dest=[queue].acq-config`` -- Returns the current acquisition configuration.
 
   ``dest=[queue].server-config`` -- Returns the current full configuration for the server.
 
   ``dest=[queue].status`` -- [not yet implemented] Will return the server status.
 
 :set:
-  ``dest=[queue].[run config item]`` -- Sets the value of an item in the run configuration.
+  ``dest=[queue].[acq config item]`` -- Sets the value of an item in the run configuration.
   Requires the "values" instruction option below.
   Returns the current run configuration.
 
