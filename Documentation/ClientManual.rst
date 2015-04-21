@@ -41,7 +41,7 @@ Queue name is assumed to be ``mantis``.  The first two examples show the usage o
 
 * Submit a run to the queue::
 
-    mantis_client do=run dest=mantis file.filename=my_file.egg
+    mantis_client do=run dest=mantis file=my_file.egg
 
 
 Full option list
@@ -117,9 +117,9 @@ Instruction Options
 :any:
   ``save.json=[filename]`` -- *(optional)* File in which to save the information returned.  This is primarily useful for saving the run configuration for loading via the client, or saving the full configuration for loading into the server at startup.
 :run:
-  ``file/filename=[filename]`` -- *(required)* Name of the file that will be created.
+  ``file=[filename]`` -- *(required)* Name of the file that will be created.
 
-  ``file/description=[description]`` -- *(optional)* Description string
+  ``description=[description]`` -- *(optional)* Description string
 :get:
 
 :set:

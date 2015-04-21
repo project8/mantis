@@ -50,7 +50,9 @@ namespace mantis
             void set_monarch_version( const std::string& a_ver );
             void set_monarch_commit( const std::string& a_ver );
 
-            void set_file_config( const param_node& a_config );
+            void set_file_config( const param_value& a_config );
+            void set_description_config( const param_value& a_config );
+
             void set_mantis_config( const param_node& a_config );
 
             void set_response( const param_node& a_response );

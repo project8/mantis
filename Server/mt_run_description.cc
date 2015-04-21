@@ -29,6 +29,8 @@ namespace mantis
         add( "monarch", new param_node() );
         add( "mantis-config", new param_node() );
         add( "response", new param_node() );
+        add( "file", new param_value( "scrambled.egg" ) );
+        add( "description", new param_value( "" ) );
     }
 
     run_description::~run_description()
@@ -105,9 +107,15 @@ namespace mantis
         return;
     }
 
-    void run_description::set_file_config( const param_node& a_config )
+    void run_description::set_file_config( const param_value& a_config )
     {
         this->replace( "file", a_config );
+        return;
+    }
+
+    void run_description::set_description_config( const param_value& a_config )
+    {
+        this->replace( "description", a_config );
         return;
     }
 

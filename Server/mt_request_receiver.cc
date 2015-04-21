@@ -219,10 +219,10 @@ namespace mantis
         f_broker->get_connection().amqp()->BasicAck( a_envelope );
 
         // required
-        const param_node* t_file_node = a_msg_payload.node_at( "file" );
+        const param_value* t_file_node = a_msg_payload.value_at( "file" );
         if( t_file_node == NULL )
         {
-            MTWARN( mtlog, "No file configuration present; aborting run request" );
+            MTWARN( mtlog, "No or invalid file configuration present; aborting run request" );
             param_node t_reply_node;
             t_reply_node.add( "return-msg", param_value( "No file configuration present; aborting request" ) );
             acknowledge_and_reply( t_reply_node, R_MESSAGE_ERROR_BAD_PAYLOAD, a_envelope );
@@ -236,6 +236,7 @@ namespace mantis
         t_run_desc->set_status( run_description::created );
 
         t_run_desc->set_file_config( *t_file_node );
+        if( a_msg_payload.has( "description" ) ) t_run_desc->set_description_config( *(a_msg_payload.value_at( "description" ) ) );
 
         t_run_desc->set_mantis_server_commit( TOSTRING(Mantis_GIT_COMMIT) );
         t_run_desc->set_mantis_server_exe( f_exe_name );
@@ -493,7 +494,7 @@ namespace mantis
             return false;
         }
 
-        a_reply_node.add( "return-msg", param_value( "Request succeeded" ) );
+        a_reply_node.value_at( "return-msg" )->set( "Request succeeded" );
         a_reply_node.node_at( "content" )->merge( *f_master_server_config.node_at( "run" ) );
 
         return acknowledge_and_reply( a_reply_node, R_SUCCESS, a_envelope );
