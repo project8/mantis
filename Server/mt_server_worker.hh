@@ -15,7 +15,7 @@ namespace mantis
     class digitizer;
     class param_node;
     class run_context_dist;
-    class run_database;
+    class acq_request_db;
     class run_queue;
     class thread;
     class writer;
@@ -23,7 +23,7 @@ namespace mantis
     class MANTIS_API server_worker : public callable
     {
         public:
-            server_worker( device_manager* a_dev_mgr, run_database* a_run_queue, condition* a_queue_condition );
+            server_worker( device_manager* a_dev_mgr, acq_request_db* a_run_queue, condition* a_queue_condition );
             virtual ~server_worker();
 
             void execute();
@@ -31,7 +31,7 @@ namespace mantis
 
         private:
             device_manager* f_dev_mgr;
-            run_database* f_run_database;
+            acq_request_db* f_acq_request_db;
             condition* f_queue_condition;
 
             // the server worker does not own the digitizer or writer

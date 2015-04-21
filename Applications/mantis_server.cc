@@ -34,7 +34,7 @@
 #include "mt_exception.hh"
 #include "mt_logger.hh"
 #include "mt_request_receiver.hh"
-#include "mt_run_database.hh"
+#include "mt_acq_request_db.hh"
 #include "mt_server_config.hh"
 #include "mt_server_worker.hh"
 #include "mt_signal_handler.hh"
@@ -91,16 +91,16 @@ int main( int argc, char** argv )
 
         // run database and queue condition
         condition t_queue_condition;
-        run_database t_run_database;
+        acq_request_db t_acq_request_db;
 
         // device manager
         device_manager t_dev_mgr;
 
         // request receiver
-        request_receiver t_receiver( t_configurator.config(), &t_dev_mgr, &t_run_database, &t_queue_condition, t_configurator.exe_name() );
+        request_receiver t_receiver( t_configurator.config(), &t_dev_mgr, &t_acq_request_db, &t_queue_condition, t_configurator.exe_name() );
 
         // server worker
-        server_worker t_worker( &t_dev_mgr, &t_run_database, &t_queue_condition );
+        server_worker t_worker( &t_dev_mgr, &t_acq_request_db, &t_queue_condition );
 
         MTINFO( mtlog, "starting threads..." );
 

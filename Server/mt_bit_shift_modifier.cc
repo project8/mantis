@@ -6,7 +6,7 @@
 #include "mt_exception.hh"
 #include "mt_factory.hh"
 #include "mt_logger.hh"
-#include "mt_run_description.hh"
+#include "mt_acq_request.hh"
 
 #include <cstring> // for memcpy()
 using std::stringstream;
@@ -26,7 +26,7 @@ namespace mantis
     {
     }
 
-    void bit_shift_modifier::set_run_description( run_description* a_run_desc )
+    void bit_shift_modifier::set_acq_request( acq_request* a_run_desc )
     {
         delete f_run_desc;
         f_run_desc = a_run_desc;

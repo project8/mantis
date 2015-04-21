@@ -12,8 +12,8 @@
 #include "mt_param_json.hh"
 #include "mt_param_msgpack.hh"
 #include "mt_parser.hh"
-#include "mt_run_database.hh"
-#include "mt_run_description.hh"
+#include "mt_acq_request_db.hh"
+#include "mt_acq_request.hh"
 #include "mt_version.hh"
 
 #include "M3Version.hh"
@@ -28,13 +28,13 @@ namespace mantis
 {
     MTLOGGER( mtlog, "request_receiver" );
 
-    request_receiver::request_receiver( const param_node& a_config, device_manager* a_dev_mgr, run_database* a_run_database, condition* a_queue_condition, const string& a_exe_name ) :
+    request_receiver::request_receiver( const param_node& a_config, device_manager* a_dev_mgr, acq_request_db* a_acq_request_db, condition* a_queue_condition, const string& a_exe_name ) :
             f_master_server_config( a_config ),
             f_broker( NULL ),
             f_queue_name(),
             f_consumer_tag(),
             f_dev_mgr( a_dev_mgr ),
-            f_run_database( a_run_database ),
+            f_acq_request_db( a_acq_request_db ),
             f_queue_condition( a_queue_condition ),
             f_exe_name( a_exe_name ),
             f_canceled( false )
@@ -232,8 +232,8 @@ namespace mantis
         // optional
         const param_node* t_client_node = a_msg_payload.node_at( "client" );
 
-        run_description* t_run_desc = new run_description();
-        t_run_desc->set_status( run_description::created );
+        acq_request* t_run_desc = new acq_request();
+        t_run_desc->set_status( acq_request::created );
 
         t_run_desc->set_file_config( *t_file_node );
         if( a_msg_payload.has( "description" ) ) t_run_desc->set_description_config( *(a_msg_payload.value_at( "description" ) ) );
@@ -283,7 +283,7 @@ namespace mantis
             t_run_desc->set_client_version( "N/A" );
         }
 
-        t_run_desc->set_status( run_description::acknowledged );
+        t_run_desc->set_status( acq_request::acknowledged );
 
         a_reply_node.value_at( "return-msg")->set( "Run request succeeded" );
         a_reply_node.node_at( "content" )->merge( *t_run_desc );
@@ -293,7 +293,7 @@ namespace mantis
         }
 
         MTINFO( mtlog, "Queuing request" );
-        f_run_database->enqueue( t_run_desc );
+        f_acq_request_db->enqueue( t_run_desc );
 
         // if the queue condition is waiting, release it
         if( f_queue_condition->is_waiting() == true )

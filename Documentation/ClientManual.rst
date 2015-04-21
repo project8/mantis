@@ -39,7 +39,7 @@ Queue name is assumed to be ``mantis``.  The first two examples show the usage o
 
     mantis_client do=cmd dest=mantis.run-config load.json=my_config.json
 
-* Submit a run to the queue::
+* Submit an acquisition request to the queue::
 
     mantis_client do=run dest=mantis file=my_file.egg
 
@@ -71,7 +71,7 @@ Tell Mantis what type of instruction it's receiving.
 
 The available commands are:
 
-:run: ``do=run`` -- Queue a run with the current run configuration
+:run: ``do=run`` -- Queue an acquisition with the current run configuration
 :get: ``do=get`` -- Request information from the server
 :set: ``do=set`` -- Change a setting in the run configuration
 :cmd: ``do=cmd`` -- Run a command (see below)
@@ -88,7 +88,7 @@ The general form for the target is::
 The target is used in different ways for different commands:
 
 :run:
-  ``dest=[queue]`` -- No further information is needed for queueing a run.
+  ``dest=[queue]`` -- No further information is needed for queueing an acquisition request.
     See the instruction options below.
 
 :get:

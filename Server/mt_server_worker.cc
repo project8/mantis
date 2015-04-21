@@ -10,8 +10,8 @@
 #include "mt_digitizer.hh"
 #include "mt_file_writer.hh"
 #include "mt_logger.hh"
-#include "mt_run_database.hh"
-#include "mt_run_description.hh"
+#include "mt_acq_request_db.hh"
+#include "mt_acq_request.hh"
 #include "mt_signal_handler.hh"
 #include "mt_thread.hh"
 #include "mt_version.hh"
@@ -29,9 +29,9 @@ namespace mantis
 {
     MTLOGGER( mtlog, "server_worker" );
 
-    server_worker::server_worker( device_manager* a_dev_mgr, run_database* a_run_db, condition* a_queue_condition ) :
+    server_worker::server_worker( device_manager* a_dev_mgr, acq_request_db* a_run_db, condition* a_queue_condition ) :
             f_dev_mgr( a_dev_mgr ),
-            f_run_database( a_run_db ),
+            f_acq_request_db( a_run_db ),
             f_queue_condition( a_queue_condition ),
             f_digitizer( NULL ),
             f_writer( NULL ),
@@ -49,7 +49,7 @@ namespace mantis
     {
         while( ! f_canceled.load() )
         {
-            if( f_run_database->queue_empty() == true )
+            if( f_acq_request_db->queue_empty() == true )
             {
                 // thread cancellation point via call to pthread_cond_wait in queue_condition::wait
                 f_queue_condition->wait();
@@ -59,17 +59,17 @@ namespace mantis
 
             MTINFO( mtlog, "Setting run status <started>" );
 
-            run_description* t_run_desc = f_run_database->pop();
-            t_run_desc->set_status( run_description::started );
+            acq_request* t_acq_req = f_acq_request_db->pop();
+            t_acq_req->set_status( acq_request::started );
 
             MTINFO( mtlog, "Initializing" );
 
-            MTDEBUG( mtlog, "Retrieved request from the queue:\n" << *t_run_desc );
+            MTDEBUG( mtlog, "Retrieved request from the queue:\n" << *t_acq_req );
 
-            if( ! f_dev_mgr->configure( *t_run_desc ) )
+            if( ! f_dev_mgr->configure( *t_acq_req ) )
             {
                 MTERROR( mtlog, "Unable to configure device manager" );
-                t_run_desc->set_status( run_description::error );
+                t_acq_req->set_status( acq_request::error );
                 continue;
             }
 
@@ -79,15 +79,15 @@ namespace mantis
             t_writer.set_device_manager( f_dev_mgr );
             t_writer.set_buffer( f_dev_mgr->get_buffer(), f_dev_mgr->buffer_condition() );
 
-            if( ! t_writer.initialize( t_run_desc ) )
+            if( ! t_writer.initialize( t_acq_req ) )
             {
                 MTERROR( mtlog, "Unable to initialize writer" );
-                t_run_desc->set_status( run_description::error );
+                t_acq_req->set_status( acq_request::error );
                 continue;
             }
 
             MTINFO( mtlog, "Setting run status <running>" );
-            t_run_desc->set_status( run_description::running );
+            t_acq_req->set_status( acq_request::running );
 
             f_digitizer = f_dev_mgr->device();
             f_writer = &t_writer;
@@ -129,12 +129,12 @@ namespace mantis
             if( ! f_canceled.load() )
             {
                 MTINFO( mtlog, "Setting run status <stopped>" );
-                t_run_desc->set_status( run_description::stopped );
+                t_acq_req->set_status( acq_request::stopped );
             }
             else
             {
                 MTINFO( mtlog, "Setting run status <canceled>" );
-                t_run_desc->set_status( run_description::canceled );
+                t_acq_req->set_status( acq_request::canceled );
             }
 
             MTINFO( mtlog, "Finalizing..." );
@@ -142,8 +142,8 @@ namespace mantis
             param_node t_response;
             f_dev_mgr->device()->finalize( &t_response );
             t_writer.finalize( &t_response );
-            t_run_desc->set_response( t_response );
-            t_run_desc->set_status( run_description::stopped );
+            t_acq_req->set_response( t_response );
+            t_acq_req->set_status( acq_request::stopped );
             MTINFO( mtlog, "Run response:\n" << t_response );
         }
 

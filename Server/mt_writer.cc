@@ -27,7 +27,7 @@ namespace mantis
     {
     }
 
-    bool writer::initialize( run_description* a_run_desc )
+    bool writer::initialize( acq_request* a_run_desc )
     {
         f_canceled.store( false );
 
