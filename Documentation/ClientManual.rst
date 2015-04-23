@@ -23,9 +23,9 @@ Queue name is assumed to be ``mantis``.  The first two examples show the usage o
 
     mantis_client do=cmd dest=[queue].remove.device.my_px1500
 
-* Set the "enable" value of the pxie1 digitizer to ``true``::
+* Set the "enabled" value of the pxie1 digitizer to ``true``::
 
-    mantis_client do=set dest=mantis.set.devices.pxie1.enable value=true
+    mantis_client do=set dest=mantis.devices.pxie1.enabled value=true
 
 * Set the run duration to 100 ms::
 
