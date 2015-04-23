@@ -319,10 +319,20 @@ namespace mantis
 
         std::string t_reply_to( a_envelope->Message()->ReplyTo() );
 
-        parsable t_routing_key_node( a_envelope->RoutingKey() );
-        MTDEBUG( mtlog, "Parsed routing key:\n" << t_routing_key_node );
-        std::string t_query_type( t_routing_key_node.node_at( f_queue_name )->begin()->first );
-        MTDEBUG( mtlog, "Query type: " << t_query_type );
+        std::string t_query_type;
+        try
+        {
+            parsable t_routing_key_node( a_envelope->RoutingKey() );
+            MTDEBUG( mtlog, "Parsed routing key:\n" << t_routing_key_node );
+            t_query_type = t_routing_key_node.node_at( f_queue_name )->begin()->first;
+            MTDEBUG( mtlog, "Query type: " << t_query_type );
+        }
+        catch( exception& e )
+        {
+            a_reply_node.value_at( "return-msg" )->set( string( "Routing key was not formatted correctly: " ) + e.what() );
+            acknowledge_and_reply( a_reply_node, R_DEVICE_ERROR, a_envelope );
+            return false;
+        }
 
         param_node t_reply;
         if( t_query_type == "acq-config" )
@@ -365,10 +375,19 @@ namespace mantis
         MTDEBUG( mtlog, "Applying a setting" );
         // apply a configuration setting
         // the destination node should specify the configuration to set
-        t_routing_key += string( "=" ) + a_msg_payload.array_at( "values" )->get_value( 0 );
-        parsable t_routing_key_node_with_value( t_routing_key );
-        MTDEBUG( mtlog, "Parsed routing key and added value:\n" << t_routing_key_node_with_value );
-        f_master_server_config.node_at( "acq" )->merge( *t_routing_key_node_with_value.node_at( f_queue_name ) );
+        try
+        {
+            t_routing_key += string( "=" ) + a_msg_payload.array_at( "values" )->get_value( 0 );
+            parsable t_routing_key_node_with_value( t_routing_key );
+            MTDEBUG( mtlog, "Parsed routing key and added value:\n" << t_routing_key_node_with_value );
+            f_master_server_config.node_at( "acq" )->merge( *t_routing_key_node_with_value.node_at( f_queue_name ) );
+        }
+        catch( exception& e )
+        {
+            a_reply_node.value_at( "return-msg" )->set( string( "Invalid payload: " ) + e.what() );
+            acknowledge_and_reply( a_reply_node, R_MESSAGE_ERROR_BAD_PAYLOAD, a_envelope );
+            return false;
+        }
 
         a_reply_node.value_at( "return-msg" )->set( "Request succeeded" );
         a_reply_node.node_at( "content" )->add( "master-config", f_master_server_config );
@@ -402,6 +421,12 @@ namespace mantis
         else if( t_instruction == "add" )
         {
             // add something to the master config
+            if( ! t_dest_node[ t_instruction ].is_node() )
+            {
+                a_reply_node.value_at( "return-msg" )->set( "<add> instruction was not properly formatted" );
+                acknowledge_and_reply( a_reply_node, R_DEVICE_ERROR, a_envelope );
+                return false;
+            }
             if( t_dest_node.node_at( t_instruction )->has( "device" ) )
             {
                 MTDEBUG( mtlog, "Attempting to add a device" );
@@ -412,6 +437,11 @@ namespace mantis
                     for( param_node::const_iterator t_dev_it = a_msg_payload.begin(); t_dev_it != a_msg_payload.end(); ++t_dev_it )
                     {
                         string t_device_type = t_dev_it->first;
+                        if( ! t_dev_it->second->is_value() )
+                        {
+                            MTDEBUG( mtlog, "Skipping <t_device_type> because it's not a value" );
+                            continue;
+                        }
                         string t_device_name = t_dev_it->second->as_value().as_string();
 
                         // check if we have a device of this name
@@ -439,7 +469,7 @@ namespace mantis
                 }
                 catch( exception& e )
                 {
-                    a_reply_node.value_at( "return-msg" )->set( "add.device instruction was not formatted properly" );
+                    a_reply_node.value_at( "return-msg" )->set( string( "add.device instruction was not formatted properly: " ) + e.what() );
                     acknowledge_and_reply( a_reply_node, R_AMQP_ERROR_ROUTINGKEY_NOTFOUND, a_envelope );
                     return false;
                 }
@@ -454,6 +484,12 @@ namespace mantis
         else if( t_instruction == "remove" )
         {
             // remove something from the master config
+            if( ! t_dest_node[ t_instruction ].is_node() )
+            {
+                a_reply_node.value_at( "return-msg" )->set( "<remove> instruction was not properly formatted" );
+                acknowledge_and_reply( a_reply_node, R_DEVICE_ERROR, a_envelope );
+                return false;
+            }
             if( t_dest_node.node_at( t_instruction )->has( "device" ) )
             {
                 MTDEBUG( mtlog, "Attempting to remove a device" );
@@ -474,7 +510,7 @@ namespace mantis
                  }
                  catch( exception& e )
                  {
-                     a_reply_node.value_at( "return-msg" )->set( "remove/device instruction was not formatted properly" );
+                     a_reply_node.value_at( "return-msg" )->set( string( "remove.device instruction was not formatted properly: " ) + e.what() );
                      acknowledge_and_reply( a_reply_node, R_MESSAGE_ERROR_INVALID_VALUE, a_envelope );
                      return false;
                  }
@@ -517,6 +553,8 @@ namespace mantis
         //t_reply.add( "msgop", param_value() << OP_RUN ); // operations aren't used for replies
         //t_reply.add( "target", param_value() << t_reply_to );  // use of the target is now deprecated (3/12/15)
         t_reply.add( "timestamp", param_value( get_absolute_time_string() ) );
+
+        MTDEBUG( mtlog, "Sending reply message:\n" << t_reply );
 
         std::string t_reply_str;
         if(! param_output_json::write_string( t_reply, t_reply_str, param_output_json::k_compact ) )
