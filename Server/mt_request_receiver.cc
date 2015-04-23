@@ -12,8 +12,8 @@
 #include "mt_param_json.hh"
 #include "mt_param_msgpack.hh"
 #include "mt_parser.hh"
-#include "mt_run_database.hh"
-#include "mt_run_description.hh"
+#include "mt_acq_request_db.hh"
+#include "mt_acq_request.hh"
 #include "mt_version.hh"
 
 #include "M3Version.hh"
@@ -28,13 +28,13 @@ namespace mantis
 {
     MTLOGGER( mtlog, "request_receiver" );
 
-    request_receiver::request_receiver( const param_node& a_config, device_manager* a_dev_mgr, run_database* a_run_database, condition* a_queue_condition, const string& a_exe_name ) :
+    request_receiver::request_receiver( const param_node& a_config, device_manager* a_dev_mgr, acq_request_db* a_acq_request_db, condition* a_queue_condition, const string& a_exe_name ) :
             f_master_server_config( a_config ),
             f_broker( NULL ),
             f_queue_name(),
             f_consumer_tag(),
             f_dev_mgr( a_dev_mgr ),
-            f_run_database( a_run_database ),
+            f_acq_request_db( a_acq_request_db ),
             f_queue_condition( a_queue_condition ),
             f_exe_name( a_exe_name ),
             f_canceled( false )
@@ -109,7 +109,7 @@ namespace mantis
             if( f_canceled.load() ) return;
 
             // blocking call to wait for incoming message
-            MTDEBUG( mtlog, "Waiting for incoming message" );
+            MTINFO( mtlog, "Waiting for incoming message" );
             AmqpClient::Envelope::ptr_t t_envelope = f_broker->get_connection().amqp()->BasicConsumeMessage( f_consumer_tag );
 
 
@@ -138,6 +138,7 @@ namespace mantis
                 continue;
             }
 
+            MTINFO( mtlog, "Message received" );
             MTDEBUG( mtlog, "Message received:\n" <<
                      "Routing key: " << t_envelope->RoutingKey() <<
                      *t_msg_node );
@@ -190,6 +191,8 @@ namespace mantis
             // nothing should happen after the switch block except deleting objects
             delete t_msg_node;
             delete t_msg_payload;
+
+            MTINFO( mtlog, "Message handled" );
         } // end while (true)
 
         MTDEBUG( mtlog, "Request receiver is done" );
@@ -219,10 +222,10 @@ namespace mantis
         f_broker->get_connection().amqp()->BasicAck( a_envelope );
 
         // required
-        const param_node* t_file_node = a_msg_payload.node_at( "file" );
+        const param_value* t_file_node = a_msg_payload.value_at( "file" );
         if( t_file_node == NULL )
         {
-            MTWARN( mtlog, "No file configuration present; aborting run request" );
+            MTWARN( mtlog, "No or invalid file configuration present; aborting run request" );
             param_node t_reply_node;
             t_reply_node.add( "return-msg", param_value( "No file configuration present; aborting request" ) );
             acknowledge_and_reply( t_reply_node, R_MESSAGE_ERROR_BAD_PAYLOAD, a_envelope );
@@ -232,22 +235,23 @@ namespace mantis
         // optional
         const param_node* t_client_node = a_msg_payload.node_at( "client" );
 
-        run_description* t_run_desc = new run_description();
-        t_run_desc->set_status( run_description::created );
+        acq_request* t_acq_req = new acq_request();
+        t_acq_req->set_status( acq_request::created );
 
-        t_run_desc->set_file_config( *t_file_node );
+        t_acq_req->set_file_config( *t_file_node );
+        if( a_msg_payload.has( "description" ) ) t_acq_req->set_description_config( *(a_msg_payload.value_at( "description" ) ) );
 
-        t_run_desc->set_mantis_server_commit( TOSTRING(Mantis_GIT_COMMIT) );
-        t_run_desc->set_mantis_server_exe( f_exe_name );
-        t_run_desc->set_mantis_server_version( TOSTRING(Mantis_VERSION) );
-        t_run_desc->set_monarch_commit( TOSTRING(Monarch_GIT_COMMIT) );
-        t_run_desc->set_monarch_version( TOSTRING(Monarch_VERSION ) );
+        t_acq_req->set_mantis_server_commit( TOSTRING(Mantis_GIT_COMMIT) );
+        t_acq_req->set_mantis_server_exe( f_exe_name );
+        t_acq_req->set_mantis_server_version( TOSTRING(Mantis_VERSION) );
+        t_acq_req->set_monarch_commit( TOSTRING(Monarch_GIT_COMMIT) );
+        t_acq_req->set_monarch_version( TOSTRING(Monarch_VERSION ) );
 
         f_msc_mutex.lock();
-        t_run_desc->set_mantis_config( *f_master_server_config.node_at( "run" ) );
+        t_acq_req->set_mantis_config( *f_master_server_config.node_at( "acq" ) );
         f_msc_mutex.unlock();
         // remove non-enabled devices from the devices node
-        param_node* t_dev_node = t_run_desc->node_at( "mantis-config" )->node_at( "devices" );
+        param_node* t_dev_node = t_acq_req->node_at( "mantis-config" )->node_at( "devices" );
         std::vector< std::string > t_devs_to_remove;
         for( param_node::iterator t_node_it = t_dev_node->begin(); t_node_it != t_dev_node->end(); ++t_node_it )
         {
@@ -271,28 +275,28 @@ namespace mantis
 
         if( t_client_node != NULL )
         {
-            t_run_desc->set_client_commit( t_client_node->get_value( "commit", "N/A" ) );
-            t_run_desc->set_client_exe( t_client_node->get_value( "exe", "N/A" ) );
-            t_run_desc->set_client_version( t_client_node->get_value( "version", "N/A" ) );
+            t_acq_req->set_client_commit( t_client_node->get_value( "commit", "N/A" ) );
+            t_acq_req->set_client_exe( t_client_node->get_value( "exe", "N/A" ) );
+            t_acq_req->set_client_version( t_client_node->get_value( "version", "N/A" ) );
         }
         else
         {
-            t_run_desc->set_client_commit( "N/A" );
-            t_run_desc->set_client_exe( "N/A" );
-            t_run_desc->set_client_version( "N/A" );
+            t_acq_req->set_client_commit( "N/A" );
+            t_acq_req->set_client_exe( "N/A" );
+            t_acq_req->set_client_version( "N/A" );
         }
 
-        t_run_desc->set_status( run_description::acknowledged );
+        t_acq_req->set_status( acq_request::acknowledged );
 
         a_reply_node.value_at( "return-msg")->set( "Run request succeeded" );
-        a_reply_node.node_at( "content" )->merge( *t_run_desc );
+        a_reply_node.node_at( "content" )->merge( *t_acq_req );
         if( ! acknowledge_and_reply( a_reply_node, R_SUCCESS, a_envelope ) )
         {
             MTWARN( mtlog, "Failed to send reply regarding the run request" );
         }
 
         MTINFO( mtlog, "Queuing request" );
-        f_run_database->enqueue( t_run_desc );
+        f_acq_request_db->enqueue( t_acq_req );
 
         // if the queue condition is waiting, release it
         if( f_queue_condition->is_waiting() == true )
@@ -318,16 +322,26 @@ namespace mantis
 
         std::string t_reply_to( a_envelope->Message()->ReplyTo() );
 
-        parsable t_routing_key_node( a_envelope->RoutingKey() );
-        MTDEBUG( mtlog, "Parsed routing key:\n" << t_routing_key_node );
-        std::string t_query_type( t_routing_key_node.node_at( f_queue_name )->begin()->first );
-        MTDEBUG( mtlog, "Query type: " << t_query_type );
+        std::string t_query_type;
+        try
+        {
+            parsable t_routing_key_node( a_envelope->RoutingKey() );
+            MTDEBUG( mtlog, "Parsed routing key:\n" << t_routing_key_node );
+            t_query_type = t_routing_key_node.node_at( f_queue_name )->begin()->first;
+            MTDEBUG( mtlog, "Query type: " << t_query_type );
+        }
+        catch( exception& e )
+        {
+            a_reply_node.value_at( "return-msg" )->set( string( "Routing key was not formatted correctly: " ) + e.what() );
+            acknowledge_and_reply( a_reply_node, R_DEVICE_ERROR, a_envelope );
+            return false;
+        }
 
         param_node t_reply;
-        if( t_query_type == "run-config" )
+        if( t_query_type == "acq-config" )
         {
             a_reply_node.value_at( "return-msg")->set( "Get request succeeded" );
-            a_reply_node.node_at( "content" )->merge( *f_master_server_config.node_at( "run" ) );
+            a_reply_node.node_at( "content" )->merge( *f_master_server_config.node_at( "acq" ) );
             return acknowledge_and_reply( a_reply_node, R_SUCCESS, a_envelope );
         }
         else if( t_query_type == "server-config" )
@@ -364,10 +378,25 @@ namespace mantis
         MTDEBUG( mtlog, "Applying a setting" );
         // apply a configuration setting
         // the destination node should specify the configuration to set
-        t_routing_key += string( "=" ) + a_msg_payload.array_at( "values" )->get_value( 0 );
-        parsable t_routing_key_node_with_value( t_routing_key );
-        MTDEBUG( mtlog, "Parsed routing key and added value:\n" << t_routing_key_node_with_value );
-        f_master_server_config.node_at( "run" )->merge( *t_routing_key_node_with_value.node_at( f_queue_name ) );
+        try
+        {
+            t_routing_key += string( "=" ) + a_msg_payload.array_at( "values" )->get_value( 0 );
+            parsable t_routing_key_node_with_value( t_routing_key );
+            MTDEBUG( mtlog, "Parsed routing key and added value:\n" << t_routing_key_node_with_value );
+            if(! f_master_server_config.node_at( "acq" )->has_subset( *t_routing_key_node_with_value.node_at( f_queue_name ) ) )
+            {
+                a_reply_node.value_at( "return-msg" )->set( "Value not found: " + t_routing_key );
+                acknowledge_and_reply( a_reply_node, R_DEVICE_ERROR, a_envelope );
+                return false;
+            }
+            f_master_server_config.node_at( "acq" )->merge( *t_routing_key_node_with_value.node_at( f_queue_name ) );
+        }
+        catch( exception& e )
+        {
+            a_reply_node.value_at( "return-msg" )->set( string( "Invalid payload: " ) + e.what() );
+            acknowledge_and_reply( a_reply_node, R_MESSAGE_ERROR_BAD_PAYLOAD, a_envelope );
+            return false;
+        }
 
         a_reply_node.value_at( "return-msg" )->set( "Request succeeded" );
         a_reply_node.node_at( "content" )->add( "master-config", f_master_server_config );
@@ -392,25 +421,36 @@ namespace mantis
         param_node t_dest_node( *t_routing_key_node.node_at( f_queue_name ) );
 
         string t_instruction( t_dest_node.begin()->first );
-        if( t_instruction == "run-config" )
+        if( t_instruction == "acq-config" )
         {
             MTDEBUG( mtlog, "Loading a full configuration" );
             // payload contents should replace the run config
-            (*f_master_server_config.node_at( "run" )) = a_msg_payload;
+            (*f_master_server_config.node_at( "acq" )) = a_msg_payload;
         }
         else if( t_instruction == "add" )
         {
             // add something to the master config
+            if( ! t_dest_node[ t_instruction ].is_node() )
+            {
+                a_reply_node.value_at( "return-msg" )->set( "<add> instruction was not properly formatted" );
+                acknowledge_and_reply( a_reply_node, R_DEVICE_ERROR, a_envelope );
+                return false;
+            }
             if( t_dest_node.node_at( t_instruction )->has( "device" ) )
             {
                 MTDEBUG( mtlog, "Attempting to add a device" );
                 // it's expected that any values in the payload are digitizers to be added
                 try
                 {
-                    param_node* t_devices_node = f_master_server_config.node_at( "run" )->node_at( "devices" );
+                    param_node* t_devices_node = f_master_server_config.node_at( "acq" )->node_at( "devices" );
                     for( param_node::const_iterator t_dev_it = a_msg_payload.begin(); t_dev_it != a_msg_payload.end(); ++t_dev_it )
                     {
                         string t_device_type = t_dev_it->first;
+                        if( ! t_dev_it->second->is_value() )
+                        {
+                            MTDEBUG( mtlog, "Skipping <t_device_type> because it's not a value" );
+                            continue;
+                        }
                         string t_device_name = t_dev_it->second->as_value().as_string();
 
                         // check if we have a device of this name
@@ -438,7 +478,7 @@ namespace mantis
                 }
                 catch( exception& e )
                 {
-                    a_reply_node.value_at( "return-msg" )->set( "add.device instruction was not formatted properly" );
+                    a_reply_node.value_at( "return-msg" )->set( string( "add.device instruction was not formatted properly: " ) + e.what() );
                     acknowledge_and_reply( a_reply_node, R_AMQP_ERROR_ROUTINGKEY_NOTFOUND, a_envelope );
                     return false;
                 }
@@ -453,6 +493,12 @@ namespace mantis
         else if( t_instruction == "remove" )
         {
             // remove something from the master config
+            if( ! t_dest_node[ t_instruction ].is_node() )
+            {
+                a_reply_node.value_at( "return-msg" )->set( "<remove> instruction was not properly formatted" );
+                acknowledge_and_reply( a_reply_node, R_DEVICE_ERROR, a_envelope );
+                return false;
+            }
             if( t_dest_node.node_at( t_instruction )->has( "device" ) )
             {
                 MTDEBUG( mtlog, "Attempting to remove a device" );
@@ -461,7 +507,7 @@ namespace mantis
                      string t_device_name = t_dest_node.node_at( t_instruction )->node_at( "device" )->begin()->first;
 
                      // check if we have a device of this name
-                     if( ! f_master_server_config.node_at( "run" )->node_at( "devices" )->has( t_device_name ) )
+                     if( ! f_master_server_config.node_at( "acq" )->node_at( "devices" )->has( t_device_name ) )
                      {
                          a_reply_node.value_at( "return-msg" )->set( "The master config does not have device <" + t_device_name + ">" );
                          acknowledge_and_reply( a_reply_node, R_DEVICE_ERROR, a_envelope );
@@ -469,11 +515,11 @@ namespace mantis
                      }
 
                      // add the configuration to the master config
-                     f_master_server_config.node_at( "run" )->node_at( "devices" )->erase( t_device_name );
+                     f_master_server_config.node_at( "acq" )->node_at( "devices" )->erase( t_device_name );
                  }
                  catch( exception& e )
                  {
-                     a_reply_node.value_at( "return-msg" )->set( "remove/device instruction was not formatted properly" );
+                     a_reply_node.value_at( "return-msg" )->set( string( "remove.device instruction was not formatted properly: " ) + e.what() );
                      acknowledge_and_reply( a_reply_node, R_MESSAGE_ERROR_INVALID_VALUE, a_envelope );
                      return false;
                  }
@@ -493,8 +539,8 @@ namespace mantis
             return false;
         }
 
-        a_reply_node.add( "return-msg", param_value( "Request succeeded" ) );
-        a_reply_node.node_at( "content" )->merge( *f_master_server_config.node_at( "run" ) );
+        a_reply_node.value_at( "return-msg" )->set( "Request succeeded" );
+        a_reply_node.node_at( "content" )->merge( *f_master_server_config.node_at( "acq" ) );
 
         return acknowledge_and_reply( a_reply_node, R_SUCCESS, a_envelope );
     }
@@ -516,6 +562,8 @@ namespace mantis
         //t_reply.add( "msgop", param_value() << OP_RUN ); // operations aren't used for replies
         //t_reply.add( "target", param_value() << t_reply_to );  // use of the target is now deprecated (3/12/15)
         t_reply.add( "timestamp", param_value( get_absolute_time_string() ) );
+
+        MTDEBUG( mtlog, "Sending reply message:\n" << t_reply );
 
         std::string t_reply_str;
         if(! param_output_json::write_string( t_reply, t_reply_str, param_output_json::k_compact ) )

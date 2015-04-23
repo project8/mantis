@@ -30,4 +30,4 @@ namespace mantis
     {
     }
 
-} /* namespace Katydid */
+} /* namespace mantis */

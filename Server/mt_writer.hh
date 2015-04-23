@@ -11,7 +11,7 @@
 namespace mantis
 {
     class param_node;
-    class run_description;
+    class acq_request;
 
     /*!
      @class writer
@@ -45,8 +45,8 @@ namespace mantis
 
             void set_buffer( buffer* a_buffer, condition* a_condition );
 
-            bool initialize( run_description* a_run_desc );
-            virtual bool initialize_derived( run_description* a_run_desc ) = 0;
+            bool initialize( acq_request* a_run_desc );
+            virtual bool initialize_derived( acq_request* a_run_desc ) = 0;
 
             void execute();
 

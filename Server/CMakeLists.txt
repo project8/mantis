@@ -20,6 +20,8 @@ add_digitizer( U1084A )
 if( Mantis_BUILD_SERVER )
 
     set( MANTIS_SERVER_HEADERFILES
+        mt_acq_request_db.hh
+        mt_acq_request.hh
         mt_atomic.hh
         #mt_bit_shift_modifier.hh
         mt_block.hh
@@ -32,8 +34,6 @@ if( Mantis_BUILD_SERVER )
         mt_iterator_timer.hh
         mt_modifier.hh
         mt_request_receiver.hh
-        mt_run_database.hh
-        mt_run_description.hh
         mt_server_config.hh
         mt_server_worker.hh
         mt_writer.hh
@@ -41,6 +41,8 @@ if( Mantis_BUILD_SERVER )
     )
     
     set( MANTIS_SERVER_SOURCEFILES
+        mt_acq_request_db.cc
+        mt_acq_request.cc
         #mt_bit_shift_modifier.cc
         mt_block.cc
         mt_buffer.cc
@@ -51,8 +53,6 @@ if( Mantis_BUILD_SERVER )
         mt_iterator_timer.cc
         mt_modifier.cc
         mt_request_receiver.cc
-        mt_run_database.cc
-        mt_run_description.cc
         mt_server_config.cc
         mt_server_worker.cc
         mt_writer.cc

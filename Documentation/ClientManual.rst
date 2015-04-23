@@ -23,25 +23,25 @@ Queue name is assumed to be ``mantis``.  The first two examples show the usage o
 
     mantis_client do=cmd dest=[queue].remove.device.my_px1500
 
-* Set the "enable" value of the pxie1 digitizer to ``true``::
+* Set the "enabled" value of the pxie1 digitizer to ``true``::
 
-    mantis_client do=set dest=mantis.set.devices.pxie1.enable value=true
+    mantis_client do=set dest=mantis.devices.pxie1.enabled value=true
 
 * Set the run duration to 100 ms::
 
     mantis_client do=set dest=mantis.duration value=100
     
-* Get the master run configuration from the server; the option to save the configuration as a JSON file is used::
+* Get the master acquisition configuration from the server; the option to save the configuration as a JSON file is used::
 
-    mantis_client do=get dest=mantis.run-config save.json=my_config.json
+    mantis_client do=get dest=mantis.acq-config save.json=my_config.json
 
-* Replace the server's master run configuration with the contents of the specified file::
+* Replace the server's master acquisition configuration with the contents of the specified file::
 
-    mantis_client do=cmd dest=mantis.run-config load.json=my_config.json
+    mantis_client do=cmd dest=mantis.acq-config load.json=my_config.json
 
-* Submit a run to the queue::
+* Submit an acquisition request to the queue::
 
-    mantis_client do=run dest=mantis file.filename=my_file.egg
+    mantis_client do=run dest=mantis file=my_file.egg
 
 
 Full option list
@@ -71,9 +71,9 @@ Tell Mantis what type of instruction it's receiving.
 
 The available commands are:
 
-:run: ``do=run`` -- Queue a run with the current run configuration
+:run: ``do=run`` -- Queue an acquisition with the current acquisition configuration
 :get: ``do=get`` -- Request information from the server
-:set: ``do=set`` -- Change a setting in the run configuration
+:set: ``do=set`` -- Change a setting in the acquisition configuration
 :cmd: ``do=cmd`` -- Run a command (see below)
   
 Target
@@ -88,18 +88,18 @@ The general form for the target is::
 The target is used in different ways for different commands:
 
 :run:
-  ``dest=[queue]`` -- No further information is needed for queueing a run.
+  ``dest=[queue]`` -- No further information is needed for queueing an acquisition request.
     See the instruction options below.
 
 :get:
-  ``dest=[queue].run-config`` -- Returns the current run configuration.
+  ``dest=[queue].acq-config`` -- Returns the current acquisition configuration.
 
   ``dest=[queue].server-config`` -- Returns the current full configuration for the server.
 
   ``dest=[queue].status`` -- [not yet implemented] Will return the server status.
 
 :set:
-  ``dest=[queue].[run config item]`` -- Sets the value of an item in the run configuration.
+  ``dest=[queue].[acq config item]`` -- Sets the value of an item in the run configuration.
   Requires the "values" instruction option below.
   Returns the current run configuration.
 
@@ -108,7 +108,7 @@ The target is used in different ways for different commands:
 
   ``dest=[queue].remove.device.[device name]`` -- Removes a device from the master run configuration.
 
-  ``dest=[queue].run-config`` -- Replaces the server's run configuration with the contents of the instruction options, or the JSON file specified in those options (see below).
+  ``dest=[queue].acq-config`` -- Replaces the server's run configuration with the contents of the instruction options, or the JSON file specified in those options (see below).
   
   
 Instruction Options
@@ -117,9 +117,9 @@ Instruction Options
 :any:
   ``save.json=[filename]`` -- *(optional)* File in which to save the information returned.  This is primarily useful for saving the run configuration for loading via the client, or saving the full configuration for loading into the server at startup.
 :run:
-  ``file/filename=[filename]`` -- *(required)* Name of the file that will be created.
+  ``file=[filename]`` -- *(required)* Name of the file that will be created.
 
-  ``file/description=[description]`` -- *(optional)* Description string
+  ``description=[description]`` -- *(optional)* Description string
 :get:
 
 :set:

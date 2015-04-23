@@ -1,5 +1,5 @@
 /*
- * mt_run_description.cc
+ * mt_acq_request.cc
  *
  *  Created on: Mar 20, 2014
  *      Author: nsoblath
@@ -7,7 +7,7 @@
 
 #define MANTIS_API_EXPORTS
 
-#include "mt_run_description.hh"
+#include "mt_acq_request.hh"
 #include "mt_version.hh"
 
 #include<string>
@@ -17,9 +17,9 @@ using std::string;
 
 namespace mantis
 {
-    MTLOGGER(mtlog, "run_description");
+    MTLOGGER(mtlog, "acq_request");
 
-    run_description::run_description()
+    acq_request::acq_request()
     {
         // default description
         add( "id", param_value( 0 ) );
@@ -29,98 +29,106 @@ namespace mantis
         add( "monarch", new param_node() );
         add( "mantis-config", new param_node() );
         add( "response", new param_node() );
+        add( "file", new param_value( "scrambled.egg" ) );
+        add( "description", new param_value( "" ) );
     }
 
-    run_description::~run_description()
+    acq_request::~acq_request()
     {
     }
 
-    void run_description::set_id( unsigned a_id )
+    void acq_request::set_id( unsigned a_id )
     {
         this->replace( "id", param_value( a_id ) );
         return;
     }
 
-    unsigned run_description::get_id() const
+    unsigned acq_request::get_id() const
     {
         return this->get_value< unsigned >( "id" );
     }
 
-    void run_description::set_status( status a_status )
+    void acq_request::set_status( status a_status )
     {
         this->replace( "status", param_value( (unsigned)a_status ) );
         return;
     }
 
-    run_description::status run_description::get_status() const
+    acq_request::status acq_request::get_status() const
     {
         return (status)(this->get_value< unsigned >( "status" ));
     }
 
-    void run_description::set_client_exe( const std::string& a_exe )
+    void acq_request::set_client_exe( const std::string& a_exe )
     {
         this->node_at( "client" )->replace( "exe", param_value( a_exe ) );
         return;
     }
 
-    void run_description::set_client_version( const std::string& a_ver )
+    void acq_request::set_client_version( const std::string& a_ver )
     {
         this->node_at( "client" )->replace( "version", param_value( a_ver ) );
         return;
     }
 
-    void run_description::set_client_commit( const std::string& a_ver )
+    void acq_request::set_client_commit( const std::string& a_ver )
     {
         this->node_at( "client" )->replace( "commit", param_value( a_ver ) );
         return;
     }
 
-    void run_description::set_mantis_server_exe( const std::string& a_exe )
+    void acq_request::set_mantis_server_exe( const std::string& a_exe )
     {
         this->node_at( "mantis" )->replace( "exe", param_value( a_exe ) );
         return;
     }
 
-    void run_description::set_mantis_server_version( const std::string& a_ver )
+    void acq_request::set_mantis_server_version( const std::string& a_ver )
     {
         this->node_at( "mantis" )->replace( "version", param_value( a_ver ) );
         return;
     }
 
-    void run_description::set_mantis_server_commit( const std::string& a_ver )
+    void acq_request::set_mantis_server_commit( const std::string& a_ver )
     {
         this->node_at( "mantis" )->replace( "commit", param_value( a_ver ) );
         return;
     }
 
-    void run_description::set_monarch_version( const std::string& a_ver )
+    void acq_request::set_monarch_version( const std::string& a_ver )
     {
         this->node_at( "monarch" )->replace( "version", param_value( a_ver ) );
         return;
     }
 
-    void run_description::set_monarch_commit( const std::string& a_ver )
+    void acq_request::set_monarch_commit( const std::string& a_ver )
     {
         this->node_at( "monarch" )->replace( "commit", param_value( a_ver ) );
         return;
     }
 
-    void run_description::set_file_config( const param_node& a_config )
+    void acq_request::set_file_config( const param_value& a_config )
     {
         this->replace( "file", a_config );
         return;
     }
 
-    void run_description::set_mantis_config( const param_node& a_config )
+    void acq_request::set_description_config( const param_value& a_config )
+    {
+        this->replace( "description", a_config );
+        return;
+    }
+
+    void acq_request::set_mantis_config( const param_node& a_config )
     {
         this->replace( "mantis-config", a_config );
         return;
     }
 
-    void run_description::set_response( const param_node& a_response )
+    void acq_request::set_response( const param_node& a_response )
     {
         this->replace( "response", a_response );
         return;
     }
 
-} /* namespace Katydid */
+} /* namespace mantis */

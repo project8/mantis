@@ -29,10 +29,10 @@ namespace mantis
         t_amqp_node->add( "queue", param_value( "mantis" ) );
         add( "amqp", t_amqp_node );
 
-        param_node* t_run_node = new param_node();
-        t_run_node->add( "devices", new param_node() );
-        t_run_node->add( "duration", param_value( 500 ) );
-        add( "run", t_run_node );
+        param_node* t_acq_node = new param_node();
+        t_acq_node->add( "devices", new param_node() );
+        t_acq_node->add( "duration", param_value( 500 ) );
+        add( "acq", t_acq_node );
 
     }
 
@@ -40,4 +40,4 @@ namespace mantis
     {
     }
 
-} /* namespace Katydid */
+} /* namespace mantis */

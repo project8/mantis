@@ -20,5 +20,5 @@ namespace mantis
             virtual ~server_config();
     };
 
-} /* namespace Katydid */
+} /* namespace mantis */
 #endif /* MT_CLIENT_CONFIG_HH_ */

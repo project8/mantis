@@ -1,19 +1,19 @@
 /*
- * mt_run_description.hh
+ * mt_acq_request.hh
  *
  *  Created on: Mar 20, 2014
  *      Author: nsoblath
  */
 
-#ifndef MT_RUN_DESCRIPTION_HH_
-#define MT_RUN_DESCRIPTION_HH_
+#ifndef MT_ACQ_REQUEST_HH_
+#define MT_ACQ_REQUEST_HH_
 
 #include "mt_param.hh"
 
 namespace mantis
 {
 
-    class MANTIS_API run_description : public param_node
+    class MANTIS_API acq_request : public param_node
     {
         public:
             enum status
@@ -30,8 +30,8 @@ namespace mantis
             };
 
         public:
-            run_description();
-            virtual ~run_description();
+            acq_request();
+            virtual ~acq_request();
 
             void set_id( const unsigned id );
             unsigned get_id() const;
@@ -50,11 +50,13 @@ namespace mantis
             void set_monarch_version( const std::string& a_ver );
             void set_monarch_commit( const std::string& a_ver );
 
-            void set_file_config( const param_node& a_config );
+            void set_file_config( const param_value& a_config );
+            void set_description_config( const param_value& a_config );
+
             void set_mantis_config( const param_node& a_config );
 
             void set_response( const param_node& a_response );
     };
 
-} /* namespace Katydid */
-#endif /* MT_RUN_DESCRIPTION_HH_ */
+} /* namespace mantis */
+#endif /* MT_ACQ_REQUEST_HH_ */

@@ -21,7 +21,7 @@
 
 namespace mantis
 {
-    class run_description;
+    class acq_request;
 
     class MANTIS_API device_manager
     {
@@ -29,7 +29,7 @@ namespace mantis
             device_manager();
             virtual ~device_manager();
 
-            bool configure( run_description& a_run_desc );
+            bool configure( acq_request& a_acq_request );
 
             bool set_device( const std::string& a_dev );
             digitizer* device();

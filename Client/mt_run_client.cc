@@ -205,7 +205,7 @@ namespace mantis
     {
         if( ! f_config.has( "file" ) )
         {
-            MTERROR( mtlog, "No file configuration is present" );
+            MTERROR( mtlog, "The filename to be saved must be specified with the \"file\" option" );
             return false;
         }
 
@@ -217,6 +217,7 @@ namespace mantis
         param_node* t_payload_node = new param_node( f_config ); // copy of f_config, which should consist of only the request arguments
         t_payload_node->add( "client", t_client_node ); // use t_client_node as is
         t_payload_node->add( "file", *f_config.at( "file ") ); // copy the file node
+        if( f_config.has( "description" ) ) t_payload_node->add( "description", *f_config.at( "description" ) ); // (optional) copy the description node
 
         param_node t_request;
         t_request.add( "msgtype", param_value( T_REQUEST ) );

@@ -14,7 +14,7 @@
 #include "mt_factory.hh"
 #include "mt_logger.hh"
 #include "mt_param.hh"
-#include "mt_run_description.hh"
+#include "mt_acq_request.hh"
 
 namespace mantis
 {
@@ -46,11 +46,11 @@ namespace mantis
         delete f_device;
     }
 
-    bool device_manager::configure( run_description& a_run_desc )
+    bool device_manager::configure( acq_request& a_acq_request )
     {
         try
         {
-            param_node* t_mantis_config = a_run_desc.node_at( "mantis-config" );
+            param_node* t_mantis_config = a_acq_request.node_at( "mantis-config" );
             if( t_mantis_config == NULL )
             {
                 MTERROR( mtlog, "Mantis configuration is missing" );

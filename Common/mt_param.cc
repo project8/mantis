@@ -53,6 +53,11 @@ namespace mantis
     {
     }
 
+    bool param::has_subset( const param& /*a_subset*/ ) const
+    {
+        // this version of has_subset should only ever be called if a_subset is a null param (i.e. not one of the derived classes)
+        return true;
+    }
 
     //************************************
     //***********  VALUE  ****************
@@ -322,6 +327,11 @@ namespace mantis
         return;
     }
 
+    bool param_value::has_subset( const param& a_subset ) const
+    {
+        if( ! a_subset.is_value() ) return false;
+        return true;
+    }
 
 
     //************************************
@@ -357,6 +367,22 @@ namespace mantis
             this->assign( ind, rhs[ ind ].clone() );
         }
         return *this;
+    }
+
+    bool param_array::has_subset( const param& a_subset ) const
+    {
+        if( ! a_subset.is_array() ) return false;
+        const param_array& t_subset_array = a_subset.as_array();
+        if( t_subset_array.size() > f_contents.size() ) return false;
+        const_iterator t_this_it = f_contents.begin();
+        const_iterator t_that_it = t_subset_array.begin();
+        while( t_that_it != t_subset_array.end() ) // loop condition is on a_subset because it's smaller or equal to this
+        {
+            if( ! (*t_this_it)->has_subset( **t_that_it ) ) return false;
+            ++t_this_it;
+            ++t_that_it;
+        }
+        return true;
     }
 
     void param_array::resize( unsigned a_size )
@@ -422,6 +448,19 @@ namespace mantis
             this->replace( it->first, *it->second );
         }
         return *this;
+    }
+
+    bool param_node::has_subset( const param& a_subset ) const
+    {
+        if( ! a_subset.is_node() ) return false;
+        const param_node& t_subset_node = a_subset.as_node();
+        if( t_subset_node.size() > f_contents.size() ) return false;
+        for( const_iterator t_subset_it = t_subset_node.begin(); t_subset_it != t_subset_node.end(); ++t_subset_it )
+        {
+            if( ! has( t_subset_it->first ) ) return false;
+            if( ! f_contents.at( t_subset_it->first )->has_subset( *t_subset_it->second ) ) return false;
+        }
+        return true;
     }
 
     void param_node::merge( const param_node& a_object )

@@ -8,7 +8,7 @@
 #include "mt_exception.hh"
 #include "mt_factory.hh"
 #include "mt_logger.hh"
-#include "mt_run_description.hh"
+#include "mt_acq_request.hh"
 
 #include "M3Exception.hh"
 #include "M3Types.hh"
@@ -45,12 +45,13 @@ namespace mantis
         return;
     }
 
-    bool file_writer::initialize_derived( run_description* a_run_desc )
+    bool file_writer::initialize_derived( acq_request* a_acq_request )
     {
         MTINFO( mtlog, "opening file..." );
 
-        const param_node* t_file_config = a_run_desc->node_at( "file" );
-        const param_node* t_mantis_config = a_run_desc->node_at( "mantis-config" );
+        const param_value* t_file_config = a_acq_request->value_at( "file" );
+        const param_value* t_desc_config = a_acq_request->value_at( "description" );
+        const param_node* t_mantis_config = a_acq_request->node_at( "mantis-config" );
         if( t_file_config == NULL || t_mantis_config == NULL )
         {
             MTERROR( mtlog, "Either the file configuration (" << t_file_config << ") or mantis config (" << t_mantis_config << ") is missing" );
@@ -65,7 +66,7 @@ namespace mantis
 
         try
         {
-            std::string t_filename( t_file_config->get_value( "filename" ) );
+            std::string t_filename( t_file_config->as_string() );
             try
             {
                 f_monarch = monarch3::Monarch3::OpenForWriting( t_filename );
@@ -79,6 +80,7 @@ namespace mantis
 
             // run header information
             f_header->SetFilename( t_filename );
+            if( t_desc_config != NULL ) f_header->SetDescription( t_desc_config->as_string() );
             f_header->SetRunDuration( t_mantis_config->get_value< double >( "duration" ) );
             char t_timestamp[64];
             get_time_absolute_str( t_timestamp );

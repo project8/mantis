@@ -16,13 +16,13 @@ namespace mantis
     class condition;
     class connection;
     class device_manager;
-    class run_database;
+    class acq_request_db;
     class server_tcp;
 
     class MANTIS_API request_receiver : public callable
     {
         public:
-            request_receiver( const param_node& a_config, device_manager* a_dev_mgr, run_database* a_run_database, condition* a_condition, const std::string& a_exe_name = "unknown" );
+            request_receiver( const param_node& a_config, device_manager* a_dev_mgr, acq_request_db* a_acq_request_db, condition* a_condition, const std::string& a_exe_name = "unknown" );
             virtual ~request_receiver();
 
             void execute();
@@ -46,7 +46,7 @@ namespace mantis
             std::string f_consumer_tag;
 
             device_manager* f_dev_mgr;
-            run_database* f_run_database;
+            acq_request_db* f_acq_request_db;
             condition* f_queue_condition;
             std::string f_exe_name;
 
