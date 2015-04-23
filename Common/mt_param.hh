@@ -54,6 +54,8 @@ namespace mantis
             virtual bool is_array() const;
             virtual bool is_node() const;
 
+            virtual bool has_subset( const param& a_subset ) const;
+
             param_value& as_value();
             param_array& as_array();
             param_node& as_node();
@@ -115,6 +117,8 @@ namespace mantis
 
             virtual bool is_null() const;
             virtual bool is_value() const;
+
+            virtual bool has_subset( const param& a_subset ) const;
 
             std::string type() const;
             bool is_bool() const;
@@ -199,6 +203,8 @@ namespace mantis
 
             virtual bool is_null() const;
             virtual bool is_array() const;
+
+            virtual bool has_subset( const param& a_subset ) const;
 
             unsigned size() const;
             bool empty() const;
@@ -320,6 +326,8 @@ namespace mantis
 
             virtual bool is_null() const;
             virtual bool is_node() const;
+
+            virtual bool has_subset( const param& a_subset ) const;
 
             unsigned size() const;
             bool empty() const;

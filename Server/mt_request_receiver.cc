@@ -380,6 +380,12 @@ namespace mantis
             t_routing_key += string( "=" ) + a_msg_payload.array_at( "values" )->get_value( 0 );
             parsable t_routing_key_node_with_value( t_routing_key );
             MTDEBUG( mtlog, "Parsed routing key and added value:\n" << t_routing_key_node_with_value );
+            if(! f_master_server_config.node_at( "acq" )->has_subset( *t_routing_key_node_with_value.node_at( f_queue_name ) ) )
+            {
+                a_reply_node.value_at( "return-msg" )->set( "Value not found: " + t_routing_key );
+                acknowledge_and_reply( a_reply_node, R_DEVICE_ERROR, a_envelope );
+                return false;
+            }
             f_master_server_config.node_at( "acq" )->merge( *t_routing_key_node_with_value.node_at( f_queue_name ) );
         }
         catch( exception& e )
