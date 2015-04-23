@@ -109,7 +109,7 @@ namespace mantis
             if( f_canceled.load() ) return;
 
             // blocking call to wait for incoming message
-            MTDEBUG( mtlog, "Waiting for incoming message" );
+            MTINFO( mtlog, "Waiting for incoming message" );
             AmqpClient::Envelope::ptr_t t_envelope = f_broker->get_connection().amqp()->BasicConsumeMessage( f_consumer_tag );
 
 
@@ -138,6 +138,7 @@ namespace mantis
                 continue;
             }
 
+            MTINFO( mtlog, "Message received" );
             MTDEBUG( mtlog, "Message received:\n" <<
                      "Routing key: " << t_envelope->RoutingKey() <<
                      *t_msg_node );
@@ -190,6 +191,8 @@ namespace mantis
             // nothing should happen after the switch block except deleting objects
             delete t_msg_node;
             delete t_msg_payload;
+
+            MTINFO( mtlog, "Message handled" );
         } // end while (true)
 
         MTDEBUG( mtlog, "Request receiver is done" );
