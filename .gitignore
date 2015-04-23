@@ -13,3 +13,5 @@
 .DS_Store
 build*/
 cbuild*/
+.pydevproject
+.settings
