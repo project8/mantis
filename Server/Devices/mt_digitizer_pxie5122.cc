@@ -31,6 +31,7 @@ namespace mantis
         t_new_node->add( "resource-name", param_value( "PXI1Slot2" ) ); // Real digitizer: PXI1Slot2; Simulated digitizer: Dev1
         t_new_node->add( "rate-req", param_value( 100 ) );
         t_new_node->add( "n-channels", param_value( 1 ) );
+        t_new_node->add( "channel", param_value( 0 ) );
         t_new_node->add( "data-mode", param_value( monarch3::sDigitizedS ) );
         t_new_node->add( "channel-mode", param_value( monarch3::sSeparate ) );
         t_new_node->add( "sample-size", param_value( 1 ) );
@@ -168,7 +169,8 @@ namespace mantis
             return false;
         }
 
-        f_chan_string = "0";
+        f_chan_string = a_dev_config->get_value( "channel", "0" );
+        MTDEBUG( mtlog, "Recording from channel " << f_chan_string );
 
         // Check data mode and channel mode
         uint32_t t_data_mode = a_dev_config->get_value< uint32_t >( "data-mode" );
