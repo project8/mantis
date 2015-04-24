@@ -44,6 +44,26 @@ namespace mantis
         t_new_node->add( "input-coupling", param_value( 1 ) ); // DC coupling
         t_new_node->add( "probe-attenuation", param_value( 1.0 ) );
         t_new_node->add( "acq-timeout", param_value( 10.0 ) );
+        param_node* t_chan0_node = new param_node();
+        t_chan0_node->add( "name", param_value( "0" ) );
+        t_chan0_node->add( "enabled", param_value( true ) );
+        t_chan0_node->add( "input-impedance", param_value( 50 ) );
+        t_chan0_node->add( "voltage-range", param_value( 0.5 ) );
+        t_chan0_node->add( "voltage-offset", param_value( 0.0 ) );
+        t_chan0_node->add( "input-coupling", param_value( 1 ) ); // DC coupling
+        t_chan0_node->add( "probe-attenuation", param_value( 1.0 ) );
+        param_node* t_chan1_node = new param_node();
+        t_chan1_node->add( "name", param_value( "1" ) );
+        t_chan1_node->add( "enabled", param_value( false ) );
+        t_chan1_node->add( "input-impedance", param_value( 50 ) );
+        t_chan1_node->add( "voltage-range", param_value( 0.5 ) );
+        t_chan1_node->add( "voltage-offset", param_value( 0.0 ) );
+        t_chan1_node->add( "input-coupling", param_value( 1 ) ); // DC coupling
+        t_chan1_node->add( "probe-attenuation", param_value( 1.0 ) );
+        param_array* t_chan_array = new param_array();
+        t_chan_array->push_back( t_chan0_node );
+        t_chan_array->push_back( t_chan1_node );
+        t_new_node->add( "channels", t_chan_array );
         a_node->add( a_type, t_new_node );
 
     }
