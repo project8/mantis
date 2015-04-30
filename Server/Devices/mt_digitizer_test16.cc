@@ -60,7 +60,8 @@ namespace mantis
             f_canceled( false ),
             f_cancel_condition()
     {
-        get_calib_params( 14, s_data_type_size, -0.25, 0.5, &f_params );
+        f_params = new dig_calib_params[ 1 ];
+        get_calib_params( 14, s_data_type_size, -0.25, 0.5, &params( 0 ) );
         /*
         errno = 0;
         f_semaphore = sem_open( "/digitizer_test16", O_CREAT | O_EXCL );
@@ -110,12 +111,12 @@ namespace mantis
 
         MTINFO( mtlog, "Creating master record" );
 
-        MTDEBUG( mtlog, "n levels: " << f_params.levels );
+        MTDEBUG( mtlog, "n levels: " << params( 0 ).levels );
         if( f_master_record != NULL ) delete [] f_master_record;
         f_master_record = new data_type [f_buffer->block_size()];
         for( unsigned index = 0; index < f_buffer->block_size(); ++index )
         {
-            f_master_record[ index ] = (index % f_params.levels) << 2;
+            f_master_record[ index ] = (index % params( 0 ).levels) << 2;
             //if( index < 100 ) MTDEBUG( mtlog, "setting master record [" << index << "]: " << f_master_record[index] );
         }
 
@@ -142,9 +143,9 @@ namespace mantis
     {
         //MTINFO( mtlog, "resetting counters..." );
 
-        a_dev_config->replace( "voltage-offset", param_value( f_params.v_offset ) );
-        a_dev_config->replace( "voltage-range", param_value( f_params.v_range ) );
-        a_dev_config->replace( "dac-gain", param_value( f_params.dac_gain ) );
+        a_dev_config->replace( "voltage-offset", param_value( params( 0 ).v_offset ) );
+        a_dev_config->replace( "voltage-range", param_value( params( 0 ).v_range ) );
+        a_dev_config->replace( "dac-gain", param_value( params( 0 ).dac_gain ) );
 
         // check buffer allocation
         // this section assumes 1 channel, in not multiplying t_actual_rec_size by the number of channels when converting to block size

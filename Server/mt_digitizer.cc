@@ -19,7 +19,7 @@ namespace mantis
     MTLOGGER( mtlog, "digitizer" );
 
     digitizer::digitizer() :
-            f_params(),
+            f_params( NULL ),
             f_buffer( NULL ),
             f_buffer_condition( new condition() )
     {
@@ -27,30 +27,10 @@ namespace mantis
 
     digitizer::~digitizer()
     {
+        if( f_params != NULL ) delete [] f_params;
         delete f_buffer;
         delete f_buffer_condition;
     }
-
-    const dig_calib_params& digitizer::params() const
-    {
-        return f_params;
-    }
-
-    dig_calib_params& digitizer::params()
-    {
-        return f_params;
-    }
-
-    buffer* digitizer::get_buffer()
-    {
-        return f_buffer;
-    }
-
-    condition* digitizer::get_buffer_condition()
-    {
-        return f_buffer_condition;
-    }
-
 
     bool digitizer::run_insitu_test()
     {

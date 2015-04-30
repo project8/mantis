@@ -65,6 +65,8 @@ namespace mantis
 
         private:
             static const unsigned s_data_type_size;
+            static const unsigned s_n_channels;
+            static const unsigned s_bit_depth;
 
             bool handle_error( ViStatus a_status );
 

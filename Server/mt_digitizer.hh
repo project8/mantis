@@ -33,8 +33,8 @@ namespace mantis
 
             virtual unsigned data_type_size() = 0;
 
-            const dig_calib_params& params() const;
-            dig_calib_params& params();
+            const dig_calib_params& params( unsigned i_chan ) const;
+            dig_calib_params& params( unsigned i_chan );
 
             buffer* get_buffer();
             condition* get_buffer_condition();
@@ -44,11 +44,32 @@ namespace mantis
             bool run_insitu_test();
 
         protected:
-            struct dig_calib_params f_params;
+            struct dig_calib_params* f_params;
 
             buffer* f_buffer;
             condition* f_buffer_condition;
     };
+
+    inline const dig_calib_params& digitizer::params( unsigned i_chan ) const
+    {
+        return f_params[ i_chan ];
+    }
+
+    inline dig_calib_params& digitizer::params( unsigned i_chan )
+    {
+        return f_params[ i_chan ];
+    }
+
+    inline buffer* digitizer::get_buffer()
+    {
+        return f_buffer;
+    }
+
+    inline condition* digitizer::get_buffer_condition()
+    {
+        return f_buffer_condition;
+    }
+
 
 #define MT_REGISTER_DIGITIZER(dig_class, dig_name) \
         static registrar< digitizer, dig_class > s_##dig_class##_digitizer_registrar( dig_name ); \

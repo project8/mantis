@@ -30,22 +30,14 @@ namespace mantis
         param_node* t_new_node = new param_node();
         t_new_node->add( "resource-name", param_value( "PXI1Slot2" ) ); // Real digitizer: PXI1Slot2; Simulated digitizer: Dev1
         t_new_node->add( "rate-req", param_value( 100 ) );
-        t_new_node->add( "n-channels", param_value( 1 ) );
-        t_new_node->add( "channel", param_value( 0 ) );
         t_new_node->add( "data-mode", param_value( monarch3::sDigitizedS ) );
         t_new_node->add( "channel-mode", param_value( monarch3::sSeparate ) );
         t_new_node->add( "sample-size", param_value( 1 ) );
         t_new_node->add( "buffer-size", param_value( 512 ) );
         t_new_node->add( "record-size-req", param_value( 524288 ) );// 1048576 );
         t_new_node->add( "data-chunk-size", param_value( 1024 ) );
-        t_new_node->add( "input-impedance", param_value( 50 ) );
-        t_new_node->add( "voltage-range", param_value( 0.5 ) );
-        t_new_node->add( "voltage-offset", param_value( 0. ) );
-        t_new_node->add( "input-coupling", param_value( 1 ) ); // DC coupling
-        t_new_node->add( "probe-attenuation", param_value( 1.0 ) );
         t_new_node->add( "acq-timeout", param_value( 10.0 ) );
         param_node* t_chan0_node = new param_node();
-        t_chan0_node->add( "name", param_value( "0" ) );
         t_chan0_node->add( "enabled", param_value( true ) );
         t_chan0_node->add( "input-impedance", param_value( 50 ) );
         t_chan0_node->add( "voltage-range", param_value( 0.5 ) );
@@ -53,17 +45,16 @@ namespace mantis
         t_chan0_node->add( "input-coupling", param_value( 1 ) ); // DC coupling
         t_chan0_node->add( "probe-attenuation", param_value( 1.0 ) );
         param_node* t_chan1_node = new param_node();
-        t_chan1_node->add( "name", param_value( "1" ) );
         t_chan1_node->add( "enabled", param_value( false ) );
         t_chan1_node->add( "input-impedance", param_value( 50 ) );
         t_chan1_node->add( "voltage-range", param_value( 0.5 ) );
         t_chan1_node->add( "voltage-offset", param_value( 0.0 ) );
         t_chan1_node->add( "input-coupling", param_value( 1 ) ); // DC coupling
         t_chan1_node->add( "probe-attenuation", param_value( 1.0 ) );
-        param_array* t_chan_array = new param_array();
-        t_chan_array->push_back( t_chan0_node );
-        t_chan_array->push_back( t_chan1_node );
-        t_new_node->add( "channels", t_chan_array );
+        param_node* t_chan_node = new param_node();
+        t_chan_node->add( "0", t_chan0_node );
+        t_chan_node->add( "1", t_chan1_node );
+        t_new_node->add( "channels", t_chan_node );
         a_node->add( a_type, t_new_node );
 
     }
@@ -73,6 +64,9 @@ namespace mantis
     {
         return digitizer_pxie5122::s_data_type_size;
     }
+
+    const unsigned digitizer_pxie5122::s_n_channels = 2;
+    const unsigned digitizer_pxie5122::s_bit_depth = 14;
 
     digitizer_pxie5122::digitizer_pxie5122() :
             //f_semaphore( NULL ),
@@ -91,6 +85,7 @@ namespace mantis
             f_canceled( false ),
             f_cancel_condition()
     {
+        f_params = new dig_calib_params[ s_n_channels ];
         /*
         errno = 0;
         f_semaphore = sem_open( "/digitizer_pxie5122", O_CREAT | O_EXCL );
@@ -181,16 +176,37 @@ namespace mantis
 
         //MTINFO( mtlog, "initializing the digitizer" );
 
-        //TODO: allow multiple channels
-        // for now: enforce one channel
-        if( a_dev_config->get_value< unsigned >( "n-channels", 1 ) != 1 )
+        param_node* t_chan_config[ 2 ] = {a_dev_config->node_at( "0" ), a_dev_config->node_at( "1" )};
+        if( t_chan_config[ 0 ] == NULL || t_chan_config[ 1 ] == NULL )
         {
-            MTERROR( mtlog, "For now you can only use 1 channel.  Sorry" );
+            MTERROR( mtlog, "Invalid device config: unable to find configuration for either channel 0 (" << t_chan_config[ 0 ] << ") or channel 1 (" << t_chan_config[ 1 ] << ")" );
             return false;
         }
 
-        f_chan_string = a_dev_config->get_value( "channel", "0" );
-        MTDEBUG( mtlog, "Recording from channel " << f_chan_string );
+        // check which channels are enabled
+        f_chan_string.clear();
+        unsigned n_chan_enabled = 0;
+        bool t_chan_enabled[ 2 ] = {false, false};
+        if( t_chan_config[ 0 ]->get_value< bool >( "enabled", false ) )
+        {
+            ++n_chan_enabled;
+            t_chan_enabled[ 0 ] = true;
+            f_chan_string += "0";
+        }
+        if( t_chan_config[ 1 ]->get_value< bool >( "enabled", false ) )
+        {
+            ++n_chan_enabled;
+            t_chan_enabled[ 1 ] = true;
+            f_chan_string += "1";
+        }
+        if( n_chan_enabled == 0 )
+        {
+            MTERROR( mtlog, "No channels were enabled" );
+            return false;
+        }
+        a_dev_config->replace( "n-channels", new param_value( n_chan_enabled ) );
+
+        MTDEBUG( mtlog, "Recording from channel(s) " << f_chan_string );
 
         // Check data mode and channel mode
         uint32_t t_data_mode = a_dev_config->get_value< uint32_t >( "data-mode" );
@@ -249,7 +265,6 @@ namespace mantis
         }
 
         // call to niScope_ConfigureHorizontalTiming
-        // TODO: the block size request assumes that we're only using 1 channel
         // Note that the record size request is passed as the 3rd parameter; this is correct regardless of the number of channels in use;
         // This parameter in the NI function is the minimum number of samples in the record for each channel according to the NI-SCOPE documentation.
         // Must convert MHz rate request to Hz for NI-SCOPE
@@ -275,10 +290,10 @@ namespace mantis
         MTINFO( mtlog, "Actual rate: " << t_actual_rate << " MHz; Actual record size: " << t_actual_rec_size );
 
         // check buffer allocation
-        // this section assumes 1 channel, in not multiplying t_actual_rec_size by the number of channels when converting to block size
         bool t_must_allocate = false; // will be done later, assuming the initialization succeeds
         unsigned t_buffer_size = a_dev_config->get_value< unsigned >( "buffer-size", 512 );
-        if( f_buffer != NULL && ( f_buffer->size() != t_buffer_size || f_buffer->block_size() != t_actual_rec_size ) )
+        unsigned t_block_size_needed = t_actual_rec_size * n_chan_enabled;
+        if( f_buffer != NULL && ( f_buffer->size() != t_buffer_size || f_buffer->block_size() != t_block_size_needed ) )
         {
             // need to redo the buffer
             if( f_allocated ) deallocate();
@@ -288,46 +303,56 @@ namespace mantis
         if( f_buffer == NULL )
         {
             t_must_allocate = true;
-            f_buffer = new buffer( t_buffer_size, t_actual_rec_size );
+            f_buffer = new buffer( t_buffer_size, t_block_size_needed );
         }
 
-        // call to niScope_ConfigureVertical
-        ViReal64 t_voltage_range = a_dev_config->get_value< ViReal64 >( "voltage-range", 0.5 );
-        ViReal64 t_voltage_offset = a_dev_config->get_value< ViReal64 >( "voltage-offset", 0. );
-        ViInt32 t_coupling = a_dev_config->get_value< ViInt32 >( "input-coupling", NISCOPE_VAL_AC );
-        if( t_coupling != NISCOPE_VAL_AC && t_coupling != NISCOPE_VAL_DC && t_coupling != NISCOPE_VAL_GND )
+        // configure channel-dependent features
+        for( unsigned i_chan = 0; i_chan < 1; ++i_chan )
         {
-            MTERROR( mtlog, "Invalid input coupling: " << t_coupling );
-            return false;
-        }
-        ViReal64 t_probe_attenuation = a_dev_config->get_value< ViReal64 >( "probe-attenuation", 1. );
-        if( t_probe_attenuation < 0 )
-        {
-            MTERROR( mtlog, "Probe attenuation must be a real, positive number" );
-            return false;
-        }
-        if( ! handle_error( niScope_ConfigureVertical( f_handle, f_chan_string.c_str(), t_voltage_range, t_voltage_offset, t_coupling, t_probe_attenuation, true ) ) )
-        {
-            return false;
+            std::stringstream t_conv;
+            t_conv << i_chan;
+            std::string t_this_chan_string( t_conv.str() );
+
+            // call to niScope_ConfigureVertical
+            ViReal64 t_voltage_range = t_chan_config[ i_chan ]->get_value< ViReal64 >( "voltage-range", 0.5 );
+            ViReal64 t_voltage_offset = t_chan_config[ i_chan ]->get_value< ViReal64 >( "voltage-offset", 0. );
+            ViInt32 t_coupling = a_dev_config->t_chan_config[ i_chan ]< ViInt32 >( "input-coupling", NISCOPE_VAL_AC );
+            if( t_coupling != NISCOPE_VAL_AC && t_coupling != NISCOPE_VAL_DC && t_coupling != NISCOPE_VAL_GND )
+            {
+                MTERROR( mtlog, "Invalid input coupling for channel " << i_chan << ": " << t_coupling );
+                return false;
+            }
+            ViReal64 t_probe_attenuation = t_chan_config[ i_chan ]->get_value< ViReal64 >( "probe-attenuation", 1. );
+            if( t_probe_attenuation < 0 )
+            {
+                MTERROR( mtlog, "Probe attenuation must be a real, positive number (channel " << i_chan << ")" );
+                return false;
+            }
+            if( ! handle_error( niScope_ConfigureVertical( f_handle, t_this_chan_string.c_str(), t_voltage_range, t_voltage_offset, t_coupling, t_probe_attenuation, true ) ) )
+            {
+                return false;
+            }
+
+            // get the scaling coefficients
+            ViInt32 t_n_coeff_sets; // first determine the size of the array used to store the scaling coefficients
+            if( ! handle_error( niScope_GetScalingCoefficients( f_handle, t_this_chan_string.c_str(), 0, NULL, &t_n_coeff_sets ) ) )
+            {
+                return false;
+            }
+            niScope_coefficientInfo* t_coeff_info_array = new niScope_coefficientInfo[ t_n_coeff_sets ];
+            if( !handle_error( niScope_GetScalingCoefficients( f_handle, t_this_chan_string.c_str(), t_n_coeff_sets, t_coeff_info_array, &t_n_coeff_sets ) ) )
+            {
+                return false;
+            }
+            get_calib_params2( s_bit_depth, s_data_type_size, t_voltage_offset, t_voltage_range, t_coeff_info_array[0].gain, &( f_params[i_chan] ) );
+            t_chan_config[ i_chan ]->replace( "voltage-offset", param_value( f_params[ i_chan ].v_offset ) );
+            t_chan_config[ i_chan ]->replace( "voltage-range", param_value( f_params[ i_chan ].v_range ) );
+            t_chan_config[ i_chan ]->replace( "dac-gain", param_value( f_params[ i_chan ].dac_gain ) );
         }
 
-        // get the scaling coefficients
-        ViInt32 t_n_coeff_sets; // first determine the size of the array used to store the scaling coefficients
-        if( ! handle_error( niScope_GetScalingCoefficients( f_handle, f_chan_string.c_str(), 0, NULL, &t_n_coeff_sets ) ) )
-        {
-            return false;
-        }
-        niScope_coefficientInfo* t_coeff_info_array = new niScope_coefficientInfo[ t_n_coeff_sets ];
-        if( !handle_error( niScope_GetScalingCoefficients( f_handle, f_chan_string.c_str(), t_n_coeff_sets, t_coeff_info_array, &t_n_coeff_sets ) ) )
-        {
-            return false;
-        }
-        get_calib_params2( 14 /*bit depth*/, s_data_type_size, t_voltage_offset, t_voltage_range, t_coeff_info_array[0].gain, &f_params );
-        a_dev_config->replace( "voltage-offset", param_value( f_params.v_offset ) );
-        a_dev_config->replace( "voltage-range", param_value( f_params.v_range ) );
-        a_dev_config->replace( "dac-gain", param_value( f_params.dac_gain ) );
 
-        if( !handle_error( niScope_ConfigureClock( f_handle, NISCOPE_VAL_PXI_CLOCK, NISCOPE_VAL_NO_SOURCE, NISCOPE_VAL_NO_SOURCE , VI_FALSE ) ) )
+        // configure the clock to sync with the PXIe backplane clock input
+        if( ! handle_error( niScope_ConfigureClock( f_handle, NISCOPE_VAL_PXI_CLOCK, NISCOPE_VAL_NO_SOURCE, NISCOPE_VAL_NO_SOURCE , VI_FALSE ) ) )
         {
             return false;
         }
@@ -353,11 +378,20 @@ namespace mantis
             allocate();
         }
 
-        f_record_last = ( record_id_type )( ceil( ( double )( a_dev_config->get_value< double >( "rate" ) * a_global_config->get_value< double >( "duration" ) * 1.e3 ) / ( double )( f_buffer->block_size() ) ) );
+        f_record_last = ( record_id_type )( ceil( ( double )( a_dev_config->get_value< double >( "rate" ) * a_global_config->get_value< double >( "duration" ) * 1.e3 ) / ( double )( t_actual_rec_size ) ) );
         f_record_count = 0;
         f_acquisition_count = 0;
         f_live_time = 0;
         f_dead_time = 0;
+
+        ViInt32 t_num_waveforms;
+        if( ! handle_error( niScope_ActualNumWfms( f_handle, f_chan_string.c_str(), &t_num_waveforms ) ) )
+        {
+            return false;
+        }
+        MTWARN( mtlog, "Actual number of waveforms: " << t_num_waveforms << '\n' <<
+                 "Actual record size: " << t_actual_rec_size << '\n' <<
+                 "Buffer block size: " << f_buffer->block_size() );
 
         return true;
     }
@@ -559,7 +593,8 @@ namespace mantis
         a_block->set_record_id( f_record_count );
         a_block->set_acquisition_id( f_acquisition_count );
 
-        if( !handle_error( niScope_FetchBinary16( f_handle, f_chan_string.c_str(), f_acq_timeout, a_block->get_data_size(), (ViInt16*)a_block->data_bytes(), &f_waveform_info) ) )
+        MTDEBUG( mtlog, "block data size: " << a_block->get_data_size() );
+        if( ! handle_error( niScope_FetchBinary16( f_handle, f_chan_string.c_str(), f_acq_timeout, a_block->get_data_size(), (ViInt16*)a_block->data_bytes(), &f_waveform_info) ) )
         {
             return false;
         }
@@ -623,8 +658,8 @@ namespace mantis
             //strcpy( resourceName, f_resource_name.c_str() );
             if( ! handle_error( niScope_init( const_cast< char* >( f_resource_name.c_str() ), NISCOPE_VAL_FALSE, NISCOPE_VAL_FALSE, &f_handle ) ) )
             {
-//delete[] resourceName;
-return false;
+                //delete[] resourceName;
+                return false;
             }
             //delete[] resourceName;
         }
