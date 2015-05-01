@@ -101,11 +101,12 @@ namespace mantis
                     continue;
                 }
 
+                // if these aren't present, an exception will be thrown, which will be caught since this is in a try block
                 uint32_t t_data_mode = t_device_config->get_value< uint32_t >( "data-mode" );
                 uint32_t t_chan_mode = t_device_config->get_value< uint32_t >( "channel-mode" );
-                unsigned t_n_channels = t_device_config->get_value< unsigned >( "n-channels", 0 );
                 unsigned t_rate = t_device_config->get_value< unsigned >( "rate" );
                 unsigned t_sample_size = t_device_config->get_value< unsigned >( "sample-size" );
+                unsigned t_n_channels = t_device_config->get_value< unsigned >( "n-channels" );
                 std::vector< unsigned > t_chan_vec;
                 if( t_n_channels == 1 )
                 {
@@ -122,11 +123,13 @@ namespace mantis
                         f_dev_mgr->device()->params(0).bit_depth, &t_chan_vec );
                 }
 
+                unsigned i_chan_mantis = 0; // this is the channel number in mantis, as opposed to the channel number in the monarch file
                 for( std::vector< unsigned >::const_iterator it = t_chan_vec.begin(); it != t_chan_vec.end(); ++it )
                 {
-                    f_header->GetChannelHeaders()[ *it ].SetVoltageOffset( t_device_config->get_value< double >( "voltage-offset" ) );
-                    f_header->GetChannelHeaders()[ *it ].SetVoltageRange( t_device_config->get_value< double >( "voltage-range" ) );
-                    f_header->GetChannelHeaders()[ *it ].SetDACGain( t_device_config->get_value< double >( "dac-gain" ) );
+                    f_header->GetChannelHeaders()[ *it ].SetVoltageOffset( f_dev_mgr->device()->params( i_chan_mantis ).v_offset );
+                    f_header->GetChannelHeaders()[ *it ].SetVoltageRange( f_dev_mgr->device()->params( i_chan_mantis ).v_range );
+                    f_header->GetChannelHeaders()[ *it ].SetDACGain( f_dev_mgr->device()->params( i_chan_mantis ).dac_gain );
+                    ++i_chan_mantis;
                 }
             }
 

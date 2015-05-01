@@ -210,7 +210,7 @@ namespace mantis
 
         // Check data mode and channel mode
         uint32_t t_data_mode = a_dev_config->get_value< uint32_t >( "data-mode" );
-        if( t_data_mode != monarch3::sDigitizedUS && t_data_mode != monarch3::sDigitizedS )
+        if( t_data_mode != monarch3::sDigitizedS )
         {
             MTERROR( mtlog, "Data can only be taken in <digitized> mode" );
             return false;
