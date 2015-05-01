@@ -53,10 +53,17 @@ namespace mantis
 
         private:
             static const unsigned s_data_type_size;
+            static const unsigned s_n_channels;
+            static const unsigned s_bit_depth;
+
+            void allocate_master_records( size_t a_rec_size, bool a_allocate_chan_0, bool a_allocate_chan_1 );
 
             //sem_t* f_semaphore;
 
-            data_type* f_master_record;
+            data_type** f_master_record;
+            size_t f_record_size;
+            bool f_chan0_enabled;
+            bool f_chan1_enabled;
 
             bool f_allocated;
 

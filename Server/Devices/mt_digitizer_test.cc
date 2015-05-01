@@ -28,13 +28,24 @@ namespace mantis
     {
         param_node* t_new_node = new param_node();
         t_new_node->add( "rate", param_value( 250 ) );
-        t_new_node->add( "n-channels", param_value( 1 ) );
         t_new_node->add( "data-mode", param_value( monarch3::sDigitizedUS ) );
-        t_new_node->add( "channel-mode", param_value( monarch3::sInterleaved ) );
+        t_new_node->add( "channel-mode", param_value( monarch3::sSeparate ) );
         t_new_node->add( "sample-size", param_value( 1 ) );
         t_new_node->add( "buffer-size", param_value( 512 ) );
         t_new_node->add( "record-size", param_value( 4194304 ) );
         t_new_node->add( "data-chunk-size", param_value( 1024 ) );
+        param_node* t_chan0_node = new param_node();
+        t_chan0_node->add( "enabled", param_value( true ) );
+        t_chan0_node->add( "voltage-range", param_value( 0.5 ) );
+        t_chan0_node->add( "voltage-offset", param_value( 0.0 ) );
+        param_node* t_chan1_node = new param_node();
+        t_chan1_node->add( "enabled", param_value( true ) );
+        t_chan1_node->add( "voltage-range", param_value( 0.5 ) );
+        t_chan1_node->add( "voltage-offset", param_value( 0.0 ) );
+        param_node* t_chan_node = new param_node();
+        t_chan_node->add( "0", t_chan0_node );
+        t_chan_node->add( "1", t_chan1_node );
+        t_new_node->add( "channels", t_chan_node );
         a_node->add( a_type, t_new_node );
 
     }
@@ -45,21 +56,33 @@ namespace mantis
         return digitizer_test::s_data_type_size;
     }
 
+    const unsigned digitizer_test::s_n_channels = 2;
+    const unsigned digitizer_test::s_bit_depth = 8;
+
     digitizer_test::digitizer_test() :
-            //f_semaphore( NULL ),
-            f_master_record( NULL ),
-            f_allocated( false ),
-            f_start_time( 0 ),
-            f_record_last( 0 ),
-            f_record_count( 0 ),
-            f_acquisition_count( 0 ),
-            f_live_time( 0 ),
-            f_dead_time( 0 ),
-            f_canceled( false ),
-            f_cancel_condition()
+                    //f_semaphore( NULL ),
+                    f_master_record( NULL ),
+                    f_record_size( 0 ),
+                    f_chan0_enabled( false ),
+                    f_chan1_enabled( false ),
+                    f_allocated( false ),
+                    f_start_time( 0 ),
+                    f_record_last( 0 ),
+                    f_record_count( 0 ),
+                    f_acquisition_count( 0 ),
+                    f_live_time( 0 ),
+                    f_dead_time( 0 ),
+                    f_canceled( false ),
+                    f_cancel_condition()
     {
-        f_params = new dig_calib_params[ 1 ];
+        f_params = new dig_calib_params[ s_n_channels ];
+
         get_calib_params( 8, s_data_type_size, -0.25, 0.5, &( params( 0 ) ) );
+        get_calib_params( 8, s_data_type_size, -0.5, 0.5, &( params( 1 ) ) );
+
+        f_master_record = new data_type* [ s_n_channels ];
+        f_master_record[ 0 ] = NULL;
+        f_master_record[ 1 ] = NULL;
 
         /*
         errno = 0;
@@ -75,18 +98,25 @@ namespace mantis
                 throw exception() << "semaphore error: " << strerror( errno );
             }
         }
-        */
+         */
     }
 
     digitizer_test::~digitizer_test()
     {
+        if( f_master_record != NULL )
+        {
+            if( f_master_record[ 0 ] != NULL ) delete [] f_master_record[ 0 ];
+            if( f_master_record[ 1 ] != NULL ) delete [] f_master_record[ 1 ];
+            delete [] f_master_record;
+        }
+
         if( f_allocated ) deallocate();
         /*
         if( f_semaphore != SEM_FAILED )
         {
             sem_close( f_semaphore );
         }
-        */
+         */
     }
 
     bool digitizer_test::allocate()
@@ -108,23 +138,12 @@ namespace mantis
             return false;
         }
 
-        MTINFO( mtlog, "Creating master record..." );
-
-        if( f_master_record != NULL ) delete [] f_master_record;
-        f_master_record = new data_type [f_buffer->block_size()];
-        for( unsigned index = 0; index < f_buffer->block_size(); ++index )
-        {
-            f_master_record[ index ] = index % f_params[ 0 ].levels;
-        }
-
         f_allocated = true;
         return true;
     }
 
     bool digitizer_test::deallocate()
     {
-        delete [] f_master_record;
-
         MTINFO( mtlog, "Deallocating buffer" );
 
         for( unsigned int index = 0; index < f_buffer->size(); index++ )
@@ -133,21 +152,117 @@ namespace mantis
         }
         f_allocated = false;
         return true;
-     }
+    }
+
+    void digitizer_test::allocate_master_records( size_t a_rec_size, bool a_allocate_chan_0, bool a_allocate_chan_1 )
+    {
+        MTINFO( mtlog, "Creating master records..." );
+
+        f_record_size = a_rec_size;
+
+        if( f_master_record[ 0 ] != NULL ) delete [] f_master_record[ 0 ];
+        if( f_master_record[ 1 ] != NULL ) delete [] f_master_record[ 1 ];
+
+        if( a_allocate_chan_0 )
+        {
+            f_master_record[ 0 ] = new data_type[ f_record_size ];
+            std::cout << "channel 0: ";
+            for( unsigned index = 0; index < f_record_size; ++index )
+            {
+                f_master_record[ 0 ][ index ] = index % f_params[ 0 ].levels;
+                if( index < 100 ) std::cout << (unsigned)f_master_record[ 0 ][ index ] << ", ";
+            }
+            std::cout << std::endl;
+        }
+
+        if( a_allocate_chan_1 )
+        {
+            f_master_record[ 1 ] = new data_type[ f_record_size ];
+            data_type t_value = f_params[ 1 ].levels / 2;
+            std::cout << "channel 1: ";
+            for( unsigned index = 0; index < f_record_size; ++index )
+            {
+                f_master_record[ 1 ][ index ] = t_value;
+                if( index < 100 ) std::cout << (unsigned)f_master_record[ 1 ][ index ] << ", ";
+            }
+            std::cout << std::endl;
+        }
+
+        return;
+    }
 
     bool digitizer_test::initialize( param_node* a_global_config, param_node* a_dev_config )
     {
         //MTINFO( mtlog, "resetting counters..." );
 
-        a_dev_config->replace( "voltage-offset", param_value( params( 0 ).v_offset ) );
-        a_dev_config->replace( "voltage-range", param_value( params( 0 ).v_range ) );
-        a_dev_config->replace( "dac-gain", param_value( params( 0 ).dac_gain ) );
 
-        // check buffer allocation
-        // this section assumes 1 channel, in not multiplying t_actual_rec_size by the number of channels when converting to block size
+        param_node* t_channels_config = a_dev_config->node_at( "channels" );
+        if( t_channels_config == NULL )
+        {
+            MTERROR( mtlog, "Did not find a \"channels\" node" );
+            return false;
+        }
+
+        param_node* t_chan_config[ 2 ] = {t_channels_config->node_at( "0" ), t_channels_config->node_at( "1" )};
+        if( t_chan_config[ 0 ] == NULL || t_chan_config[ 1 ] == NULL )
+        {
+            MTERROR( mtlog, "Invalid device config: unable to find configuration for either channel 0 (" << t_chan_config[ 0 ] << ") or channel 1 (" << t_chan_config[ 1 ] << ")" );
+            return false;
+        }
+
+        // check which channels are enabled
+        unsigned n_chan_enabled = 0;
+
+        f_chan0_enabled = false;
+        if( t_chan_config[ 0 ]->get_value< bool >( "enabled", false ) )
+        {
+            ++n_chan_enabled;
+            f_chan0_enabled = true;
+        }
+
+        f_chan1_enabled = false;
+        if( t_chan_config[ 1 ]->get_value< bool >( "enabled", false ) )
+        {
+            ++n_chan_enabled;
+            f_chan1_enabled = true;
+        }
+
+        if( n_chan_enabled == 0 )
+        {
+            MTERROR( mtlog, "No channels were enabled" );
+            return false;
+        }
+        a_dev_config->replace( "n-channels", new param_value( n_chan_enabled ) );
+
+        MTDEBUG( mtlog, "Recording from " << n_chan_enabled << " channel(s): " << f_chan0_enabled << ", " << f_chan1_enabled );
+
+        // Check data mode and channel mode
+        uint32_t t_data_mode = a_dev_config->get_value< uint32_t >( "data-mode" );
+        if( t_data_mode != monarch3::sDigitizedUS )
+        {
+            MTERROR( mtlog, "Data can only be taken in <digitized-unsigned> mode" );
+            return false;
+        }
+        if( a_dev_config->get_value< uint32_t >( "channel-mode" ) != monarch3::sSeparate )
+        {
+            MTERROR( mtlog, "Multi-channel data can only be recorded in <separate> mode" );
+            return false;
+        }
+
+        // check buffer and master record allocations
+        bool t_must_allocate = false; // will be done later, assuming the initialization succeeds
         unsigned t_buffer_size = a_dev_config->get_value< unsigned >( "buffer-size", 512 );
-        unsigned t_rec_size = a_dev_config->get_value< unsigned >( "record-size", 16384 );
-        if( f_buffer != NULL && ( f_buffer->size() != t_buffer_size || f_buffer->block_size() != t_rec_size ) )
+        unsigned t_record_size = a_dev_config->get_value< unsigned >( "record-size", 16384 );
+        unsigned t_block_size_needed = t_record_size * n_chan_enabled;
+
+        if( t_record_size != f_record_size ||
+                ( f_chan0_enabled && f_master_record[ 0 ] == NULL ) ||
+                ( f_chan1_enabled && f_master_record[ 1 ] == NULL ) )
+        {
+            allocate_master_records( t_record_size, f_chan0_enabled, f_chan1_enabled );
+        }
+
+        if( f_buffer != NULL && ( f_buffer->size() != t_buffer_size || f_buffer->block_size() != t_block_size_needed ) )
         {
             // need to redo the buffer
             if( f_allocated ) deallocate();
@@ -156,11 +271,31 @@ namespace mantis
         }
         if( f_buffer == NULL )
         {
-            f_buffer = new buffer( t_buffer_size, t_rec_size );
+            t_must_allocate = true;
+            f_buffer = new buffer( t_buffer_size, t_block_size_needed );
+        }
+
+        // configure channel-dependent features
+        for( unsigned i_chan = 0; i_chan < 1; ++i_chan )
+        {
+            std::stringstream t_conv;
+            t_conv << i_chan;
+            std::string t_this_chan_string( t_conv.str() );
+
+            // call to niScope_ConfigureVertical
+            double t_voltage_range = t_chan_config[ i_chan ]->get_value< double >( "voltage-range", 0.5 );
+            double t_voltage_offset = t_chan_config[ i_chan ]->get_value< double >( "voltage-offset", 0. );
+            get_calib_params( s_bit_depth, s_data_type_size, t_voltage_offset, t_voltage_range, &( f_params[i_chan] ) );
+            t_chan_config[ i_chan ]->replace( "dac-gain", param_value( f_params[ i_chan ].dac_gain ) );
+        }
+
+        // allocate the buffer if needed
+        if( t_must_allocate )
+        {
             allocate();
         }
 
-        f_record_last = ( record_id_type )( ceil( ( double )( a_dev_config->get_value< double >( "rate" ) * a_global_config->get_value< double >( "duration" ) * 1.e3 ) / ( double )( f_buffer->block_size() ) ) );
+        f_record_last = ( record_id_type )( ceil( ( double )( a_dev_config->get_value< double >( "rate" ) * a_global_config->get_value< double >( "duration" ) * 1.e3 ) / ( double )( f_record_size ) ) );
         f_record_count = 0;
         f_acquisition_count = 0;
         f_live_time = 0;
@@ -328,7 +463,7 @@ namespace mantis
 
     /* Asyncronous cancelation:
     Main execution loop checks for f_canceled, and exits if it's true.
-    */
+     */
     void digitizer_test::cancel()
     {
         MTDEBUG(mtlog, "Canceling digitizer test");
@@ -372,7 +507,19 @@ namespace mantis
         a_block->set_record_id( f_record_count );
         a_block->set_acquisition_id( f_acquisition_count );
 
-        ::memcpy( a_block->data_bytes(), f_master_record, f_buffer->block_size() );
+        // all of this assumes the data type size is 1, so f_record_size is the length of the record in bytes as well as samples
+        unsigned t_write_offset = 0;
+        // copy first channel
+        if( f_chan0_enabled )
+        {
+            ::memcpy( a_block->data_bytes(), f_master_record[ 0 ], f_record_size );
+            t_write_offset += f_record_size;
+        }
+        // copy second channel
+        if( f_chan1_enabled )
+        {
+            ::memcpy( a_block->data_bytes() + t_write_offset, f_master_record[ 1 ], f_record_size );
+        }
 
         // the timestamp is acquired after the data is transferred to avoid the problem on the px1500 where
         // the first record can take unusually long to be acquired.
@@ -419,9 +566,9 @@ namespace mantis
     //********************************
 
     block_cleanup_test::block_cleanup_test( byte_type* a_memblock ) :
-            block_cleanup(),
-            f_triggered( false ),
-            f_memblock( a_memblock )
+                    block_cleanup(),
+                    f_triggered( false ),
+                    f_memblock( a_memblock )
     {}
 
     block_cleanup_test::~block_cleanup_test()
