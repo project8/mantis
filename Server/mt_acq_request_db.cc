@@ -136,12 +136,39 @@ namespace mantis
     {
         boost::uuids::uuid t_id = boost::uuids::nil_uuid();
         f_mutex.lock();
-        f_acq_request_db[ a_acq_request->get_id() ] = a_acq_request;
-        f_acq_request_queue.push_back( a_acq_request );
-        a_acq_request->set_status( acq_request::waiting );
-        t_id = a_acq_request->get_id();
+        if( f_acq_request_db.find( a_acq_request->get_id() ) == f_acq_request_db.end() )
+        {
+            f_acq_request_db[ a_acq_request->get_id() ] = a_acq_request;
+        }
+        if( a_acq_request->get_status() < acq_request::waiting )
+        {
+            f_acq_request_queue.push_back( a_acq_request );
+            a_acq_request->set_status( acq_request::waiting );
+            t_id = a_acq_request->get_id();
+        }
         f_mutex.unlock();
         return t_id;
+    }
+
+    bool acq_request_db::cancel( boost::uuids::uuid a_id )
+    {
+        bool t_result = false;
+        f_mutex.lock();
+        acq_request_db_data::iterator t_req_it = f_acq_request_db.find( a_id );
+        if( t_req_it != f_acq_request_db.end() )
+        {
+            if( t_req_it->second->get_status() < acq_request::running )
+            {
+                if( t_req_it->second->get_status() == acq_request::waiting )
+                {
+                    f_acq_request_queue.remove( t_req_it->second );
+                }
+                t_req_it->second->set_status( acq_request::canceled );
+            }
+            t_result = true;
+        }
+        f_mutex.unlock();
+        return t_result;
     }
 
     acq_request* acq_request_db::pop()
@@ -292,6 +319,39 @@ namespace mantis
         a_pkg.f_reply_node.node_at( "content" )->add( "status-meaning", new param_value( acq_request::interpret_status( t_request->get_status() ) ) );
 
         return a_pkg.send_reply( R_SUCCESS, "Acquisition status request succeeded" );
+    }
+
+    bool acq_request_db::handle_cancel_acq_request( const param_node& a_msg_payload, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg  )
+    {
+        if( ! a_msg_payload.has( "values" ) || ! a_msg_payload[ "values" ].is_array() )
+        {
+            a_pkg.send_reply( R_MESSAGE_ERROR_BAD_PAYLOAD, "Invalid payload: no <values> array present" );
+            return false;
+        }
+        string t_acq_id_str = a_msg_payload.array_at( "values" )->get_value( 0 );
+
+        if( t_acq_id_str.empty() )
+        {
+            a_pkg.send_reply( R_MESSAGE_ERROR_BAD_PAYLOAD, "Invalid/no acquisition id" );
+            return false;
+        }
+
+        boost::uuids::uuid t_id;
+        std::stringstream t_conv;
+        t_conv << t_acq_id_str;
+        t_conv >> t_id;
+        MTINFO( mtlog, "Canceling acquisition <" << t_id << ">" );
+
+        if( ! cancel( t_id ) )
+        {
+            a_pkg.send_reply( R_MESSAGE_ERROR_BAD_PAYLOAD, "Failed to cancel acquisition <" + to_string( t_id ) + ">; it may not exist" );
+            return false;
+        }
+
+        const acq_request* t_request = get_acq_request( t_id );
+        a_pkg.f_reply_node.node_at( "content" )->merge( *t_request );
+        a_pkg.f_reply_node.node_at( "content" )->add( "status-meaning", new param_value( acq_request::interpret_status( t_request->get_status() ) ) );
+        return a_pkg.send_reply( R_SUCCESS, "Cancellation succeeded" );
     }
 
 

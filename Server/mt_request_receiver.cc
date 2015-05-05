@@ -278,6 +278,16 @@ namespace mantis
             send_reply( R_MESSAGE_ERROR_BAD_PAYLOAD, "Query type <server-status> is not yet supported", a_pkg );
             return false;
         }
+        else if( t_query_type == "queue" )
+        {
+            send_reply( R_MESSAGE_ERROR_BAD_PAYLOAD, "Query type <queue> is not yet supported", a_pkg );
+            return false;
+        }
+        else if( t_query_type == "queue-size" )
+        {
+            send_reply( R_MESSAGE_ERROR_BAD_PAYLOAD, "Query type <queue-size> is not yet supported", a_pkg );
+            return false;
+        }
         else
         {
             send_reply( R_MESSAGE_ERROR_BAD_PAYLOAD, "Unrecognized query type or no query type provided", a_pkg );
@@ -320,6 +330,25 @@ namespace mantis
         else if( t_instruction == "remove" )
         {
             return f_conf_mgr->handle_remove_request( a_msg_payload, a_mantis_routing_key, a_pkg );
+        }
+        else if( t_instruction == "cancel-acq" )
+        {
+            return f_acq_request_db->handle_cancel_acq_request( a_msg_payload, a_mantis_routing_key, a_pkg );
+        }
+        else if( t_instruction == "start" )
+        {
+            send_reply( R_MESSAGE_ERROR_BAD_PAYLOAD, "Command type <start> is not yet supported", a_pkg );
+            return false;
+        }
+        else if( t_instruction == "stop" )
+        {
+            send_reply( R_MESSAGE_ERROR_BAD_PAYLOAD, "Command type <stop> is not yet supported", a_pkg );
+            return false;
+        }
+        else if( t_instruction == "quit-mantis" )
+        {
+            send_reply( R_MESSAGE_ERROR_BAD_PAYLOAD, "Command type <server-status> is not yet supported", a_pkg );
+            return false;
         }
         else
         {

@@ -51,6 +51,7 @@ namespace mantis
             bool queue_empty();
 
             boost::uuids::uuid enqueue( acq_request* a_acq_request ); /// adds acq_request to the queue and database; returns the assigned acq_request ID number
+            bool cancel( boost::uuids::uuid a_id ); /// removes acq_request with id a_id from the queue
             acq_request* pop();
 
             void clear_queue(); /// remove all requests in the queue; removed acq_requests are deleted
@@ -62,6 +63,8 @@ namespace mantis
             bool handle_new_acq_request( const param_node& a_msg_payload, const std::string& a_mantis_routing_key, request_reply_package& a_pkg );
 
             bool handle_get_acq_status_request( const param_node& a_msg_payload, const std::string& a_mantis_routing_key, request_reply_package& a_pkg );
+
+            bool handle_cancel_acq_request( const param_node& a_msg_payload, const std::string& a_mantis_routing_key, request_reply_package& a_pkg  );
 
         private:
             typedef std::map< boost::uuids::uuid, acq_request* > acq_request_db_data;
