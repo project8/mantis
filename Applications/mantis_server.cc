@@ -28,6 +28,7 @@
 
 #include "mt_broker.hh"
 #include "mt_condition.hh"
+#include "mt_config_manager.hh"
 #include "mt_constants.hh"
 #include "mt_configurator.hh"
 #include "mt_device_manager.hh"
@@ -89,15 +90,18 @@ int main( int argc, char** argv )
 
         MTINFO( mtlog, "Creating server objects" );
 
-        // run database and queue condition
-        condition t_queue_condition;
-        acq_request_db t_acq_request_db;
-
         // device manager
         device_manager t_dev_mgr;
 
+        // configuration manager
+        config_manager t_config_mgr( t_configurator.config(), &t_dev_mgr );
+
+        // run database and queue condition
+        condition t_queue_condition;
+        acq_request_db t_acq_request_db( &t_config_mgr, &t_queue_condition, t_configurator.exe_name() );
+
         // request receiver
-        request_receiver t_receiver( t_configurator.config(), &t_dev_mgr, &t_acq_request_db, &t_queue_condition, t_configurator.exe_name() );
+        request_receiver t_receiver( &t_config_mgr, &t_acq_request_db );
 
         // server worker
         server_worker t_worker( &t_dev_mgr, &t_acq_request_db, &t_queue_condition );

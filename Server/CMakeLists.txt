@@ -26,6 +26,7 @@ if( Mantis_BUILD_SERVER )
         #mt_bit_shift_modifier.hh
         mt_block.hh
         mt_buffer.hh
+        mt_config_manager.hh
         mt_device_manager.hh
         mt_digitizer.hh
         mt_factory.hh
@@ -46,6 +47,7 @@ if( Mantis_BUILD_SERVER )
         #mt_bit_shift_modifier.cc
         mt_block.cc
         mt_buffer.cc
+        mt_config_manager.cc
         mt_device_manager.cc
         mt_digitizer.cc
         mt_file_writer.cc
