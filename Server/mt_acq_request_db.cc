@@ -188,12 +188,23 @@ namespace mantis
     void acq_request_db::clear_queue()
     {
         f_mutex.lock();
-        while( ! f_acq_request_queue.empty() )
+        unsigned t_n_running = 0;
+        if( ! f_acq_request_queue.empty() )
         {
-            acq_request_db_data::iterator t_acq_request_it = f_acq_request_db.find( f_acq_request_queue.front()->get_id() );
-            delete t_acq_request_it->second;
-            f_acq_request_db.erase( t_acq_request_it );
-            f_acq_request_queue.pop_front();
+            std::list< acq_request* >::iterator t_list_it = f_acq_request_queue.begin();
+            while( t_list_it != f_acq_request_queue.end() )
+            {
+                if( (*t_list_it)->get_status() == acq_request::waiting )
+                {
+                    (*t_list_it)->set_status( acq_request::canceled );
+                    t_list_it = f_acq_request_queue.erase( t_list_it );
+                }
+                else
+                {
+                    ++t_list_it;
+                }
+                f_acq_request_queue.pop_front();
+            }
         }
         f_mutex.unlock();
         return;
@@ -321,6 +332,16 @@ namespace mantis
         return a_pkg.send_reply( R_SUCCESS, "Acquisition status request succeeded" );
     }
 
+    bool acq_request_db::handle_queue_request( const param_node& a_msg_payload, const std::string& a_mantis_routing_key, request_reply_package& a_pkg  )
+    {
+
+    }
+
+    bool acq_request_db::handle_queue_size_request( const param_node& a_msg_payload, const std::string& a_mantis_routing_key, request_reply_package& a_pkg  )
+    {
+
+    }
+
     bool acq_request_db::handle_cancel_acq_request( const param_node& a_msg_payload, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg  )
     {
         if( ! a_msg_payload.has( "values" ) || ! a_msg_payload[ "values" ].is_array() )
@@ -353,6 +374,14 @@ namespace mantis
         a_pkg.f_reply_node.node_at( "content" )->add( "status-meaning", new param_value( acq_request::interpret_status( t_request->get_status() ) ) );
         return a_pkg.send_reply( R_SUCCESS, "Cancellation succeeded" );
     }
+
+    bool acq_request_db::handle_clear_queue_request( const param_node& /*a_msg_payload*/, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg  )
+    {
+        clear_queue();
+
+        return a_pkg.send_reply( R_SUCCESS, "Queue is clear (aside for runs in progress" );
+    }
+
 
 
 } /* namespace mantis */

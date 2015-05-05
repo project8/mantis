@@ -335,6 +335,10 @@ namespace mantis
         {
             return f_acq_request_db->handle_cancel_acq_request( a_msg_payload, a_mantis_routing_key, a_pkg );
         }
+        else if( t_instruction == "clear-queue" )
+        {
+            return f_acq_request_db->handle_clear_queue_request( a_msg_payload, a_mantis_routing_key, a_pkg );
+        }
         else if( t_instruction == "start" )
         {
             send_reply( R_MESSAGE_ERROR_BAD_PAYLOAD, "Command type <start> is not yet supported", a_pkg );
