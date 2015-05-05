@@ -269,9 +269,13 @@ namespace mantis
         {
             return f_conf_mgr->handle_get_server_config_request( a_msg_payload, a_mantis_routing_key, a_pkg );
         }
-        else if( t_query_type == "status" )
+        else if( t_query_type == "acq-status" )
         {
-            send_reply( R_MESSAGE_ERROR_BAD_PAYLOAD, "Query type <status> is not yet supported", a_pkg );
+            return f_acq_request_db->handle_get_acq_status_request( a_msg_payload, a_mantis_routing_key, a_pkg );
+        }
+        else if( t_query_type == "server-status" )
+        {
+            send_reply( R_MESSAGE_ERROR_BAD_PAYLOAD, "Query type <server-status> is not yet supported", a_pkg );
             return false;
         }
         else

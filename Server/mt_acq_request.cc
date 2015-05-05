@@ -10,6 +10,8 @@
 #include "mt_acq_request.hh"
 #include "mt_version.hh"
 
+#include <boost/uuid/uuid_io.hpp>
+
 #include<string>
 using std::string;
 
@@ -19,10 +21,48 @@ namespace mantis
 {
     MTLOGGER(mtlog, "acq_request");
 
-    acq_request::acq_request()
+    std::string acq_request::interpret_status( status a_status )
+    {
+        switch( a_status )
+        {
+            case created:
+                return string( "created" );
+                break;
+            case acknowledged:
+                return string( "acknowledged" );
+                break;
+            case waiting:
+                return string( "waiting (in queue)" );
+                break;
+            case started:
+                return string( "started" );
+                break;
+            case running:
+                return string( "running" );
+                break;
+            case stopped:
+                return string( "stopped (started and then stopped normally)" );
+                break;
+            case error:
+                return string( "error" );
+                break;
+            case canceled:
+                return string( "canceled (started but stopped abnormally)" );
+                break;
+            case revoked:
+                return string( "revoked (will not be performed)" );
+                break;
+            default:
+                return string( "unknown" );
+        }
+    }
+
+    acq_request::acq_request( boost::uuids::uuid a_id ) :
+            param_node(),
+            f_id( a_id )
     {
         // default description
-        add( "id", param_value( 0 ) );
+        add( "id", param_value( boost::uuids::to_string( f_id ) ) );
         add( "status", param_value( 0 ) );
         add( "client", new param_node() );
         add( "mantis", new param_node() );
@@ -33,19 +73,38 @@ namespace mantis
         add( "description", new param_value( "" ) );
     }
 
+    acq_request::acq_request( const acq_request& orig ) :
+        param_node( orig ),
+        f_id( orig.f_id )
+    {
+    }
+
     acq_request::~acq_request()
     {
     }
 
-    void acq_request::set_id( unsigned a_id )
+    acq_request& acq_request::operator=( const acq_request& rhs )
     {
-        this->replace( "id", param_value( a_id ) );
+        f_id = rhs.f_id;
+        this->param_node::operator=( rhs );
+        return *this;
+    }
+
+    void acq_request::set_id( boost::uuids::uuid a_id )
+    {
+        f_id = a_id;
+        this->replace( "id", param_value( boost::uuids::to_string( f_id ) ) );
         return;
     }
 
-    unsigned acq_request::get_id() const
+    boost::uuids::uuid acq_request::get_id() const
     {
-        return this->get_value< unsigned >( "id" );
+        return f_id;
+    }
+
+    std::string acq_request::get_id_string() const
+    {
+        return this->get_value( "id" );
     }
 
     void acq_request::set_status( status a_status )

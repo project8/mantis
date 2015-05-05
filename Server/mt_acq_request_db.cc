@@ -9,6 +9,12 @@
 #include "mt_param.hh"
 #include "mt_request_receiver.hh"
 
+#include <boost/uuid/uuid_io.hpp>
+#include <boost/uuid/nil_generator.hpp>
+#include <boost/uuid/random_generator.hpp>
+
+
+using std::string;
 
 namespace mantis
 {
@@ -20,8 +26,7 @@ namespace mantis
             f_acq_request_db(),
             f_queue_condition( a_condition ),
             f_config_mgr( a_conf_mgr ),
-            f_exe_name( a_exe_name ),
-            f_id_count( 0 )
+            f_exe_name( a_exe_name )
     {
     }
 
@@ -40,7 +45,7 @@ namespace mantis
         return t_empty;
     }
 
-    acq_request* acq_request_db::get_acq_request( unsigned a_id )
+    acq_request* acq_request_db::get_acq_request( boost::uuids::uuid a_id )
     {
         acq_request* t_desc = NULL;
         f_mutex.lock();
@@ -51,7 +56,7 @@ namespace mantis
         return t_desc;
     }
 
-    const acq_request* acq_request_db::get_acq_request( unsigned a_id ) const
+    const acq_request* acq_request_db::get_acq_request( boost::uuids::uuid a_id ) const
     {
         const acq_request* t_desc = NULL;
         f_mutex.lock();
@@ -62,17 +67,17 @@ namespace mantis
         return t_desc;
     }
 
-    unsigned acq_request_db::add( acq_request* a_acq_request )
+    boost::uuids::uuid acq_request_db::add( acq_request* a_acq_request )
     {
-        unsigned t_id = 0;
+        boost::uuids::uuid t_id = boost::uuids::nil_uuid();
         f_mutex.lock();
-        t_id = f_id_count++;
-        f_acq_request_db[ t_id ] = a_acq_request;
+        f_acq_request_db[ a_acq_request->get_id() ] = a_acq_request;
+        t_id = a_acq_request->get_id();
         f_mutex.unlock();
         return t_id;
     }
 
-    acq_request* acq_request_db::remove( unsigned a_id )
+    acq_request* acq_request_db::remove( boost::uuids::uuid a_id )
     {
         acq_request* t_desc = NULL;
         f_mutex.lock();
@@ -127,14 +132,14 @@ namespace mantis
         return t_empty;
     }
 
-    unsigned acq_request_db::enqueue( acq_request* a_acq_request )
+    boost::uuids::uuid acq_request_db::enqueue( acq_request* a_acq_request )
     {
-        unsigned t_id = 0;
+        boost::uuids::uuid t_id = boost::uuids::nil_uuid();
         f_mutex.lock();
-        t_id = f_id_count++;
-        f_acq_request_db[ t_id ] = a_acq_request;
+        f_acq_request_db[ a_acq_request->get_id() ] = a_acq_request;
         f_acq_request_queue.push_back( a_acq_request );
         a_acq_request->set_status( acq_request::waiting );
+        t_id = a_acq_request->get_id();
         f_mutex.unlock();
         return t_id;
     }
@@ -147,6 +152,7 @@ namespace mantis
         {
             t_acq_request = f_acq_request_queue.front();
             f_acq_request_queue.pop_front();
+            t_acq_request->set_status( acq_request::revoked );
         }
         f_mutex.unlock();
         return t_acq_request;
@@ -180,7 +186,8 @@ namespace mantis
         // optional
         const param_node* t_client_node = a_msg_payload.node_at( "client" );
 
-        acq_request* t_acq_req = new acq_request();
+        boost::uuids::random_generator t_gen;
+        acq_request* t_acq_req = new acq_request( t_gen() );
         t_acq_req->set_status( acq_request::created );
 
         t_acq_req->set_file_config( *t_file_node );
@@ -233,23 +240,59 @@ namespace mantis
 
         t_acq_req->set_status( acq_request::acknowledged );
 
+        MTINFO( mtlog, "Queuing request" );
+        enqueue( t_acq_req );
+
         a_pkg.f_reply_node.node_at( "content" )->merge( *t_acq_req );
+        a_pkg.f_reply_node.node_at( "content" )->add( "status-meaning", new param_value( acq_request::interpret_status( t_acq_req->get_status() ) ) );
         if( ! a_pkg.send_reply( R_SUCCESS, "Run request succeeded" ) )
         {
             MTWARN( mtlog, "Failed to send reply regarding the run request" );
         }
 
-        MTINFO( mtlog, "Queuing request" );
-        enqueue( t_acq_req );
-
-        // if the queue condition is waiting, release it
+       // if the queue condition is waiting, release it
         if( f_queue_condition->is_waiting() == true )
         {
             //MTINFO( mtlog, "releasing queue condition" );
             f_queue_condition->release();
         }
 
-        return true;    }
+        return true;
+    }
+
+    bool acq_request_db::handle_get_acq_status_request( const param_node& a_msg_payload, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg )
+    {
+        if( ! a_msg_payload.has( "values" ) || ! a_msg_payload[ "values" ].is_array() )
+        {
+            a_pkg.send_reply( R_MESSAGE_ERROR_BAD_PAYLOAD, "Invalid payload: no <values> array present" );
+            return false;
+        }
+        string t_acq_id_str = a_msg_payload.array_at( "values" )->get_value( 0 );
+
+        if( t_acq_id_str.empty() )
+        {
+            a_pkg.send_reply( R_MESSAGE_ERROR_BAD_PAYLOAD, "Invalid/no acquisition id" );
+            return false;
+        }
+
+        boost::uuids::uuid t_id;
+        std::stringstream t_conv;
+        t_conv << t_acq_id_str;
+        t_conv >> t_id;
+        MTDEBUG( mtlog, "Requesting status of acquisition <" << t_id << ">" );
+
+        const acq_request* t_request = get_acq_request( t_id );
+        if( t_request == NULL )
+        {
+            a_pkg.send_reply( R_MESSAGE_ERROR_BAD_PAYLOAD, "Did not find acquisition <" + to_string( t_id ) + ">" );
+            return false;
+        }
+
+        a_pkg.f_reply_node.node_at( "content" )->merge( *t_request );
+        a_pkg.f_reply_node.node_at( "content" )->add( "status-meaning", new param_value( acq_request::interpret_status( t_request->get_status() ) ) );
+
+        return a_pkg.send_reply( R_SUCCESS, "Acquisition status request succeeded" );
+    }
 
 
 } /* namespace mantis */

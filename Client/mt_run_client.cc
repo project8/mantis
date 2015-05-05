@@ -237,12 +237,21 @@ namespace mantis
 
     bool run_client::do_get_request( std::string& a_request_str )
     {
+        param_node* t_payload_node = new param_node();
+
+        if( f_config.has( "value" ) )
+        {
+            param_array* t_values_array = new param_array();
+            t_values_array->push_back( f_config.remove( "value" ) );
+            t_payload_node->add( "values", t_values_array );
+        }
+
         param_node t_request;
         t_request.add( "msgtype", param_value( T_REQUEST ) );
         t_request.add( "msgop", param_value( OP_GET ) );
         //t_request.add( "target", param_value( "mantis" ) );  // use of the target is now deprecated (3/12/15)
         t_request.add( "timestamp", param_value( get_absolute_time_string() ) );
-        t_request.add( "payload", new param_node() );
+        t_request.add( "payload", t_payload_node ); // use t_payload_node as is
 
         if(! param_output_json::write_string( t_request, a_request_str, param_output_json::k_compact ) )
         {
