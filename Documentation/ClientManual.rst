@@ -110,7 +110,7 @@ The target is used in different ways for different commands:
 
   ``dest=[queue].remove.device.[device name]`` -- Removes a device from the master run configuration.
 
-  ``dest=[queue].acq-config`` -- Replaces the server's run configuration with the contents of the instruction options, or the JSON file specified in those options (see below).
+  ``dest=[queue].replace-config`` -- Replaces the server's run configuration with the contents of the instruction options, or the JSON file specified in those options (see below).
   
   
 Instruction Options

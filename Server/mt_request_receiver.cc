@@ -309,7 +309,7 @@ namespace mantis
             return false;
         }
 
-        if( t_instruction == "acq-config" )
+        if( t_instruction == "replace-config" )
         {
             return f_conf_mgr->handle_replace_acq_config( a_msg_payload, a_mantis_routing_key, a_pkg );
         }
