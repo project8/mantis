@@ -98,7 +98,7 @@ The target is used in different ways for different commands:
 
   ``dest=[queue].acq-status`` -- Returns the status of an acquisition request.
 
-  ``dest=[queue].server-status`` -- [not yet implemented] Will return the server status.
+  ``dest=[queue].server-status`` -- Returns the status of the server, including the queue, server worker (digitizer & writer), and request receiver.
   
   ``dest=[queue].queue`` -- Returns the current acquisition queue, including the UUID and filename for each acquisition request.
   
@@ -120,15 +120,15 @@ The target is used in different ways for different commands:
   
   ``dest=[queue].clear-queue`` -- Clear scheduled acquisitions from the queue.
   
-  ``dest=[queue].start-queue`` -- [not yet implemented] Start processing the requests in the queue (if the queue had previously been stopped)
+  ``dest=[queue].start-queue`` -- Start processing the requests in the queue (if the queue had previously been stopped)
 
-  ``dest=[queue].stop-queue`` -- [not yet implemented] Stop processing the requests in the queue (queue is left intact and acquisition in progress is not stopped; restart with ``start-queue``)
+  ``dest=[queue].stop-queue`` -- Stop processing the requests in the queue (queue is left intact and acquisition in progress is not stopped; restart with ``start-queue``)
   
-  ``dest=[queue].stop-acq`` -- [not yet implemented] Stop any acquisition that is currently running (queue processing will continue).
+  ``dest=[queue].stop-acq`` -- Stop any acquisition that is currently running (queue processing will continue).
   
-  ``dest=[queue].stop-all`` -- [not yet implemented] Stop processing the requests in the queue and any acquisition that is currently running.
+  ``dest=[queue].stop-all`` -- Stop processing the requests in the queue and any acquisition that is currently running.
   
-  ``dest=[queue].quit-mantis`` -- [not yet implemented] Stop execution of the Mantis server.
+  ``dest=[queue].quit-mantis`` -- Stop execution of the Mantis server.
   
 Instruction Options
 ^^^^^^^^^^^^^^^^^^^
