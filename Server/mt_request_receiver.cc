@@ -273,19 +273,17 @@ namespace mantis
         {
             return f_acq_request_db->handle_get_acq_status_request( a_msg_payload, a_mantis_routing_key, a_pkg );
         }
-        else if( t_query_type == "server-status" )
-        {
-            send_reply( R_MESSAGE_ERROR_BAD_PAYLOAD, "Query type <server-status> is not yet supported", a_pkg );
-            return false;
-        }
         else if( t_query_type == "queue" )
         {
-            send_reply( R_MESSAGE_ERROR_BAD_PAYLOAD, "Query type <queue> is not yet supported", a_pkg );
-            return false;
+            return f_acq_request_db->handle_queue_request( a_msg_payload, a_mantis_routing_key, a_pkg );
         }
         else if( t_query_type == "queue-size" )
         {
-            send_reply( R_MESSAGE_ERROR_BAD_PAYLOAD, "Query type <queue-size> is not yet supported", a_pkg );
+            return f_acq_request_db->handle_queue_size_request( a_msg_payload, a_mantis_routing_key, a_pkg );
+        }
+        else if( t_query_type == "server-status" )
+        {
+            send_reply( R_MESSAGE_ERROR_BAD_PAYLOAD, "Query type <server-status> is not yet supported", a_pkg );
             return false;
         }
         else
@@ -339,12 +337,22 @@ namespace mantis
         {
             return f_acq_request_db->handle_clear_queue_request( a_msg_payload, a_mantis_routing_key, a_pkg );
         }
-        else if( t_instruction == "start" )
+        else if( t_instruction == "start-queue" )
         {
             send_reply( R_MESSAGE_ERROR_BAD_PAYLOAD, "Command type <start> is not yet supported", a_pkg );
             return false;
         }
-        else if( t_instruction == "stop" )
+        else if( t_instruction == "stop-queue" )
+        {
+            send_reply( R_MESSAGE_ERROR_BAD_PAYLOAD, "Command type <stop> is not yet supported", a_pkg );
+            return false;
+        }
+        else if( t_instruction == "stop-acq" )
+        {
+            send_reply( R_MESSAGE_ERROR_BAD_PAYLOAD, "Command type <stop> is not yet supported", a_pkg );
+            return false;
+        }
+        else if( t_instruction == "stop-all" )
         {
             send_reply( R_MESSAGE_ERROR_BAD_PAYLOAD, "Command type <stop> is not yet supported", a_pkg );
             return false;

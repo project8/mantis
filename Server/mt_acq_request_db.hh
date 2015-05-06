@@ -71,9 +71,10 @@ namespace mantis
 
         private:
             typedef std::map< boost::uuids::uuid, acq_request* > acq_request_db_data;
+            typedef std::list< acq_request* > acq_request_queue;
 
             mutable mutex f_mutex;
-            std::list< acq_request* > f_acq_request_queue;
+            acq_request_queue f_acq_request_queue;
             acq_request_db_data f_acq_request_db;
 
             condition* f_queue_condition;

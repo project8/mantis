@@ -99,6 +99,10 @@ The target is used in different ways for different commands:
   ``dest=[queue].acq-status`` -- Returns the status of an acquisition request.
 
   ``dest=[queue].server-status`` -- [not yet implemented] Will return the server status.
+  
+  ``dest=[queue].queue`` -- Returns the current acquisition queue, including the UUID and filename for each acquisition request.
+  
+  ``dest=[queue].queue-size`` -- Returns the size of the acquisition queue.
 
 :set:
   ``dest=[queue].[acq config item]`` -- Sets the value of an item in the run configuration.
@@ -112,6 +116,19 @@ The target is used in different ways for different commands:
 
   ``dest=[queue].replace-config`` -- Replaces the server's run configuration with the contents of the instruction options, or the JSON file specified in those options (see below).
   
+  ``dest=[queue].cancel-acq`` -- Remove an acquisition that is waiting to run from the queue.
+  
+  ``dest=[queue].clear-queue`` -- Clear scheduled acquisitions from the queue.
+  
+  ``dest=[queue].start-queue`` -- [not yet implemented] Start processing the requests in the queue (if the queue had previously been stopped)
+
+  ``dest=[queue].stop-queue`` -- [not yet implemented] Stop processing the requests in the queue (queue is left intact and acquisition in progress is not stopped; restart with ``start-queue``)
+  
+  ``dest=[queue].stop-acq`` -- [not yet implemented] Stop any acquisition that is currently running (queue processing will continue).
+  
+  ``dest=[queue].stop-all`` -- [not yet implemented] Stop processing the requests in the queue and any acquisition that is currently running.
+  
+  ``dest=[queue].quit-mantis`` -- [not yet implemented] Stop execution of the Mantis server.
   
 Instruction Options
 ^^^^^^^^^^^^^^^^^^^
