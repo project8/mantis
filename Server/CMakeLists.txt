@@ -35,6 +35,7 @@ if( Mantis_BUILD_SERVER )
         mt_iterator_timer.hh
         mt_modifier.hh
         mt_request_receiver.hh
+        mt_run_server.hh
         mt_server_config.hh
         mt_server_worker.hh
         mt_writer.hh
@@ -55,6 +56,7 @@ if( Mantis_BUILD_SERVER )
         mt_iterator_timer.cc
         mt_modifier.cc
         mt_request_receiver.cc
+        mt_run_server.cc
         mt_server_config.cc
         mt_server_worker.cc
         mt_writer.cc

@@ -27,19 +27,12 @@
  */
 
 #include "mt_broker.hh"
-#include "mt_condition.hh"
-#include "mt_config_manager.hh"
-#include "mt_constants.hh"
 #include "mt_configurator.hh"
-#include "mt_device_manager.hh"
-#include "mt_exception.hh"
+#include "mt_constants.hh"
 #include "mt_logger.hh"
-#include "mt_request_receiver.hh"
-#include "mt_acq_request_db.hh"
+#include "mt_run_server.hh"
 #include "mt_server_config.hh"
-#include "mt_server_worker.hh"
-#include "mt_signal_handler.hh"
-#include "mt_thread.hh"
+
 using namespace mantis;
 
 using std::string;
@@ -88,50 +81,15 @@ int main( int argc, char** argv )
             }
         }
 
-        MTINFO( mtlog, "Creating server objects" );
+        // Run the server
 
-        // device manager
-        device_manager t_dev_mgr;
+        run_server the_server( t_configurator.config(), t_configurator.exe_name() );
 
-        // configuration manager
-        config_manager t_config_mgr( t_configurator.config(), &t_dev_mgr );
-
-        // run database and queue condition
-        condition t_queue_condition;
-        acq_request_db t_acq_request_db( &t_config_mgr, &t_queue_condition, t_configurator.exe_name() );
-
-        // request receiver
-        request_receiver t_receiver( &t_config_mgr, &t_acq_request_db );
-
-        // server worker
-        server_worker t_worker( &t_dev_mgr, &t_acq_request_db, &t_queue_condition );
-
-        MTINFO( mtlog, "starting threads..." );
-
-        thread t_receiver_thread( &t_receiver );
-        thread t_worker_thread( &t_worker );
-
-        signal_handler t_sig_hand;
-        t_sig_hand.push_thread( &t_receiver_thread );
-        t_sig_hand.push_thread( &t_worker_thread );
-
-        t_receiver_thread.start();
-        t_worker_thread.start();
-
-        MTINFO( mtlog, "running..." );
-
-        t_receiver_thread.join();
-        t_worker_thread.join();
-
-        if( ! t_sig_hand.got_exit_signal() )
-        {
-            t_sig_hand.pop_thread(); // worker thread
-            t_sig_hand.pop_thread(); // receiver thread
-        }
-
-        MTINFO( mtlog, "shutting down..." );
+        the_server.execute();
 
         t_broker->disconnect();
+
+        return the_server.get_return();
     }
     catch( param_exception& e )
     {
@@ -149,6 +107,6 @@ int main( int argc, char** argv )
         return RETURN_ERROR;
     }
 
-    return 0;
+    return RETURN_ERROR;
 }
 
