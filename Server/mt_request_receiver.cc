@@ -40,7 +40,8 @@ namespace mantis
             f_consumer_tag(),
             f_conf_mgr( a_conf_mgr ),
             f_acq_request_db( a_acq_request_db ),
-            f_canceled( false )
+            f_canceled( false ),
+            f_status( k_initialized )
     {
     }
 
@@ -67,6 +68,8 @@ namespace mantis
 
     void request_receiver::execute()
     {
+        f_status.store( k_starting );
+
         std::string t_exchange_name;
         try
         {
@@ -114,11 +117,13 @@ namespace mantis
             if( f_canceled.load() ) return;
 
             // blocking call to wait for incoming message
+            f_status.store( k_listening );
             MTINFO( mtlog, "Waiting for incoming message" );
             AmqpClient::Envelope::ptr_t t_envelope = f_broker->get_connection().amqp()->BasicConsumeMessage( f_consumer_tag );
 
-
             if (f_canceled.load()) return;
+
+            f_status.store( k_processing );
 
             param_node* t_msg_node = NULL;
             if( t_envelope->Message()->ContentEncoding() == "application/json" )
@@ -216,6 +221,7 @@ namespace mantis
             MTINFO( mtlog, "Message handled" );
         } // end while (true)
 
+        f_status.store( k_done );
         MTDEBUG( mtlog, "Request receiver is done" );
 
         MTDEBUG( mtlog, "Canceling consume of tag <" << f_consumer_tag << ">" );
@@ -417,12 +423,41 @@ namespace mantis
     void request_receiver::cancel()
     {
         MTDEBUG( mtlog, "Canceling request receiver" );
-        if (! f_canceled.load())
+        if( ! f_canceled.load() )
         {
-            f_canceled.store(true);
+            f_canceled.store( true );
+            f_status.store( k_canceled );
             return;
         }
         return;
     }
+
+    std::string request_receiver::interpret_status( status a_status )
+    {
+        switch( a_status )
+        {
+            case k_initialized:
+                return std::string( "Initialized" );
+                break;
+            case k_starting:
+                return std::string( "Starting" );
+                break;
+            case k_processing:
+                return std::string( "Processing" );
+                break;
+            case k_canceled:
+                return std::string( "Canceled" );
+                break;
+            case k_done:
+                return std::string( "Done" );
+                break;
+            case k_error:
+                return std::string( "Error" );
+                break;
+            default:
+                return std::string( "Unknown" );
+        }
+    }
+
 
 }

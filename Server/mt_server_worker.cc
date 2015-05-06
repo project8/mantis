@@ -37,7 +37,8 @@ namespace mantis
             f_writer( NULL ),
             f_canceled( false ),
             f_digitizer_state( k_inactive ),
-            f_writer_state( k_inactive )
+            f_writer_state( k_inactive ),
+            f_status( k_initialized )
     {
     }
 
@@ -51,9 +52,11 @@ namespace mantis
         {
             if( f_acq_request_db->queue_empty() == true )
             {
+                f_status.store( k_idle );
                 // thread cancellation point via call to pthread_cond_wait in queue_condition::wait
                 f_queue_condition->wait();
             }
+            f_status.store( k_starting );
 
             MTINFO( mtlog, "Processing run request from queue" );
 
@@ -95,12 +98,10 @@ namespace mantis
             thread* t_digitizer_thread = new thread( f_digitizer );
             thread* t_writer_thread = new thread( f_writer );
 
-            if (!f_canceled.load())
+            if( ! f_canceled.load() )
             {
-                f_digitizer_state = k_running;
-                f_writer_state = k_running;
-
                 t_digitizer_thread->start();
+                f_digitizer_state = k_running;
 
                 while (f_dev_mgr->buffer_condition()->is_waiting() == false)
                 {
@@ -112,6 +113,9 @@ namespace mantis
                 }
 
                 t_writer_thread->start();
+                f_writer_state = k_running;
+
+                f_status.store( k_acquiring );
 
                 // cancellation point (I think) via calls to pthread_join
                 t_digitizer_thread->join();
@@ -128,6 +132,8 @@ namespace mantis
 
             if( ! f_canceled.load() )
             {
+                f_status.store( k_acquired );
+
                 MTINFO( mtlog, "Setting run status <stopped>" );
                 t_acq_req->set_status( acq_request::stopped );
             }
@@ -160,6 +166,7 @@ namespace mantis
     {
         MTDEBUG( mtlog, "Canceling server_worker" );
         f_canceled.store( true );
+        f_status.store( k_canceled );
 
         if( f_digitizer_state == k_running && f_digitizer != NULL )
         {
@@ -172,5 +179,51 @@ namespace mantis
 
         return;
     }
+
+    std::string server_worker::interpret_thread_state( thread_state a_thread_state )
+    {
+        switch( a_thread_state )
+        {
+            case k_inactive:
+                return std::string( "Inactive" );
+                break;
+            case k_running:
+                return std::string( "Running" );
+                break;
+            default:
+                return std::string( "Unknown" );
+        }
+    }
+
+    std::string server_worker::interpret_status( status a_status )
+    {
+        switch( a_status )
+        {
+            case k_initialized:
+                return std::string( "Initialized" );
+                break;
+            case k_starting:
+                return std::string( "Starting" );
+                break;
+            case k_idle:
+                return std::string( "Idle (queue is empty)" );
+                break;
+            case k_acquiring:
+                return std::string( "Acquisition in progress" );
+                break;
+            case k_acquired:
+                return std::string( "Acquisition complete" );
+                break;
+            case k_canceled:
+                return std::string( "Canceled" );
+                break;
+            case k_error:
+                return std::string( "Error" );
+                break;
+            default:
+                return std::string( "Unknown" );
+        }
+    }
+
 
 }

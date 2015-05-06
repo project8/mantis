@@ -27,7 +27,8 @@ namespace mantis
     run_server::run_server( const param_node& a_node, const std::string& a_exe_name ) :
             f_config( a_node ),
             f_exe_name( a_exe_name ),
-            f_return( RETURN_ERROR )
+            f_return( RETURN_ERROR ),
+            f_status( k_initialized )
     {
     }
 
@@ -38,6 +39,8 @@ namespace mantis
     void run_server::execute()
     {
         MTINFO( mtlog, "Creating server objects" );
+
+        set_status( k_starting );
 
         // device manager
         device_manager t_dev_mgr;
@@ -67,10 +70,13 @@ namespace mantis
         t_receiver_thread.start();
         t_worker_thread.start();
 
+        set_status( k_running );
         MTINFO( mtlog, "running..." );
 
         t_receiver_thread.join();
         t_worker_thread.join();
+
+        set_status( k_done );
 
         if( ! t_sig_hand.got_exit_signal() )
         {
@@ -84,5 +90,30 @@ namespace mantis
 
         return;
     }
+
+    std::string run_server::interpret_status( status a_status )
+    {
+        switch( a_status )
+        {
+            case k_initialized:
+                return std::string( "Initialized" );
+                break;
+            case k_starting:
+                return std::string( "Starting" );
+                break;
+            case k_running:
+                return std::string( "Running" );
+                break;
+            case k_done:
+                return std::string( "Done" );
+                break;
+            case k_error:
+                return std::string( "Error" );
+                break;
+            default:
+                return std::string( "Unknown" );
+        }
+    }
+
 
 } /* namespace mantis */

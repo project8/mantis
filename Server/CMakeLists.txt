@@ -22,7 +22,6 @@ if( Mantis_BUILD_SERVER )
     set( MANTIS_SERVER_HEADERFILES
         mt_acq_request_db.hh
         mt_acq_request.hh
-        mt_atomic.hh
         #mt_bit_shift_modifier.hh
         mt_block.hh
         mt_buffer.hh

@@ -63,7 +63,39 @@ namespace mantis
             acq_request_db* f_acq_request_db;
 
             atomic_bool f_canceled;
+
+        public:
+            enum status
+            {
+                k_initialized = 0,
+                k_starting = 1,
+                k_listening = 5,
+                k_processing = 6,
+                k_canceled = 9,
+                k_done = 10,
+                k_error = 100
+            };
+
+            static std::string interpret_status( status a_status );
+
+            status get_status() const;
+            void set_status( status a_status );
+
+        private:
+            boost::atomic< status > f_status;
+
     };
+
+    inline request_receiver::status request_receiver::get_status() const
+    {
+        return f_status.load();
+    }
+
+    inline void request_receiver::set_status( status a_status )
+    {
+        f_status.store( a_status );
+        return;
+    }
 
 }
 

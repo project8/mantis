@@ -41,13 +41,79 @@ namespace mantis
 
             atomic_bool f_canceled;
 
+        public:
             enum thread_state
             {
                 k_inactive,
                 k_running
-            } f_digitizer_state, f_writer_state;
+            };
 
+            static std::string interpret_thread_state( thread_state a_thread_state );
+
+            thread_state get_digitizer_state() const;
+            void set_digitizer_state( thread_state a_thread_state );
+
+            thread_state get_writer_state() const;
+            void set_writer_state( thread_state a_thread_state );
+
+        private:
+            boost::atomic< thread_state > f_digitizer_state, f_writer_state;
+
+        public:
+            enum status
+            {
+                k_initialized = 0,
+                k_starting = 1,
+                k_idle = 4,
+                k_acquiring = 5,
+                k_acquired = 6,
+                k_canceled = 9,
+                k_error = 100
+            };
+
+            static std::string interpret_status( status a_status );
+
+            status get_status() const;
+            void set_status( status a_status );
+
+        private:
+            boost::atomic< status > f_status;
     };
+
+    inline server_worker::thread_state server_worker::get_digitizer_state() const
+    {
+        return f_digitizer_state.load();
+    }
+
+    inline void server_worker::set_digitizer_state( thread_state a_thread_state )
+    {
+        f_digitizer_state.store( a_thread_state );
+        return;
+    }
+
+    inline server_worker::thread_state server_worker::get_writer_state() const
+    {
+        return f_writer_state.load();
+    }
+
+    inline void server_worker::set_writer_state( thread_state a_thread_state )
+    {
+        f_writer_state.store( a_thread_state );
+        return;
+    }
+
+
+    inline server_worker::status server_worker::get_status() const
+    {
+        return f_status.load();
+    }
+
+    inline void server_worker::set_status( status a_status )
+    {
+        f_status.store( a_status );
+        return;
+    }
+
 }
 
 #endif
