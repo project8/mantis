@@ -4,6 +4,7 @@
 #include "mt_callable.hh"
 
 #include "mt_atomic.hh"
+#include "mt_mutex.hh"
 
 #include <string>
 
@@ -38,6 +39,7 @@ namespace mantis
             // these pointers are here so that the worker can be cancelled by a different thread
             digitizer* f_digitizer;
             writer* f_writer;
+            mutex f_component_mutex;
 
             atomic_bool f_canceled;
 

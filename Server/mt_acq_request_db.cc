@@ -132,6 +132,15 @@ namespace mantis
         return t_empty;
     }
 
+    size_t acq_request_db::queue_size()
+    {
+        size_t t_size;
+        f_mutex.lock();
+        t_size = f_acq_request_queue.size();
+        f_mutex.unlock();
+        return t_size;
+    }
+
     boost::uuids::uuid acq_request_db::enqueue( acq_request* a_acq_request )
     {
         boost::uuids::uuid t_id = boost::uuids::nil_uuid();
@@ -351,9 +360,7 @@ namespace mantis
 
     bool acq_request_db::handle_queue_size_request( const param_node& /*a_msg_payload*/, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg  )
     {
-        f_mutex.lock();
-        a_pkg.f_reply_node.node_at( "content" )->add( "queue-size", new param_value( (uint32_t)f_acq_request_queue.size() ) );
-        f_mutex.unlock();
+        a_pkg.f_reply_node.node_at( "content" )->add( "queue-size", new param_value( (uint32_t)queue_size() ) );
         return a_pkg.send_reply( R_SUCCESS, "Queue size request succeeded" );
     }
 

@@ -35,6 +35,7 @@ namespace mantis
             f_queue_condition( a_queue_condition ),
             f_digitizer( NULL ),
             f_writer( NULL ),
+            f_component_mutex(),
             f_canceled( false ),
             f_digitizer_state( k_inactive ),
             f_writer_state( k_inactive ),
@@ -92,8 +93,10 @@ namespace mantis
             MTINFO( mtlog, "Setting run status <running>" );
             t_acq_req->set_status( acq_request::running );
 
+            f_component_mutex.lock();
             f_digitizer = f_dev_mgr->device();
             f_writer = &t_writer;
+            f_component_mutex.unlock();
 
             thread* t_digitizer_thread = new thread( f_digitizer );
             thread* t_writer_thread = new thread( f_writer );
@@ -124,8 +127,10 @@ namespace mantis
                 f_writer_state = k_inactive;
             }
 
+            f_component_mutex.lock();
             f_digitizer = NULL;
             f_writer = NULL;
+            f_component_mutex.unlock();
 
             delete t_digitizer_thread;
             delete t_writer_thread;
@@ -168,6 +173,7 @@ namespace mantis
         f_canceled.store( true );
         f_status.store( k_canceled );
 
+        f_component_mutex.lock();
         if( f_digitizer_state == k_running && f_digitizer != NULL )
         {
             f_digitizer->cancel();
@@ -176,6 +182,7 @@ namespace mantis
         {
             f_writer->cancel();
         }
+        f_component_mutex.unlock();
 
         return;
     }

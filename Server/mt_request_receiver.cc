@@ -2,6 +2,8 @@
 
 #include "mt_request_receiver.hh"
 
+#include "mt_acq_request_db.hh"
+#include "mt_acq_request.hh"
 #include "mt_broker.hh"
 #include "mt_buffer.hh"
 #include "mt_config_manager.hh"
@@ -12,8 +14,7 @@
 #include "mt_param_json.hh"
 #include "mt_param_msgpack.hh"
 #include "mt_parser.hh"
-#include "mt_acq_request_db.hh"
-#include "mt_acq_request.hh"
+#include "mt_run_server.hh"
 #include "mt_version.hh"
 
 #include "M3Version.hh"
@@ -34,10 +35,11 @@ namespace mantis
     }
 
 
-    request_receiver::request_receiver( config_manager* a_conf_mgr, acq_request_db* a_acq_request_db ) :
+    request_receiver::request_receiver( run_server* a_run_server, config_manager* a_conf_mgr, acq_request_db* a_acq_request_db ) :
             f_broker( NULL ),
             f_queue_name(),
             f_consumer_tag(),
+            f_run_server( a_run_server ),
             f_conf_mgr( a_conf_mgr ),
             f_acq_request_db( a_acq_request_db ),
             f_canceled( false ),
@@ -289,8 +291,7 @@ namespace mantis
         }
         else if( t_query_type == "server-status" )
         {
-            send_reply( R_MESSAGE_ERROR_BAD_PAYLOAD, "Query type <server-status> is not yet supported", a_pkg );
-            return false;
+            return f_run_server->handle_get_server_status_request( a_msg_payload, a_mantis_routing_key, a_pkg );
         }
         else
         {

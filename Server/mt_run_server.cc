@@ -28,6 +28,9 @@ namespace mantis
             f_config( a_node ),
             f_exe_name( a_exe_name ),
             f_return( RETURN_ERROR ),
+            f_request_receiver( NULL ),
+            f_server_worker( NULL ),
+            f_component_mutex(),
             f_status( k_initialized )
     {
     }
@@ -48,15 +51,22 @@ namespace mantis
         // configuration manager
         config_manager t_config_mgr( f_config, &t_dev_mgr );
 
+        f_component_mutex.lock();
+
         // run database and queue condition
         condition t_queue_condition;
         acq_request_db t_acq_request_db( &t_config_mgr, &t_queue_condition, f_exe_name );
+        f_acq_request_db = &t_acq_request_db;
 
         // request receiver
-        request_receiver t_receiver( &t_config_mgr, &t_acq_request_db );
+        request_receiver t_receiver( this, &t_config_mgr, &t_acq_request_db );
+        f_request_receiver = &t_receiver;
 
         // server worker
         server_worker t_worker( &t_dev_mgr, &t_acq_request_db, &t_queue_condition );
+        f_server_worker = &t_worker;
+
+        f_component_mutex.unlock();
 
         MTINFO( mtlog, "starting threads..." );
 
@@ -78,6 +88,12 @@ namespace mantis
 
         set_status( k_done );
 
+        f_component_mutex.lock();
+        f_request_receiver = NULL;
+        f_server_worker = NULL;
+        f_acq_request_db = NULL;
+        f_component_mutex.unlock();
+
         if( ! t_sig_hand.got_exit_signal() )
         {
             t_sig_hand.pop_thread(); // worker thread
@@ -90,6 +106,32 @@ namespace mantis
 
         return;
     }
+
+    bool run_server::handle_get_server_status_request( const param_node& /*a_msg_payload*/, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg )
+    {
+        param_node* t_content_node = a_pkg.f_reply_node.node_at( "content" );
+
+        t_content_node->add( "Server status", new param_value( run_server::interpret_status( get_status() ) ) );
+        f_component_mutex.lock();
+        if( f_request_receiver != NULL )
+        {
+            t_content_node->add( "Request receiver status", new param_value( request_receiver::interpret_status( f_request_receiver->get_status() ) ) );
+        }
+        if( f_acq_request_db != NULL )
+        {
+            t_content_node->add( "Queue size", new param_value( (uint32_t)f_acq_request_db->queue_size() ) );
+        }
+        if( f_server_worker != NULL )
+        {
+            t_content_node->add( "Server worker status", new param_value( server_worker::interpret_status( f_server_worker->get_status() ) ) );
+            t_content_node->add( "Digitizer thread status", new param_value( server_worker::interpret_thread_state( f_server_worker->get_digitizer_state() ) ) );
+            t_content_node->add( "Writer thread status", new param_value( server_worker::interpret_thread_state( f_server_worker->get_writer_state() ) ) );
+        }
+        f_component_mutex.unlock();
+
+        return a_pkg.send_reply( R_SUCCESS, "Server status request succeeded" );
+    }
+
 
     std::string run_server::interpret_status( status a_status )
     {

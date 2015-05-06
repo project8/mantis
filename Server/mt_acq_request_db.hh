@@ -49,6 +49,7 @@ namespace mantis
             //******************
 
             bool queue_empty();
+            size_t queue_size();
 
             boost::uuids::uuid enqueue( acq_request* a_acq_request ); /// adds acq_request to the queue and database; returns the assigned acq_request ID number
             bool cancel( boost::uuids::uuid a_id ); /// removes acq_request with id a_id from the queue

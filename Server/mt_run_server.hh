@@ -9,10 +9,16 @@
 #define SERVER_MT_RUN_SERVER_HH_
 
 #include "mt_atomic.hh"
+#include "mt_mutex.hh"
 #include "mt_param.hh"
 
 namespace mantis
 {
+    class acq_request_db;
+    class request_receiver;
+    class server_worker;
+
+    struct request_reply_package;
 
     class MANTIS_API run_server
     {
@@ -24,11 +30,19 @@ namespace mantis
 
             int get_return() const;
 
+            bool handle_get_server_status_request( const param_node& a_msg_payload, const std::string& a_mantis_routing_key, request_reply_package& a_pkg );
+
         private:
             param_node f_config;
             std::string f_exe_name;
 
             int f_return;
+
+            // component pointers for asynchronous access
+            request_receiver* f_request_receiver;
+            server_worker* f_server_worker;
+            acq_request_db* f_acq_request_db;
+            mutex f_component_mutex;
 
         public:
             enum status
