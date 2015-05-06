@@ -15,12 +15,12 @@
 #include "mt_param_msgpack.hh"
 #include "mt_parser.hh"
 #include "mt_run_server.hh"
+#include "mt_server_worker.hh"
 #include "mt_version.hh"
 
 #include "M3Version.hh"
 
 #include <cstddef>
-#include <signal.h>
 
 using std::string;
 
@@ -81,8 +81,8 @@ namespace mantis
             if( ! f_broker->is_connected() )
             {
                 MTERROR( mtlog, "Not connected to AMQP broker" );
-                cancel();
-                raise( SIGINT );
+                //cancel();
+                f_run_server->quit_server();
                 return;
             }
 
@@ -103,15 +103,15 @@ namespace mantis
         catch( AmqpClient::AmqpException& e )
         {
             MTERROR( mtlog, "AMQP exception caught: " << e.what() );
-            cancel();
-            raise( SIGINT );
+            //cancel();
+            f_run_server->quit_server();
             return;
         }
         catch( std::exception& e )
         {
             MTERROR( mtlog, "Standard exception caught: " << e.what() );
-            cancel();
-            raise( SIGINT );
+            //cancel();
+            f_run_server->quit_server();
             return;
         }
 
@@ -355,18 +355,15 @@ namespace mantis
         }
         else if( t_instruction == "stop-acq" )
         {
-            send_reply( R_MESSAGE_ERROR_BAD_PAYLOAD, "Command type <stop> is not yet supported", a_pkg );
-            return false;
+            return f_server_worker->handle_stop_acq_request( a_msg_payload, a_mantis_routing_key, a_pkg );
         }
         else if( t_instruction == "stop-all" )
         {
-            send_reply( R_MESSAGE_ERROR_BAD_PAYLOAD, "Command type <stop> is not yet supported", a_pkg );
-            return false;
+            return f_run_server->handle_stop_all_request( a_msg_payload, a_mantis_routing_key, a_pkg );
         }
         else if( t_instruction == "quit-mantis" )
         {
-            send_reply( R_MESSAGE_ERROR_BAD_PAYLOAD, "Command type <server-status> is not yet supported", a_pkg );
-            return false;
+            return f_run_server->handle_quit_server_request( a_msg_payload, a_mantis_routing_key, a_pkg );
         }
         else
         {

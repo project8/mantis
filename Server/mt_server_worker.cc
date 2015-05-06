@@ -3,6 +3,8 @@
 
 #include "mt_server_worker.hh"
 
+#include "mt_acq_request_db.hh"
+#include "mt_acq_request.hh"
 #include "mt_buffer.hh"
 #include "mt_condition.hh"
 #include "mt_configurator.hh"
@@ -10,8 +12,7 @@
 #include "mt_digitizer.hh"
 #include "mt_file_writer.hh"
 #include "mt_logger.hh"
-#include "mt_acq_request_db.hh"
-#include "mt_acq_request.hh"
+#include "mt_request_receiver.hh"
 #include "mt_signal_handler.hh"
 #include "mt_thread.hh"
 #include "mt_version.hh"
@@ -167,17 +168,14 @@ namespace mantis
     }
 
     /*
-    Asyncronous cancellation:
-    - The execute function waits while the digitizer and writer run; if cancelled, those threads are cancelled, which 
+    Asyncronous stop-acquisition:
+    - The execute function waits while the digitizer and writer run; if stopped, those threads are cancelled, which
     eventually returns control to the execute function, which completes quickly.
     - If cancelled before the threads are started, operation of the digitizer and writer will be skipped.
     */
-    void server_worker::cancel()
+    void server_worker::stop_acquisition()
     {
-        MTDEBUG( mtlog, "Canceling server_worker" );
-        f_canceled.store( true );
-        f_status.store( k_canceled );
-
+        MTDEBUG( mtlog, "Stopping acquisition" );
         f_component_mutex.lock();
         if( f_digitizer_state == k_running && f_digitizer != NULL )
         {
@@ -191,6 +189,32 @@ namespace mantis
 
         return;
     }
+
+
+
+    /*
+    Asyncronous cancellation:
+    - The execute function waits while the digitizer and writer run; if cancelled, those threads are cancelled, which 
+    eventually returns control to the execute function, which completes quickly.
+    - If cancelled before the threads are started, operation of the digitizer and writer will be skipped.
+    */
+    void server_worker::cancel()
+    {
+        MTDEBUG( mtlog, "Canceling server_worker" );
+        f_canceled.store( true );
+        f_status.store( k_canceled );
+
+        stop_acquisition();
+
+        return;
+    }
+
+    bool server_worker::handle_stop_acq_request( const param_node& /*a_msg_payload*/, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg )
+    {
+        stop_acquisition();
+        return a_pkg.send_reply( R_SUCCESS, "Stop-acquisition request succeeded" );
+    }
+
 
     std::string server_worker::interpret_thread_state( thread_state a_thread_state )
     {

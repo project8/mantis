@@ -21,6 +21,8 @@ namespace mantis
     class thread;
     class writer;
 
+    struct request_reply_package;
+
     class MANTIS_API server_worker : public callable
     {
         public:
@@ -28,7 +30,12 @@ namespace mantis
             virtual ~server_worker();
 
             void execute();
-            void cancel();
+
+            void stop_acquisition(); /// stops digitizing & writing; server worker continues to function
+
+            void cancel(); /// cancels the server worker entirely
+
+            bool handle_stop_acq_request( const param_node& a_msg_payload, const std::string& a_mantis_routing_key, request_reply_package& a_pkg );
 
         private:
             device_manager* f_dev_mgr;

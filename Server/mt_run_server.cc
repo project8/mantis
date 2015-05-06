@@ -20,6 +20,9 @@
 #include "mt_signal_handler.hh"
 #include "mt_thread.hh"
 
+#include <signal.h> // for raise()
+
+
 namespace mantis
 {
     MTLOGGER( mtlog, "run_server" );
@@ -69,7 +72,7 @@ namespace mantis
 
         f_component_mutex.unlock();
 
-        MTINFO( mtlog, "starting threads..." );
+        MTINFO( mtlog, "Starting threads" );
 
         thread t_receiver_thread( &t_receiver );
         thread t_worker_thread( &t_worker );
@@ -101,12 +104,20 @@ namespace mantis
             t_sig_hand.pop_thread(); // receiver thread
         }
 
-        MTINFO( mtlog, "Shutting down server" );
+        MTINFO( mtlog, "Threads stopped" );
 
         f_return = RETURN_SUCCESS;
 
         return;
     }
+
+    void run_server::quit_server()
+    {
+        MTINFO( mtlog, "Shutting down the server" );
+        raise( SIGINT );
+        return;
+    }
+
 
     bool run_server::handle_get_server_status_request( const param_node& /*a_msg_payload*/, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg )
     {
@@ -132,6 +143,36 @@ namespace mantis
         f_component_mutex.unlock();
 
         return a_pkg.send_reply( R_SUCCESS, "Server status request succeeded" );
+    }
+
+    bool run_server::handle_stop_all_request( const param_node& /*a_msg_payload*/, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg )
+    {
+        param_node* t_content_node = a_pkg.f_reply_node.node_at( "content" );
+
+        f_component_mutex.lock();
+        if( f_acq_request_db != NULL )
+        {
+            f_acq_request_db->stop_queue();
+            t_content_node->add( "Queue size", new param_value( (uint32_t)f_acq_request_db->queue_size() ) );
+            t_content_node->add( "Queue is active", new param_value( f_acq_request_db->queue_is_active() ) );
+        }
+        if( f_server_worker != NULL )
+        {
+            f_server_worker->stop_acquisition();
+            t_content_node->add( "Server worker status", new param_value( server_worker::interpret_status( f_server_worker->get_status() ) ) );
+            t_content_node->add( "Digitizer thread status", new param_value( server_worker::interpret_thread_state( f_server_worker->get_digitizer_state() ) ) );
+            t_content_node->add( "Writer thread status", new param_value( server_worker::interpret_thread_state( f_server_worker->get_writer_state() ) ) );
+        }
+        f_component_mutex.unlock();
+
+        return a_pkg.send_reply( R_SUCCESS, "Server status request succeeded" );
+    }
+
+    bool run_server::handle_quit_server_request( const param_node& /*a_msg_payload*/, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg )
+    {
+        bool t_return = a_pkg.send_reply( R_SUCCESS, "Server-quit command processed" );
+        quit_server();
+        return t_return;
     }
 
 
