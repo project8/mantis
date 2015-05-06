@@ -58,12 +58,11 @@ namespace mantis
         f_component_mutex.lock();
 
         // run database and queue condition
-        condition t_queue_condition;
-        acq_request_db t_acq_request_db( &t_config_mgr, &t_queue_condition, f_exe_name );
+        acq_request_db t_acq_request_db( &t_config_mgr, f_exe_name );
         f_acq_request_db = &t_acq_request_db;
 
         // server worker
-        server_worker t_worker( &t_dev_mgr, &t_acq_request_db, &t_queue_condition );
+        server_worker t_worker( &t_dev_mgr, &t_acq_request_db );
         f_server_worker = &t_worker;
 
         // request receiver

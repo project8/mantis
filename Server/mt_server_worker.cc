@@ -30,10 +30,9 @@ namespace mantis
 {
     MTLOGGER( mtlog, "server_worker" );
 
-    server_worker::server_worker( device_manager* a_dev_mgr, acq_request_db* a_run_db, condition* a_queue_condition ) :
+    server_worker::server_worker( device_manager* a_dev_mgr, acq_request_db* a_run_db ) :
             f_dev_mgr( a_dev_mgr ),
             f_acq_request_db( a_run_db ),
-            f_queue_condition( a_queue_condition ),
             f_digitizer( NULL ),
             f_writer( NULL ),
             f_component_mutex(),
@@ -53,11 +52,10 @@ namespace mantis
         while( ! f_canceled.load() )
         {
             f_status.store( k_idle );
-            if( f_acq_request_db->queue_empty() == true )
-            {
-                // thread cancellation point via call to pthread_cond_wait in queue_condition::wait
-                f_queue_condition->wait();
-            }
+
+            // continue if/when there's a request in the queue
+            // this is a thread cancellation point if the queue is empty
+            f_acq_request_db->wait_for_request_in_queue();
 
             // continue if/when the queue is active
             // this is a thread cancellation point if the queue is _not_ active

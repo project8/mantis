@@ -19,12 +19,12 @@ namespace mantis
 {
     MTLOGGER( mtlog, "acq_request_db" );
 
-    acq_request_db::acq_request_db( config_manager* a_conf_mgr, condition* a_queue_empty_condition, const std::string& a_exe_name ) :
+    acq_request_db::acq_request_db( config_manager* a_conf_mgr, const std::string& a_exe_name ) :
             f_db_mutex(),
             f_acq_request_db(),
             f_queue_mutex(),
             f_acq_request_queue(),
-            f_queue_empty_condition( a_queue_empty_condition ),
+            f_request_in_queue_condition(),
             f_queue_is_active( true ),
             f_queue_active_condition(),
             f_config_mgr( a_conf_mgr ),
@@ -174,6 +174,13 @@ namespace mantis
             a_acq_request->set_status( acq_request::waiting );
             f_queue_mutex.unlock();
             t_id = a_acq_request->get_id();
+
+            // if the queue condition is waiting, release it
+            if( f_request_in_queue_condition.is_waiting() )
+            {
+                //MTINFO( mtlog, "releasing queue condition" );
+                f_request_in_queue_condition.release();
+            }
         }
         f_db_mutex.unlock();
         return t_id;
@@ -241,6 +248,16 @@ namespace mantis
         }
         f_queue_mutex.lock();
         f_db_mutex.unlock();
+        return;
+    }
+
+    void acq_request_db::wait_for_request_in_queue()
+    {
+        if( queue_empty() )
+        {
+            // thread cancellation point via call to pthread_cond_wait in queue_condition::wait
+            f_request_in_queue_condition.wait();
+        }
         return;
     }
 
@@ -354,13 +371,6 @@ namespace mantis
         if( ! a_pkg.send_reply( R_SUCCESS, "Run request succeeded" ) )
         {
             MTWARN( mtlog, "Failed to send reply regarding the run request" );
-        }
-
-       // if the queue condition is waiting, release it
-        if( f_queue_empty_condition->is_waiting() == true )
-        {
-            //MTINFO( mtlog, "releasing queue condition" );
-            f_queue_empty_condition->release();
         }
 
         return true;

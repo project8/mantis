@@ -27,7 +27,7 @@ namespace mantis
     class MANTIS_API acq_request_db
     {
         public:
-            acq_request_db( config_manager* a_conf_mgr, condition* a_queue_empty_condition, const std::string& a_exe_name = "unknown" );
+            acq_request_db( config_manager* a_conf_mgr, const std::string& a_exe_name = "unknown" );
             virtual ~acq_request_db();
 
 
@@ -66,6 +66,8 @@ namespace mantis
             bool cancel( boost::uuids::uuid a_id ); /// removes acq_request with id a_id from the queue
             acq_request* pop();
 
+            void wait_for_request_in_queue();
+
             void clear_queue(); /// remove all requests in the queue; removed acq_requests are deleted
 
             bool queue_is_active() const;
@@ -81,7 +83,7 @@ namespace mantis
             mutable mutex f_queue_mutex;
             acq_request_queue f_acq_request_queue;
 
-            condition* f_queue_empty_condition;
+            condition f_request_in_queue_condition;
 
             atomic_bool f_queue_is_active;
             condition f_queue_active_condition;

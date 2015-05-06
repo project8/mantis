@@ -26,7 +26,7 @@ namespace mantis
     class MANTIS_API server_worker : public callable
     {
         public:
-            server_worker( device_manager* a_dev_mgr, acq_request_db* a_run_queue, condition* a_queue_condition );
+            server_worker( device_manager* a_dev_mgr, acq_request_db* a_run_queue );
             virtual ~server_worker();
 
             void execute();
@@ -40,7 +40,6 @@ namespace mantis
         private:
             device_manager* f_dev_mgr;
             acq_request_db* f_acq_request_db;
-            condition* f_queue_condition;
 
             // the server worker does not own the digitizer or writer
             // these pointers are here so that the worker can be cancelled by a different thread
