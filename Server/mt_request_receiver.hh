@@ -19,7 +19,7 @@ namespace mantis
     class connection;
     class device_manager;
     class run_server;
-    class server_tcp;
+    class server_worker;
 
     class request_receiver;
 
@@ -40,7 +40,7 @@ namespace mantis
     class MANTIS_API request_receiver : public callable
     {
         public:
-            request_receiver( run_server* a_run_server, config_manager* a_conf_mgr, acq_request_db* a_acq_request_db );
+            request_receiver( run_server* a_run_server, config_manager* a_conf_mgr, acq_request_db* a_acq_request_db, server_worker* a_server_worker );
             virtual ~request_receiver();
 
             void execute();
@@ -63,6 +63,7 @@ namespace mantis
             run_server* f_run_server;
             config_manager* f_conf_mgr;
             acq_request_db* f_acq_request_db;
+            server_worker* f_server_worker;
 
             atomic_bool f_canceled;
 

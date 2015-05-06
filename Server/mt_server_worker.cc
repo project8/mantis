@@ -51,17 +51,22 @@ namespace mantis
     {
         while( ! f_canceled.load() )
         {
+            f_status.store( k_idle );
             if( f_acq_request_db->queue_empty() == true )
             {
-                f_status.store( k_idle );
                 // thread cancellation point via call to pthread_cond_wait in queue_condition::wait
                 f_queue_condition->wait();
             }
+
+            // continue if/when the queue is active
+            // this is a thread cancellation point if the queue is _not_ active
+            f_acq_request_db->wait_for_queue_active();
+
             f_status.store( k_starting );
 
             MTINFO( mtlog, "Processing run request from queue" );
 
-            MTINFO( mtlog, "Setting run status <started>" );
+            MTDEBUG( mtlog, "Setting run status <started>" );
 
             acq_request* t_acq_req = f_acq_request_db->pop();
             t_acq_req->set_status( acq_request::started );

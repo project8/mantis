@@ -4,7 +4,6 @@
 
 #include "mt_acq_request.hh"
 #include "mt_config_manager.hh"
-#include "mt_condition.hh"
 #include "mt_logger.hh"
 #include "mt_param.hh"
 #include "mt_request_receiver.hh"
@@ -20,11 +19,14 @@ namespace mantis
 {
     MTLOGGER( mtlog, "acq_request_db" );
 
-    acq_request_db::acq_request_db( config_manager* a_conf_mgr, condition* a_condition, const std::string& a_exe_name ) :
-            f_mutex(),
-            f_acq_request_queue(),
+    acq_request_db::acq_request_db( config_manager* a_conf_mgr, condition* a_queue_empty_condition, const std::string& a_exe_name ) :
+            f_db_mutex(),
             f_acq_request_db(),
-            f_queue_condition( a_condition ),
+            f_queue_mutex(),
+            f_acq_request_queue(),
+            f_queue_empty_condition( a_queue_empty_condition ),
+            f_queue_is_active( true ),
+            f_queue_active_condition(),
             f_config_mgr( a_conf_mgr ),
             f_exe_name( a_exe_name )
     {
@@ -36,66 +38,74 @@ namespace mantis
         return;
     }
 
+
+    //***************
+    // DB Commands
+    //***************
+
     bool acq_request_db::empty()
     {
         bool t_empty;
-        f_mutex.lock();
+        f_db_mutex.lock();
         t_empty = f_acq_request_db.empty();
-        f_mutex.unlock();
+        f_db_mutex.unlock();
         return t_empty;
     }
 
     acq_request* acq_request_db::get_acq_request( boost::uuids::uuid a_id )
     {
         acq_request* t_desc = NULL;
-        f_mutex.lock();
+        f_db_mutex.lock();
         acq_request_db_data::iterator t_acq_request_it;
         t_acq_request_it = f_acq_request_db.find( a_id );
         if( t_acq_request_it != f_acq_request_db.end()) t_desc = t_acq_request_it->second;
-        f_mutex.unlock();
+        f_db_mutex.unlock();
         return t_desc;
     }
 
     const acq_request* acq_request_db::get_acq_request( boost::uuids::uuid a_id ) const
     {
         const acq_request* t_desc = NULL;
-        f_mutex.lock();
+        f_db_mutex.lock();
         acq_request_db_data::const_iterator t_acq_request_it;
         t_acq_request_it = f_acq_request_db.find( a_id );
         if( t_acq_request_it != f_acq_request_db.end()) t_desc = t_acq_request_it->second;
-        f_mutex.unlock();
+        f_db_mutex.unlock();
         return t_desc;
     }
 
     boost::uuids::uuid acq_request_db::add( acq_request* a_acq_request )
     {
         boost::uuids::uuid t_id = boost::uuids::nil_uuid();
-        f_mutex.lock();
+        f_db_mutex.lock();
         f_acq_request_db[ a_acq_request->get_id() ] = a_acq_request;
         t_id = a_acq_request->get_id();
-        f_mutex.unlock();
+        f_db_mutex.unlock();
         return t_id;
     }
 
     acq_request* acq_request_db::remove( boost::uuids::uuid a_id )
     {
-        acq_request* t_desc = NULL;
-        f_mutex.lock();
+        acq_request* t_request = NULL;
+        f_db_mutex.lock();
         acq_request_db_data::iterator t_acq_request_it;
         t_acq_request_it = f_acq_request_db.find( a_id );
         if( t_acq_request_it != f_acq_request_db.end())
         {
-            t_desc = t_acq_request_it->second;
+            t_request = t_acq_request_it->second;
             f_acq_request_db.erase( t_acq_request_it );
+            f_queue_mutex.lock();
+            f_acq_request_queue.remove( t_request );
+            f_queue_mutex.unlock();
         }
-        f_mutex.unlock();
-        return t_desc;
+        f_db_mutex.unlock();
+        return t_request;
     }
 
 
     void acq_request_db::flush()
     {
-        f_mutex.lock();
+        f_db_mutex.lock();
         acq_request_db_data::iterator t_it_counter = f_acq_request_db.begin();
         acq_request_db_data::iterator t_it_deletable;
         while( t_it_counter != f_acq_request_db.end() )
@@ -106,63 +116,74 @@ namespace mantis
                 delete t_it_deletable->second;
             }
         }
-        f_mutex.unlock();
+        f_db_mutex.unlock();
         return;
     }
 
     void acq_request_db::clear()
     {
-        f_mutex.lock();
+        f_db_mutex.lock();
         for( acq_request_db_data::iterator t_acq_request_it = f_acq_request_db.begin(); t_acq_request_it != f_acq_request_db.end(); ++t_acq_request_it )
         {
             delete t_acq_request_it->second;
         }
         f_acq_request_db.clear();
+        f_queue_mutex.lock();
         f_acq_request_queue.clear();
-        f_mutex.unlock();
+        f_queue_mutex.unlock();
+        f_db_mutex.unlock();
         return;
     }
+
+
+
+    //******************
+    // Queue Commands
+    //******************
 
     bool acq_request_db::queue_empty()
     {
         bool t_empty;
-        f_mutex.lock();
+        f_queue_mutex.lock();
         t_empty = f_acq_request_queue.empty();
-        f_mutex.unlock();
+        f_queue_mutex.unlock();
         return t_empty;
     }
 
     size_t acq_request_db::queue_size()
     {
         size_t t_size;
-        f_mutex.lock();
+        f_queue_mutex.lock();
         t_size = f_acq_request_queue.size();
-        f_mutex.unlock();
+        f_queue_mutex.unlock();
         return t_size;
     }
 
     boost::uuids::uuid acq_request_db::enqueue( acq_request* a_acq_request )
     {
         boost::uuids::uuid t_id = boost::uuids::nil_uuid();
-        f_mutex.lock();
+        f_db_mutex.lock();
         if( f_acq_request_db.find( a_acq_request->get_id() ) == f_acq_request_db.end() )
         {
             f_acq_request_db[ a_acq_request->get_id() ] = a_acq_request;
         }
         if( a_acq_request->get_status() < acq_request::waiting )
         {
+            f_queue_mutex.lock();
             f_acq_request_queue.push_back( a_acq_request );
             a_acq_request->set_status( acq_request::waiting );
+            f_queue_mutex.unlock();
             t_id = a_acq_request->get_id();
         }
-        f_mutex.unlock();
+        f_db_mutex.unlock();
         return t_id;
     }
 
     bool acq_request_db::cancel( boost::uuids::uuid a_id )
     {
         bool t_result = false;
-        f_mutex.lock();
+        f_db_mutex.lock();
+        f_queue_mutex.lock();
         acq_request_db_data::iterator t_req_it = f_acq_request_db.find( a_id );
         if( t_req_it != f_acq_request_db.end() )
         {
@@ -176,27 +197,31 @@ namespace mantis
             }
             t_result = true;
         }
-        f_mutex.unlock();
+        f_queue_mutex.unlock();
+        f_db_mutex.unlock();
         return t_result;
     }
 
     acq_request* acq_request_db::pop()
     {
         acq_request* t_acq_request = NULL;
-        f_mutex.lock();
+        f_db_mutex.lock();
+        f_queue_mutex.lock();
         if( ! f_acq_request_queue.empty() )
         {
             t_acq_request = f_acq_request_queue.front();
             f_acq_request_queue.pop_front();
             t_acq_request->set_status( acq_request::revoked );
         }
-        f_mutex.unlock();
+        f_queue_mutex.unlock();
+        f_db_mutex.unlock();
         return t_acq_request;
     }
 
     void acq_request_db::clear_queue()
     {
-        f_mutex.lock();
+        f_db_mutex.lock();
+        f_queue_mutex.lock();
         if( ! f_acq_request_queue.empty() )
         {
             acq_request_queue::iterator t_list_it = f_acq_request_queue.begin();
@@ -214,9 +239,44 @@ namespace mantis
                 f_acq_request_queue.pop_front();
             }
         }
-        f_mutex.unlock();
+        f_queue_mutex.lock();
+        f_db_mutex.unlock();
         return;
     }
+
+    bool acq_request_db::queue_is_active() const
+    {
+        return f_queue_is_active.load();
+    }
+
+    void acq_request_db::wait_for_queue_active()
+    {
+        if( f_queue_is_active.load() ) return;
+        f_queue_active_condition.wait();
+        return;
+    }
+
+    void acq_request_db::start_queue()
+    {
+        if( f_queue_is_active.load() ) return;
+        f_queue_is_active.store( true );
+        f_queue_active_condition.release();
+        MTINFO( mtlog, "Queue processing started" );
+        return;
+    }
+
+    void acq_request_db::stop_queue()
+    {
+        f_queue_is_active.store( false );
+        MTINFO( mtlog, "Queue processing stopped" );
+        return;
+    }
+
+
+
+    //********************
+    // Request handlers
+    //********************
 
     bool acq_request_db::handle_new_acq_request( const param_node& a_msg_payload, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg )
     {
@@ -297,10 +357,10 @@ namespace mantis
         }
 
        // if the queue condition is waiting, release it
-        if( f_queue_condition->is_waiting() == true )
+        if( f_queue_empty_condition->is_waiting() == true )
         {
             //MTINFO( mtlog, "releasing queue condition" );
-            f_queue_condition->release();
+            f_queue_empty_condition->release();
         }
 
         return true;
@@ -334,10 +394,10 @@ namespace mantis
             return false;
         }
 
-        f_mutex.lock();
+        f_db_mutex.lock();
         a_pkg.f_reply_node.node_at( "content" )->merge( *t_request );
         a_pkg.f_reply_node.node_at( "content" )->add( "status-meaning", new param_value( acq_request::interpret_status( t_request->get_status() ) ) );
-        f_mutex.unlock();
+        f_db_mutex.unlock();
 
         return a_pkg.send_reply( R_SUCCESS, "Acquisition status request succeeded" );
     }
@@ -345,7 +405,7 @@ namespace mantis
     bool acq_request_db::handle_queue_request( const param_node& /*a_msg_payload*/, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg  )
     {
         param_array* t_queue_array = new param_array();
-        f_mutex.lock();
+        f_queue_mutex.lock();
         for( acq_request_queue::const_iterator t_queue_it = f_acq_request_queue.begin(); t_queue_it != f_acq_request_queue.end(); ++t_queue_it )
         {
             param_node* t_acq_node = new param_node();
@@ -353,7 +413,7 @@ namespace mantis
             t_acq_node->add( "file", new param_value( (*t_queue_it)->get_value( "file" ) ) );
             t_queue_array->push_back( t_acq_node );
         }
-        f_mutex.unlock();
+        f_queue_mutex.unlock();
         a_pkg.f_reply_node.node_at( "content" )->add( "queue", t_queue_array );
         return a_pkg.send_reply( R_SUCCESS, "Queue request succeeded" );
     }
@@ -392,10 +452,10 @@ namespace mantis
         }
 
         const acq_request* t_request = get_acq_request( t_id );
-        f_mutex.lock();
+        f_db_mutex.lock();
         a_pkg.f_reply_node.node_at( "content" )->merge( *t_request );
         a_pkg.f_reply_node.node_at( "content" )->add( "status-meaning", new param_value( acq_request::interpret_status( t_request->get_status() ) ) );
-        f_mutex.unlock();
+        f_db_mutex.unlock();
         return a_pkg.send_reply( R_SUCCESS, "Cancellation succeeded" );
     }
 
@@ -405,6 +465,17 @@ namespace mantis
         return a_pkg.send_reply( R_SUCCESS, "Queue is clear (aside for runs in progress" );
     }
 
+    bool acq_request_db::handle_start_queue_request( const param_node& /*a_msg_payload*/, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg )
+    {
+        start_queue();
+        return a_pkg.send_reply( R_SUCCESS, "Queue started" );
+    }
+
+    bool acq_request_db::handle_stop_queue_request( const param_node& /*a_msg_payload*/, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg )
+    {
+        stop_queue();
+        return a_pkg.send_reply( R_SUCCESS, "Queue stopped" );
+    }
 
 
 } /* namespace mantis */

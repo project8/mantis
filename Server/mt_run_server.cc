@@ -30,6 +30,7 @@ namespace mantis
             f_return( RETURN_ERROR ),
             f_request_receiver( NULL ),
             f_server_worker( NULL ),
+            f_acq_request_db( NULL ),
             f_component_mutex(),
             f_status( k_initialized )
     {
@@ -58,13 +59,13 @@ namespace mantis
         acq_request_db t_acq_request_db( &t_config_mgr, &t_queue_condition, f_exe_name );
         f_acq_request_db = &t_acq_request_db;
 
-        // request receiver
-        request_receiver t_receiver( this, &t_config_mgr, &t_acq_request_db );
-        f_request_receiver = &t_receiver;
-
         // server worker
         server_worker t_worker( &t_dev_mgr, &t_acq_request_db, &t_queue_condition );
         f_server_worker = &t_worker;
+
+        // request receiver
+        request_receiver t_receiver( this, &t_config_mgr, &t_acq_request_db, &t_worker );
+        f_request_receiver = &t_receiver;
 
         f_component_mutex.unlock();
 
@@ -120,6 +121,7 @@ namespace mantis
         if( f_acq_request_db != NULL )
         {
             t_content_node->add( "Queue size", new param_value( (uint32_t)f_acq_request_db->queue_size() ) );
+            t_content_node->add( "Queue is active", new param_value( f_acq_request_db->queue_is_active() ) );
         }
         if( f_server_worker != NULL )
         {

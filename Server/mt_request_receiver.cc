@@ -35,13 +35,14 @@ namespace mantis
     }
 
 
-    request_receiver::request_receiver( run_server* a_run_server, config_manager* a_conf_mgr, acq_request_db* a_acq_request_db ) :
+    request_receiver::request_receiver( run_server* a_run_server, config_manager* a_conf_mgr, acq_request_db* a_acq_request_db, server_worker* a_server_worker ) :
             f_broker( NULL ),
             f_queue_name(),
             f_consumer_tag(),
             f_run_server( a_run_server ),
             f_conf_mgr( a_conf_mgr ),
             f_acq_request_db( a_acq_request_db ),
+            f_server_worker( a_server_worker ),
             f_canceled( false ),
             f_status( k_initialized )
     {
@@ -346,13 +347,11 @@ namespace mantis
         }
         else if( t_instruction == "start-queue" )
         {
-            send_reply( R_MESSAGE_ERROR_BAD_PAYLOAD, "Command type <start> is not yet supported", a_pkg );
-            return false;
+            return f_acq_request_db->handle_start_queue_request( a_msg_payload, a_mantis_routing_key, a_pkg );
         }
         else if( t_instruction == "stop-queue" )
         {
-            send_reply( R_MESSAGE_ERROR_BAD_PAYLOAD, "Command type <stop> is not yet supported", a_pkg );
-            return false;
+            return f_acq_request_db->handle_stop_queue_request( a_msg_payload, a_mantis_routing_key, a_pkg );
         }
         else if( t_instruction == "stop-acq" )
         {
