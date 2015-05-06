@@ -7,6 +7,9 @@
 #include "mt_logger.hh"
 #include "mt_param.hh"
 #include "mt_request_receiver.hh"
+#include "mt_version.hh"
+
+#include "M3Version.hh"
 
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/nil_generator.hpp>

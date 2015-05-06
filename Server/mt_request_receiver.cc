@@ -16,9 +16,6 @@
 #include "mt_parser.hh"
 #include "mt_run_server.hh"
 #include "mt_server_worker.hh"
-#include "mt_version.hh"
-
-#include "M3Version.hh"
 
 #include <cstddef>
 
