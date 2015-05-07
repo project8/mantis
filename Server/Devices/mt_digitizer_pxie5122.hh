@@ -68,7 +68,7 @@ namespace mantis
             static const unsigned s_n_channels;
             static const unsigned s_bit_depth;
 
-            bool handle_error( ViStatus a_status );
+            bool handle_error( ViStatus a_status, const std::string& a_origin_file, unsigned a_origin_line );
 
             //sem_t* f_semaphore;
 

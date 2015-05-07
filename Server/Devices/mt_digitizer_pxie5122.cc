@@ -18,6 +18,8 @@
 #include <errno.h>
 //#include <fcntl.h> // for O_CREAT and O_EXCL
 
+#define HANDLE_ERROR(X)   handle_error( X, TOSTRING(__FILE__), __LINE__ )
+
 namespace mantis
 {
     MTLOGGER( mtlog, "digitizer_pxie5122" );
@@ -109,7 +111,7 @@ namespace mantis
     {
         if( f_allocated ) deallocate();
      
-        if( f_handle ) handle_error( niScope_close( f_handle ) );
+        if( f_handle ) HANDLE_ERROR( niScope_close( f_handle ) );
         
         /*
         if( f_semaphore != SEM_FAILED )
@@ -251,7 +253,7 @@ namespace mantis
 
             //ViChar* resourceName = new ViChar[ f_resource_name.size() ];
             //strcpy( resourceName, f_resource_name.c_str() );
-            if( ! handle_error( niScope_init( const_cast< char* >( f_resource_name.c_str() ), NISCOPE_VAL_FALSE, NISCOPE_VAL_FALSE, &f_handle ) ) )
+            if( ! HANDLE_ERROR( niScope_init( const_cast< char* >( f_resource_name.c_str() ), NISCOPE_VAL_FALSE, NISCOPE_VAL_FALSE, &f_handle ) ) )
             {
                 //delete[] resourceName;
                 return false;
@@ -262,7 +264,7 @@ namespace mantis
         MTDEBUG( mtlog, "Configuring the 5122" );
 
         // disable the TDC (suggestion by Nathan Powelson from NI to solve the 25 MHz spur problem) NISCOPE ATTR_REF_TRIG_TDC_ENABLE
-        if( !handle_error( niScope_SetAttributeViBoolean( f_handle, f_chan_string.c_str(), NISCOPE_ATTR_REF_TRIG_TDC_ENABLE, VI_FALSE ) ) )
+        if( ! HANDLE_ERROR( niScope_SetAttributeViBoolean( f_handle, f_chan_string.c_str(), NISCOPE_ATTR_REF_TRIG_TDC_ENABLE, VI_FALSE ) ) )
         {
             return false;
         }
@@ -271,13 +273,13 @@ namespace mantis
         // Note that the record size request is passed as the 3rd parameter; this is correct regardless of the number of channels in use;
         // This parameter in the NI function is the minimum number of samples in the record for each channel according to the NI-SCOPE documentation.
         // Must convert MHz rate request to Hz for NI-SCOPE
-        if( ! handle_error( niScope_ConfigureHorizontalTiming( f_handle, a_dev_config->get_value< double >( "rate-req" ) * 1.e6,
+        if( ! HANDLE_ERROR( niScope_ConfigureHorizontalTiming( f_handle, a_dev_config->get_value< double >( "rate-req" ) * 1.e6,
             a_dev_config->get_value< unsigned >( "record-size-req" ), 0, 1, VI_TRUE ) ) )
         {
             return false;
         }
         ViReal64 t_actual_rate;
-        if( ! handle_error( niScope_SampleRate( f_handle, &t_actual_rate ) ) )
+        if( ! HANDLE_ERROR( niScope_SampleRate( f_handle, &t_actual_rate ) ) )
         {
             return false;
         }
@@ -285,7 +287,7 @@ namespace mantis
         t_actual_rate *= 1.e-6;
         a_dev_config->replace( "rate", param_value( t_actual_rate ) );
         ViInt32 t_actual_rec_size;
-        if( ! handle_error( niScope_ActualRecordLength( f_handle, &t_actual_rec_size ) ) )
+        if( ! HANDLE_ERROR( niScope_ActualRecordLength( f_handle, &t_actual_rec_size ) ) )
         {
             return false;
         }
@@ -325,7 +327,7 @@ namespace mantis
                 return false;
             }
             // for now just use -1 for max input frequency
-            if( ! handle_error( niScope_ConfigureChanCharacteristics( f_handle, t_this_chan_string.c_str(), t_impedance, -1 ) ) )
+            if( ! HANDLE_ERROR( niScope_ConfigureChanCharacteristics( f_handle, t_this_chan_string.c_str(), t_impedance, -1 ) ) )
             {
                 return false;
             }
@@ -345,19 +347,19 @@ namespace mantis
                 MTERROR( mtlog, "Probe attenuation must be a real, positive number (channel " << i_chan << ")" );
                 return false;
             }
-            if( ! handle_error( niScope_ConfigureVertical( f_handle, t_this_chan_string.c_str(), t_voltage_range, t_voltage_offset, t_coupling, t_probe_attenuation, t_chan_enabled[ i_chan ] ) ) )
+            if( ! HANDLE_ERROR( niScope_ConfigureVertical( f_handle, t_this_chan_string.c_str(), t_voltage_range, t_voltage_offset, t_coupling, t_probe_attenuation, t_chan_enabled[ i_chan ] ) ) )
             {
                 return false;
             }
 
             // get the scaling coefficients
             ViInt32 t_n_coeff_sets; // first determine the size of the array used to store the scaling coefficients
-            if( ! handle_error( niScope_GetScalingCoefficients( f_handle, t_this_chan_string.c_str(), 0, NULL, &t_n_coeff_sets ) ) )
+            if( ! HANDLE_ERROR( niScope_GetScalingCoefficients( f_handle, t_this_chan_string.c_str(), 0, NULL, &t_n_coeff_sets ) ) )
             {
                 return false;
             }
             niScope_coefficientInfo* t_coeff_info_array = new niScope_coefficientInfo[ t_n_coeff_sets ];
-            if( !handle_error( niScope_GetScalingCoefficients( f_handle, t_this_chan_string.c_str(), t_n_coeff_sets, t_coeff_info_array, &t_n_coeff_sets ) ) )
+            if( ! HANDLE_ERROR( niScope_GetScalingCoefficients( f_handle, t_this_chan_string.c_str(), t_n_coeff_sets, t_coeff_info_array, &t_n_coeff_sets ) ) )
             {
                 return false;
             }
@@ -369,19 +371,19 @@ namespace mantis
 
 
         // configure the clock to sync with the PXIe backplane clock input
-        if( ! handle_error( niScope_ConfigureClock( f_handle, NISCOPE_VAL_PXI_CLOCK, NISCOPE_VAL_NO_SOURCE, NISCOPE_VAL_NO_SOURCE , VI_FALSE ) ) )
+        if( ! HANDLE_ERROR( niScope_ConfigureClock( f_handle, NISCOPE_VAL_PXI_CLOCK, NISCOPE_VAL_NO_SOURCE, NISCOPE_VAL_NO_SOURCE , VI_FALSE ) ) )
         {
             return false;
         }
 
         // call to niScope_ConfigureTriggerSoftware to allow for continuous acquisition
-        if( ! handle_error( niScope_ConfigureTriggerSoftware( f_handle, 0., 0. ) ) )
+        if( ! HANDLE_ERROR( niScope_ConfigureTriggerSoftware( f_handle, 0., 0. ) ) )
         {
             return false;
         }
 
         // tell the digitizer to fetch each record starting at the read pointer, which gets moved after each fetch
-        if( ! handle_error( niScope_SetAttributeViInt32( f_handle, VI_NULL, NISCOPE_ATTR_FETCH_RELATIVE_TO, NISCOPE_VAL_READ_POINTER ) ) )
+        if( ! HANDLE_ERROR( niScope_SetAttributeViInt32( f_handle, VI_NULL, NISCOPE_ATTR_FETCH_RELATIVE_TO, NISCOPE_VAL_READ_POINTER ) ) )
         {
             return false;
         }
@@ -390,7 +392,7 @@ namespace mantis
         f_acq_timeout = a_dev_config->get_value< double >( "timeout", -1. );
 
         // disable the TDC (suggestion by Nathan Powelson from NI to solve the 25 MHz spur problem) NISCOPE_ATTR_REF_TRIG_TDC_ENABLE
-        if( !handle_error( niScope_SetAttributeViBoolean( f_handle, f_chan_string.c_str(), NISCOPE_ATTR_REF_TRIG_TDC_ENABLE, VI_FALSE ) ) )
+        if( ! HANDLE_ERROR( niScope_SetAttributeViBoolean( f_handle, f_chan_string.c_str(), NISCOPE_ATTR_REF_TRIG_TDC_ENABLE, VI_FALSE ) ) )
         {
             return false;
         }
@@ -408,7 +410,7 @@ namespace mantis
         f_dead_time = 0;
 
         ViInt32 t_num_waveforms;
-        if( ! handle_error( niScope_ActualNumWfms( f_handle, f_chan_string.c_str(), &t_num_waveforms ) ) )
+        if( ! HANDLE_ERROR( niScope_ActualNumWfms( f_handle, f_chan_string.c_str(), &t_num_waveforms ) ) )
         {
             return false;
         }
@@ -619,7 +621,7 @@ namespace mantis
         a_block->set_acquisition_id( f_acquisition_count );
 
         MTDEBUG( mtlog, "block data size: " << a_block->get_data_size() );
-        if( ! handle_error( niScope_FetchBinary16( f_handle, f_chan_string.c_str(), f_acq_timeout, a_block->get_data_size(), (ViInt16*)a_block->data_bytes(), &f_waveform_info) ) )
+        if( ! HANDLE_ERROR( niScope_FetchBinary16( f_handle, f_chan_string.c_str(), f_acq_timeout, a_block->get_data_size(), (ViInt16*)a_block->data_bytes(), &f_waveform_info) ) )
         {
             return false;
         }
@@ -681,7 +683,7 @@ namespace mantis
 
             //ViChar* resourceName = new ViChar[ f_resource_name.size() ];
             //strcpy( resourceName, f_resource_name.c_str() );
-            if( ! handle_error( niScope_init( const_cast< char* >( f_resource_name.c_str() ), NISCOPE_VAL_FALSE, NISCOPE_VAL_FALSE, &f_handle ) ) )
+            if( ! HANDLE_ERROR( niScope_init( const_cast< char* >( f_resource_name.c_str() ), NISCOPE_VAL_FALSE, NISCOPE_VAL_FALSE, &f_handle ) ) )
             {
                 //delete[] resourceName;
                 return false;
@@ -704,7 +706,7 @@ namespace mantis
             return false;
         }
         // for now just use -1 for max input frequency
-        if( !handle_error( niScope_ConfigureChanCharacteristics( f_handle, f_chan_string.c_str(), t_impedance, -1 ) ) )
+        if( ! HANDLE_ERROR( niScope_ConfigureChanCharacteristics( f_handle, f_chan_string.c_str(), t_impedance, -1 ) ) )
         {
             return false;
         }
@@ -714,20 +716,20 @@ namespace mantis
         // Note that the record size request is passed as the 3rd parameter; this is correct regardless of the number of channels in use;
         // This parameter in the NI function is the minimum number of samples in the record for each channel according to the NI-SCOPE documentation.
         // Must convert MHz rate request to Hz for NI-SCOPE
-        if( !handle_error( niScope_ConfigureHorizontalTiming( f_handle, 100. * 1.e6,
+        if( ! HANDLE_ERROR( niScope_ConfigureHorizontalTiming( f_handle, 100. * 1.e6,
             524288, 0, 1, VI_TRUE ) ) )
         {
             return false;
         }
         ViReal64 t_actual_rate;
-        if( !handle_error( niScope_SampleRate( f_handle, &t_actual_rate ) ) )
+        if( ! HANDLE_ERROR( niScope_SampleRate( f_handle, &t_actual_rate ) ) )
         {
             return false;
         }
         // convert from Hz to MHz
         t_actual_rate *= 1.e-6;
         ViInt32 t_actual_rec_size;
-        if( !handle_error( niScope_ActualRecordLength( f_handle, &t_actual_rec_size ) ) )
+        if( ! HANDLE_ERROR( niScope_ActualRecordLength( f_handle, &t_actual_rec_size ) ) )
         {
             return false;
         }
@@ -766,37 +768,37 @@ namespace mantis
             MTERROR( mtlog, "Probe attenuation must be a real, positive number" );
             return false;
         }
-        if( !handle_error( niScope_ConfigureVertical( f_handle, f_chan_string.c_str(), t_voltage_range, t_voltage_offset, t_coupling, t_probe_attenuation, true ) ) )
+        if( ! HANDLE_ERROR( niScope_ConfigureVertical( f_handle, f_chan_string.c_str(), t_voltage_range, t_voltage_offset, t_coupling, t_probe_attenuation, true ) ) )
         {
             return false;
         }
 
         // get the scaling coefficients
         ViInt32 t_n_coeff_sets;
-        if( !handle_error( niScope_GetScalingCoefficients( f_handle, f_chan_string.c_str(), 0, NULL, &t_n_coeff_sets ) ) )
+        if( ! HANDLE_ERROR( niScope_GetScalingCoefficients( f_handle, f_chan_string.c_str(), 0, NULL, &t_n_coeff_sets ) ) )
         {
             return false;
         }
         niScope_coefficientInfo* t_coeff_info_array = new niScope_coefficientInfo[ t_n_coeff_sets ];
-        if( !handle_error( niScope_GetScalingCoefficients( f_handle, f_chan_string.c_str(), t_n_coeff_sets, t_coeff_info_array, &t_n_coeff_sets ) ) )
+        if( ! HANDLE_ERROR( niScope_GetScalingCoefficients( f_handle, f_chan_string.c_str(), t_n_coeff_sets, t_coeff_info_array, &t_n_coeff_sets ) ) )
         {
             return false;
         }
         get_calib_params2( 14 /*bit depth*/, s_data_type_size, t_voltage_offset, t_voltage_range, t_coeff_info_array[ 0 ].gain, &(f_params[t_chan]) );
 
         // configure the clock to use the PXIe crate's timing, which is syncronized to the lab atomic clock
-        if( !handle_error( niScope_ConfigureClock( f_handle, NISCOPE_VAL_NO_SOURCE, NISCOPE_VAL_NO_SOURCE, NISCOPE_VAL_NO_SOURCE, VI_FALSE ) ) )
+        if( ! HANDLE_ERROR( niScope_ConfigureClock( f_handle, NISCOPE_VAL_NO_SOURCE, NISCOPE_VAL_NO_SOURCE, NISCOPE_VAL_NO_SOURCE, VI_FALSE ) ) )
         {
             return false;
         }
 
         // call to niScope_ConfigureTriggerSoftware to allow for continuous acquisition
-        if( ! handle_error( niScope_ConfigureTriggerSoftware( f_handle, 0., 0. ) ) )
+        if( ! HANDLE_ERROR( niScope_ConfigureTriggerSoftware( f_handle, 0., 0. ) ) )
         {
             return false;
         }
 
-        if( ! handle_error( niScope_SetAttributeViInt32( f_handle, VI_NULL, NISCOPE_ATTR_FETCH_RELATIVE_TO, NISCOPE_VAL_READ_POINTER ) ) )
+        if( ! HANDLE_ERROR( niScope_SetAttributeViInt32( f_handle, VI_NULL, NISCOPE_ATTR_FETCH_RELATIVE_TO, NISCOPE_VAL_READ_POINTER ) ) )
         {
             return false;
         }
@@ -830,21 +832,21 @@ namespace mantis
 
         MTDEBUG( mtlog, "Starting acquisition" );
 
-        if( ! handle_error( niScope_InitiateAcquisition( f_handle ) ) )
+        if( ! HANDLE_ERROR( niScope_InitiateAcquisition( f_handle ) ) )
         {
             return false;
         }
 
         MTDEBUG( mtlog, "Acquiring a record (" << f_acq_timeout << ", " << t_block->get_data_size() << /* ", " << t_block->data_bytes() << */ ")" );
 
-        if( !handle_error( niScope_FetchBinary16( f_handle, f_chan_string.c_str(), f_acq_timeout, t_block->get_data_size(), ( ViInt16* )t_block->data_bytes(), &f_waveform_info ) ) )
+        if( ! HANDLE_ERROR( niScope_FetchBinary16( f_handle, f_chan_string.c_str(), f_acq_timeout, t_block->get_data_size(), ( ViInt16* )t_block->data_bytes(), &f_waveform_info ) ) )
         {
             return false;
         }
 
         MTDEBUG( mtlog, "Stopping acquisition..." );
 
-        if( ! handle_error( niScope_Abort( f_handle ) ) )
+        if( ! HANDLE_ERROR( niScope_Abort( f_handle ) ) )
         {
             return false;
         }
@@ -870,7 +872,7 @@ namespace mantis
         return true;
     }
 
-    bool digitizer_pxie5122::handle_error( ViStatus a_status )
+    bool digitizer_pxie5122::handle_error( ViStatus a_status, const std::string& a_origin_file, unsigned a_origin_line )
     {
         if( a_status == VI_SUCCESS ) return true;
         const unsigned t_buffer_size = 512;
@@ -878,12 +880,14 @@ namespace mantis
         niScope_GetErrorMessage( f_handle, a_status, t_buffer_size, t_msg_buffer );
         if( a_status > 0 )
         {
-            MTWARN( mtlog, std::string( "NIScope warning (" ) << a_status << "): " << t_msg_buffer );
+            MTWARN( mtlog, std::string( "NIScope warning (" ) << a_status << "): " << t_msg_buffer <<
+                    "\tWarning origin: line " << a_origin_line << " of " << a_origin_file );
             return false;
         }
         else // a_status < 0, since VI_SUCCESS == 0
         {
-            MTERROR( mtlog, std::string( "NIScope error (" ) << a_status << "): " << t_msg_buffer );
+            MTERROR( mtlog, std::string( "NIScope error (" ) << a_status << "): " << t_msg_buffer <<
+                    "\tError origin: line " << a_origin_line << " of " << a_origin_file );
             return false;
         }
     }
