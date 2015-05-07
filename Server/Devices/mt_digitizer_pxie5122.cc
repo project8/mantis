@@ -28,29 +28,31 @@ namespace mantis
     void digitizer_pxie5122_config_template::add( param_node* a_node, const std::string& a_type )
     {
         param_node* t_new_node = new param_node();
-        t_new_node->add( "resource-name", param_value( "PXI1Slot2" ) ); // Real digitizer: PXI1Slot2; Simulated digitizer: Dev1
-        t_new_node->add( "rate-req", param_value( 100 ) );
-        t_new_node->add( "data-mode", param_value( monarch3::sDigitizedS ) );
-        t_new_node->add( "channel-mode", param_value( monarch3::sSeparate ) );
-        t_new_node->add( "sample-size", param_value( 1 ) );
-        t_new_node->add( "buffer-size", param_value( 512 ) );
-        t_new_node->add( "record-size-req", param_value( 524288 ) );// 1048576 );
-        t_new_node->add( "data-chunk-size", param_value( 1024 ) );
-        t_new_node->add( "acq-timeout", param_value( 10.0 ) );
+        t_new_node->add( "resource-name", new param_value( "PXI1Slot2" ) ); // Real digitizer: PXI1Slot2; Simulated digitizer: Dev1
+        t_new_node->add( "rate-req", new param_value( 100 ) );
+        t_new_node->add( "data-mode", new param_value( monarch3::sDigitizedS ) );
+        t_new_node->add( "channel-mode", new param_value( monarch3::sSeparate ) );
+        t_new_node->add( "sample-size", new param_value( 1 ) );
+        t_new_node->add( "buffer-size", new param_value( 512 ) );
+        t_new_node->add( "record-size-req", new param_value( 524288 ) );// 1048576 );
+        t_new_node->add( "data-chunk-size", new param_value( 1024 ) );
+        t_new_node->add( "acq-timeout", new param_value( 10.0 ) );
         param_node* t_chan0_node = new param_node();
-        t_chan0_node->add( "enabled", param_value( true ) );
-        t_chan0_node->add( "input-impedance", param_value( 50 ) );
-        t_chan0_node->add( "voltage-range", param_value( 0.5 ) );
-        t_chan0_node->add( "voltage-offset", param_value( 0.0 ) );
-        t_chan0_node->add( "input-coupling", param_value( 1 ) ); // DC coupling
-        t_chan0_node->add( "probe-attenuation", param_value( 1.0 ) );
+        t_chan0_node->add( "enabled", new param_value( true ) );
+        t_chan0_node->add( "input-impedance", new param_value( 50 ) );
+        t_chan0_node->add( "max-input-freq", new param_value( -1. ) );
+        t_chan0_node->add( "voltage-range", new param_value( 0.5 ) );
+        t_chan0_node->add( "voltage-offset", new param_value( 0.0 ) );
+        t_chan0_node->add( "input-coupling", new param_value( 1 ) ); // DC coupling
+        t_chan0_node->add( "probe-attenuation", new param_value( 1.0 ) );
         param_node* t_chan1_node = new param_node();
-        t_chan1_node->add( "enabled", param_value( false ) );
-        t_chan1_node->add( "input-impedance", param_value( 50 ) );
-        t_chan1_node->add( "voltage-range", param_value( 0.5 ) );
-        t_chan1_node->add( "voltage-offset", param_value( 0.0 ) );
-        t_chan1_node->add( "input-coupling", param_value( 1 ) ); // DC coupling
-        t_chan1_node->add( "probe-attenuation", param_value( 1.0 ) );
+        t_chan1_node->add( "enabled", new param_value( false ) );
+        t_chan1_node->add( "input-impedance", new param_value( 50 ) );
+        t_chan1_node->add( "max-input-freq", new param_value( -1. ) );
+        t_chan1_node->add( "voltage-range", new param_value( 0.5 ) );
+        t_chan1_node->add( "voltage-offset", new param_value( 0.0 ) );
+        t_chan1_node->add( "input-coupling", new param_value( 1 ) ); // DC coupling
+        t_chan1_node->add( "probe-attenuation", new param_value( 1.0 ) );
         param_node* t_chan_node = new param_node();
         t_chan_node->add( "0", t_chan0_node );
         t_chan_node->add( "1", t_chan1_node );
@@ -250,20 +252,6 @@ namespace mantis
         }
 
         MTDEBUG( mtlog, "Configuring the 5122" );
-        // call to niScpe_ConfigureChanCharacteristics
-        // input impedance may be either 50, or 1000000
-        unsigned t_impedance = a_dev_config->get_value< unsigned >( "input-impedance", 50 );
-        if( t_impedance != 50 && t_impedance != 1000000 )
-        {
-            MTERROR( mtlog, "Input impedance must be either 50 Ohms or 1000000 Ohms; value provided: " << t_impedance );
-            return false;
-        }
-        // for now just use -1 for max input frequency
-        if( ! handle_error( niScope_ConfigureChanCharacteristics( f_handle, f_chan_string.c_str(), t_impedance, -1 ) ) )
-        {
-            return false;
-        }
-
         // call to niScope_ConfigureHorizontalTiming
         // Note that the record size request is passed as the 3rd parameter; this is correct regardless of the number of channels in use;
         // This parameter in the NI function is the minimum number of samples in the record for each channel according to the NI-SCOPE documentation.
@@ -312,6 +300,20 @@ namespace mantis
             std::stringstream t_conv;
             t_conv << i_chan;
             std::string t_this_chan_string( t_conv.str() );
+
+            // call to niScpe_ConfigureChanCharacteristics
+            // input impedance may be either 50, or 1000000
+            unsigned t_impedance = t_chan_config[ i_chan ]->get_value< unsigned >( "input-impedance", 50 );
+            if( t_impedance != 50 && t_impedance != 1000000 )
+            {
+                MTERROR( mtlog, "Input impedance must be either 50 Ohms or 1000000 Ohms; value provided for channel " << i_chan << ": " << t_impedance );
+                return false;
+            }
+            // for now just use -1 for max input frequency
+            if( ! handle_error( niScope_ConfigureChanCharacteristics( f_handle, t_this_chan_string.c_str(), t_impedance, -1 ) ) )
+            {
+                return false;
+            }
 
             // call to niScope_ConfigureVertical
             ViReal64 t_voltage_range = t_chan_config[ i_chan ]->get_value< ViReal64 >( "voltage-range", 0.5 );
