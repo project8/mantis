@@ -303,7 +303,7 @@ namespace mantis
         }
 
         // configure channel-dependent features
-        for( unsigned i_chan = 0; i_chan < 1; ++i_chan )
+        for( unsigned i_chan = 0; i_chan < s_n_channels; ++i_chan )
         {
             std::stringstream t_conv;
             t_conv << i_chan;
@@ -338,7 +338,7 @@ namespace mantis
                 MTERROR( mtlog, "Probe attenuation must be a real, positive number (channel " << i_chan << ")" );
                 return false;
             }
-            if( ! handle_error( niScope_ConfigureVertical( f_handle, t_this_chan_string.c_str(), t_voltage_range, t_voltage_offset, t_coupling, t_probe_attenuation, true ) ) )
+            if( ! handle_error( niScope_ConfigureVertical( f_handle, t_this_chan_string.c_str(), t_voltage_range, t_voltage_offset, t_coupling, t_probe_attenuation, t_chan_enabled[ i_chan ] ) ) )
             {
                 return false;
             }
