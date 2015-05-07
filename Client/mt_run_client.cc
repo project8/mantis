@@ -209,21 +209,23 @@ namespace mantis
             return false;
         }
 
-        param_node* t_client_node = new param_node();
-        t_client_node->add( "commit", param_value( TOSTRING(Mantis_GIT_COMMIT) ) );
-        t_client_node->add( "exe", param_value( f_exe_name ) );
-        t_client_node->add( "version", param_value( TOSTRING(Mantis_VERSION) ) );
-
         param_node* t_payload_node = new param_node( f_config ); // copy of f_config, which should consist of only the request arguments
-        t_payload_node->add( "client", t_client_node ); // use t_client_node as is
         t_payload_node->add( "file", *f_config.at( "file ") ); // copy the file node
         if( f_config.has( "description" ) ) t_payload_node->add( "description", *f_config.at( "description" ) ); // (optional) copy the description node
+
+        param_node* t_sender_node = new param_node();
+        t_sender_node->add( "commit", param_value( TOSTRING(Mantis_GIT_COMMIT) ) );
+        t_sender_node->add( "exe", param_value( f_exe_name ) );
+        t_sender_node->add( "version", param_value( TOSTRING(Mantis_VERSION) ) );
+        t_sender_node->add( "package", param_value( TOSTRING(Mantis_PACKAGE_NAME) ) );
+
+        MTDEBUG( mtlog, "Sender node:\n" << *t_sender_node );
 
         param_node t_request;
         t_request.add( "msgtype", param_value( T_REQUEST ) );
         t_request.add( "msgop", param_value( OP_RUN ) );
-        //t_request.add( "target", param_value( "mantis" ) );  // use of the target is now deprecated (3/12/15)
         t_request.add( "timestamp", param_value( get_absolute_time_string() ) );
+        t_request.add( "sender_info", t_sender_node );
         t_request.add( "payload", t_payload_node ); // use t_payload_node as is
 
         if(! param_output_json::write_string( t_request, a_request_str, param_output_json::k_compact ) )
@@ -237,12 +239,27 @@ namespace mantis
 
     bool run_client::do_get_request( std::string& a_request_str )
     {
+        param_node* t_payload_node = new param_node();
+
+        if( f_config.has( "value" ) )
+        {
+            param_array* t_values_array = new param_array();
+            t_values_array->push_back( f_config.remove( "value" ) );
+            t_payload_node->add( "values", t_values_array );
+        }
+
+        param_node* t_sender_node = new param_node();
+        t_sender_node->add( "commit", param_value( TOSTRING(Mantis_GIT_COMMIT) ) );
+        t_sender_node->add( "exe", param_value( f_exe_name ) );
+        t_sender_node->add( "version", param_value( TOSTRING(Mantis_VERSION) ) );
+        t_sender_node->add( "package", param_value( "" ) );
+
         param_node t_request;
         t_request.add( "msgtype", param_value( T_REQUEST ) );
         t_request.add( "msgop", param_value( OP_GET ) );
-        //t_request.add( "target", param_value( "mantis" ) );  // use of the target is now deprecated (3/12/15)
         t_request.add( "timestamp", param_value( get_absolute_time_string() ) );
-        t_request.add( "payload", new param_node() );
+        t_request.add( "sender_info", t_sender_node );
+        t_request.add( "payload", t_payload_node ); // use t_payload_node as is
 
         if(! param_output_json::write_string( t_request, a_request_str, param_output_json::k_compact ) )
         {
@@ -267,11 +284,17 @@ namespace mantis
         param_node* t_payload_node = new param_node();
         t_payload_node->add( "values", t_values_array );
 
+        param_node* t_sender_node = new param_node();
+        t_sender_node->add( "commit", param_value( TOSTRING(Mantis_GIT_COMMIT) ) );
+        t_sender_node->add( "exe", param_value( f_exe_name ) );
+        t_sender_node->add( "version", param_value( TOSTRING(Mantis_VERSION) ) );
+        t_sender_node->add( "package", param_value( "" ) );
+
         param_node t_request;
         t_request.add( "msgtype", param_value( T_REQUEST ) );
         t_request.add( "msgop", param_value( OP_SET ) );
-        //t_request.add( "target", param_value( "mantis" ) ); // use of the target is now deprecated (3/12/15)
         t_request.add( "timestamp", param_value( get_absolute_time_string() ) );
+        t_request.add( "sender_info", t_sender_node );
         t_request.add( "payload", t_payload_node ); // use t_payload_node as is
 
         MTDEBUG( mtlog, "Sending message:\n" << t_request );
@@ -315,11 +338,17 @@ namespace mantis
         // at this point, all that remains in f_config should be other options that we want to add to the payload node
         t_payload_node->merge( f_config ); // copy f_config
 
+        param_node* t_sender_node = new param_node();
+        t_sender_node->add( "commit", param_value( TOSTRING(Mantis_GIT_COMMIT) ) );
+        t_sender_node->add( "exe", param_value( f_exe_name ) );
+        t_sender_node->add( "version", param_value( TOSTRING(Mantis_VERSION) ) );
+        t_sender_node->add( "package", param_value( "" ) );
+
         param_node t_request;
         t_request.add( "msgtype", param_value( T_REQUEST ) );
         t_request.add( "msgop", param_value( OP_CMD ) );
-        //t_request.add( "target", param_value( "mantis" ) ); // use of the target is now deprecated (3/12/15)
         t_request.add( "timestamp", param_value( get_absolute_time_string() ) );
+        t_request.add( "sender_info", t_sender_node );
         t_request.add( "payload", t_payload_node ); // use t_payload_node as is
 
         MTDEBUG( mtlog, "Sending message:\n" << t_request );

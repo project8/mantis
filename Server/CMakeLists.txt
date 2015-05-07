@@ -22,10 +22,10 @@ if( Mantis_BUILD_SERVER )
     set( MANTIS_SERVER_HEADERFILES
         mt_acq_request_db.hh
         mt_acq_request.hh
-        mt_atomic.hh
         #mt_bit_shift_modifier.hh
         mt_block.hh
         mt_buffer.hh
+        mt_config_manager.hh
         mt_device_manager.hh
         mt_digitizer.hh
         mt_factory.hh
@@ -34,6 +34,7 @@ if( Mantis_BUILD_SERVER )
         mt_iterator_timer.hh
         mt_modifier.hh
         mt_request_receiver.hh
+        mt_run_server.hh
         mt_server_config.hh
         mt_server_worker.hh
         mt_writer.hh
@@ -46,6 +47,7 @@ if( Mantis_BUILD_SERVER )
         #mt_bit_shift_modifier.cc
         mt_block.cc
         mt_buffer.cc
+        mt_config_manager.cc
         mt_device_manager.cc
         mt_digitizer.cc
         mt_file_writer.cc
@@ -53,6 +55,7 @@ if( Mantis_BUILD_SERVER )
         mt_iterator_timer.cc
         mt_modifier.cc
         mt_request_receiver.cc
+        mt_run_server.cc
         mt_server_config.cc
         mt_server_worker.cc
         mt_writer.cc

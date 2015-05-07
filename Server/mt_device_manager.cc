@@ -50,14 +50,14 @@ namespace mantis
     {
         try
         {
-            param_node* t_mantis_config = a_acq_request.node_at( "mantis-config" );
-            if( t_mantis_config == NULL )
+            param_node* t_acq_config = a_acq_request.node_at( "acquisition" );
+            if( t_acq_config == NULL )
             {
-                MTERROR( mtlog, "Mantis configuration is missing" );
+                MTERROR( mtlog, "Acquisition configuration is missing" );
                 return false;
             }
 
-            param_node* t_device_config = t_mantis_config->node_at( "devices" );
+            param_node* t_device_config = t_acq_config->node_at( "devices" );
             if( t_device_config == NULL )
             {
                 MTERROR( mtlog, "Device configuration is missing" );
@@ -95,7 +95,7 @@ namespace mantis
                 return false;
             }
 
-            if( ! f_device->initialize( t_mantis_config, t_enabled_dev_config ) )
+            if( ! f_device->initialize( t_acq_config, t_enabled_dev_config ) )
             {
                 MTERROR( mtlog, "Unable to configure device" );
                 return false;

@@ -96,7 +96,13 @@ The target is used in different ways for different commands:
 
   ``dest=[queue].server-config`` -- Returns the current full configuration for the server.
 
-  ``dest=[queue].status`` -- [not yet implemented] Will return the server status.
+  ``dest=[queue].acq-status`` -- Returns the status of an acquisition request.
+
+  ``dest=[queue].server-status`` -- Returns the status of the server, including the queue, server worker (digitizer & writer), and request receiver.
+  
+  ``dest=[queue].queue`` -- Returns the current acquisition queue, including the UUID and filename for each acquisition request.
+  
+  ``dest=[queue].queue-size`` -- Returns the size of the acquisition queue.
 
 :set:
   ``dest=[queue].[acq config item]`` -- Sets the value of an item in the run configuration.
@@ -108,22 +114,40 @@ The target is used in different ways for different commands:
 
   ``dest=[queue].remove.device.[device name]`` -- Removes a device from the master run configuration.
 
-  ``dest=[queue].acq-config`` -- Replaces the server's run configuration with the contents of the instruction options, or the JSON file specified in those options (see below).
+  ``dest=[queue].replace-config`` -- Replaces the server's run configuration with the contents of the instruction options, or the JSON file specified in those options (see below).
   
+  ``dest=[queue].cancel-acq`` -- Remove an acquisition that is waiting to run from the queue.
+  
+  ``dest=[queue].clear-queue`` -- Clear scheduled acquisitions from the queue.
+  
+  ``dest=[queue].start-queue`` -- Start processing the requests in the queue (if the queue had previously been stopped)
+
+  ``dest=[queue].stop-queue`` -- Stop processing the requests in the queue (queue is left intact and acquisition in progress is not stopped; restart with ``start-queue``)
+  
+  ``dest=[queue].stop-acq`` -- Stop any acquisition that is currently running (queue processing will continue).
+  
+  ``dest=[queue].stop-all`` -- Stop processing the requests in the queue and any acquisition that is currently running.
+  
+  ``dest=[queue].quit-mantis`` -- Stop execution of the Mantis server.
   
 Instruction Options
 ^^^^^^^^^^^^^^^^^^^
 
 :any:
   ``save.json=[filename]`` -- *(optional)* File in which to save the information returned.  This is primarily useful for saving the run configuration for loading via the client, or saving the full configuration for loading into the server at startup.
+
 :run:
   ``file=[filename]`` -- *(required)* Name of the file that will be created.
 
   ``description=[description]`` -- *(optional)* Description string
+  
 :get:
+  :acq-status:
+    ``value=[value]`` -- *(required)* UUID of the run being queried
 
 :set:
   ``value=[value]`` -- *(required)* Specify the value to which the run-configuration item should be set.  Any values valid in the JSON standard will work, including strings, numbers, and ``true`` or ``false`` for booleans.
+
 :cmd:
   :add.device:
     ``[device type]=[device name]`` -- *(required)* The device type should be one of the valid device types for the server being run.  The device name is the name that will be used to refer to this particular instance of the device in the server configuration.

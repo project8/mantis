@@ -10,7 +10,7 @@
 
 //#include "mt_callable.hh"
 
-#include "mt_atomic.hh"
+//#include "mt_atomic.hh"
 #include "mt_param.hh"
 
 namespace mantis
@@ -26,7 +26,7 @@ namespace mantis
     {
         public:
             run_client( const param_node& a_node, const std::string& a_exe_name, const std::string& a_exchange );
-            virtual ~run_client();
+            ~run_client();
 
             void execute();
             //void cancel();

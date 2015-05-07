@@ -51,13 +51,13 @@ namespace mantis
 
         const param_value* t_file_config = a_acq_request->value_at( "file" );
         const param_value* t_desc_config = a_acq_request->value_at( "description" );
-        const param_node* t_mantis_config = a_acq_request->node_at( "mantis-config" );
-        if( t_file_config == NULL || t_mantis_config == NULL )
+        const param_node* t_acq_config = a_acq_request->node_at( "acquisition" );
+        if( t_file_config == NULL || t_acq_config == NULL )
         {
-            MTERROR( mtlog, "Either the file configuration (" << t_file_config << ") or mantis config (" << t_mantis_config << ") is missing" );
+            MTERROR( mtlog, "Either the file configuration (" << t_file_config << ") or mantis config (" << t_acq_config << ") is missing" );
             return false;
         }
-        const param_node* t_all_devs_config = t_mantis_config->node_at( "devices" );
+        const param_node* t_all_devs_config = t_acq_config->node_at( "devices" );
         if( t_all_devs_config == NULL )
         {
             MTERROR( mtlog, "The device configuration is missing" );
@@ -81,7 +81,7 @@ namespace mantis
             // run header information
             f_header->SetFilename( t_filename );
             if( t_desc_config != NULL ) f_header->SetDescription( t_desc_config->as_string() );
-            f_header->SetRunDuration( t_mantis_config->get_value< double >( "duration" ) );
+            f_header->SetRunDuration( t_acq_config->get_value< double >( "duration" ) );
             char t_timestamp[64];
             get_time_absolute_str( t_timestamp );
             f_header->SetTimestamp( t_timestamp );
