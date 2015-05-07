@@ -67,7 +67,7 @@ namespace mantis
         add( "client", new param_node() );
         add( "mantis", new param_node() );
         add( "monarch", new param_node() );
-        add( "mantis-config", new param_node() );
+        add( "acquisition", new param_node() );
         add( "response", new param_node() );
         add( "file", new param_value( "scrambled.egg" ) );
         add( "description", new param_value( "" ) );
@@ -130,9 +130,15 @@ namespace mantis
         return;
     }
 
-    void acq_request::set_client_commit( const std::string& a_ver )
+    void acq_request::set_client_commit( const std::string& a_commit )
     {
-        this->node_at( "client" )->replace( "commit", param_value( a_ver ) );
+        this->node_at( "client" )->replace( "commit", param_value( a_commit ) );
+        return;
+    }
+
+    void acq_request::set_client_package( const std::string& a_pkg )
+    {
+        this->node_at( "client" )->replace( "package", param_value( a_pkg ) );
         return;
     }
 
@@ -148,9 +154,9 @@ namespace mantis
         return;
     }
 
-    void acq_request::set_mantis_server_commit( const std::string& a_ver )
+    void acq_request::set_mantis_server_commit( const std::string& a_commit )
     {
-        this->node_at( "mantis" )->replace( "commit", param_value( a_ver ) );
+        this->node_at( "mantis" )->replace( "commit", param_value( a_commit ) );
         return;
     }
 
@@ -178,9 +184,9 @@ namespace mantis
         return;
     }
 
-    void acq_request::set_mantis_config( const param_node& a_config )
+    void acq_request::set_acquisition_config( const param_node& a_config )
     {
-        this->replace( "mantis-config", a_config );
+        this->replace( "acquisition", a_config );
         return;
     }
 

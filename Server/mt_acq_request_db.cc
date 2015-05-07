@@ -326,10 +326,10 @@ namespace mantis
         t_acq_req->set_monarch_version( TOSTRING(Monarch_VERSION ) );
 
         param_node* t_acq_config = f_config_mgr->copy_master_server_config( "acq" );
-        t_acq_req->set_mantis_config( *t_acq_config );
+        t_acq_req->set_acquisition_config( *t_acq_config );
         delete t_acq_config;
         // remove non-enabled devices from the devices node
-        param_node* t_dev_node = t_acq_req->node_at( "mantis-config" )->node_at( "devices" );
+        param_node* t_dev_node = t_acq_req->node_at( "acquisition" )->node_at( "devices" );
         std::vector< std::string > t_devs_to_remove;
         for( param_node::iterator t_node_it = t_dev_node->begin(); t_node_it != t_dev_node->end(); ++t_node_it )
         {
@@ -356,12 +356,14 @@ namespace mantis
             t_acq_req->set_client_commit( t_client_node->get_value( "commit", "N/A" ) );
             t_acq_req->set_client_exe( t_client_node->get_value( "exe", "N/A" ) );
             t_acq_req->set_client_version( t_client_node->get_value( "version", "N/A" ) );
+            t_acq_req->set_client_package( t_client_node->get_value( "package", "N/A" ) );
         }
         else
         {
             t_acq_req->set_client_commit( "N/A" );
             t_acq_req->set_client_exe( "N/A" );
             t_acq_req->set_client_version( "N/A" );
+            t_acq_req->set_client_package( "N/A" );
         }
 
         t_acq_req->set_status( acq_request::acknowledged );

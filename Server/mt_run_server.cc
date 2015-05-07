@@ -66,7 +66,7 @@ namespace mantis
         f_server_worker = &t_worker;
 
         // request receiver
-        request_receiver t_receiver( this, &t_config_mgr, &t_acq_request_db, &t_worker );
+        request_receiver t_receiver( this, &t_config_mgr, &t_acq_request_db, &t_worker, f_exe_name );
         f_request_receiver = &t_receiver;
 
         f_component_mutex.unlock();

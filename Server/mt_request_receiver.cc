@@ -16,6 +16,7 @@
 #include "mt_parser.hh"
 #include "mt_run_server.hh"
 #include "mt_server_worker.hh"
+#include "mt_version.hh"
 
 #include <cstddef>
 
@@ -32,10 +33,11 @@ namespace mantis
     }
 
 
-    request_receiver::request_receiver( run_server* a_run_server, config_manager* a_conf_mgr, acq_request_db* a_acq_request_db, server_worker* a_server_worker ) :
+    request_receiver::request_receiver( run_server* a_run_server, config_manager* a_conf_mgr, acq_request_db* a_acq_request_db, server_worker* a_server_worker, const std::string& a_exe_name ) :
             f_broker( NULL ),
             f_queue_name(),
             f_consumer_tag(),
+            f_exe_name( a_exe_name ),
             f_run_server( a_run_server ),
             f_conf_mgr( a_conf_mgr ),
             f_acq_request_db( a_acq_request_db ),
@@ -179,6 +181,8 @@ namespace mantis
                 }
             }
 
+            const param_node* t_sender_node = t_msg_node->node_at( "sender_info" );
+
             f_broker->get_connection().amqp()->BasicAck( t_envelope );
 
             param_node t_reply_node;
@@ -191,7 +195,7 @@ namespace mantis
             {
                 case OP_RUN:
                 {
-                    do_run_request( *t_msg_payload, t_routing_key, t_reply_pkg );
+                    do_run_request( *t_msg_payload, t_routing_key, t_reply_pkg, t_sender_node );
                     break;
                 }
                 case OP_GET:
@@ -235,14 +239,17 @@ namespace mantis
         return;
     }
 
-    bool request_receiver::do_run_request( const param_node& a_msg_payload, const std::string& a_mantis_routing_key, request_reply_package& a_pkg )
+    bool request_receiver::do_run_request( param_node& a_msg_payload, const std::string& a_mantis_routing_key, request_reply_package& a_pkg, const param_node* a_sender_node )
     {
         MTDEBUG( mtlog, "Run operation request received" );
+
+        // add the sender information to the payload; copies a_sender_node
+        a_msg_payload.add( "client", *a_sender_node );
 
         return f_acq_request_db->handle_new_acq_request( a_msg_payload, a_mantis_routing_key, a_pkg );
     }
 
-    bool request_receiver::do_get_request( const param_node& a_msg_payload, const std::string& a_mantis_routing_key, request_reply_package& a_pkg )
+    bool request_receiver::do_get_request( param_node& a_msg_payload, const std::string& a_mantis_routing_key, request_reply_package& a_pkg )
     {
         MTDEBUG( mtlog, "Get request received" );
 
@@ -298,14 +305,14 @@ namespace mantis
         }
     }
 
-    bool request_receiver::do_set_request( const param_node& a_msg_payload, const std::string& a_mantis_routing_key, request_reply_package& a_pkg )
+    bool request_receiver::do_set_request( param_node& a_msg_payload, const std::string& a_mantis_routing_key, request_reply_package& a_pkg )
     {
         MTDEBUG( mtlog, "Set request received" );
 
         return f_conf_mgr->handle_set_request( a_msg_payload, a_mantis_routing_key, a_pkg );
     }
 
-    bool request_receiver::do_cmd_request( const param_node& a_msg_payload, const std::string& a_mantis_routing_key, request_reply_package& a_pkg )
+    bool request_receiver::do_cmd_request( param_node& a_msg_payload, const std::string& a_mantis_routing_key, request_reply_package& a_pkg )
     {
         MTDEBUG( mtlog, "Cmd request received" );
 
@@ -382,10 +389,17 @@ namespace mantis
 
         a_pkg.f_reply_node.replace( "return-msg", param_value( a_return_msg ) );
 
+        param_node* t_sender_node = new param_node();
+        t_sender_node->add( "commit", param_value( TOSTRING(Mantis_GIT_COMMIT) ) );
+        t_sender_node->add( "exe", param_value( f_exe_name ) );
+        t_sender_node->add( "version", param_value( TOSTRING(Mantis_VERSION) ) );
+        t_sender_node->add( "package", param_value( TOSTRING(Mantis_PACKAGE_NAME) ) );
+
         param_node t_reply;
         t_reply.add( "msgtype", new param_value( T_REPLY ) );
         t_reply.add( "retcode", new param_value( a_return_code ) );
         t_reply.add( "payload", a_pkg.f_reply_node );
+        t_reply.add( "sender_info", t_sender_node );
         t_reply.add( "timestamp", param_value( get_absolute_time_string() ) );
 
         MTDEBUG( mtlog, "Sending reply message:\n" << t_reply );

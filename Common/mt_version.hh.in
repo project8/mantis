@@ -19,6 +19,7 @@
 #define Mantis_REVISION @Mantis_REVISION@
 #define Mantis_VERSION @Mantis_VERSION@
 #define Mantis_FULL_VERSION @Mantis_FULL_VERSION@
+#define Mantis_PACKAGE_NAME @Mantis_PACKAGE_NAME@
 
 #define Mantis_GIT_COMMIT @Mantis_GIT_COMMIT@
 #define Mantis_GIT_DESCRIBE @Mantis_GIT_DESCRIBE@

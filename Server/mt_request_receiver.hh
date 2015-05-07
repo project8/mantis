@@ -40,7 +40,7 @@ namespace mantis
     class MANTIS_API request_receiver : public callable
     {
         public:
-            request_receiver( run_server* a_run_server, config_manager* a_conf_mgr, acq_request_db* a_acq_request_db, server_worker* a_server_worker );
+            request_receiver( run_server* a_run_server, config_manager* a_conf_mgr, acq_request_db* a_acq_request_db, server_worker* a_server_worker, const std::string& a_exe_name = "N/A" );
             virtual ~request_receiver();
 
             void execute();
@@ -49,16 +49,18 @@ namespace mantis
         private:
             friend struct request_reply_package;
 
-            bool do_run_request( const param_node& a_msg_payload, const std::string& a_mantis_routing_key, request_reply_package& a_pkg );
-            bool do_get_request( const param_node& a_msg_payload, const std::string& a_mantis_routing_key, request_reply_package& a_pkg );
-            bool do_set_request( const param_node& a_msg_payload, const std::string& a_mantis_routing_key, request_reply_package& a_pkg );
-            bool do_cmd_request( const param_node& a_msg_payload, const std::string& a_mantis_routing_key, request_reply_package& a_pkg );
+            bool do_run_request( param_node& a_msg_payload, const std::string& a_mantis_routing_key, request_reply_package& a_pkg, const param_node* a_sender_node );
+            bool do_get_request( param_node& a_msg_payload, const std::string& a_mantis_routing_key, request_reply_package& a_pkg );
+            bool do_set_request( param_node& a_msg_payload, const std::string& a_mantis_routing_key, request_reply_package& a_pkg );
+            bool do_cmd_request( param_node& a_msg_payload, const std::string& a_mantis_routing_key, request_reply_package& a_pkg );
 
             bool send_reply( unsigned a_return_code, const std::string& a_return_msg, request_reply_package& a_pkg ) const;
 
             broker* f_broker;
             std::string f_queue_name;
             std::string f_consumer_tag;
+
+            std::string f_exe_name;
 
             run_server* f_run_server;
             config_manager* f_conf_mgr;
