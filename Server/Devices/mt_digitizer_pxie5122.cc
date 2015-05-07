@@ -263,12 +263,6 @@ namespace mantis
 
         MTDEBUG( mtlog, "Configuring the 5122" );
 
-        // disable the TDC (suggestion by Nathan Powelson from NI to solve the 25 MHz spur problem) NISCOPE ATTR_REF_TRIG_TDC_ENABLE
-        if( ! HANDLE_ERROR( niScope_SetAttributeViBoolean( f_handle, f_chan_string.c_str(), NISCOPE_ATTR_REF_TRIG_TDC_ENABLE, VI_FALSE ) ) )
-        {
-            return false;
-        }
-
         // call to niScope_ConfigureHorizontalTiming
         // Note that the record size request is passed as the 3rd parameter; this is correct regardless of the number of channels in use;
         // This parameter in the NI function is the minimum number of samples in the record for each channel according to the NI-SCOPE documentation.
@@ -317,6 +311,12 @@ namespace mantis
             std::stringstream t_conv;
             t_conv << i_chan;
             std::string t_this_chan_string( t_conv.str() );
+
+            // disable the TDC (suggestion by Nathan Powelson from NI to solve the 25 MHz spur problem)
+            //if( !HANDLE_ERROR( niScope_SetAttributeViBoolean( f_handle, t_this_chan_string.c_str(), NISCOPE_ATTR_REF_TRIG_TDC_ENABLE, VI_FALSE ) ) )
+            //{
+            //    return false;
+            //}
 
             // call to niScpe_ConfigureChanCharacteristics
             // input impedance may be either 50, or 1000000
@@ -390,12 +390,6 @@ namespace mantis
 
         // get the acquisition timeout
         f_acq_timeout = a_dev_config->get_value< double >( "timeout", -1. );
-
-        // disable the TDC (suggestion by Nathan Powelson from NI to solve the 25 MHz spur problem) NISCOPE_ATTR_REF_TRIG_TDC_ENABLE
-        if( ! HANDLE_ERROR( niScope_SetAttributeViBoolean( f_handle, f_chan_string.c_str(), NISCOPE_ATTR_REF_TRIG_TDC_ENABLE, VI_FALSE ) ) )
-        {
-            return false;
-        }
 
         // allocate the buffer if needed
         if( t_must_allocate )
@@ -612,7 +606,7 @@ namespace mantis
 
     bool digitizer_pxie5122::start()
     {
-        return handle_error( niScope_InitiateAcquisition( f_handle ) );
+        return HANDLE_ERROR( niScope_InitiateAcquisition( f_handle ) );
     }
 
     bool digitizer_pxie5122::acquire( block* a_block, timespec& a_stamp_time )
@@ -640,7 +634,7 @@ namespace mantis
     bool digitizer_pxie5122::stop()
     {
         ++f_acquisition_count;
-        return handle_error( niScope_Abort( f_handle ) );
+        return HANDLE_ERROR( niScope_Abort( f_handle ) );
     }
 
     bool digitizer_pxie5122::get_canceled()
@@ -881,13 +875,13 @@ namespace mantis
         if( a_status > 0 )
         {
             MTWARN( mtlog, std::string( "NIScope warning (" ) << a_status << "): " << t_msg_buffer <<
-                    "\tWarning origin: line " << a_origin_line << " of " << a_origin_file );
+                    "\n\tWarning origin: line " << a_origin_line << " of " << a_origin_file );
             return false;
         }
         else // a_status < 0, since VI_SUCCESS == 0
         {
             MTERROR( mtlog, std::string( "NIScope error (" ) << a_status << "): " << t_msg_buffer <<
-                    "\tError origin: line " << a_origin_line << " of " << a_origin_file );
+                    "\n\tError origin: line " << a_origin_line << " of " << a_origin_file );
             return false;
         }
     }
