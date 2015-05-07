@@ -260,6 +260,13 @@ namespace mantis
         }
 
         MTDEBUG( mtlog, "Configuring the 5122" );
+
+        // disable the TDC (suggestion by Nathan Powelson from NI to solve the 25 MHz spur problem) NISCOPE ATTR_REF_TRIG_TDC_ENABLE
+        if( !handle_error( niScope_SetAttributeViBoolean( f_handle, f_chan_string.c_str(), NISCOPE_ATTR_REF_TRIG_TDC_ENABLE, VI_FALSE ) ) )
+        {
+            return false;
+        }
+
         // call to niScope_ConfigureHorizontalTiming
         // Note that the record size request is passed as the 3rd parameter; this is correct regardless of the number of channels in use;
         // This parameter in the NI function is the minimum number of samples in the record for each channel according to the NI-SCOPE documentation.
@@ -381,6 +388,12 @@ namespace mantis
 
         // get the acquisition timeout
         f_acq_timeout = a_dev_config->get_value< double >( "timeout", -1. );
+
+        // disable the TDC (suggestion by Nathan Powelson from NI to solve the 25 MHz spur problem) NISCOPE_ATTR_REF_TRIG_TDC_ENABLE
+        if( !handle_error( niScope_SetAttributeViBoolean( f_handle, f_chan_string.c_str(), NISCOPE_ATTR_REF_TRIG_TDC_ENABLE, VI_FALSE ) ) )
+        {
+            return false;
+        }
 
         // allocate the buffer if needed
         if( t_must_allocate )
