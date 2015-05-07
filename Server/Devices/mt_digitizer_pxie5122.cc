@@ -176,7 +176,14 @@ namespace mantis
 
         //MTINFO( mtlog, "initializing the digitizer" );
 
-        param_node* t_chan_config[ 2 ] = {a_dev_config->node_at( "0" ), a_dev_config->node_at( "1" )};
+        param_node* t_channels_config = a_dev_config->node_at( "channels" );
+        if( t_channels_config == NULL )
+        {
+            MTERROR( mtlog, "Did not find \"channels\" node" );
+            return false;
+        }
+
+        param_node* t_chan_config[ 2 ] = {t_channels_config->node_at( "0" ), t_channels_config->node_at( "1" )};
         if( t_chan_config[ 0 ] == NULL || t_chan_config[ 1 ] == NULL )
         {
             MTERROR( mtlog, "Invalid device config: unable to find configuration for either channel 0 (" << t_chan_config[ 0 ] << ") or channel 1 (" << t_chan_config[ 1 ] << ")" );
@@ -197,6 +204,7 @@ namespace mantis
         {
             ++n_chan_enabled;
             t_chan_enabled[ 1 ] = true;
+            if( t_chan_enabled[ 0 ] ) f_chan_string += ",";
             f_chan_string += "1";
         }
         if( n_chan_enabled == 0 )
@@ -316,7 +324,7 @@ namespace mantis
             // call to niScope_ConfigureVertical
             ViReal64 t_voltage_range = t_chan_config[ i_chan ]->get_value< ViReal64 >( "voltage-range", 0.5 );
             ViReal64 t_voltage_offset = t_chan_config[ i_chan ]->get_value< ViReal64 >( "voltage-offset", 0. );
-            ViInt32 t_coupling = a_dev_config->t_chan_config[ i_chan ]< ViInt32 >( "input-coupling", NISCOPE_VAL_AC );
+            ViInt32 t_coupling = t_chan_config[ i_chan ]->get_value< ViInt32 >( "input-coupling", NISCOPE_VAL_AC );
             if( t_coupling != NISCOPE_VAL_AC && t_coupling != NISCOPE_VAL_DC && t_coupling != NISCOPE_VAL_GND )
             {
                 MTERROR( mtlog, "Invalid input coupling for channel " << i_chan << ": " << t_coupling );
@@ -466,6 +474,8 @@ namespace mantis
                 t_it->set_written();
 
                 //get the time and update the number of live microseconds
+                get_time_monotonic( &t_live_stop_time );
+                
                 f_live_time += time_to_nsec( t_live_stop_time ) - time_to_nsec( t_live_start_time );
 
                 //halt the pci acquisition
@@ -667,7 +677,8 @@ namespace mantis
         MTINFO( mtlog, "Connection successful" );
 
         MTINFO( mtlog, "Configuring the 5122" );
-        f_chan_string = "1";
+        f_chan_string = "0";
+        unsigned t_chan = 0;
 
         // call to niScpe_ConfigureChanCharacteristics
         // input impedance may be either 50, or 1000000
@@ -756,7 +767,7 @@ namespace mantis
         {
             return false;
         }
-        get_calib_params2( 14 /*bit depth*/, s_data_type_size, t_voltage_offset, t_voltage_range, t_coeff_info_array[ 0 ].gain, &f_params );
+        get_calib_params2( 14 /*bit depth*/, s_data_type_size, t_voltage_offset, t_voltage_range, t_coeff_info_array[ 0 ].gain, &(f_params[t_chan]) );
 
         // configure the clock to use the PXIe crate's timing, which is syncronized to the lab atomic clock
         if( !handle_error( niScope_ConfigureClock( f_handle, NISCOPE_VAL_NO_SOURCE, NISCOPE_VAL_NO_SOURCE, NISCOPE_VAL_NO_SOURCE, VI_FALSE ) ) )
@@ -852,12 +863,12 @@ namespace mantis
         niScope_GetErrorMessage( f_handle, a_status, t_buffer_size, t_msg_buffer );
         if( a_status > 0 )
         {
-            MTWARN( mtlog, t_msg_buffer );
+            MTWARN( mtlog, std::string( "NIScope warning (" ) << a_status << "): " << t_msg_buffer );
             return false;
         }
         else // a_status < 0, since VI_SUCCESS == 0
         {
-            MTERROR( mtlog, t_msg_buffer );
+            MTERROR( mtlog, std::string( "NIScope error (" ) << a_status << "): " << t_msg_buffer );
             return false;
         }
     }
