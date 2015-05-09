@@ -1,0 +1,398 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Client &mdash; Mantis 2.8.5 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="Mantis 2.8.5 documentation" href="index.html"/>
+        <link rel="next" title="Device Configuration Standards" href="DeviceConfigStandards.html"/>
+        <link rel="prev" title="Welcome to Mantis’s documentation!" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        
+
+        
+          <a href="index.html" class="icon icon-home"> Mantis
+        
+
+        
+        </a>
+
+        
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+        
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+          
+          
+              <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="">Client</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#usage">Usage</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#examples">Examples</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#full-option-list">Full option list</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#client-options">Client options</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#command-and-target">Command and Target</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#command">Command</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#target">Target</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#instruction-options">Instruction Options</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="DeviceConfigStandards.html">Device Configuration Standards</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="DeviceConfigStandards.html#required-by-the-file-writer">Required by the file writer</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="DeviceConfigStandards.html#may-be-required-in-the-future">May be required in the future</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Reminders.html">Reminders</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Reminders.html#purpose">Purpose</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Reminders.html#using-mantis">Using Mantis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Reminders.html#developing-mantis">Developing Mantis</a></li>
+</ul>
+</li>
+</ul>
+
+          
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">Mantis</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>Client</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/ClientManual.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document">
+            
+  <div class="section" id="client">
+<h1>Client<a class="headerlink" href="#client" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="usage">
+<h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
+<p><code class="docutils literal"><span class="pre">mantis_client</span> <span class="pre">[client</span> <span class="pre">options]</span> <span class="pre">do=[verb]</span> <span class="pre">dest=[queue].[mantis</span> <span class="pre">destination]</span> <span class="pre">[instruction</span> <span class="pre">options]</span></code></p>
+<div class="section" id="examples">
+<h3>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h3>
+<p>Queue name is assumed to be <code class="docutils literal"><span class="pre">mantis</span></code>.  The first two examples show the usage of client options, and in all of the later examples, any client options are left out for clarity.</p>
+<ul>
+<li><p class="first">Read client configuration from a JSON file:</p>
+<div class="highlight-python"><div class="highlight"><pre>mantis_client config=my_config.json
+</pre></div>
+</div>
+</li>
+<li><p class="first">Specify the broker address:</p>
+<div class="highlight-python"><div class="highlight"><pre>mantis_client amqp.broker=myrna.local
+</pre></div>
+</div>
+</li>
+<li><p class="first">Add a PXIe5122 digitizer called pxie1:</p>
+<div class="highlight-python"><div class="highlight"><pre>mantis_client do=cmd dest=mantis.add.device pxie5122=pxie1
+</pre></div>
+</div>
+</li>
+<li><p class="first">Remove a digitizer called my_px1500:</p>
+<div class="highlight-python"><div class="highlight"><pre>mantis_client do=cmd dest=[queue].remove.device.my_px1500
+</pre></div>
+</div>
+</li>
+<li><p class="first">Set the &#8220;enabled&#8221; value of the pxie1 digitizer to <code class="docutils literal"><span class="pre">true</span></code>:</p>
+<div class="highlight-python"><div class="highlight"><pre>mantis_client do=set dest=mantis.devices.pxie1.enabled value=true
+</pre></div>
+</div>
+</li>
+<li><p class="first">Set the run duration to 100 ms:</p>
+<div class="highlight-python"><div class="highlight"><pre>mantis_client do=set dest=mantis.duration value=100
+</pre></div>
+</div>
+</li>
+<li><p class="first">Get the master acquisition configuration from the server; the option to save the configuration as a JSON file is used:</p>
+<div class="highlight-python"><div class="highlight"><pre>mantis_client do=get dest=mantis.acq-config save.json=my_config.json
+</pre></div>
+</div>
+</li>
+<li><p class="first">Replace the server&#8217;s master acquisition configuration with the contents of the specified file:</p>
+<div class="highlight-python"><div class="highlight"><pre>mantis_client do=cmd dest=mantis.acq-config load.json=my_config.json
+</pre></div>
+</div>
+</li>
+<li><p class="first">Submit an acquisition request to the queue:</p>
+<div class="highlight-python"><div class="highlight"><pre>mantis_client do=run dest=mantis file=my_file.egg
+</pre></div>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="full-option-list">
+<h2>Full option list<a class="headerlink" href="#full-option-list" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="client-options">
+<h3>Client options<a class="headerlink" href="#client-options" title="Permalink to this headline">¶</a></h3>
+<p>Load a client config file. This file is parsed and used by the client.
+In it you can specify any option that would otherwise be specified on the command line:</p>
+<div class="highlight-python"><div class="highlight"><pre>config=[json file]
+</pre></div>
+</div>
+<p>Specify the AMQP broker details:</p>
+<div class="highlight-python"><div class="highlight"><pre>amqp.broker=[location (default=localhost)]
+amqp.broker-port=[port # (default=5672)]
+amqp.exchange=[exchange name (default=requests)]
+</pre></div>
+</div>
+</div>
+<div class="section" id="command-and-target">
+<h3>Command and Target<a class="headerlink" href="#command-and-target" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="command">
+<h4>Command<a class="headerlink" href="#command" title="Permalink to this headline">¶</a></h4>
+<p>Tell Mantis what type of instruction it&#8217;s receiving.</p>
+<p>The available commands are:</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">run:</th><td class="field-body"><code class="docutils literal"><span class="pre">do=run</span></code> &#8211; Queue an acquisition with the current acquisition configuration</td>
+</tr>
+<tr class="field-even field"><th class="field-name">get:</th><td class="field-body"><code class="docutils literal"><span class="pre">do=get</span></code> &#8211; Request information from the server</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">set:</th><td class="field-body"><code class="docutils literal"><span class="pre">do=set</span></code> &#8211; Change a setting in the acquisition configuration</td>
+</tr>
+<tr class="field-even field"><th class="field-name">cmd:</th><td class="field-body"><code class="docutils literal"><span class="pre">do=cmd</span></code> &#8211; Run a command (see below)</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="target">
+<h4>Target<a class="headerlink" href="#target" title="Permalink to this headline">¶</a></h4>
+<p>Specify the AMQP queue name and tell Mantis where to direct the instruction.
+Typically much of the information about the instruction is encoded in the target.</p>
+<p>The general form for the target is:</p>
+<div class="highlight-python"><div class="highlight"><pre>dest=[queue].[mantis destination]
+</pre></div>
+</div>
+<p>The target is used in different ways for different commands:</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">run:</th><td class="field-body"><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">dest=[queue]</span></code> &#8211; No further information is needed for queueing an acquisition request.</dt>
+<dd><p class="first last">See the instruction options below.</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">get:</th><td class="field-body"><p class="first"><code class="docutils literal"><span class="pre">dest=[queue].acq-config</span></code> &#8211; Returns the current acquisition configuration.</p>
+<p><code class="docutils literal"><span class="pre">dest=[queue].server-config</span></code> &#8211; Returns the current full configuration for the server.</p>
+<p><code class="docutils literal"><span class="pre">dest=[queue].acq-status</span></code> &#8211; Returns the status of an acquisition request.</p>
+<p><code class="docutils literal"><span class="pre">dest=[queue].server-status</span></code> &#8211; Returns the status of the server, including the queue, server worker (digitizer &amp; writer), and request receiver.</p>
+<p><code class="docutils literal"><span class="pre">dest=[queue].queue</span></code> &#8211; Returns the current acquisition queue, including the UUID and filename for each acquisition request.</p>
+<p><code class="docutils literal"><span class="pre">dest=[queue].queue-size</span></code> &#8211; Returns the size of the acquisition queue.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">set:</th><td class="field-body"><p class="first"><code class="docutils literal"><span class="pre">dest=[queue].[acq</span> <span class="pre">config</span> <span class="pre">item]</span></code> &#8211; Sets the value of an item in the run configuration.
+Requires the &#8220;values&#8221; instruction option below.
+Returns the current run configuration.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">cmd:</th><td class="field-body"><p class="first"><code class="docutils literal"><span class="pre">dest=[queue].add.device</span></code> &#8211; Adds a device to the master run configuration. Requires that the device be specified as an instruction option (see below).</p>
+<p><code class="docutils literal"><span class="pre">dest=[queue].remove.device.[device</span> <span class="pre">name]</span></code> &#8211; Removes a device from the master run configuration.</p>
+<p><code class="docutils literal"><span class="pre">dest=[queue].replace-config</span></code> &#8211; Replaces the server&#8217;s run configuration with the contents of the instruction options, or the JSON file specified in those options (see below).</p>
+<p><code class="docutils literal"><span class="pre">dest=[queue].cancel-acq</span></code> &#8211; Remove an acquisition that is waiting to run from the queue.</p>
+<p><code class="docutils literal"><span class="pre">dest=[queue].clear-queue</span></code> &#8211; Clear scheduled acquisitions from the queue.</p>
+<p><code class="docutils literal"><span class="pre">dest=[queue].start-queue</span></code> &#8211; Start processing the requests in the queue (if the queue had previously been stopped)</p>
+<p><code class="docutils literal"><span class="pre">dest=[queue].stop-queue</span></code> &#8211; Stop processing the requests in the queue (queue is left intact and acquisition in progress is not stopped; restart with <code class="docutils literal"><span class="pre">start-queue</span></code>)</p>
+<p><code class="docutils literal"><span class="pre">dest=[queue].stop-acq</span></code> &#8211; Stop any acquisition that is currently running (queue processing will continue).</p>
+<p><code class="docutils literal"><span class="pre">dest=[queue].stop-all</span></code> &#8211; Stop processing the requests in the queue and any acquisition that is currently running.</p>
+<p class="last"><code class="docutils literal"><span class="pre">dest=[queue].quit-mantis</span></code> &#8211; Stop execution of the Mantis server.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section" id="instruction-options">
+<h3>Instruction Options<a class="headerlink" href="#instruction-options" title="Permalink to this headline">¶</a></h3>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">any:</th><td class="field-body"><p class="first"><code class="docutils literal"><span class="pre">save.json=[filename]</span></code> &#8211; <em>(optional)</em> File in which to save the information returned.  This is primarily useful for saving the run configuration for loading via the client, or saving the full configuration for loading into the server at startup.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">run:</th><td class="field-body"><p class="first"><code class="docutils literal"><span class="pre">file=[filename]</span></code> &#8211; <em>(required)</em> Name of the file that will be created.</p>
+<p><code class="docutils literal"><span class="pre">description=[description]</span></code> &#8211; <em>(optional)</em> Description string</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">get:</th><td class="field-body"><table class="first docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">acq-status:</th><td class="field-body"><code class="docutils literal"><span class="pre">value=[value]</span></code> &#8211; <em>(required)</em> UUID of the run being queried</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">set:</th><td class="field-body"><p class="first"><code class="docutils literal"><span class="pre">value=[value]</span></code> &#8211; <em>(required)</em> Specify the value to which the run-configuration item should be set.  Any values valid in the JSON standard will work, including strings, numbers, and <code class="docutils literal"><span class="pre">true</span></code> or <code class="docutils literal"><span class="pre">false</span></code> for booleans.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">cmd:</th><td class="field-body"><table class="first last docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">add.device:</th><td class="field-body"><p class="first"><code class="docutils literal"><span class="pre">[device</span> <span class="pre">type]=[device</span> <span class="pre">name]</span></code> &#8211; <em>(required)</em> The device type should be one of the valid device types for the server being run.  The device name is the name that will be used to refer to this particular instance of the device in the server configuration.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">run-config:</th><td class="field-body"><p class="first"><code class="docutils literal"><span class="pre">load.json=[filename]</span></code> &#8211; <em>(optional)</em> This JSON file will be parsed by the client, and the contents (plus any other instruction options given) will be used by the server to replace the run configuration.</p>
+<p class="last"><code class="docutils literal"><span class="pre">[other</span> <span class="pre">run</span> <span class="pre">configuration</span> <span class="pre">options]</span></code> &#8211; <em>(optional)</em> These options (plus any given in a loaded configuration file) will be used by the server to replace the run configuration.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="DeviceConfigStandards.html" class="btn btn-neutral float-right" title="Device Configuration Standards" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral" title="Welcome to Mantis’s documentation!" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, Project 8 Collaboration.
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'2.8.5',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
