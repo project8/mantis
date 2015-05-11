@@ -1,20 +1,18 @@
 # Minimum cmake verison 3.0 required by the way CMake handles rpath information on Mac OSX.
 cmake_minimum_required (VERSION 3.0)
-cmake_policy (SET CMP0042 NEW)
 
 #########
 # setup #
 #########
 
-project( Mantis )
-cmake_policy (SET CMP0011 NEW)
+cmake_policy( SET CMP0048 NEW ) # version in project()
+project( Mantis VERSION 2.8.5 )
 
 list( APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/Scarab/cmake )
 
-include( GetVersion )
 include( PackageBuilder )
 
-pbuilder_prepare_project( ${PROJECT_VERSION_MAJOR} ${PROJECT_VERSION_MINOR} ${PROJECT_REVISION} )
+pbuilder_prepare_project()
 
 include_directories( BEFORE 
     ${PROJECT_SOURCE_DIR}/Common

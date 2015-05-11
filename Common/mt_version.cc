@@ -20,9 +20,9 @@ namespace mantis
     char version::s_delimeter = '.';
 
     version::version() :
-            f_major_ver( 0 ),
-            f_minor_ver( 0 ),
-            f_revision( 0 ),
+            f_major_ver( Mantis_VERSION_MAJOR ),
+            f_minor_ver( Mantis_VERSION_MINOR ),
+            f_patch_ver( Mantis_VERSION_PATCH ),
             f_version()
     {
     }
@@ -30,7 +30,7 @@ namespace mantis
     version::version( const std::string& a_ver ) :
                     f_major_ver( 0 ),
                     f_minor_ver( 0 ),
-                    f_revision( 0 ),
+                    f_patch_ver( 0 ),
                     f_version()
     {
         parse( a_ver );
@@ -48,9 +48,9 @@ namespace mantis
     {
         return f_minor_ver;
     }
-    unsigned version::revision() const
+    unsigned version::patch_version() const
     {
-        return f_revision;
+        return f_patch_ver;
     }
 
     const std::string& version::version_str() const
@@ -64,7 +64,7 @@ namespace mantis
         {
             f_major_ver = 0;
             f_minor_ver = 0;
-            f_revision = 0;
+            f_patch_ver = 0;
             f_version = a_ver;
             return true;
         }
@@ -87,21 +87,21 @@ namespace mantis
         std::stringstream t_min_ver_str;
         t_min_ver_str << a_ver.substr(t_delim_pos_1 + 1, t_delim_pos_2 );
 
-        std::stringstream t_rev_str;
-        t_rev_str << a_ver.substr( t_delim_pos_2 + 1 );
+        std::stringstream t_patch_ver;
+        t_patch_ver << a_ver.substr( t_delim_pos_2 + 1 );
 
         t_maj_ver_str >> f_major_ver;
         t_min_ver_str >> f_minor_ver;
-        t_rev_str >> f_revision;
+        t_patch_ver >> f_patch_ver;
         f_version = a_ver;
 
         return true;
     }
 
-    bool version::combine( unsigned a_maj_ver, unsigned a_min_ver, unsigned a_rev )
+    bool version::combine( unsigned a_maj_ver, unsigned a_min_ver, unsigned a_patch_ver )
     {
         std::stringstream t_ver_str;
-        t_ver_str << a_maj_ver << s_delimeter << a_min_ver << s_delimeter << a_rev;
+        t_ver_str << a_maj_ver << s_delimeter << a_min_ver << s_delimeter << a_patch_ver;
         f_version = t_ver_str.str();
         return true;
     }

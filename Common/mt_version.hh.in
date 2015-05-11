@@ -16,9 +16,8 @@
 
 #define Mantis_VERSION_MAJOR @Mantis_VERSION_MAJOR@
 #define Mantis_VERSION_MINOR @Mantis_VERSION_MINOR@
-#define Mantis_REVISION @Mantis_REVISION@
+#define Mantis_VERSION_PATCH @Mantis_VERSION_PATCH@
 #define Mantis_VERSION @Mantis_VERSION@
-#define Mantis_FULL_VERSION @Mantis_FULL_VERSION@
 #define Mantis_PACKAGE_NAME @Mantis_PACKAGE_NAME@
 
 #define Mantis_GIT_COMMIT @Mantis_GIT_COMMIT@
@@ -39,20 +38,20 @@ namespace mantis
             
             unsigned major_version() const;
             unsigned minor_version() const;
-            unsigned revision() const;
+            unsigned patch_version() const;
             
             const std::string& version_str() const;
             
             bool parse( const std::string& a_ver );
             
-            bool combine( unsigned a_maj_ver, unsigned a_min_ver, unsigned a_rev );
+            bool combine( unsigned a_maj_ver, unsigned a_min_ver, unsigned a_patch_ver );
             
         private:
             static char s_delimeter;
         
             unsigned f_major_ver;
             unsigned f_minor_ver;
-            unsigned f_revision;
+            unsigned f_patch_ver;
             std::string f_version;
     };
 }
