@@ -14,8 +14,12 @@
 #include "M3Types.hh"
 #include "M3Version.hh"
 
+#include <limits> // for numeric_limits<>::max
 #include <cstring> // for memcpy()
 using std::stringstream;
+
+// for using numeric_limits<>::max in windows
+#define NOMINMAX
 
 namespace mantis
 {
@@ -30,7 +34,7 @@ namespace mantis
             f_stream( NULL ),
             f_record( NULL ),
             f_data( NULL ),
-            f_last_acquisition_id( UINT32_MAX ),
+            f_last_acquisition_id( std::numeric_limits< uint32_t >::max() ),
             f_dev_mgr( NULL )
     {
     }
