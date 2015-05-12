@@ -6,4 +6,4 @@
 	url = https://github.com/project8/scarab.git
 [submodule "SimpleAmqpClient"]
 	path = SimpleAmqpClient
-	url = https://github.com/alanxz/SimpleAmqpClient.git
+	url = https://github.com/project8/SimpleAmqpClient.git
