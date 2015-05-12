@@ -1,27 +1,62 @@
 Mantis
 ======
-Mantis is the data-acquisition software for the Project 8 collaboration.
 
-The package is divided into a Server component that runs the digitizer and 
-optionally records the data files, and a Client component that makes run requests and 
-optionally writes the data files.  The client and server can be run on the same machine, 
-or communicate with one another over a network.
+Mantis is the data-acquisition software package for the Project 8 collaboration.
 
-It is currently able to record data taken from a Signatec PX1500 digitizer.
+The main component of Mantis is the server, which runs any number of data-acquisition 
+devices.  The server is controlled remotely by a client.  The Mantis package includes 
+a client, but other clients can also be used (e.g. [Dripline](https://github.com/project8/dripline)).
+The [AMQP](https://www.amqp.org/) protocol is used for communication between the 
+client and server.
+
+Mantis can be extended to control a variety of data-acquisition devices.  The devices that 
+are or have been supported include:
+
+* National Instruments PXIe5122 (current)
+* ROACH1 (incomplete)
+* Signatec PX1500 (past)
+* Signatec PX14400 (past)
+* Keysight U1084A (past; incomplete)
+
+Two software-based test digitizers are also included with Mantis.
+
 
 Dependencies
 ------------
-- Google protocol buffers
-- PX1500 driver software (if building the server with the PX1500 enabled)
 
-Monarch, a previous dependency, is now included as a submodule.
+**External**
+- CMake (3.0 or better)
+- Boost (atomic, chrono\*, system\*, uuid; 1.46 or better)
+- HDF5\*
+- pthread\**
+- rabbitmq-c\*
+- Drivers for any devices that will be used
 
-Other external packages included in the distributed code include rapidJSON and the
-Boost atomic library.
+\* dependency via a submodule
+\*\* not required in Windows
+
+**Submodules** (included with Mantis; must be fetched via Git)
+- [Monarch](https://github.com/project8/monarch) (and its submodule, [libthorax](https://github.com/project8/libthorax))
+- [SimpleAmqpClient](https://github.com/project8/SimpleAmqpClient)
+- [Scarab](https://github.com/project8/scarab)
+
+**Distributed Code** (included with Mantis directly)
+- RapidJSON
+- msgpack-c
+
+
+Operating System Support
+------------------------
+
+* Mac OS X (usually tested on OS X 10.10)
+* Linux (usually tested on Debian Wheezy)
+* Windows (usually tested on Windows 7)
+
 
 Installing
 ----------
-Mantis is installed using CMake (version 2.8 or better).
+
+Mantis is installed using CMake (version 3.0 or better).
 We recommend an out-of-source build:
 ```
   >  mkdir build
@@ -45,124 +80,33 @@ The library, binaries, and header files will be installed in the
 lib, bin, and include subdirectories. The default install prefix is the
 build directory.
 
+
 Instructions for Use
 --------------------
-### Configuration
-Executables are configured in four stages, with each stage able to overwrite 
-settings from the previous stages:
- 1. Default configuration (hard-coded)
- 2. Configuration file (json format)
- 3. ~~json given on the command line~~ (NOTE: does not currently work)
- 4. Individual command-line options
 
-#### Available configuration options
-- Server
-    - `port` (integer; required) -- port number to open for communication with clients
-    - `digitizer` (string; required) -- name of the digitizer to use:
-        - `px1500` -- Signatec PX1500
-    - `buffer-size` (integer; required) -- the number of records that make up the DAQ buffer
-    - `block-size` (integer; required) -- the number of samples in each block; record_size = block-size / n_channels
-    - `record-size` (integer; deprecated) -- this setting is deprecated, and currently maintained for backwards compatibility; NOTE that it actually sets the block size, not the record size!
-
-- Client
-    - `file-writer` (string; required) -- specify whether the client or server writes the files
-        - `server` -- data is written by the server; no data is transferred over the network connection
-        - `client` -- data is transferred to and written to disk by the client
-    - `port` (integer; required) -- port number to use for communication with the server
-    - `host` (string; required) -- address at which to contact the server
-        - localhost` -- for servers and clients running on the same machine
-        - `xxx.xxx.xxx.xxx` -- IP address of the server
-        - `some.address.edu` -- Domain name of the server
-    - `client-port` (integer; optional) -- port number of the client for file writing; this is only needed 
-    if the client will be writing files, and even so, if it is not provided, port+1 will be used
-    - `client-host` (string; optional) -- host address of the client for file writing; this is only needed 
-    if the client will be writing files.  See "host" for available options.
-    - `filename` (string; required) -- path and name of the data file to be created
-    - `rate` (integer; required) -- digitization rate in MHz
-    - `duration` (integer; required) -- time length of the data file in ms
-    - `description` (string; required) -- a description string for the egg header
-    - `mode` (integer; required) -- digitizer-specific mode of operation
-        - `PX1500`
-            -  `0` = single channel
-            -  `1` = dual-channel; interleaved samples
-            -  `2` = dual-channel; separated samples
-
-All required configuration options have a hard-coded default, so a value will be set even if it isn't specified by the user.
-
-#### Configuration files
-The configuration file is specified on the command line with `config=[filename]`
-
-Examples:
-- Server
+The server is typically started with:
 ```
-    {
-        "port": 4587,
-        "digitizer": "px1500",
-        "buffer-size": 512,
-        "record-size": 4194304
-    }
+  > mantis_server amqp.broker=my.server
 ```
 
-- Client
+The formula for running the client is:
 ```
-    {
-        "port": 4587,
-        "host": "localhost",
-        "file": "some-file.egg",
-        "rate": "500.0",
-        "duration": "1000.0"
-    }
-``` 
-#### Command-line options
-You can use individual command-line options to overwrite specific configuration
-values.  The format for options is: `[name]=[value]`
-For example:
-- `port=12345`
-- `file="a-different-filename.egg"`
-
-### Executables
-Both the client and server can be exited nicely using either `ctrl-c` or `ctrl-\`. 
-
-(Technical details: `SIGINT` and `SIGQUIT` are both caught and will initiate a shutdown of 
-the client and server nicely. This signals can be used by other applications 
-to control the server or client.)
-
-#### Server
-This program is intended to be run in the background on the server machine.  
-It just sits and waits for client programs to submit run request objects.  
-When received, the run requests are put onto the back of a queue from whose 
-front a worker thread pops the requests, generating the corresponding data files. 
-In principle a nearly arbitrary number of stacked requests can be dealt with 
-(up to 10 have been tested).  The server keeps track of all submitted requests 
-along with their various states of completion and sends out status objects 
-every second to waiting clients.  At the end of a run, a summary response 
-object with live-time and dead time statistics is sent to the client.
-Usage is:
-
-```
-$> mantis_server config=server-config.json
+  > mantis_client [client options] do=[verb] dest=[queue].[mantis destination] [instruction options]
 ```
 
-#### Client
-This program is intended to be run on anyone's computer or the server machine itself.  
-When run it submits a request object to the server, after which it receives a series 
-of status objects.  After a received status object indicates the run is complete, 
-the client program spits out the run summary. Usage is:
+For more detailed instructions on running the client, please see the [Client Manual](http://www.project8.org/mantis/ClientManual.html)
 
-```
-$> mantis_client config=client-config.json file=new-filename.egg description="this is an awesome run"
-```
 
-Versioning Policy
------------------
-* Mantis will use [Semantic Versioning](http://semver.org): MAJOR:MINOR:REVISION.
-* Version numbers should be incremented when changes are introduced into the Master branch.
-* Minor changes that do not affect client/server communication or egg file format shall be accompanied by a REVISION increment.
-* Changes that affect the client/server communication or the egg file format shall be accompanied by a MINOR version increment.
-* Major changes to the structure of Mantis shall be accompanied by a MAJOR version increment.
-* The server shall require that clients communicating with it have the same MAJOR and MINOR versions.
+Documentation
+-------------
 
-Potential Issues
-----------------
-* Once running, the server port is wide open and therefore totally vulnerable
-* There's no way to even optionally tell a run from the command line whether it's signal, background or some other type
+Hosted at: http://www.project8.org/mantis/ClientManual.html
+
+
+Development
+-----------
+
+The Git workflow used is git-flow:
+* http://nvie.com/posts/a-successful-git-branching-model/
+We suggest that you use the aptly-named git extension, git-flow, which is available from commonly-used package managers:
+* https://github.com/nvie/gitflow
