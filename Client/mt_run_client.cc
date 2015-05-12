@@ -5,22 +5,22 @@
  *      Author: nsoblath
  */
 
+#define MANTIS_API_EXPORTS
+
 #include "mt_run_client.hh"
 
-#include "mt_client_file_writing.hh"
-#include "mt_client_worker.hh"
-#include "mt_client.hh"
+#include "mt_broker.hh"
+#include "mt_connection.hh"
+#include "mt_constants.hh"
 #include "mt_exception.hh"
 #include "mt_logger.hh"
-#include "mt_run_context_dist.hh"
-#include "mt_signal_handler.hh"
-#include "mt_thread.hh"
+#include "mt_param_json.hh"
 #include "mt_version.hh"
 #include "thorax.hh"
 
 #include <algorithm> // for min
 #include <string>
-#include <unistd.h>
+
 using std::string;
 
 
@@ -28,10 +28,12 @@ namespace mantis
 {
     MTLOGGER( mtlog, "run_client" );
 
-    run_client::run_client( const param_node* a_node, const string& a_exe_name ) :
-            f_config( *a_node ),
+    run_client::run_client( const param_node& a_node, const string& a_exe_name, const string& a_exchange ) :
+            //callable(),
+            f_config( a_node ),
             f_exe_name( a_exe_name ),
-            f_canceled( false ),
+            f_exchange( a_exchange ),
+            //f_canceled( false ),
             f_return( 0 )
     {
     }
@@ -42,438 +44,322 @@ namespace mantis
 
     void run_client::execute()
     {
-        MTINFO( mtlog, "creating request objects..." );
+        broker* t_broker = broker::get_instance();
 
-        bool t_client_writes_file = true;
-        if( f_config.get_value< string >( "file-writer" ) == std::string( "server" ) )
+        MTINFO( mtlog, "Creating request" );
+
+        std::string t_request_type( f_config.get_value( "do", "" ) );
+        f_config.erase( "do" );
+
+        std::string t_routing_key( f_config.get_value( "dest", "mantis" ) );
+        f_config.erase( "dest" );
+
+        param_node t_save_node;
+        if( f_config.has( "save" ) )
         {
-            t_client_writes_file = false;
+            t_save_node = *(f_config.node_at( "save" ));
         }
+        f_config.erase( "save" );
 
-        string t_request_host = f_config.get_value< string >( "host" );
-        int t_request_port = f_config.get_value< int >( "port" );
+        // now all that remains in f_config should be values to pass to the server as arguments to the request
 
-        string t_write_host;
-        int t_write_port = -1;
-        if( t_client_writes_file )
+        std::string t_request_str;
+        if( t_request_type == "run" )
         {
-            t_write_host = f_config.get_value< string >( "client-host" );
-            t_write_port = f_config.get_value< int >( "client-port", t_request_port + 1 );
-        }
-
-        double t_duration = f_config.get_value< double >( "duration" );
-
-        run_context_dist t_run_context;
-
-        request* t_request = t_run_context.lock_request_out();
-        t_request->set_write_host( t_write_host );
-        t_request->set_write_port( t_write_port );
-        t_request->set_file( f_config.get_value< string >( "file" ) );
-        t_request->set_description( f_config.get_value< string >( "description", "default client run" ) );
-        t_request->set_date( get_absolute_time_string() );
-        t_request->set_mode( (request_mode_t)f_config.get_value< int >( "mode" ) );
-        t_request->set_rate( f_config.get_value< double >( "rate" ) );
-        t_request->set_duration( t_duration );
-        t_request->set_file_write_mode( request_file_write_mode_t_local );
-        t_request->set_client_exe( f_exe_name );
-        t_request->set_client_version( TOSTRING(Mantis_VERSION) );
-        t_request->set_client_commit( TOSTRING(Mantis_GIT_COMMIT) );
-        string t_config_as_string;
-        param_output_json::write_string( f_config, t_config_as_string, param_output_json::k_compact );
-        t_request->set_client_config( t_config_as_string );
-        if( t_client_writes_file )
-        {
-            t_request->set_file_write_mode( request_file_write_mode_t_remote );
-        }
-        t_run_context.unlock_outbound();
-
-        // start the client for sending the request
-        MTINFO( mtlog, "connecting with the server...");
-
-        client* t_request_client;
-        try
-        {
-            t_request_client = new client( t_request_host, t_request_port );
-        }
-        catch( exception& e )
-        {
-            MTERROR( mtlog, "unable to start client: " << e.what() );
-            f_return = RETURN_ERROR;
-            return;
-        }
-
-        t_run_context.set_connection( t_request_client );
-
-
-        MTINFO( mtlog, "starting communicator" );
-
-        thread t_comm_thread( &t_run_context );
-
-        signal_handler t_sig_hand;
-
-        try
-        {
-            t_sig_hand.push_thread( &t_comm_thread );
-
-            t_comm_thread.start();
-            t_run_context.wait_until_active();
-        }
-        catch( exception& e )
-        {
-            MTERROR( mtlog, "an error occurred while running the communication thread" );
-            f_return = RETURN_ERROR;
-            return;
-        }
-
-
-        MTINFO( mtlog, "sending request..." )
-
-        if( ! t_run_context.push_request() )
-        {
-            t_run_context.cancel();
-            t_comm_thread.cancel();
-            delete t_request_client;
-            MTERROR( mtlog, "error sending request" );
-            f_return = RETURN_ERROR;
-            return;
-        }
-
-
-        setup_loop t_setup_loop( &t_run_context );
-        thread t_setup_loop_thread( &t_setup_loop );
-        t_sig_hand.push_thread( & t_setup_loop_thread );
-        t_setup_loop_thread.start();
-        // wait briefly to allow server to respond
-        usleep( 1000 );
-        t_setup_loop_thread.join();
-        if( ! t_sig_hand.got_exit_signal() )
-        {
-            t_sig_hand.pop_thread();
-        }
-        if( t_setup_loop.get_return() == RETURN_ERROR )
-        {
-            MTERROR( mtlog, "exiting due to error during setup loop" );
-            t_run_context.cancel();
-            t_comm_thread.cancel();
-            delete t_request_client;
-            f_return = RETURN_ERROR;
-            return;
-        }
-
-        // Client has now received Acknowledged status from the server
-        // Status message should now contain any information the client might need from the server
-        // Server is now waiting for a client status update
-
-
-        // get the data type size
-        status* t_status = t_run_context.lock_status_in();
-        //unsigned t_data_type_size = t_status->data_type_size();
-        // record receiver is given data_type_size in client_file_writing's constructor
-        f_config.add( "data-type-size", new param_value( t_status->data_type_size() ) );
-        f_config.add( "bit-depth", new param_value( t_status->bit_depth() ) );
-        f_config.add( "voltage-min", new param_value( t_status->voltage_min() ) );
-        f_config.add( "voltage-range", new param_value( t_status->voltage_range() ) );
-        t_run_context.unlock_inbound();
-
-        /****************************************************************/
-        /*********************** file writing ***************************/
-        /****************************************************************/
-        client_file_writing* t_file_writing = NULL;
-        if( t_client_writes_file )
-        {
-            MTINFO( mtlog, "creating file-writing objects..." );
-
-            try
+            if( ! do_run_request( t_request_str ) )
             {
-                t_file_writing = new client_file_writing( &f_config, &t_run_context, t_write_port );
-            }
-            catch( exception& e )
-            {
-                MTERROR( mtlog, "error setting up file writing: " << e.what() );
-                t_run_context.cancel();
-                t_comm_thread.cancel();
-                delete t_request_client;
+                MTERROR( mtlog, "There was an error while processing the run request" );
                 f_return = RETURN_ERROR;
                 return;
             }
-
         }
-        /****************************************************************/
-        /****************************************************************/
-        /****************************************************************/
-
-
-        MTINFO( mtlog, "transmitting status: ready" )
-
-        t_run_context.lock_client_status_out()->set_state( client_status_state_t_ready );
-
-        bool t_push_result = t_run_context.push_client_status_no_mutex();
-        t_run_context.unlock_outbound();
-        if( ! t_push_result )
+        else if( t_request_type == "get" )
         {
-            MTERROR( mtlog, "error sending client status" );
-            delete t_file_writing;
-            t_run_context.cancel();
-            t_comm_thread.cancel();
-            delete t_request_client;
+            if( ! do_get_request( t_request_str ) )
+            {
+                MTERROR( mtlog, "There was an error while processing the get request" );
+                f_return = RETURN_ERROR;
+                return;
+            }
+        }
+        else if( t_request_type == "set" )
+        {
+            if( ! do_set_request( t_request_str ) )
+            {
+                MTERROR( mtlog, "There was an error while processing the set request" );
+                f_return = RETURN_ERROR;
+                return;
+            }
+        }
+        else if( t_request_type == "cmd" )
+        {
+            if( ! do_cmd_request( t_request_str ) )
+            {
+                MTERROR( mtlog, "There was an error while processing the cmd request" );
+                f_return = RETURN_ERROR;
+                return;
+            }
+        }
+        else
+        {
+            MTERROR( mtlog, "Unknown or missing request type: " << t_request_type );
             f_return = RETURN_ERROR;
             return;
         }
 
-        run_loop t_run_loop( &t_run_context, t_file_writing );
-        thread t_run_loop_thread( &t_run_loop );
-        t_sig_hand.push_thread( & t_run_loop_thread );
-        t_run_loop_thread.start();
-        t_run_loop_thread.join();
-        if( ! t_sig_hand.got_exit_signal() )
+
+        // strings for passing to the various do_[type]_request functions
+        std::string t_reply_to = broker::get_instance()->get_connection().amqp()->DeclareQueue( "" );
+        std::string t_consumer_tag = broker::get_instance()->get_connection().  amqp()->BasicConsume( t_reply_to );
+        MTDEBUG( mtlog, "Consumer tag for reply: " << t_consumer_tag );
+
+        MTINFO( mtlog, "Sending request with routing key <" << t_routing_key << ">" );
+
+        AmqpClient::BasicMessage::ptr_t t_message = AmqpClient::BasicMessage::Create( t_request_str );
+        t_message->ContentEncoding( "application/json" );
+        std::string t_correlation_id;
+        t_message->CorrelationId( t_correlation_id ); // currently always ""
+        t_message->ReplyTo( t_reply_to );
+
+        try
         {
-            t_sig_hand.pop_thread();
+            t_broker->get_connection().amqp()->BasicPublish( f_exchange, t_routing_key, t_message, true, true );
         }
-        int t_run_success = t_run_loop.get_return();
-        if( t_run_success == RETURN_ERROR )
+        catch( AmqpClient::MessageReturnedException& e )
         {
-            MTERROR( mtlog, "exiting due to error during run loop" );
-            t_run_context.cancel();
-            t_comm_thread.cancel();
-            delete t_request_client;
+            MTERROR( mtlog, "Message could not be sent: " << e.what() );
+            f_return = RETURN_ERROR;
+            return;
+        }
+        catch( std::exception& e )
+        {
+            MTERROR( mtlog, "Error publishing to queue: " << e.what() );
             f_return = RETURN_ERROR;
             return;
         }
 
-        /****************************************************************/
-        /*********************** file writing ***************************/
-        /****************************************************************/
-        if( t_client_writes_file )
+        if( ! t_consumer_tag.empty() )  // then we should wait for a reply
         {
-            if( t_run_success < 0 )
+            MTINFO( mtlog, "Waiting for a reply from the server; use ctrl-c to cancel" );
+
+            // blocking call to wait for incoming message
+            AmqpClient::Envelope::ptr_t t_envelope = t_broker->get_connection().amqp()->BasicConsumeMessage( t_consumer_tag );
+
+            MTINFO( mtlog, "Response received" );
+
+            param_node* t_msg_node = NULL;
+            if( t_envelope->Message()->ContentEncoding() == "application/json" )
             {
-                t_file_writing->cancel();
+                t_msg_node = param_input_json::read_string( t_envelope->Message()->Body() );
+            }
+            else
+            {
+                MTERROR( mtlog, "Unable to parse message with content type <" << t_envelope->Message()->ContentEncoding() << ">" );
             }
 
-            MTINFO( mtlog, "waiting for record reception to end..." );
+            MTINFO( mtlog, "Response from Mantis:\n" << *t_msg_node->node_at( "payload" ) );
 
-            t_file_writing->wait_for_finish();
-
-            MTINFO( mtlog, "shutting down record receiver" );
-
-            delete t_file_writing;
-            t_file_writing = NULL;
-        }
-        /****************************************************************/
-        /****************************************************************/
-        /****************************************************************/
-
-
-
-        if( t_run_success > 0 || t_run_success == RETURN_CANCELED )
-        {
-            response* t_response;
-            // wait for a completed response from the server
-            bool t_can_get_response = true;
-            while( t_can_get_response )
+            // optionally save "master-config" from the response
+            if( t_save_node.size() != 0 )
             {
-                t_response = t_run_context.lock_response_in();
-                if( t_response->state() == response_state_t_complete ) break;
-                t_run_context.unlock_inbound();
-
-                t_can_get_response = t_run_context.wait_for_response();
-            }
-
-            if( t_can_get_response )
-            {
-                MTINFO( mtlog, "printing response from server..." );
-
-                MTINFO( mtlog, "digitizer summary:\n"
-                        << "  record count: " << t_response->digitizer_records() << " [#]\n"
-                        << "  acquisition count: " << t_response->digitizer_acquisitions() << " [#]\n"
-                        << "  live time: " << t_response->digitizer_live_time() << " [sec]\n"
-                        << "  dead time: " << t_response->digitizer_dead_time() << " [sec]\n"
-                        << "  megabytes: " << t_response->digitizer_megabytes() << " [Mb]\n"
-                        << "  rate: " << t_response->digitizer_rate() << " [Mb/sec]\n");
-
-
-                MTINFO( mtlog, "writer summary:\n"
-                        << "  record count: " << t_response->writer_records() << " [#]\n"
-                        << "  acquisition count: " << t_response->writer_acquisitions() << " [#]\n"
-                        << "  live time: " << t_response->writer_live_time() << " [sec]\n"
-                        << "  megabytes: " << t_response->writer_megabytes() << "[Mb]\n"
-                        << "  rate: " << t_response->writer_rate() << " [Mb/sec]\n");
+                if( t_save_node.has( "json" ) )
+                {
+                    string t_save_filename( t_save_node.get_value( "json" ) );
+                    const param_node* t_master_config_node = t_msg_node->node_at( "payload" )->node_at( "content" );
+                    if( t_master_config_node == NULL )
+                    {
+                        MTERROR( mtlog, "Node \"master-config\" is not present to save" );
+                    }
+                    else
+                    {
+                        param_output_json::write_file( *t_master_config_node, t_save_filename, param_output_json::k_pretty );
+                    }
+                }
+                else
+                {
+                    MTERROR( mtlog, "Save instruction did not contain a valid file type");
+                }
 
             }
 
-            t_run_context.unlock_inbound();
+            delete t_msg_node;
         }
 
-        t_run_context.cancel();
-        t_comm_thread.cancel();
-        delete t_request_client;
+        f_return = RETURN_SUCCESS;
 
-        f_return = t_run_success;
         return;
     }
-
+    /*
     void run_client::cancel()
     {
         f_canceled.store( true );
         return;
     }
-
+    */
     int run_client::get_return()
     {
         return f_return;
     }
 
-
-
-
-    run_client::setup_loop::setup_loop( run_context_dist* a_run_context ) :
-            f_run_context( a_run_context ),
-            f_canceled( false ),
-            f_return( RETURN_ERROR )
-    {}
-    run_client::setup_loop::~setup_loop()
-    {}
-
-    void run_client::setup_loop::execute()
+    bool run_client::do_run_request( std::string& a_request_str )
     {
-        f_run_context->wait_for_status();
-        while( ! f_canceled.load() )
+        if( ! f_config.has( "file" ) )
         {
-            status* t_status = f_run_context->lock_status_in();
-            status_state_t t_state = t_status->state();
-            string t_error_msg = t_status->error_message();
-            f_run_context->unlock_inbound();
-
-            if( t_state == status_state_t_acknowledged )
-            {
-                MTINFO( mtlog, "run request acknowledged...\n" );
-                f_return = RETURN_SUCCESS;
-                break;
-            }
-            else if( t_state == status_state_t_error )
-            {
-                MTERROR( mtlog, "error reported: " << t_error_msg << "\n" );
-                f_return = RETURN_ERROR;
-                break;
-            }
-            else if( t_state == status_state_t_revoked )
-            {
-                MTINFO( mtlog, "request revoked: " << t_error_msg << "\n" );
-                f_return = RETURN_ERROR;
-                break;
-            }
-            else if( t_state != status_state_t_created )
-            {
-                MTERROR( mtlog, "server reported unusual status: " << t_state );
-                f_return = RETURN_ERROR;
-                break;
-            }
-
-            if( f_run_context->wait_for_status() )
-                continue;
-
-            MTERROR( mtlog, "(setup loop) unable to communicate with server" );
-            f_return = RETURN_ERROR;
-            break;
+            MTERROR( mtlog, "The filename to be saved must be specified with the \"file\" option" );
+            return false;
         }
-        return;
-    }
 
-    void run_client::setup_loop::cancel()
-    {
-        f_canceled.store( true );
-        return;
-    }
+        param_node* t_payload_node = new param_node( f_config ); // copy of f_config, which should consist of only the request arguments
+        t_payload_node->add( "file", *f_config.at( "file ") ); // copy the file node
+        if( f_config.has( "description" ) ) t_payload_node->add( "description", *f_config.at( "description" ) ); // (optional) copy the description node
 
-    int run_client::setup_loop::get_return()
-    {
-        return f_return;
-    }
+        param_node* t_sender_node = new param_node();
+        t_sender_node->add( "commit", param_value( TOSTRING(Mantis_GIT_COMMIT) ) );
+        t_sender_node->add( "exe", param_value( f_exe_name ) );
+        t_sender_node->add( "version", param_value( TOSTRING(Mantis_VERSION) ) );
+        t_sender_node->add( "package", param_value( TOSTRING(Mantis_PACKAGE_NAME) ) );
 
+        MTDEBUG( mtlog, "Sender node:\n" << *t_sender_node );
 
-    run_client::run_loop::run_loop( run_context_dist* a_run_context, client_file_writing* a_file_writing ) :
-            f_run_context( a_run_context ),
-            f_file_writing( a_file_writing ),
-            f_canceled( false ),
-            f_return( RETURN_ERROR )
-    {}
-    run_client::run_loop::~run_loop()
-    {}
+        param_node t_request;
+        t_request.add( "msgtype", param_value( T_REQUEST ) );
+        t_request.add( "msgop", param_value( OP_RUN ) );
+        t_request.add( "timestamp", param_value( get_absolute_time_string() ) );
+        t_request.add( "sender_info", t_sender_node );
+        t_request.add( "payload", t_payload_node ); // use t_payload_node as is
 
-    void run_client::run_loop::execute()
-    {
-        f_run_context->wait_for_status();
-        while( ! f_canceled.load() )
+        if(! param_output_json::write_string( t_request, a_request_str, param_output_json::k_compact ) )
         {
-            status* t_status = f_run_context->lock_status_in();
-            status_state_t t_state = t_status->state();
-            string t_error_msg = t_status->error_message();
-            f_run_context->unlock_inbound();
-
-            if( t_state == status_state_t_waiting )
-            {
-                MTINFO( mtlog, "waiting for run...\n" );
-                //continue;
-            }
-            else if( t_state == status_state_t_started )
-            {
-                MTINFO( mtlog, "run has started...\n" );
-                //continue;
-            }
-            else if( t_state == status_state_t_running )
-            {
-                MTINFO( mtlog, "run is in progress...\n" );
-                //continue;
-            }
-            else if( t_state == status_state_t_stopped )
-            {
-                MTINFO( mtlog, "run status: stopped; data acquisition has finished\n" );
-                f_return = RETURN_SUCCESS;
-                break;
-            }
-            else if( t_state == status_state_t_error )
-            {
-                MTINFO( mtlog, "error reported: " << t_error_msg << "\n" );
-                f_return = RETURN_ERROR;
-                break;
-            }
-            else if( t_state == status_state_t_canceled )
-            {
-                MTINFO( mtlog, "cancellation reported: " << t_error_msg << ";\n\t some data may have been written\n" );
-                f_return = RETURN_CANCELED;
-                break;
-            }
-            else if( t_state == status_state_t_revoked )
-            {
-                MTINFO( mtlog, "request revoked; run did not take place\n" );
-                f_return = RETURN_REVOKED;
-                break;
-            }
-            else if( f_file_writing != NULL && f_file_writing->is_done() )
-            {
-                MTINFO( mtlog, "file writing is done, but run status still does not indicate run is complete"
-                        << "                exiting run now!" );
-                f_return = RETURN_CANCELED;
-                break;
-            }
-
-            if( f_run_context->wait_for_status() )
-                continue;
-
-            MTERROR( mtlog, "(run loop) unable to communicate with server" );
-            f_return = RETURN_ERROR;
-            break;
+            MTERROR( mtlog, "Could not convert request to string" );
+            return false;
         }
+
+        return true;
     }
 
-    void run_client::run_loop::cancel()
+    bool run_client::do_get_request( std::string& a_request_str )
     {
-        f_canceled.store( true );
-        return;
+        param_node* t_payload_node = new param_node();
+
+        if( f_config.has( "value" ) )
+        {
+            param_array* t_values_array = new param_array();
+            t_values_array->push_back( f_config.remove( "value" ) );
+            t_payload_node->add( "values", t_values_array );
+        }
+
+        param_node* t_sender_node = new param_node();
+        t_sender_node->add( "commit", param_value( TOSTRING(Mantis_GIT_COMMIT) ) );
+        t_sender_node->add( "exe", param_value( f_exe_name ) );
+        t_sender_node->add( "version", param_value( TOSTRING(Mantis_VERSION) ) );
+        t_sender_node->add( "package", param_value( "" ) );
+
+        param_node t_request;
+        t_request.add( "msgtype", param_value( T_REQUEST ) );
+        t_request.add( "msgop", param_value( OP_GET ) );
+        t_request.add( "timestamp", param_value( get_absolute_time_string() ) );
+        t_request.add( "sender_info", t_sender_node );
+        t_request.add( "payload", t_payload_node ); // use t_payload_node as is
+
+        if(! param_output_json::write_string( t_request, a_request_str, param_output_json::k_compact ) )
+        {
+            MTERROR( mtlog, "Could not convert request to string" );
+            return false;
+        }
+
+        return true;
     }
-    int run_client::run_loop::get_return()
+
+    bool run_client::do_set_request( std::string& a_request_str )
     {
-        return f_return;
+        if( ! f_config.has( "value" ) )
+        {
+            MTERROR( mtlog, "No \"value\" option given" );
+            return false;
+        }
+
+        param_array* t_values_array = new param_array();
+        t_values_array->push_back( f_config.remove( "value" ) );
+
+        param_node* t_payload_node = new param_node();
+        t_payload_node->add( "values", t_values_array );
+
+        param_node* t_sender_node = new param_node();
+        t_sender_node->add( "commit", param_value( TOSTRING(Mantis_GIT_COMMIT) ) );
+        t_sender_node->add( "exe", param_value( f_exe_name ) );
+        t_sender_node->add( "version", param_value( TOSTRING(Mantis_VERSION) ) );
+        t_sender_node->add( "package", param_value( "" ) );
+
+        param_node t_request;
+        t_request.add( "msgtype", param_value( T_REQUEST ) );
+        t_request.add( "msgop", param_value( OP_SET ) );
+        t_request.add( "timestamp", param_value( get_absolute_time_string() ) );
+        t_request.add( "sender_info", t_sender_node );
+        t_request.add( "payload", t_payload_node ); // use t_payload_node as is
+
+        MTDEBUG( mtlog, "Sending message:\n" << t_request );
+
+        if(! param_output_json::write_string( t_request, a_request_str, param_output_json::k_compact ) )
+        {
+            MTERROR( mtlog, "Could not convert request to string" );
+            return false;
+        }
+
+        return true;
+    }
+
+    bool run_client::do_cmd_request( std::string& a_request_str )
+    {
+        param_node* t_payload_node = new param_node();
+
+        // for the load instruction, the instruction node should be replaced by the contents of the file specified
+        if( f_config.has( "load" ) )
+        {
+            if( ! f_config.node_at( "load" )->has( "json" ) )
+            {
+                MTERROR( mtlog, "Load instruction did not contain a valid file type");
+                delete t_payload_node;
+                return false;
+            }
+
+            string t_load_filename( f_config.node_at( "load" )->get_value( "json" ) );
+            param_node* t_node_from_file = param_input_json::read_file( t_load_filename );
+            if( t_node_from_file == NULL )
+            {
+                MTERROR( mtlog, "Unable to read JSON file <" << t_load_filename << ">" );
+                delete t_payload_node;
+                return false;
+            }
+
+            t_payload_node->merge( *t_node_from_file );
+            f_config.erase( "load" );
+        }
+
+        // at this point, all that remains in f_config should be other options that we want to add to the payload node
+        t_payload_node->merge( f_config ); // copy f_config
+
+        param_node* t_sender_node = new param_node();
+        t_sender_node->add( "commit", param_value( TOSTRING(Mantis_GIT_COMMIT) ) );
+        t_sender_node->add( "exe", param_value( f_exe_name ) );
+        t_sender_node->add( "version", param_value( TOSTRING(Mantis_VERSION) ) );
+        t_sender_node->add( "package", param_value( "" ) );
+
+        param_node t_request;
+        t_request.add( "msgtype", param_value( T_REQUEST ) );
+        t_request.add( "msgop", param_value( OP_CMD ) );
+        t_request.add( "timestamp", param_value( get_absolute_time_string() ) );
+        t_request.add( "sender_info", t_sender_node );
+        t_request.add( "payload", t_payload_node ); // use t_payload_node as is
+
+        MTDEBUG( mtlog, "Sending message:\n" << t_request );
+
+        if(! param_output_json::write_string( t_request, a_request_str, param_output_json::k_compact ) )
+        {
+            MTERROR( mtlog, "Could not convert request to string" );
+            return false;
+        }
+
+        return true;
     }
 
 

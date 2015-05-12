@@ -13,12 +13,12 @@
 namespace mantis
 {
 
-    class server_config : public param_node
+    class MANTIS_API server_config : public param_node
     {
         public:
             server_config();
             virtual ~server_config();
     };
 
-} /* namespace Katydid */
+} /* namespace mantis */
 #endif /* MT_CLIENT_CONFIG_HH_ */

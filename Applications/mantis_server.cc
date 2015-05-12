@@ -14,7 +14,7 @@
  *  The server requires the following configuration values:
  *   - port (integer; must match the port used by the client)
  *   - buffer-size (integer; number of record blocks in the DMA buffer)
- *   - record-size (integer; number of samples in a record)
+ *   - record-size (integer; number of samples in a block **** NOTE: this sets the number of samples in a block, even though it's called "record-size" ****)
  *
  *  Usage:
  *  $> mantis_server config=config_file.json [further configuration]
@@ -26,20 +26,13 @@
  *    e.g.:   port/i=8235
  */
 
-#include "mt_buffer.hh"
-#include "mt_condition.hh"
+#include "mt_broker.hh"
 #include "mt_configurator.hh"
-#include "mt_digitizer.hh"
-#include "mt_exception.hh"
-#include "mt_factory.hh"
+#include "mt_constants.hh"
 #include "mt_logger.hh"
-#include "mt_request_receiver.hh"
-#include "mt_run_queue.hh"
-#include "mt_server.hh"
+#include "mt_run_server.hh"
 #include "mt_server_config.hh"
-#include "mt_server_worker.hh"
-#include "mt_signal_handler.hh"
-#include "mt_thread.hh"
+
 using namespace mantis;
 
 using std::string;
@@ -48,7 +41,7 @@ MTLOGGER( mtlog, "mantis_server" );
 
 int main( int argc, char** argv )
 {
-    MTDEBUG( mtlog, "Welcome to Mantis\n\n" <<
+    MTINFO( mtlog, "Welcome to Mantis\n\n" <<
             "\t\t _______  _______  _       __________________ _______ \n" <<
             "\t\t(       )(  ___  )( \\    /|\\__   __/\\__   __/(  ____ \\\n" <<
             "\t\t| () () || (   ) ||  \\  ( |   ) (      ) (   | (    \\/\n" <<
@@ -58,145 +51,62 @@ int main( int argc, char** argv )
             "\t\t| )   ( || )   ( || )  \\  |   | |   ___) (___/\\____) |\n" <<
             "\t\t|/     \\||/     \\||/    \\_)   )_(   \\_______/\\_______)\n\n");
 
-    server_config t_sc;
-    configurator* t_configurator = NULL;
     try
     {
-        t_configurator = new configurator( argc, argv, &t_sc );
-    }
-    catch( exception& e )
-    {
-        MTERROR( mtlog, "unable to configure server: " << e.what() );
-        return -1;
-    }
+        server_config t_sc;
+        configurator t_configurator( argc, argv, &t_sc );
 
-    param_node* t_config = t_configurator->config();
+        MTINFO( mtlog, "Connecting to AMQP broker" );
 
-    MTINFO( mtlog, "creating objects..." );
+        const param_node* t_broker_node = &t_configurator.config().at( "amqp" )->as_node();
 
-    size_t t_buffer_size, t_record_size, t_data_chunk_size;
-    try
-    {
-        t_buffer_size = t_config->get_value< int >( "buffer-size" );
-        t_record_size = t_config->get_value< int >( "record-size" );
-        t_data_chunk_size = t_config->get_value< int >( "data-chunk-size" );
-    }
-    catch( exception& e )
-    {
-        MTERROR( mtlog, "required parameters were not available: " << e.what() );
-        return -1;
-    }
+        broker* t_broker = broker::get_instance();
 
-    // set up the server and request receiver
-
-    server* t_server;
-    try
-    {
-        t_server = new server( t_config->get_value< int >( "port" ) );
-    }
-    catch( exception& e )
-    {
-        MTERROR( mtlog, "unable to start server: " << e.what() );
-        return -1;
-    }
-
-    condition t_queue_condition;
-    run_queue t_run_queue;
-
-    request_receiver t_receiver( t_config, t_server, &t_run_queue, &t_queue_condition, t_configurator->exe_name() );
-    t_receiver.set_buffer_size( t_buffer_size );
-    t_receiver.set_record_size( t_record_size );
-    t_receiver.set_data_chunk_size( t_data_chunk_size );
-
-    // set up the digitizer
-
-    condition t_buffer_condition;
-    buffer t_buffer( t_buffer_size, t_record_size );
-
-    factory< digitizer >* t_dig_factory = NULL;
-    digitizer* t_digitizer = NULL;
-    try
-    {
-        t_dig_factory = factory< digitizer >::get_instance();
-        t_digitizer = t_dig_factory->create( t_config->get_value< string >( "digitizer" ) );
-        if( t_digitizer == NULL )
+        if( ! t_broker->is_connected() )
         {
-            MTERROR( mtlog, "could not create digitizer <" << t_config->get_value< string >( "digitizer" ) << ">; aborting" );
-            delete t_server;
-            return -1;
+            if(! t_broker->connect( t_broker_node->get_value( "broker" ),
+                    t_broker_node->get_value< unsigned >( "broker-port" ) ) )
+            {
+                MTERROR( mtlog, "Cannot create connection to AMQP broker" );
+                return RETURN_ERROR;
+            }
         }
+        else
+        {
+            if( t_broker->get_address() != t_broker_node->get_value( "broker" ) ||
+                    t_broker->get_port() != t_broker_node->get_value< unsigned >( "broker-port" ) )
+            {
+                MTERROR( mtlog, "Already connected to a different AMQP broker: " << t_broker->get_address() << ":" << t_broker->get_port() );
+                return RETURN_ERROR;
+            }
+        }
+
+        // Run the server
+
+        run_server the_server( t_configurator.config(), t_configurator.exe_name() );
+
+        the_server.execute();
+
+        t_broker->disconnect();
+
+        return the_server.get_return();
+    }
+    catch( param_exception& e )
+    {
+        MTERROR( mtlog, "configuration error: " << e.what() );
+        return RETURN_ERROR;
     }
     catch( exception& e )
     {
-        MTERROR( mtlog, "exception caught while creating digitizer: " << e.what() );
-        delete t_server;
-        return -1;
+        MTERROR( mtlog, "mantis error: " << e.what() );
+        return RETURN_ERROR;
     }
-
-    // get the digitizer parameters
-    t_receiver.set_data_type_size( t_digitizer->params().data_type_size );
-    t_receiver.set_bit_depth( t_digitizer->params().bit_depth );
-    t_receiver.set_voltage_min( t_digitizer->params().v_min );
-    t_receiver.set_voltage_range( t_digitizer->params().v_range );
-    t_config->add( "data-type-size", new param_value( t_digitizer->params().data_type_size ) );
-    t_config->add( "bit-depth", new param_value( t_digitizer->params().bit_depth ) );
-    t_config->add( "voltage-min", new param_value( t_digitizer->params().v_min ) );
-    t_config->add( "voltage-range", new param_value( t_digitizer->params().v_range ) );
-
-    if(! t_digitizer->allocate( &t_buffer, &t_buffer_condition ) )
+    catch( std::exception& e )
     {
-        MTERROR( mtlog, "digitizer was not able to allocate the buffer" );
-        delete t_server;
-        return -1;
+        MTERROR( mtlog, "std::exception caught: " << e.what() );
+        return RETURN_ERROR;
     }
 
-    server_worker t_worker( t_config,
-                            t_digitizer,
-                            &t_buffer, &t_run_queue,
-                            &t_queue_condition, &t_buffer_condition,
-                            t_configurator->exe_name() );
-
-    MTINFO( mtlog, "starting threads..." );
-
-    try
-    {
-        thread t_queue_thread( &t_run_queue );
-        thread t_receiver_thread( &t_receiver );
-        thread t_worker_thread( &t_worker );
-
-        signal_handler t_sig_hand;
-        t_sig_hand.push_thread( &t_queue_thread );
-        t_sig_hand.push_thread( &t_receiver_thread );
-        t_sig_hand.push_thread( &t_worker_thread );
-
-        t_queue_thread.start();
-        t_receiver_thread.start();
-        t_worker_thread.start();
-
-        MTINFO( mtlog, "running..." );
-
-        t_queue_thread.join();
-        t_receiver_thread.join();
-        t_worker_thread.join();
-
-        if( ! t_sig_hand.got_exit_signal() )
-        {
-            t_sig_hand.pop_thread(); // worker thread
-            t_sig_hand.pop_thread(); // receiver thread
-            t_sig_hand.pop_thread(); // queue thread
-        }
-    }
-    catch( exception& e)
-    {
-        MTERROR( mtlog, "exception caught during server running: \n\t" << e.what() );
-        return -1;
-    }
-
-    MTINFO( mtlog, "shutting down..." );
-
-    delete t_server;
-    delete t_config;
-
-    return 0;
+    return RETURN_ERROR;
 }
 

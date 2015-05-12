@@ -3,62 +3,104 @@
 
 #include "mt_callable.hh"
 
+#include "mt_atomic.hh"
+#include "mt_mutex.hh"
 #include "mt_param.hh"
 
-#include <cstddef>
+#include "SimpleAmqpClient/Envelope.h"
 
 namespace mantis
 {
+    class acq_request_db;
+    class broker;
     class buffer;
     class condition;
-    class run_queue;
-    class server;
+    class config_manager;
+    class connection;
+    class device_manager;
+    class run_server;
+    class server_worker;
 
-    class request_receiver : public callable
+    class request_receiver;
+
+    struct MANTIS_API request_reply_package
+    {
+        AmqpClient::Envelope::ptr_t f_envelope;
+        param_node& f_reply_node;
+        const request_receiver* f_request_receiver;
+        request_reply_package( AmqpClient::Envelope::ptr_t a_envelope, param_node& a_reply_node, const request_receiver* a_req_recvr ) :
+            f_envelope( a_envelope ),
+            f_reply_node( a_reply_node ),
+            f_request_receiver( a_req_recvr )
+        {}
+        bool send_reply( unsigned a_return_code, const std::string& a_return_msg );
+    };
+
+
+    class MANTIS_API request_receiver : public callable
     {
         public:
-            request_receiver( const param_node* a_config, server* a_server, run_queue* a_run_queue, condition* a_condition, const std::string& a_exe_name = "unknown" );
+            request_receiver( run_server* a_run_server, config_manager* a_conf_mgr, acq_request_db* a_acq_request_db, server_worker* a_server_worker, const std::string& a_exe_name = "N/A" );
             virtual ~request_receiver();
 
             void execute();
             void cancel();
 
-            size_t get_buffer_size() const;
-            void set_buffer_size( size_t size );
-
-            size_t get_record_size() const;
-            void set_record_size( size_t size );
-
-            size_t get_data_chunk_size() const;
-            void set_data_chunk_size( size_t size );
-
-            size_t get_data_type_size() const;
-            void set_data_type_size( size_t size );
-
-            size_t get_bit_depth() const;
-            void set_bit_depth( size_t bd );
-
-            double get_voltage_min() const;
-            void set_voltage_min( double v_min );
-
-            double get_voltage_range() const;
-            void set_voltage_range( double v_range );
-
         private:
-            param_node f_config;
-            server* f_server;
-            run_queue* f_run_queue;
-            condition* f_condition;
+            friend struct request_reply_package;
+
+            bool do_run_request( param_node& a_msg_payload, const std::string& a_mantis_routing_key, request_reply_package& a_pkg, const param_node* a_sender_node );
+            bool do_get_request( param_node& a_msg_payload, const std::string& a_mantis_routing_key, request_reply_package& a_pkg );
+            bool do_set_request( param_node& a_msg_payload, const std::string& a_mantis_routing_key, request_reply_package& a_pkg );
+            bool do_cmd_request( param_node& a_msg_payload, const std::string& a_mantis_routing_key, request_reply_package& a_pkg );
+
+            bool send_reply( unsigned a_return_code, const std::string& a_return_msg, request_reply_package& a_pkg ) const;
+
+            broker* f_broker;
+            std::string f_queue_name;
+            std::string f_consumer_tag;
+
             std::string f_exe_name;
 
-            size_t f_buffer_size;
-            size_t f_record_size;
-            size_t f_data_chunk_size;
-            size_t f_data_type_size;
-            size_t f_bit_depth;
-            double f_voltage_min;
-            double f_voltage_range;
+            run_server* f_run_server;
+            config_manager* f_conf_mgr;
+            acq_request_db* f_acq_request_db;
+            server_worker* f_server_worker;
+
+            atomic_bool f_canceled;
+
+        public:
+            enum status
+            {
+                k_initialized = 0,
+                k_starting = 1,
+                k_listening = 5,
+                k_processing = 6,
+                k_canceled = 9,
+                k_done = 10,
+                k_error = 100
+            };
+
+            static std::string interpret_status( status a_status );
+
+            status get_status() const;
+            void set_status( status a_status );
+
+        private:
+            boost::atomic< status > f_status;
+
     };
+
+    inline request_receiver::status request_receiver::get_status() const
+    {
+        return f_status.load();
+    }
+
+    inline void request_receiver::set_status( status a_status )
+    {
+        f_status.store( a_status );
+        return;
+    }
 
 }
 

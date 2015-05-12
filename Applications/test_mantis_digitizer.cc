@@ -21,11 +21,10 @@
 #include "mt_buffer.hh"
 #include "mt_condition.hh"
 #include "mt_configurator.hh"
+#include "mt_device_manager.hh"
 #include "mt_digitizer.hh"
 #include "mt_factory.hh"
 #include "mt_logger.hh"
-
-#include "request.pb.h"
 
 #include <string>
 using std::string;
@@ -83,23 +82,9 @@ int main( int argc, char** argv )
 
     MTINFO( mtlog, "testing digitizer <" << t_dig_name << ">" );
 
-    factory< digitizer >* t_dig_factory = NULL;
-    digitizer* t_digitizer = NULL;
-    try
-    {
-        t_dig_factory = factory< digitizer >::get_instance();
-        t_digitizer = t_dig_factory->create( t_dig_name );
-        if( t_digitizer == NULL )
-        {
-            MTERROR( mtlog, "could not create test_digitizer <" << t_dig_name << ">; aborting" );
-            return -1;
-        }
-    }
-    catch( exception& e )
-    {
-        MTERROR( mtlog, "exception caught while creating test_digitizer: " << e.what() );
-        return -1;
-    }
+    device_manager t_dev_mgr;
+    t_dev_mgr.set_device( t_dig_name );
+    digitizer* t_digitizer = t_dev_mgr.device();
 
     bool t_status = false;
     if( t_test_type == k_basic )

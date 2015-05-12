@@ -5,6 +5,8 @@
  *      Author: nsoblath
  */
 
+#define MANTIS_API_EXPORTS
+
 #include "mt_client_config.hh"
 
 #include<string>
@@ -17,29 +19,15 @@ namespace mantis
     {
         // default client configuration
 
-        param_value client_value;
-
-        add( "port", client_value << 98342 );
-
-        add( "host", client_value << "localhost" );
-
-        add( "client-port", client_value << 98343 );
-
-        add( "client-host", client_value << "localhost" );
-
-        add( "file", client_value << "mantis_client_out.egg" );
-
-        add( "rate", client_value << 250.0 );
-
-        add( "duration", client_value << 500 );
-
-        add( "mode", client_value << 0 );
-
-        add( "file-writer", client_value << "server" );
+        param_node* t_amqp_node = new param_node();
+        t_amqp_node->add( "broker-port", new param_value( 5672 ) );
+        t_amqp_node->add( "broker", new param_value( "localhost" ) );
+        t_amqp_node->add( "exchange", new param_value( "requests" ) );
+        add( "amqp", t_amqp_node );
     }
 
     client_config::~client_config()
     {
     }
 
-} /* namespace Katydid */
+} /* namespace mantis */

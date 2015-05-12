@@ -8,74 +8,41 @@
 #ifndef MT_RUN_CLIENT_HH_
 #define MT_RUN_CLIENT_HH_
 
-#include "mt_callable.hh"
+//#include "mt_callable.hh"
 
-#include "mt_atomic.hh"
+//#include "mt_atomic.hh"
 #include "mt_param.hh"
-
-
-#define RETURN_SUCCESS 1
-#define RETURN_ERROR -1
-#define RETURN_CANCELED -2
-#define RETURN_REVOKED -3
-
 
 namespace mantis
 {
-    class client_file_writing;
-    class run_context_dist;
+    class broker;
+    //class client_file_writing;
+    class connection;
+    //class run_context_dist;
 
-    class run_client : public callable
+    // run_client was formerly used in a separate thread, hence the previous use of the callable base class
+
+    class MANTIS_API run_client// : public callable
     {
-        private:
-            class setup_loop : public callable
-            {
-                public:
-                    setup_loop( run_context_dist* a_run_context );
-                    virtual ~setup_loop();
-
-                    void execute();
-                    void cancel();
-
-                    int get_return();
-
-                private:
-                    run_context_dist* f_run_context;
-                    atomic_bool f_canceled;
-                    int f_return;
-            };
-
-            class run_loop : public callable
-            {
-                public:
-                    run_loop( run_context_dist* a_run_context, client_file_writing* a_file_writing = NULL );
-                    virtual ~run_loop();
-
-                    void execute();
-                    void cancel();
-
-                    int get_return();
-
-                private:
-                    run_context_dist* f_run_context;
-                    client_file_writing* f_file_writing;
-                    atomic_bool f_canceled;
-                    int f_return;
-            };
-
         public:
-            run_client( const param_node* a_node, const std::string& a_exe_name = "unknown" );
-            virtual ~run_client();
+            run_client( const param_node& a_node, const std::string& a_exe_name, const std::string& a_exchange );
+            ~run_client();
 
             void execute();
-            void cancel();
+            //void cancel();
 
             int get_return();
 
         private:
+            bool do_run_request( std::string& a_request_str );
+            bool do_get_request( std::string& a_request_str );
+            bool do_set_request( std::string& a_request_str );
+            bool do_cmd_request( std::string& a_request_str );
+
             param_node f_config;
             std::string f_exe_name;
-            atomic_bool f_canceled;
+            std::string f_exchange;
+            //atomic_bool f_canceled;
             int f_return;
     };
 

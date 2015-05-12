@@ -12,12 +12,9 @@
 
 #include "mt_exception.hh"
 
-#include <string>
-
 namespace mantis
 {
-
-    class configurator
+    class MANTIS_API configurator
     {
         public:
             configurator( int an_argc, char** an_argv, param_node* a_default = NULL );
@@ -25,8 +22,8 @@ namespace mantis
 
             const std::string& exe_name() const;
 
-            param_node* config();
-            const param_node* config() const;
+            param_node& config();
+            const param_node& config() const;
 
             template< typename XReturnType >
             XReturnType get( const std::string& a_name ) const;

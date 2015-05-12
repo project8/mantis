@@ -68,6 +68,9 @@ namespace mantis
 
             void register_class(const std::string& a_class_name, const base_registrar< XBaseType >* base_registrar);
 
+            FactoryCIt begin() const;
+            FactoryCIt end() const;
+
         protected:
             FactoryMap* fMap;
 
@@ -88,6 +91,11 @@ namespace mantis
     template< class XBaseType >
     XBaseType* factory< XBaseType >::create(const std::string& a_class_name)
     {
+        //std::cout << "this factory (" << this << ") has " << fMap->size() << " entries" << std::endl;
+        //for( FactoryCIt iter = fMap->begin(); iter != fMap->end(); ++iter )
+        //{
+        //    std::cout << "this factory has: " << iter->first << std::endl;
+        //}
         FactoryCIt it = fMap->find(a_class_name);
         if (it == fMap->end())
         {
@@ -108,7 +116,7 @@ namespace mantis
             return;
         }
         fMap->insert(std::pair< std::string, const base_registrar< XBaseType >* >(a_class_name, a_registrar));
-        //std::cout << "registered a factory for class " << a_class_name << ", factory #" << fMap->size()-1 << std::endl;
+        //std::cout << "registered a factory for class " << a_class_name << ", factory #" << fMap->size()-1 << " for " << this << std::endl;
     }
 
     template< class XBaseType >
@@ -121,6 +129,19 @@ namespace mantis
     {
         delete fMap;
     }
+
+    template< class XBaseType >
+    typename factory< XBaseType >::FactoryCIt factory< XBaseType >::begin() const
+    {
+        return fMap->begin();
+    }
+
+    template< class XBaseType >
+    typename factory< XBaseType >::FactoryCIt factory< XBaseType >::end() const
+    {
+        return fMap->end();
+    }
+
 
 
 

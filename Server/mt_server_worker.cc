@@ -1,20 +1,25 @@
+#define MANTIS_API_EXPORTS
+#define M3_API_EXPORTS
+
 #include "mt_server_worker.hh"
 
+#include "mt_acq_request_db.hh"
+#include "mt_acq_request.hh"
 #include "mt_buffer.hh"
 #include "mt_condition.hh"
 #include "mt_configurator.hh"
+#include "mt_device_manager.hh"
 #include "mt_digitizer.hh"
-#include "mt_factory.hh"
 #include "mt_file_writer.hh"
 #include "mt_logger.hh"
-#include "mt_run_context_dist.hh"
-#include "mt_run_description.hh"
-#include "mt_run_queue.hh"
+#include "mt_request_receiver.hh"
 #include "mt_signal_handler.hh"
 #include "mt_thread.hh"
 #include "mt_version.hh"
-#include "mt_writer.hh"
 
+#ifndef _WIN32
+#include <unistd.h>
+#endif
 #include <sstream>
 
 using std::string;
@@ -23,18 +28,16 @@ namespace mantis
 {
     MTLOGGER( mtlog, "server_worker" );
 
-    server_worker::server_worker( const param_node* a_config, digitizer* a_digitizer, buffer* a_buffer, run_queue* a_run_queue, condition* a_queue_condition, condition* a_buffer_condition, const string& a_exe_name ) :
-            f_config( a_config ),
-            f_digitizer( a_digitizer ),
+    server_worker::server_worker( device_manager* a_dev_mgr, acq_request_db* a_run_db ) :
+            f_dev_mgr( a_dev_mgr ),
+            f_acq_request_db( a_run_db ),
+            f_digitizer( NULL ),
             f_writer( NULL ),
-            f_buffer( a_buffer ),
-            f_run_queue( a_run_queue ),
-            f_queue_condition( a_queue_condition ),
-            f_buffer_condition( a_buffer_condition ),
+            f_component_mutex(),
+            f_canceled( false ),
             f_digitizer_state( k_inactive ),
             f_writer_state( k_inactive ),
-            f_exe_name( a_exe_name ),
-            f_canceled( false )
+            f_status( k_initialized )
     {
     }
 
@@ -46,246 +49,213 @@ namespace mantis
     {
         while( ! f_canceled.load() )
         {
-            if( f_run_queue->empty() == true )
-            {
-                // thread cancellation point via call to pthread_cond_wait in queue_condition::wait
-                f_queue_condition->wait();
-            }
+            f_status.store( k_idle );
 
-            bool t_communication_fail = false;
+            // continue if/when there's a request in the queue
+            // this is a thread cancellation point if the queue is empty
+            f_acq_request_db->wait_for_request_in_queue();
 
-            MTINFO( mtlog, "sending server status <started>..." );
+            // continue if/when the queue is active
+            // this is a thread cancellation point if the queue is _not_ active
+            f_acq_request_db->wait_for_queue_active();
 
-            run_context_dist* t_run_context = f_run_queue->from_front();
-            t_run_context->lock_status_out()->set_state( status_state_t_started );
-            try
-            {
-                if( ! t_run_context->push_status_no_mutex() )
-                {
-                    MTERROR( mtlog, "unable to send status <started> to the client; aborting" );
-                    t_communication_fail = true;
-                }
-            }
-            catch( closed_connection& cc )
-            {
-                MTERROR( mtlog, "closed connection detected by: " << cc.what() );
-                t_communication_fail = true;
-            }
-            t_run_context->unlock_outbound();
+            f_status.store( k_starting );
 
-            if( t_communication_fail )
+            MTINFO( mtlog, "Processing run request from queue" );
+
+            MTDEBUG( mtlog, "Setting run status <started>" );
+
+            acq_request* t_acq_req = f_acq_request_db->pop();
+            t_acq_req->set_status( acq_request::started );
+
+            MTINFO( mtlog, "Initializing" );
+
+            MTDEBUG( mtlog, "Retrieved request from the queue:\n" << *t_acq_req );
+
+            if( ! f_dev_mgr->configure( *t_acq_req ) )
             {
-                delete t_run_context->get_connection();
-                delete t_run_context;
+                MTERROR( mtlog, "Unable to configure device manager" );
+                t_acq_req->set_status( acq_request::error );
                 continue;
             }
 
-            MTINFO( mtlog, "initializing..." );
+            MTINFO( mtlog, "Creating writer" );
 
-            request* t_request = t_run_context->lock_request_in();
-            f_digitizer->initialize( t_request );
+            file_writer t_writer;
+            t_writer.set_device_manager( f_dev_mgr );
+            t_writer.set_buffer( f_dev_mgr->get_buffer(), f_dev_mgr->buffer_condition() );
 
-            MTINFO( mtlog, "creating writer..." );
-
-            if(! f_digitizer->write_mode_check( t_request->file_write_mode() ) )
+            if( ! t_writer.initialize( t_acq_req ) )
             {
-                MTERROR( mtlog, "unable to operate in write mode " << t_request->file_write_mode() << '\n'
-                        << "                run request ignored" );
-                t_run_context->unlock_inbound();
-
-                status* t_status = t_run_context->lock_status_out();
-                t_status->set_state( status_state_t_error );
-                std::stringstream t_error_msg;
-                t_error_msg << "unable to operate in write mode " <<  t_request->file_write_mode();
-                t_status->set_error_message( t_error_msg.str() );
-                try
-                {
-                    t_run_context->push_status_no_mutex();
-                }
-                catch( closed_connection& cc )
-                {}
-                t_run_context->unlock_outbound();
-                delete t_run_context->get_connection();
-                delete t_run_context;
+                MTERROR( mtlog, "Unable to initialize writer" );
+                t_acq_req->set_status( acq_request::error );
                 continue;
             }
 
-            factory< writer >* t_writer_factory = factory< writer >::get_instance();
-            if( t_request->file_write_mode() == request_file_write_mode_t_local )
-            {
-                f_writer = t_writer_factory->create( "file" );
-                run_description* t_run_desc = new run_description();
-                t_run_desc->set_mantis_server_exe( f_exe_name );
-                t_run_desc->set_mantis_server_version( TOSTRING(Mantis_VERSION) );
-                t_run_desc->set_mantis_server_commit( TOSTRING(Mantis_GIT_COMMIT) );
-                t_run_desc->set_server_config( *f_config );
-                static_cast< file_writer* >( f_writer )->set_run_description( t_run_desc );
-            }
-            else
-            {
-                f_writer = t_writer_factory->create( "network" );
-            }
-            f_writer->set_buffer( f_buffer, f_buffer_condition );
-            try
-            {
-                f_writer->configure( f_config );
-            }
-            catch( exception& e )
-            {
-                MTERROR( mtlog, "unable to configure writer: " << e.what() );
-                t_run_context->unlock_inbound();
-                delete t_run_context->get_connection();
-                delete t_run_context;
-                continue;
-            }
-            if( ! f_writer->initialize( t_request ) )
-            {
-                t_run_context->unlock_inbound();
-                delete t_run_context->get_connection();
-                delete t_run_context;
-                continue;
-            }
+            MTINFO( mtlog, "Setting run status <running>" );
+            t_acq_req->set_status( acq_request::running );
 
-            t_run_context->unlock_inbound();
-
-            MTINFO( mtlog, "running..." );
+            f_component_mutex.lock();
+            f_digitizer = f_dev_mgr->device();
+            f_writer = &t_writer;
+            f_component_mutex.unlock();
 
             thread* t_digitizer_thread = new thread( f_digitizer );
             thread* t_writer_thread = new thread( f_writer );
 
-            t_digitizer_thread->start();
-            f_digitizer_state = k_running;
-
-            while( f_buffer_condition->is_waiting() == false )
+            if( ! f_canceled.load() )
             {
-                usleep( 1000 );
-            }
+                t_digitizer_thread->start();
+                f_digitizer_state = k_running;
 
-            t_writer_thread->start();
-            f_writer_state = k_running;
-
-            t_run_context->lock_status_out()->set_state( status_state_t_running );
-            try
-            {
-                if( ! t_run_context->push_status_no_mutex() )
+                while (f_dev_mgr->buffer_condition()->is_waiting() == false)
                 {
-                    MTERROR( mtlog, "unable to send status <running> to the client" );
-                    t_communication_fail = true;
+#ifndef _WIN32
+                    usleep( 1000 );
+#else
+                    Sleep(1);
+#endif
                 }
-            }
-            catch( closed_connection& cc )
-            {
-                MTINFO( mtlog, "closed connection detected by: " << cc.what() );
-                t_communication_fail = true;
-            }
-            t_run_context->unlock_outbound();
-            if( t_communication_fail )
-            {
-                MTERROR( mtlog, "; canceling run" );
-                f_digitizer->cancel();
-                f_writer->cancel();
+
+                t_writer_thread->start();
+                f_writer_state = k_running;
+
+                f_status.store( k_acquiring );
+
+                // cancellation point (I think) via calls to pthread_join
+                t_digitizer_thread->join();
+                f_digitizer_state = k_inactive;
+                t_writer_thread->join();
+                f_writer_state = k_inactive;
             }
 
-            // cancellation point (I think) via calls to pthread_join
-            t_digitizer_thread->join();
-            f_digitizer_state = k_inactive;
-            t_writer_thread->join();
-            f_writer_state = k_inactive;
+            f_component_mutex.lock();
+            f_digitizer = NULL;
+            f_writer = NULL;
+            f_component_mutex.unlock();
 
             delete t_digitizer_thread;
             delete t_writer_thread;
 
-            if( t_communication_fail )
-            {
-                delete f_writer;
-                f_writer = NULL;
-                delete t_run_context->get_connection();
-                delete t_run_context;
-                continue;
-            }
-
-
-            //t_run_context = f_run_queue->from_front();
-            status* t_status = t_run_context->lock_status_out();
             if( ! f_canceled.load() )
             {
-                MTINFO( mtlog, "sending server status <stopped>..." );
-                t_status->set_state( status_state_t_stopped );
+                f_status.store( k_acquired );
+
+                MTINFO( mtlog, "Setting run status <stopped>" );
+                t_acq_req->set_status( acq_request::stopped );
             }
             else
             {
-                MTINFO( mtlog, "sending server status <canceled>..." );
-                t_status->set_state( status_state_t_canceled );
-                t_status->set_error_message( "run was cancelled" );
-            }
-            try
-            {
-                if( ! t_run_context->push_status_no_mutex() )
-                {
-                    MTERROR( mtlog, "unable to send status <stopped>/<canceled> to client" );
-                    t_communication_fail = true;
-                }
-            }
-            catch( closed_connection& cc )
-            {
-                MTINFO( mtlog, "closed connection detected by: " << cc.what() );
-                t_communication_fail = true;
-            }
-            t_run_context->unlock_outbound();
-
-            if( t_communication_fail )
-            {
-                delete f_writer;
-                f_writer = NULL;
-                delete t_run_context->get_connection();
-                delete t_run_context;
-                continue;
+                MTINFO( mtlog, "Setting run status <canceled>" );
+                t_acq_req->set_status( acq_request::canceled );
             }
 
-            MTINFO( mtlog, "finalizing..." );
+            MTINFO( mtlog, "Finalizing..." );
 
-            response* t_response = t_run_context->lock_response_out();
-            f_digitizer->finalize( t_response );
-            f_writer->finalize( t_response );
-            t_response->set_state( response_state_t_complete );
-            try
-            {
-                t_run_context->push_response_no_mutex();
-            }
-            catch( closed_connection& cc )
-            {
-                MTINFO( mtlog, "closed connection detected by: " << cc.what() );
-            }
-            t_run_context->unlock_outbound();
-
-            delete f_writer;
-            f_writer = NULL;
-            delete t_run_context->get_connection();
-            delete t_run_context;
+            param_node t_response;
+            f_dev_mgr->device()->finalize( &t_response );
+            t_writer.finalize( &t_response );
+            t_acq_req->set_response( t_response );
+            t_acq_req->set_status( acq_request::stopped );
+            MTINFO( mtlog, "Run response:\n" << t_response );
         }
 
         return;
     }
 
-    void server_worker::cancel()
+    /*
+    Asyncronous stop-acquisition:
+    - The execute function waits while the digitizer and writer run; if stopped, those threads are cancelled, which
+    eventually returns control to the execute function, which completes quickly.
+    - If cancelled before the threads are started, operation of the digitizer and writer will be skipped.
+    */
+    void server_worker::stop_acquisition()
     {
-        f_canceled.store( true );
-
-        if( f_digitizer_state == k_running )
+        MTDEBUG( mtlog, "Stopping acquisition" );
+        f_component_mutex.lock();
+        if( f_digitizer_state == k_running && f_digitizer != NULL )
         {
             f_digitizer->cancel();
         }
-        if( f_writer_state == k_running )
+        if( f_writer_state == k_running && f_writer != NULL )
         {
             f_writer->cancel();
         }
+        f_component_mutex.unlock();
 
         return;
     }
 
-    void server_worker::set_writer( writer* a_writer )
+
+
+    /*
+    Asyncronous cancellation:
+    - The execute function waits while the digitizer and writer run; if cancelled, those threads are cancelled, which 
+    eventually returns control to the execute function, which completes quickly.
+    - If cancelled before the threads are started, operation of the digitizer and writer will be skipped.
+    */
+    void server_worker::cancel()
     {
-        f_writer = a_writer;
+        MTDEBUG( mtlog, "Canceling server_worker" );
+        f_canceled.store( true );
+        f_status.store( k_canceled );
+
+        stop_acquisition();
+
+        return;
     }
+
+    bool server_worker::handle_stop_acq_request( const param_node& /*a_msg_payload*/, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg )
+    {
+        stop_acquisition();
+        return a_pkg.send_reply( R_SUCCESS, "Stop-acquisition request succeeded" );
+    }
+
+
+    std::string server_worker::interpret_thread_state( thread_state a_thread_state )
+    {
+        switch( a_thread_state )
+        {
+            case k_inactive:
+                return std::string( "Inactive" );
+                break;
+            case k_running:
+                return std::string( "Running" );
+                break;
+            default:
+                return std::string( "Unknown" );
+        }
+    }
+
+    std::string server_worker::interpret_status( status a_status )
+    {
+        switch( a_status )
+        {
+            case k_initialized:
+                return std::string( "Initialized" );
+                break;
+            case k_starting:
+                return std::string( "Starting" );
+                break;
+            case k_idle:
+                return std::string( "Idle (queue is empty)" );
+                break;
+            case k_acquiring:
+                return std::string( "Acquisition in progress" );
+                break;
+            case k_acquired:
+                return std::string( "Acquisition complete" );
+                break;
+            case k_canceled:
+                return std::string( "Canceled" );
+                break;
+            case k_error:
+                return std::string( "Error" );
+                break;
+            default:
+                return std::string( "Unknown" );
+        }
+    }
+
 
 }

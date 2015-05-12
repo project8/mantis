@@ -3,8 +3,6 @@
 
 #include "mt_callable.hh"
 
-#include "request.pb.h"
-
 #include "thorax.hh"
 
 #include <cstddef>
@@ -13,36 +11,69 @@ namespace mantis
 {
     class buffer;
     class condition;
-    class response;
+    class param_node;
 
-    class digitizer :
-        public callable
+    struct MANTIS_API digitizer_config_template
+    {
+        virtual ~digitizer_config_template() {};
+        virtual void add( param_node* a_node, const std::string& a_type ) = 0;
+    };
+
+    class MANTIS_API digitizer : public callable
     {
         public:
             digitizer();
             virtual ~digitizer();
 
-            virtual bool allocate( buffer* a_buffer, condition* a_condition ) = 0;
-            virtual bool initialize( request* a_request ) = 0;
-            virtual void finalize( response* a_response ) = 0;
+            virtual bool allocate() = 0;
+            virtual bool deallocate() = 0;
 
-            virtual bool write_mode_check( request_file_write_mode_t mode ) = 0;
+            virtual bool initialize( param_node* a_global_config, param_node* a_dev_config ) = 0;
+            virtual void finalize( param_node* a_response ) = 0;
 
             virtual unsigned data_type_size() = 0;
 
-            const dig_calib_params& params() const;
-            dig_calib_params& params();
+            const dig_calib_params& params( unsigned i_chan ) const;
+            dig_calib_params& params( unsigned i_chan );
+
+            buffer* get_buffer();
+            condition* get_buffer_condition();
 
         public:
             virtual bool run_basic_test() = 0;
             bool run_insitu_test();
 
         protected:
-            struct dig_calib_params f_params;
+            struct dig_calib_params* f_params;
+
+            buffer* f_buffer;
+            condition* f_buffer_condition;
     };
 
+    inline const dig_calib_params& digitizer::params( unsigned i_chan ) const
+    {
+        return f_params[ i_chan ];
+    }
+
+    inline dig_calib_params& digitizer::params( unsigned i_chan )
+    {
+        return f_params[ i_chan ];
+    }
+
+    inline buffer* digitizer::get_buffer()
+    {
+        return f_buffer;
+    }
+
+    inline condition* digitizer::get_buffer_condition()
+    {
+        return f_buffer_condition;
+    }
+
+
 #define MT_REGISTER_DIGITIZER(dig_class, dig_name) \
-        static registrar< digitizer, dig_class > s_##dig_class##_digitizer_registrar( dig_name );
+        static registrar< digitizer, dig_class > s_##dig_class##_digitizer_registrar( dig_name ); \
+        static registrar< digitizer_config_template, dig_class##_config_template > s_##dig_class##_config_template_registrar( dig_name );
 
 }
 

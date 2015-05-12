@@ -1,11 +1,13 @@
+#define MANTIS_API_EXPORTS
+
 #include "mt_thread.hh"
 
 namespace mantis
 {
 
     thread::thread( callable* an_object ) :
-            f_mutex(),
             f_thread(),
+            f_mutex(),
             f_state( e_ready ),
             f_object( an_object )
     {
@@ -23,29 +25,42 @@ namespace mantis
     {
         if( get_state() == e_ready )
         {
-            pthread_create( &f_thread, 0, &thread::thread_setup_and_execute, this );
-            set_state( e_running );
+#ifndef _WIN32
+            pthread_create(&f_thread, 0, &thread::thread_setup_and_execute, this);
+#else
+            f_thread = CreateThread(NULL, 0, thread::thread_setup_and_execute, this, 0, NULL);
+#endif
+            set_state(e_running);
         }
         return;
     }
+
     void thread::join()
     {
         if( get_state() == e_running )
         {
-            pthread_join( f_thread, 0 );
+#ifndef _WIN32
+            pthread_join(f_thread, 0);
+#else
+            WaitForSingleObject(f_thread, INFINITE);
+#endif
         }
         return;
     }
+
     void thread::cancel()
     {
         if( get_state() == e_running )
         {
             f_object->cancel();
-            pthread_cancel( f_thread );
-            set_state( e_cancelled );
+#ifndef _WIN32
+            pthread_cancel(f_thread);
+#endif
+            set_state(e_cancelled);
         }
         return;
     }
+
     void thread::reset()
     {
         if( get_state() == e_running )
@@ -73,7 +88,8 @@ namespace mantis
         return;
     }
 
-    void* thread::thread_setup_and_execute( void* voidthread )
+#ifndef _WIN32
+    void* thread::thread_setup_and_execute(void* voidthread)
     {
         pthread_cleanup_push( &::mantis::thread::thread_cleanup, voidthread );
         thread* t_thread = (::mantis::thread*) (voidthread);
@@ -88,5 +104,17 @@ namespace mantis
     {
         return;
     }
+
+#else
+
+    DWORD WINAPI thread::thread_setup_and_execute(PVOID voidthread)
+    {
+        thread* t_thread = (::mantis::thread*) (voidthread);
+        callable* object = t_thread->f_object;
+        object->execute();
+        t_thread->set_state(e_complete);
+        return 0;
+    }
+#endif
 
 }
