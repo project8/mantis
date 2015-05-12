@@ -6,8 +6,6 @@
 #ifndef _WIN32
 #include <pthread.h>
 #include <cstddef>
-#else
-#include <Windows.h>
 #endif
 
 namespace mantis

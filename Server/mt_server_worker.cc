@@ -17,9 +17,7 @@
 #include "mt_thread.hh"
 #include "mt_version.hh"
 
-#ifdef _WIN32
-#include <Windows.h>
-#else
+#ifndef _WIN32
 #include <unistd.h>
 #endif
 #include <sstream>

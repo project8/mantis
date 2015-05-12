@@ -10,8 +10,6 @@
 
 #ifndef _WIN32
 #include <unistd.h>
-#else
-#include <Windows.h>
 #endif
 
 namespace mantis

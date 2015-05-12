@@ -8,6 +8,11 @@
 #ifndef MT_CONSTANTS_HH_
 #define MT_CONSTANTS_HH_
 
+#ifdef _WIN32
+#define NOMINMAX
+#include <Windows.h>
+#endif
+
 namespace mantis
 {
     // API export macros for windows
