@@ -6,7 +6,7 @@ cmake_minimum_required (VERSION 3.0)
 #########
 
 cmake_policy( SET CMP0048 NEW ) # version in project()
-project( Mantis VERSION 2.8.5 )
+project( Mantis VERSION 3.0.0 )
 
 list( APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/Scarab/cmake )
 
