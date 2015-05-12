@@ -59,13 +59,18 @@ namespace mantis
             }
             else
             {
-                // test streaming to double as the most general test of whether the string is some sort of number
+                // To test if the string is numeric:
+                //   1. if it has 2 decimal points, it's not numeric (IP addresses, for example, would pass the second test)
+                //   2. double is the most general form of number, so if it fails that conversion, it's not numeric.
                 double t_double;
                 std::stringstream t_conv_double( a_value );
-                if( ! (t_conv_double >> t_double).fail() )
+                if( a_value.find( '.' ) == a_value.rfind( '.' ) &&
+                    ! (t_conv_double >> t_double).fail() )
                 {
                     // now we know the value is numeric
-                    if( a_value.find( '.' ) != std::string::npos )
+                    if( a_value.find( '.' ) != std::string::npos ||
+                        a_value.find( 'e' ) != std::string::npos ||
+                        a_value.find( 'E' ) != std::string::npos )
                     {
                         // value is a floating-point number, since it has a decimal point
                         a_parent->add( a_addr, new param_value( t_double ) );

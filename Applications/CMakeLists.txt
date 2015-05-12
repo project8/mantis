@@ -6,6 +6,11 @@
 # Common Applications
 ######################
 
+if( Mantis_ENABLE_TESTING )
+    add_executable( test_mantis_parser test_mantis_parser.cc )
+    target_link_libraries( test_mantis_parser MantisCommon ${EXTERNAL_LIBRARIES} )
+    pbuilder_install_executables( test_mantis_parser )
+endif( Mantis_ENABLE_TESTING )
 
 
 ######################
