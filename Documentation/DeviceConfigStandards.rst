@@ -1,5 +1,9 @@
+==============================
+Device Configuration Standards
+==============================
+
 Required by the file writer
-===========================
+---------------------------
 
 * data-mode
 * channel-mode
