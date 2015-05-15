@@ -67,7 +67,7 @@ configure_file(
 file (REMOVE ${BINARY_BUILD_DIR}/conf.py.in.tmp)
 
 add_custom_target(
-    ${PROJECT_NAME}_sphinx ALL
+    ${PROJECT_NAME}_sphinx
     ${SPHINX_EXECUTABLE}
         -q -b html
         -c "${BINARY_BUILD_DIR}"
