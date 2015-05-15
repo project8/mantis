@@ -51,6 +51,9 @@ if (Mantis_ENABLE_TESTING)
     enable_testing ()
 endif (Mantis_ENABLE_TESTING)
 
+# add an option to build docs
+set( Mantis_BUILD_DOCS FALSE CACHE BOOL "Enable make targets for both doxygen and sphinx (requires Doxygen, Sphinx, and Breathe)" )
+
 
 #######################
 # mantis dependencies #
@@ -143,3 +146,6 @@ add_subdirectory( Common )
 add_subdirectory( Client )
 add_subdirectory( Server )
 add_subdirectory( Applications )
+if(Mantis_BUILD_DOCS)
+    add_subdirectory( Documentation )
+endif(Mantis_BUILD_DOCS)
