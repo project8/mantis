@@ -8,11 +8,14 @@ Welcome to Mantis's documentation!
 Contents:
 
 .. toctree::
+   :glob:
    :maxdepth: 2
 
    ClientManual
    DeviceConfigStandards
    Reminders
+   wiki/*
+
    from_doxygen
 
 
