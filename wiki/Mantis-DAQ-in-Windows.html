@@ -167,54 +167,38 @@
 </div>
 <div class="section" id="required-software">
 <h2>Required Software<a class="headerlink" href="#required-software" title="Permalink to this headline">¶</a></h2>
-<ul>
-<li><p class="first">Visual Studio
-* Installed version Visual Studio Community 2013 Update 4</p>
-</li>
-<li><p class="first">NI Drivers
+<ul class="simple">
+<li>Visual Studio
+* Installed version Visual Studio Community 2013 Update 4</li>
+<li>NI Drivers
 * Installed version: August 2014 drivers, Part 1 and Part 2; NI Scope 14.0
-* Select “Modular Instruments” -&gt; “NI Scope&#8221;</p>
-<blockquote>
-<div><ul class="simple">
-<li>Under “NI-Scope”, select &#8220;Visual Basic Support&#8221;</li>
-</ul>
-</div></blockquote>
-</li>
-<li><p class="first">Cygwin (already installed in Irene)
+* Select “Modular Instruments” -&gt; “NI Scope&#8221; then Under “NI-Scope”, select &#8220;Visual Basic Support&#8221;</li>
+<li>Cygwin (already installed in Irene)
 * This will give you ssh, might be useful
-* If not installed, you need to make sure you have the following packages: OpenSSH, make, gcc, g++, nano/emacs/vim (or your favorite editor), patch</p>
-</li>
-<li><p class="first">GitHub for Windows
-* <a class="reference external" href="https://github-windows.s3.amazonaws.com/GitHubSetup.exe">https://github-windows.s3.amazonaws.com/GitHubSetup.exe</a></p>
-</li>
-<li><p class="first">CMake for Windows
-* <a class="reference external" href="http://www.cmake.org/files/v3.1/cmake-3.1.1-win32-x86.exe">http://www.cmake.org/files/v3.1/cmake-3.1.1-win32-x86.exe</a></p>
-</li>
-<li><p class="first">Protobuf
-* <a class="reference external" href="https://code.google.com/p/protobuf/downloads/detail?name=protobuf-2.5.0.zip&amp;can=2&amp;q=">https://code.google.com/p/protobuf/downloads/detail?name=protobuf-2.5.0.zip&amp;can=2&amp;q=</a></p>
-</li>
-<li><p class="first">HDF5 for Windows
+* If not installed, you need to make sure you have the following packages: OpenSSH, make, gcc, g++, nano/emacs/vim (or your favorite editor), patch</li>
+<li>GitHub for Windows
+* <a class="reference external" href="https://github-windows.s3.amazonaws.com/GitHubSetup.exe">https://github-windows.s3.amazonaws.com/GitHubSetup.exe</a></li>
+<li>CMake for Windows
+* <a class="reference external" href="http://www.cmake.org/files/v3.1/cmake-3.1.1-win32-x86.exe">http://www.cmake.org/files/v3.1/cmake-3.1.1-win32-x86.exe</a></li>
+<li>Protobuf
+* <a class="reference external" href="https://code.google.com/p/protobuf/downloads/detail?name=protobuf-2.5.0.zip&amp;can=2&amp;q=">https://code.google.com/p/protobuf/downloads/detail?name=protobuf-2.5.0.zip&amp;can=2&amp;q=</a></li>
+<li>HDF5 for Windows
 * <a class="reference external" href="http://www.hdfgroup.org/ftp/HDF5/current/bin/windows/extra/hdf5-1.8.14-win32-vs2013-shared.zip">http://www.hdfgroup.org/ftp/HDF5/current/bin/windows/extra/hdf5-1.8.14-win32-vs2013-shared.zip</a>
 * Install it in a location without spaces in the path - this will make it easier to configure it in Visual Studio later
-* e.g. use C:/Local/, not C:/Program Files (x86)/</p>
-</li>
-<li><p class="first">Boost
+* e.g. use C:/Local/, not C:/Program Files (x86)/</li>
+<li>Boost
 * <a class="reference external" href="http://sourceforge.net/projects/boost/files/boost/1.57.0/boost_1_57_0.zip/download">http://sourceforge.net/projects/boost/files/boost/1.57.0/boost_1_57_0.zip/download</a>
 * Install it in a location without spaces in the path - this will make it easier to configure it in Visual Studio later
-* e.g. use C:/Local/, not C:/Program Files (x86)/</p>
-</li>
-<li><p class="first">rabbitmq-c
+* e.g. use C:/Local/, not C:/Program Files (x86)/</li>
+<li>rabbitmq-c
 * <a class="reference external" href="https://github.com/alanxz/rabbitmq-c">https://github.com/alanxz/rabbitmq-c</a>
 * Cloned from github, created VS project with CMake, then built with VS
-* Disabled SSL support because of linking errors (despite the SSL libraries definitely being included in the &#8220;Additional Dependencies&#8221; in the VS project configuration)</p>
-</li>
-<li><p class="first">GnuWin32
+* Disabled SSL support because of linking errors (despite the SSL libraries definitely being included in the &#8220;Additional Dependencies&#8221; in the VS project configuration)</li>
+<li>GnuWin32
 * <a class="reference external" href="http://sourceforge.net/projects/getgnuwin32/files/getgnuwin32/0.6.30/GetGnuWin32-0.6.3.exe/download">http://sourceforge.net/projects/getgnuwin32/files/getgnuwin32/0.6.30/GetGnuWin32-0.6.3.exe/download</a>
-* This contains unistd.h</p>
-</li>
-<li><p class="first">Doxygen
-* <a class="reference external" href="ftp://ftp.stack.nl/pub/users/dimitri/doxygen-1.8.9.1-setup.exe">ftp://ftp.stack.nl/pub/users/dimitri/doxygen-1.8.9.1-setup.exe</a></p>
-</li>
+* This contains unistd.h</li>
+<li>Doxygen
+* <a class="reference external" href="ftp://ftp.stack.nl/pub/users/dimitri/doxygen-1.8.9.1-setup.exe">ftp://ftp.stack.nl/pub/users/dimitri/doxygen-1.8.9.1-setup.exe</a></li>
 </ul>
 </div>
 <div class="section" id="useful-documentation">
@@ -238,12 +222,7 @@ C:UsersPublicDocumentsNational InstrumentsNI-SCOPEexamplesVisualBasic</p>
 * Do not download the latest version from GitHub, nor v3</p>
 </li>
 <li><p class="first">Apply the patch vs2013.patch
-* Alternatively, edit ./protobuf-2.5.0/src/google/protobuf/stubs/common.h, add the line</p>
-<blockquote>
-<div><ul class="simple">
-<li>#include &lt;algorithm&gt;</li>
-</ul>
-</div></blockquote>
+* Alternatively, edit ./protobuf-2.5.0/src/google/protobuf/stubs/common.h, add the line `` #include &lt;algorithm&gt;``</p>
 </li>
 <li><p class="first">Open the file protobufvsprojectsprotobuf.sln -&gt; it will start VS2013
 * VS2013 will ask if you want to update the files in the protobuf project - say yes</p>
@@ -251,32 +230,36 @@ C:UsersPublicDocumentsNational InstrumentsNI-SCOPEexamplesVisualBasic</p>
 <li><p class="first">In Visual Studio 2013
 * Open BUILD -&gt; Configuration Manager
 * Select “Release” in “Active Configuration Solution&#8221;
-* Now we need to add a compiler flag</p>
+* Now we need to add a compiler flag. For each of the projects (with the exception gtest and test_main): “libprotobuf”, “libprotobuf-lite”, etc...</p>
 <blockquote>
 <div><ul class="simple">
-<li>For each of the projects (with the exception gtest and test_main): “libprotobuf”, “libprotobuf-lite”, etc...
-* Click on PROJECT -&gt; Properties
-* Select “Configuration Properties” -&gt; “C/C++” -&gt; &#8220;Command Line&#8221;
-* In the field “Additional Options”, add /FS
-* Make sure you do that for all the projects</li>
+<li>Click on PROJECT -&gt; Properties</li>
+<li>Select &#8220;Configuration Properties&#8221; -&gt; &#8220;C/C++&#8221; -&gt; &#8220;Command Line&#8221;</li>
+<li>In the field “Additional Options”, add /FS</li>
+<li>Make sure you do that for all the projects</li>
 </ul>
 </div></blockquote>
 <ul class="simple">
 <li>Click on BUILD -&gt; Build Solution</li>
 </ul>
 </li>
-<li><p class="first">Test the build
-* Open PowerShell, go to the folder where you built protobuf:
-* .protobuf-2.5.0vsprojectsRelease* run tests.exe, run lite-test.exe</p>
+<li><p class="first">Test the build</p>
+<ul class="simple">
+<li>Open PowerShell, go to the folder where you built protobuf:</li>
+<li>.protobuf-2.5.0vsprojectsRelease</li>
+<li>run tests.exe, run lite-test.exe</li>
+</ul>
 </li>
 <li><p class="first">Go to .protobuf-2.5.0vsprojects, run extract_includes.bat</p>
 </li>
 <li><p class="first">Create a folder to install protobuf  (i.e. ~/Documents/protobuf)</p>
 </li>
-<li><p class="first">Copy the headers and build files to the right place:
-* cp -r ~/Documents/protobuf-2.5.0/vsprojects/include ~/Documents/protobuf/
-* cp ~/Documents/protobuf-2.5.0/vsprojects/Release/protoc.exe ~/Documents/protobuf/bin/
-* cp ~/Documents/protobuf-2.5.0/vsprojects/Release/<a href="#id1"><span class="problematic" id="id2">*</span></a>.lib ~/Documents/protobuf/lib/</p>
+<li><p class="first">Copy the headers and build files to the right place:</p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">cp</span> <span class="pre">-r</span> <span class="pre">~/Documents/protobuf-2.5.0/vsprojects/include</span> <span class="pre">~/Documents/protobuf/</span></code></li>
+<li><code class="docutils literal"><span class="pre">cp</span> <span class="pre">~/Documents/protobuf-2.5.0/vsprojects/Release/protoc.exe</span> <span class="pre">~/Documents/protobuf/bin/</span></code></li>
+<li><code class="docutils literal"><span class="pre">cp</span> <span class="pre">~/Documents/protobuf-2.5.0/vsprojects/Release/*.lib</span> <span class="pre">~/Documents/protobuf/lib/</span></code></li>
+</ul>
 </li>
 </ul>
 <p>Note that protobuf only had configurations for 32-bits (win32), not for 64-bits.  It’s possible that it would work with 64-bits too, but I decided not to try it.  Let’s configure everything as 32-bits for the rest of this.</p>
@@ -290,9 +273,11 @@ C:UsersPublicDocumentsNational InstrumentsNI-SCOPEexamplesVisualBasic</p>
 </ul>
 </div></blockquote>
 <ul class="simple">
-<li>Boost
-* Install it in a location without spaces in the path - this will make it easier to configure it in Visual Studio later
-* e.g. use C:/Local/, not C:/Program Files (x86)/</li>
+<li>Boost<ul>
+<li>Install it in a location without spaces in the path - this will make it easier to configure it in Visual Studio later</li>
+<li>e.g. use C:/Local/, not C:/Program Files (x86)/</li>
+</ul>
+</li>
 <li>DOXYGEN</li>
 <li>GnuWin32</li>
 </ul>
@@ -312,21 +297,17 @@ C:UsersPublicDocumentsNational InstrumentsNI-SCOPEexamplesVisualBasic</p>
 * Select Visual Studio 12.0 2013  (that’s the 32bit version)
 * You will need to manually configure the cmake options for:</p>
 <blockquote>
-<div><ul>
-<li><p class="first">HDF5
-* HDF5_CXX_LIBRARY = C:/Local/HDF_Group/HDF5/1.8.14/lib/
-* HDF5_CXX_INCLUDE_DIR = C:/Local/HDF_Group/HDF5/1.8.14/include/
-* HDF5_DIR = C:/Local/HDF_Group/HDF5/1.8.14/cmake/hdf5
-* Don’t bother with the other fields, they won’t be used in Visual Studio</p>
-<blockquote>
 <div><ul class="simple">
-<li>(We intend to change that, but haven’t had the time yet)</li>
+<li>HDF5<ul>
+<li>HDF5_CXX_LIBRARY = C:/Local/HDF_Group/HDF5/1.8.14/lib/</li>
+<li>HDF5_CXX_INCLUDE_DIR = C:/Local/HDF_Group/HDF5/1.8.14/include/</li>
+<li>HDF5_DIR = C:/Local/HDF_Group/HDF5/1.8.14/cmake/hdf5</li>
+<li>Don’t bother with the other fields, they won’t be used in Visual Studio
+(We intend to change that, but haven’t had the time yet)</li>
 </ul>
-</div></blockquote>
 </li>
-<li><p class="first">PROTOBUF
-* Fill up all fields</p>
-</li>
+<li>PROTOBUF
+* Fill up all fields</li>
 </ul>
 </div></blockquote>
 <ul class="simple">
@@ -353,9 +334,11 @@ C:UsersPublicDocumentsNational InstrumentsNI-SCOPEexamplesVisualBasic</p>
 </ul>
 </div></blockquote>
 </li>
-<li><p class="first">Compile Monarch by parts
-* Select Monarch3 on the left pane, right click, click on Build
-* DebugMonarch3.lib will be built</p>
+<li><p class="first">Compile Monarch by parts</p>
+<ul class="simple">
+<li>Select Monarch3 on the left pane, right click, click on Build</li>
+<li>DebugMonarch3.lib will be built</li>
+</ul>
 </li>
 <li><p class="first">Select MantisProto on the left pane, right click, click on Build</p>
 </li>
@@ -377,9 +360,11 @@ C:UsersPublicDocumentsNational InstrumentsNI-SCOPEexamplesVisualBasic</p>
 </ul>
 </div></blockquote>
 </li>
-<li><p class="first">Select MantisCommon on the left pane, right click, click on Build
-* <strong>You will see the compilation errors here - now you just need to fix all that!</strong>
-* Compilation errors are related to the missing _netinet/<a href="#id3"><span class="problematic" id="id4">in.h_</span></a> in Windows</p>
+<li><p class="first">Select MantisCommon on the left pane, right click, click on Build</p>
+<ul class="simple">
+<li><strong>You will see the compilation errors here - now you just need to fix all that!</strong></li>
+<li>Compilation errors are related to the missing <code class="docutils literal"><span class="pre">_netinet/in.h_</span></code> in Windows</li>
+</ul>
 </li>
 </ul>
 </div>
