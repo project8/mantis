@@ -1,3 +1,6 @@
+Usage
+=====
+
 The available arguments for mantis_server, mantis_client, and any future executables will be collected here. The config option names a file of configuration values in json format. Values passed from the command line override those in the configuration file.
 
 # mantis_server
