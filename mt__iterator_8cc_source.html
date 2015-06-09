@@ -23,9 +23,9 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">Mantis
-   &#160;<span id="projectnumber">2.8.5</span>
+   &#160;<span id="projectnumber">3.0.0</span>
    </div>
-   <div id="projectbrief">Project 8 Fast DAQ</div>
+   <div id="projectbrief">Project 8 Streaming Data Acquisition</div>
   </td>
  </tr>
  </tbody>
@@ -98,7 +98,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;</div>
 <div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespacemantis.html">mantis</a></div>
 <div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;{</div>
-<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;    <a class="code" href="namespacemantis.html#af2e53afc85f931626d4db3cf8ba1e581">MTLOGGER</a>( mtlog, <span class="stringliteral">&quot;iterator&quot;</span> );</div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;    <a class="code" href="namespacemantis.html#ac08554af2bd8a3b487f1b8339fc7ee14">MTLOGGER</a>( mtlog, <span class="stringliteral">&quot;iterator&quot;</span> );</div>
 <div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;</div>
 <div class="line"><a name="l00011"></a><span class="lineno"><a class="line" href="classmantis_1_1iterator.html#a2ecceef635133acadb914710602fa8a8">   11</a></span>&#160;    <a class="code" href="classmantis_1_1iterator.html#a67d652c2433cf9217ed2a1485092fdd1">iterator::iterator</a>( <a class="code" href="classmantis_1_1buffer.html">buffer</a>* a_buffer, <span class="keyword">const</span> std::string&amp; a_name ) :</div>
 <div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;            f_name( a_name ),</div>
@@ -275,7 +275,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="ttc" id="classmantis_1_1buffer_html"><div class="ttname"><a href="classmantis_1_1buffer.html">mantis::buffer</a></div><div class="ttdef"><b>Definition:</b> <a href="mt__buffer_8hh_source.html#l00010">mt_buffer.hh:10</a></div></div>
 <div class="ttc" id="classmantis_1_1iterator_html_a034e5869b1290ff4eb09628438666b3f"><div class="ttname"><a href="classmantis_1_1iterator.html#a034e5869b1290ff4eb09628438666b3f">mantis::iterator::f_previous_index</a></div><div class="ttdeci">unsigned int f_previous_index</div><div class="ttdef"><b>Definition:</b> <a href="mt__iterator_8hh_source.html#l00055">mt_iterator.hh:55</a></div></div>
 <div class="ttc" id="classmantis_1_1iterator_html_aeb2624c7a86b765725fd80cd426e147d"><div class="ttname"><a href="classmantis_1_1iterator.html#aeb2624c7a86b765725fd80cd426e147d">mantis::iterator::increment</a></div><div class="ttdeci">void increment()</div><div class="ttdef"><b>Definition:</b> <a href="mt__iterator_8cc_source.html#l00121">mt_iterator.cc:121</a></div></div>
-<div class="ttc" id="namespacemantis_html"><div class="ttname"><a href="namespacemantis.html">mantis</a></div><div class="ttdef"><b>Definition:</b> <a href="mt__client__config_8cc_source.html#l00015">mt_client_config.cc:15</a></div></div>
+<div class="ttc" id="namespacemantis_html"><div class="ttname"><a href="namespacemantis.html">mantis</a></div><div class="ttdef"><b>Definition:</b> <a href="mt__digitizer__px14400_8cc_source.html#l00016">mt_digitizer_px14400.cc:16</a></div></div>
 <div class="ttc" id="classmantis_1_1iterator_html_a470b97b72b9c169aa923961aa0ffada9"><div class="ttname"><a href="classmantis_1_1iterator.html#a470b97b72b9c169aa923961aa0ffada9">mantis::iterator::f_mutexes</a></div><div class="ttdeci">mutex * f_mutexes</div><div class="ttdef"><b>Definition:</b> <a href="mt__iterator_8hh_source.html#l00050">mt_iterator.hh:50</a></div></div>
 <div class="ttc" id="classmantis_1_1iterator_html_af8370604529de0f829b8424e1288a104"><div class="ttname"><a href="classmantis_1_1iterator.html#af8370604529de0f829b8424e1288a104">mantis::iterator::name</a></div><div class="ttdeci">const std::string &amp; name() const </div><div class="ttdef"><b>Definition:</b> <a href="mt__iterator_8cc_source.html#l00049">mt_iterator.cc:49</a></div></div>
 <div class="ttc" id="mt__iterator__timer_8hh_html_acd030f0c5bb9dc6e21c2420948907c33"><div class="ttname"><a href="mt__iterator__timer_8hh.html#acd030f0c5bb9dc6e21c2420948907c33">IT_TIMER_INCR_BEGIN</a></div><div class="ttdeci">#define IT_TIMER_INCR_BEGIN</div><div class="ttdef"><b>Definition:</b> <a href="mt__iterator__timer_8hh_source.html#l00217">mt_iterator_timer.hh:217</a></div></div>
@@ -285,6 +285,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="ttc" id="classmantis_1_1iterator_html_a7c1ba60270c2807d61f0b83de4239649"><div class="ttname"><a href="classmantis_1_1iterator.html#a7c1ba60270c2807d61f0b83de4239649">mantis::iterator::f_released</a></div><div class="ttdeci">bool f_released</div><div class="ttdef"><b>Definition:</b> <a href="mt__iterator_8hh_source.html#l00059">mt_iterator.hh:59</a></div></div>
 <div class="ttc" id="classmantis_1_1iterator_html_a7cba69cab9fa5ef768c3ad04cc290314"><div class="ttname"><a href="classmantis_1_1iterator.html#a7cba69cab9fa5ef768c3ad04cc290314">mantis::iterator::object</a></div><div class="ttdeci">block * object()</div><div class="ttdoc">returns a pointer to the current block </div><div class="ttdef"><b>Definition:</b> <a href="mt__iterator_8cc_source.html#l00058">mt_iterator.cc:58</a></div></div>
 <div class="ttc" id="classmantis_1_1iterator_html_a59f5b5b0d341cf7bd8d23f8f9f96edce"><div class="ttname"><a href="classmantis_1_1iterator.html#a59f5b5b0d341cf7bd8d23f8f9f96edce">mantis::iterator::operator--</a></div><div class="ttdeci">void operator--()</div><div class="ttdoc">move to the previous block; blocks thread if the next block is locked </div><div class="ttdef"><b>Definition:</b> <a href="mt__iterator_8cc_source.html#l00112">mt_iterator.cc:112</a></div></div>
+<div class="ttc" id="namespacemantis_html_ac08554af2bd8a3b487f1b8339fc7ee14"><div class="ttname"><a href="namespacemantis.html#ac08554af2bd8a3b487f1b8339fc7ee14">mantis::MTLOGGER</a></div><div class="ttdeci">MTLOGGER(mtlog,&quot;digitizer_px14400&quot;)</div></div>
 <div class="ttc" id="classmantis_1_1iterator_html_ada58285661eac737b41fa6cdd9013fab"><div class="ttname"><a href="classmantis_1_1iterator.html#ada58285661eac737b41fa6cdd9013fab">mantis::iterator::operator-</a></div><div class="ttdeci">bool operator-()</div><div class="ttdoc">try to move to the previous block; </div><div class="ttdef"><b>Definition:</b> <a href="mt__iterator_8cc_source.html#l00098">mt_iterator.cc:98</a></div></div>
 <div class="ttc" id="mt__iterator__timer_8hh_html_acee44e39f730890bc490b6d0c79ed18c"><div class="ttname"><a href="mt__iterator__timer_8hh.html#acee44e39f730890bc490b6d0c79ed18c">IT_TIMER_INCR_TRY_FAIL</a></div><div class="ttdeci">#define IT_TIMER_INCR_TRY_FAIL</div><div class="ttdef"><b>Definition:</b> <a href="mt__iterator__timer_8hh_source.html#l00251">mt_iterator_timer.hh:251</a></div></div>
 <div class="ttc" id="classmantis_1_1iterator_html_ab001c4d516f53794a5603555a0a5113d"><div class="ttname"><a href="classmantis_1_1iterator.html#ab001c4d516f53794a5603555a0a5113d">mantis::iterator::f_next_index</a></div><div class="ttdeci">unsigned int f_next_index</div><div class="ttdef"><b>Definition:</b> <a href="mt__iterator_8hh_source.html#l00057">mt_iterator.hh:57</a></div></div>
@@ -293,7 +294,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="ttc" id="classmantis_1_1iterator_html_a91efafdff672117b7d475a9ac80282f2"><div class="ttname"><a href="classmantis_1_1iterator.html#a91efafdff672117b7d475a9ac80282f2">mantis::iterator::f_buffer</a></div><div class="ttdeci">buffer * f_buffer</div><div class="ttdef"><b>Definition:</b> <a href="mt__iterator_8hh_source.html#l00048">mt_iterator.hh:48</a></div></div>
 <div class="ttc" id="mt__iterator__timer_8hh_html_ac98f0a8277c136c16a4ddfeab4a0d30e"><div class="ttname"><a href="mt__iterator__timer_8hh.html#ac98f0a8277c136c16a4ddfeab4a0d30e">IT_TIMER_INCR_LOCKED</a></div><div class="ttdeci">#define IT_TIMER_INCR_LOCKED</div><div class="ttdef"><b>Definition:</b> <a href="mt__iterator__timer_8hh_source.html#l00240">mt_iterator_timer.hh:240</a></div></div>
 <div class="ttc" id="classmantis_1_1iterator_html_aa265b580ec13ad81e0c5e298ad2fb164"><div class="ttname"><a href="classmantis_1_1iterator.html#aa265b580ec13ad81e0c5e298ad2fb164">mantis::iterator::f_blocks</a></div><div class="ttdeci">block ** f_blocks</div><div class="ttdef"><b>Definition:</b> <a href="mt__iterator_8hh_source.html#l00049">mt_iterator.hh:49</a></div></div>
-<div class="ttc" id="namespacemantis_html_af2e53afc85f931626d4db3cf8ba1e581"><div class="ttname"><a href="namespacemantis.html#af2e53afc85f931626d4db3cf8ba1e581">mantis::MTLOGGER</a></div><div class="ttdeci">MTLOGGER(mtlog,&quot;run_client&quot;)</div></div>
 <div class="ttc" id="classmantis_1_1iterator_html_a0cc9690e70daa071de40218af1458d0c"><div class="ttname"><a href="classmantis_1_1iterator.html#a0cc9690e70daa071de40218af1458d0c">mantis::iterator::f_size</a></div><div class="ttdeci">unsigned int f_size</div><div class="ttdef"><b>Definition:</b> <a href="mt__iterator_8hh_source.html#l00051">mt_iterator.hh:51</a></div></div>
 <div class="ttc" id="mt__logger_8hh_html"><div class="ttname"><a href="mt__logger_8hh.html">mt_logger.hh</a></div><div class="ttdoc">Contains the logger class and macros, based on Kasper&#39;s KLogger class. </div></div>
 <div class="ttc" id="classmantis_1_1iterator_html_a643a6da767870677fb412126d0eb6197"><div class="ttname"><a href="classmantis_1_1iterator.html#a643a6da767870677fb412126d0eb6197">mantis::iterator::operator*</a></div><div class="ttdeci">block &amp; operator*()</div><div class="ttdoc">returns a reference to the current block </div><div class="ttdef"><b>Definition:</b> <a href="mt__iterator_8cc_source.html#l00067">mt_iterator.cc:67</a></div></div>
@@ -308,7 +308,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri May 8 2015 21:26:33 for Mantis by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Jun 8 2015 17:08:01 for Mantis by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.8
 </small></address>

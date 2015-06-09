@@ -23,9 +23,9 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">Mantis
-   &#160;<span id="projectnumber">2.8.5</span>
+   &#160;<span id="projectnumber">3.0.0</span>
    </div>
-   <div id="projectbrief">Project 8 Fast DAQ</div>
+   <div id="projectbrief">Project 8 Streaming Data Acquisition</div>
   </td>
  </tr>
  </tbody>
@@ -98,68 +98,66 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;</div>
 <div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor">#ifndef _WIN32</span></div>
 <div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &lt;pthread.h&gt;</span></div>
-<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#else</span></div>
-<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#include &lt;Windows.h&gt;</span></div>
-<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;</div>
-<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespacemantis.html">mantis</a></div>
-<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;{</div>
-<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;</div>
-<div class="line"><a name="l00016"></a><span class="lineno"><a class="line" href="classmantis_1_1thread.html">   16</a></span>&#160;    <span class="keyword">class </span><a class="code" href="mt__constants_8hh.html#a600a6afe0a8bc36e546b89addab2fdce">MANTIS_API</a> <a class="code" href="classmantis_1_1thread.html">thread</a></div>
-<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;    {</div>
-<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;        <span class="keyword">public</span>:</div>
-<div class="line"><a name="l00019"></a><span class="lineno"><a class="line" href="classmantis_1_1thread.html#adc6e5733fc3c22f0a7b2914188c49c90">   19</a></span>&#160;            <span class="keyword">typedef</span> <span class="keyword">enum</span>{ e_ready, e_running, e_cancelled, e_complete } state;</div>
-<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;</div>
-<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;        <span class="keyword">public</span>:</div>
-<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;            <a class="code" href="classmantis_1_1thread.html">thread</a>( <a class="code" href="classmantis_1_1callable.html">callable</a>* an_object );</div>
-<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;            <span class="keyword">virtual</span> ~<a class="code" href="classmantis_1_1thread.html">thread</a>();</div>
-<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;</div>
-<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;            <span class="keywordtype">void</span> start();</div>
-<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;            <span class="keywordtype">void</span> join();</div>
-<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;            <span class="keywordtype">void</span> cancel();</div>
-<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;            <span class="keywordtype">void</span> reset();</div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;</div>
-<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;            <span class="comment">// thread-safe getter</span></div>
-<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;            state get_state();</div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;            <span class="comment">// thread-safe setter</span></div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;            <span class="keywordtype">void</span> set_state( <a class="code" href="classmantis_1_1thread.html#adc6e5733fc3c22f0a7b2914188c49c90">thread::state</a> a_state );</div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;</div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;        <span class="keyword">private</span>:</div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;<span class="preprocessor">#ifndef _WIN32</span></div>
-<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;            <span class="keyword">static</span> <span class="keywordtype">void</span>* thread_setup_and_execute(<span class="keywordtype">void</span>* voidthread);</div>
-<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;            <span class="keyword">static</span> <span class="keywordtype">void</span> thread_cleanup( <span class="keywordtype">void</span>* voidthread );</div>
-<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;</div>
-<div class="line"><a name="l00040"></a><span class="lineno"><a class="line" href="classmantis_1_1thread.html#ac441b977250882142b035e8e71394783">   40</a></span>&#160;            pthread_t <a class="code" href="classmantis_1_1thread.html#ac441b977250882142b035e8e71394783">f_thread</a>;</div>
-<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;<span class="preprocessor">#else</span></div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;            <span class="keyword">static</span> DWORD WINAPI thread_setup_and_execute(PVOID voidthread);</div>
-<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;            <span class="comment">// windows does not have completely asyncronous cancellation</span></div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;</div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;            HANDLE f_thread;</div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;</div>
-<div class="line"><a name="l00048"></a><span class="lineno"><a class="line" href="classmantis_1_1thread.html#ac894fe0da8f94ab5e885057db210e3bc">   48</a></span>&#160;            <a class="code" href="classmantis_1_1mutex.html">mutex</a> <a class="code" href="classmantis_1_1thread.html#ac894fe0da8f94ab5e885057db210e3bc">f_mutex</a>;</div>
-<div class="line"><a name="l00049"></a><span class="lineno"><a class="line" href="classmantis_1_1thread.html#a22821755af4a48c19fe330afeea0e64a">   49</a></span>&#160;            <a class="code" href="classmantis_1_1thread.html#adc6e5733fc3c22f0a7b2914188c49c90">state</a> <a class="code" href="classmantis_1_1thread.html#a22821755af4a48c19fe330afeea0e64a">f_state</a>;</div>
-<div class="line"><a name="l00050"></a><span class="lineno"><a class="line" href="classmantis_1_1thread.html#acd8250e87b55d97f750e0e278c6ab2c9">   50</a></span>&#160;            <a class="code" href="classmantis_1_1callable.html">callable</a>* <a class="code" href="classmantis_1_1thread.html#acd8250e87b55d97f750e0e278c6ab2c9">f_object</a>;</div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;    };</div>
-<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;}</div>
-<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;</div>
-<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="ttc" id="classmantis_1_1thread_html_adc6e5733fc3c22f0a7b2914188c49c90"><div class="ttname"><a href="classmantis_1_1thread.html#adc6e5733fc3c22f0a7b2914188c49c90">mantis::thread::state</a></div><div class="ttdeci">state</div><div class="ttdef"><b>Definition:</b> <a href="mt__thread_8hh_source.html#l00019">mt_thread.hh:19</a></div></div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;</div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespacemantis.html">mantis</a></div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;{</div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;</div>
+<div class="line"><a name="l00014"></a><span class="lineno"><a class="line" href="classmantis_1_1thread.html">   14</a></span>&#160;    <span class="keyword">class </span><a class="code" href="mt__constants_8hh.html#a600a6afe0a8bc36e546b89addab2fdce">MANTIS_API</a> <a class="code" href="classmantis_1_1thread.html">thread</a></div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;    {</div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;        <span class="keyword">public</span>:</div>
+<div class="line"><a name="l00017"></a><span class="lineno"><a class="line" href="classmantis_1_1thread.html#adc6e5733fc3c22f0a7b2914188c49c90">   17</a></span>&#160;            <span class="keyword">typedef</span> <span class="keyword">enum</span>{ e_ready, e_running, e_cancelled, e_complete } state;</div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;</div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;        <span class="keyword">public</span>:</div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;            <a class="code" href="classmantis_1_1thread.html">thread</a>( <a class="code" href="classmantis_1_1callable.html">callable</a>* an_object );</div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;            <span class="keyword">virtual</span> ~<a class="code" href="classmantis_1_1thread.html">thread</a>();</div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;</div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;            <span class="keywordtype">void</span> start();</div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;            <span class="keywordtype">void</span> join();</div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;            <span class="keywordtype">void</span> cancel();</div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;            <span class="keywordtype">void</span> reset();</div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;</div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;            <span class="comment">// thread-safe getter</span></div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;            state get_state();</div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;            <span class="comment">// thread-safe setter</span></div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;            <span class="keywordtype">void</span> set_state( <a class="code" href="classmantis_1_1thread.html#adc6e5733fc3c22f0a7b2914188c49c90">thread::state</a> a_state );</div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;</div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;        <span class="keyword">private</span>:</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="preprocessor">#ifndef _WIN32</span></div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;            <span class="keyword">static</span> <span class="keywordtype">void</span>* thread_setup_and_execute(<span class="keywordtype">void</span>* voidthread);</div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;            <span class="keyword">static</span> <span class="keywordtype">void</span> thread_cleanup( <span class="keywordtype">void</span>* voidthread );</div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;</div>
+<div class="line"><a name="l00038"></a><span class="lineno"><a class="line" href="classmantis_1_1thread.html#ac441b977250882142b035e8e71394783">   38</a></span>&#160;            pthread_t <a class="code" href="classmantis_1_1thread.html#ac441b977250882142b035e8e71394783">f_thread</a>;</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;<span class="preprocessor">#else</span></div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;            <span class="keyword">static</span> DWORD WINAPI thread_setup_and_execute(PVOID voidthread);</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;            <span class="comment">// windows does not have completely asyncronous cancellation</span></div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;            HANDLE f_thread;</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;</div>
+<div class="line"><a name="l00046"></a><span class="lineno"><a class="line" href="classmantis_1_1thread.html#ac894fe0da8f94ab5e885057db210e3bc">   46</a></span>&#160;            <a class="code" href="classmantis_1_1mutex.html">mutex</a> <a class="code" href="classmantis_1_1thread.html#ac894fe0da8f94ab5e885057db210e3bc">f_mutex</a>;</div>
+<div class="line"><a name="l00047"></a><span class="lineno"><a class="line" href="classmantis_1_1thread.html#a22821755af4a48c19fe330afeea0e64a">   47</a></span>&#160;            <a class="code" href="classmantis_1_1thread.html#adc6e5733fc3c22f0a7b2914188c49c90">state</a> <a class="code" href="classmantis_1_1thread.html#a22821755af4a48c19fe330afeea0e64a">f_state</a>;</div>
+<div class="line"><a name="l00048"></a><span class="lineno"><a class="line" href="classmantis_1_1thread.html#acd8250e87b55d97f750e0e278c6ab2c9">   48</a></span>&#160;            <a class="code" href="classmantis_1_1callable.html">callable</a>* <a class="code" href="classmantis_1_1thread.html#acd8250e87b55d97f750e0e278c6ab2c9">f_object</a>;</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    };</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;}</div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="ttc" id="classmantis_1_1thread_html_adc6e5733fc3c22f0a7b2914188c49c90"><div class="ttname"><a href="classmantis_1_1thread.html#adc6e5733fc3c22f0a7b2914188c49c90">mantis::thread::state</a></div><div class="ttdeci">state</div><div class="ttdef"><b>Definition:</b> <a href="mt__thread_8hh_source.html#l00017">mt_thread.hh:17</a></div></div>
 <div class="ttc" id="mt__callable_8hh_html"><div class="ttname"><a href="mt__callable_8hh.html">mt_callable.hh</a></div></div>
-<div class="ttc" id="mt__constants_8hh_html_a600a6afe0a8bc36e546b89addab2fdce"><div class="ttname"><a href="mt__constants_8hh.html#a600a6afe0a8bc36e546b89addab2fdce">MANTIS_API</a></div><div class="ttdeci">#define MANTIS_API</div><div class="ttdef"><b>Definition:</b> <a href="mt__constants_8hh_source.html#l00023">mt_constants.hh:23</a></div></div>
-<div class="ttc" id="classmantis_1_1thread_html_ac894fe0da8f94ab5e885057db210e3bc"><div class="ttname"><a href="classmantis_1_1thread.html#ac894fe0da8f94ab5e885057db210e3bc">mantis::thread::f_mutex</a></div><div class="ttdeci">mutex f_mutex</div><div class="ttdef"><b>Definition:</b> <a href="mt__thread_8hh_source.html#l00048">mt_thread.hh:48</a></div></div>
+<div class="ttc" id="mt__constants_8hh_html_a600a6afe0a8bc36e546b89addab2fdce"><div class="ttname"><a href="mt__constants_8hh.html#a600a6afe0a8bc36e546b89addab2fdce">MANTIS_API</a></div><div class="ttdeci">#define MANTIS_API</div><div class="ttdef"><b>Definition:</b> <a href="mt__constants_8hh_source.html#l00028">mt_constants.hh:28</a></div></div>
+<div class="ttc" id="classmantis_1_1thread_html_ac894fe0da8f94ab5e885057db210e3bc"><div class="ttname"><a href="classmantis_1_1thread.html#ac894fe0da8f94ab5e885057db210e3bc">mantis::thread::f_mutex</a></div><div class="ttdeci">mutex f_mutex</div><div class="ttdef"><b>Definition:</b> <a href="mt__thread_8hh_source.html#l00046">mt_thread.hh:46</a></div></div>
 <div class="ttc" id="mt__mutex_8hh_html"><div class="ttname"><a href="mt__mutex_8hh.html">mt_mutex.hh</a></div></div>
-<div class="ttc" id="classmantis_1_1mutex_html"><div class="ttname"><a href="classmantis_1_1mutex.html">mantis::mutex</a></div><div class="ttdef"><b>Definition:</b> <a href="mt__mutex_8hh_source.html#l00016">mt_mutex.hh:16</a></div></div>
-<div class="ttc" id="namespacemantis_html"><div class="ttname"><a href="namespacemantis.html">mantis</a></div><div class="ttdef"><b>Definition:</b> <a href="mt__client__config_8cc_source.html#l00015">mt_client_config.cc:15</a></div></div>
-<div class="ttc" id="classmantis_1_1thread_html_ac441b977250882142b035e8e71394783"><div class="ttname"><a href="classmantis_1_1thread.html#ac441b977250882142b035e8e71394783">mantis::thread::f_thread</a></div><div class="ttdeci">pthread_t f_thread</div><div class="ttdef"><b>Definition:</b> <a href="mt__thread_8hh_source.html#l00040">mt_thread.hh:40</a></div></div>
-<div class="ttc" id="classmantis_1_1thread_html"><div class="ttname"><a href="classmantis_1_1thread.html">mantis::thread</a></div><div class="ttdef"><b>Definition:</b> <a href="mt__thread_8hh_source.html#l00016">mt_thread.hh:16</a></div></div>
+<div class="ttc" id="classmantis_1_1mutex_html"><div class="ttname"><a href="classmantis_1_1mutex.html">mantis::mutex</a></div><div class="ttdef"><b>Definition:</b> <a href="mt__mutex_8hh_source.html#l00014">mt_mutex.hh:14</a></div></div>
+<div class="ttc" id="namespacemantis_html"><div class="ttname"><a href="namespacemantis.html">mantis</a></div><div class="ttdef"><b>Definition:</b> <a href="mt__digitizer__px14400_8cc_source.html#l00016">mt_digitizer_px14400.cc:16</a></div></div>
+<div class="ttc" id="classmantis_1_1thread_html_ac441b977250882142b035e8e71394783"><div class="ttname"><a href="classmantis_1_1thread.html#ac441b977250882142b035e8e71394783">mantis::thread::f_thread</a></div><div class="ttdeci">pthread_t f_thread</div><div class="ttdef"><b>Definition:</b> <a href="mt__thread_8hh_source.html#l00038">mt_thread.hh:38</a></div></div>
+<div class="ttc" id="classmantis_1_1thread_html"><div class="ttname"><a href="classmantis_1_1thread.html">mantis::thread</a></div><div class="ttdef"><b>Definition:</b> <a href="mt__thread_8hh_source.html#l00014">mt_thread.hh:14</a></div></div>
 <div class="ttc" id="classmantis_1_1callable_html"><div class="ttname"><a href="classmantis_1_1callable.html">mantis::callable</a></div><div class="ttdef"><b>Definition:</b> <a href="mt__callable_8hh_source.html#l00009">mt_callable.hh:9</a></div></div>
-<div class="ttc" id="classmantis_1_1thread_html_a22821755af4a48c19fe330afeea0e64a"><div class="ttname"><a href="classmantis_1_1thread.html#a22821755af4a48c19fe330afeea0e64a">mantis::thread::f_state</a></div><div class="ttdeci">state f_state</div><div class="ttdef"><b>Definition:</b> <a href="mt__thread_8hh_source.html#l00049">mt_thread.hh:49</a></div></div>
-<div class="ttc" id="classmantis_1_1thread_html_acd8250e87b55d97f750e0e278c6ab2c9"><div class="ttname"><a href="classmantis_1_1thread.html#acd8250e87b55d97f750e0e278c6ab2c9">mantis::thread::f_object</a></div><div class="ttdeci">callable * f_object</div><div class="ttdef"><b>Definition:</b> <a href="mt__thread_8hh_source.html#l00050">mt_thread.hh:50</a></div></div>
+<div class="ttc" id="classmantis_1_1thread_html_a22821755af4a48c19fe330afeea0e64a"><div class="ttname"><a href="classmantis_1_1thread.html#a22821755af4a48c19fe330afeea0e64a">mantis::thread::f_state</a></div><div class="ttdeci">state f_state</div><div class="ttdef"><b>Definition:</b> <a href="mt__thread_8hh_source.html#l00047">mt_thread.hh:47</a></div></div>
+<div class="ttc" id="classmantis_1_1thread_html_acd8250e87b55d97f750e0e278c6ab2c9"><div class="ttname"><a href="classmantis_1_1thread.html#acd8250e87b55d97f750e0e278c6ab2c9">mantis::thread::f_object</a></div><div class="ttdeci">callable * f_object</div><div class="ttdef"><b>Definition:</b> <a href="mt__thread_8hh_source.html#l00048">mt_thread.hh:48</a></div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri May 8 2015 21:26:33 for Mantis by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Jun 8 2015 17:08:01 for Mantis by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.8
 </small></address>

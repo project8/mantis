@@ -23,9 +23,9 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">Mantis
-   &#160;<span id="projectnumber">2.8.5</span>
+   &#160;<span id="projectnumber">3.0.0</span>
    </div>
-   <div id="projectbrief">Project 8 Fast DAQ</div>
+   <div id="projectbrief">Project 8 Streaming Data Acquisition</div>
   </td>
  </tr>
  </tbody>
@@ -107,14 +107,14 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;</div>
 <div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespacemantis.html">mantis</a></div>
 <div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;{</div>
-<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;    <a class="code" href="namespacemantis.html#af2e53afc85f931626d4db3cf8ba1e581">MTLOGGER</a>( mtlog, <span class="stringliteral">&quot;version&quot;</span> );</div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;    <a class="code" href="namespacemantis.html#ac08554af2bd8a3b487f1b8339fc7ee14">MTLOGGER</a>( mtlog, <span class="stringliteral">&quot;version&quot;</span> );</div>
 <div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;</div>
 <div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;    <span class="keywordtype">char</span> version::s_delimeter = <span class="charliteral">&#39;.&#39;</span>;</div>
 <div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;</div>
 <div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;    version::version() :</div>
-<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;            f_major_ver( 0 ),</div>
-<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;            f_minor_ver( 0 ),</div>
-<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;            f_revision( 0 ),</div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;            f_major_ver( Mantis_VERSION_MAJOR ),</div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;            f_minor_ver( Mantis_VERSION_MINOR ),</div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;            f_patch_ver( Mantis_VERSION_PATCH ),</div>
 <div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;            f_version()</div>
 <div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;    {</div>
 <div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;    }</div>
@@ -122,7 +122,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;    version::version( <span class="keyword">const</span> std::string&amp; a_ver ) :</div>
 <div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;                    f_major_ver( 0 ),</div>
 <div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;                    f_minor_ver( 0 ),</div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;                    f_revision( 0 ),</div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;                    f_patch_ver( 0 ),</div>
 <div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;                    f_version()</div>
 <div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;    {</div>
 <div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;        parse( a_ver );</div>
@@ -140,9 +140,9 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;<span class="keyword">    </span>{</div>
 <div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;        <span class="keywordflow">return</span> f_minor_ver;</div>
 <div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;    }</div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;    <span class="keywordtype">unsigned</span> version::revision()<span class="keyword"> const</span></div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;    <span class="keywordtype">unsigned</span> version::patch_version()<span class="keyword"> const</span></div>
 <div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;<span class="keyword">    </span>{</div>
-<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;        <span class="keywordflow">return</span> f_revision;</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;        <span class="keywordflow">return</span> f_patch_ver;</div>
 <div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;    }</div>
 <div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;</div>
 <div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;    <span class="keyword">const</span> std::string&amp; version::version_str()<span class="keyword"> const</span></div>
@@ -156,7 +156,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;        {</div>
 <div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;            f_major_ver = 0;</div>
 <div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;            f_minor_ver = 0;</div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;            f_revision = 0;</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;            f_patch_ver = 0;</div>
 <div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;            f_version = a_ver;</div>
 <div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;            <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
 <div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;        }</div>
@@ -179,21 +179,21 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;        std::stringstream t_min_ver_str;</div>
 <div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;        t_min_ver_str &lt;&lt; a_ver.substr(t_delim_pos_1 + 1, t_delim_pos_2 );</div>
 <div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;</div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;        std::stringstream t_rev_str;</div>
-<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;        t_rev_str &lt;&lt; a_ver.substr( t_delim_pos_2 + 1 );</div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;        std::stringstream t_patch_ver;</div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;        t_patch_ver &lt;&lt; a_ver.substr( t_delim_pos_2 + 1 );</div>
 <div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;</div>
 <div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;        t_maj_ver_str &gt;&gt; f_major_ver;</div>
 <div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;        t_min_ver_str &gt;&gt; f_minor_ver;</div>
-<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;        t_rev_str &gt;&gt; f_revision;</div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;        t_patch_ver &gt;&gt; f_patch_ver;</div>
 <div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;        f_version = a_ver;</div>
 <div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;</div>
 <div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;        <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
 <div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;    }</div>
 <div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;</div>
-<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;    <span class="keywordtype">bool</span> version::combine( <span class="keywordtype">unsigned</span> a_maj_ver, <span class="keywordtype">unsigned</span> a_min_ver, <span class="keywordtype">unsigned</span> a_rev )</div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;    <span class="keywordtype">bool</span> version::combine( <span class="keywordtype">unsigned</span> a_maj_ver, <span class="keywordtype">unsigned</span> a_min_ver, <span class="keywordtype">unsigned</span> a_patch_ver )</div>
 <div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;    {</div>
 <div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;        std::stringstream t_ver_str;</div>
-<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;        t_ver_str &lt;&lt; a_maj_ver &lt;&lt; s_delimeter &lt;&lt; a_min_ver &lt;&lt; s_delimeter &lt;&lt; a_rev;</div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;        t_ver_str &lt;&lt; a_maj_ver &lt;&lt; s_delimeter &lt;&lt; a_min_ver &lt;&lt; s_delimeter &lt;&lt; a_patch_ver;</div>
 <div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;        f_version = t_ver_str.str();</div>
 <div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;        <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
 <div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;    }</div>
@@ -202,13 +202,13 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;</div>
 <div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;</div>
 <div class="ttc" id="mt__logger_8hh_html_a66bf3249b4b316fad0e3b8276cdaf510"><div class="ttname"><a href="mt__logger_8hh.html#a66bf3249b4b316fad0e3b8276cdaf510">MTERROR</a></div><div class="ttdeci">#define MTERROR(...)</div><div class="ttdef"><b>Definition:</b> <a href="mt__logger_8hh_source.html#l00347">mt_logger.hh:347</a></div></div>
-<div class="ttc" id="namespacemantis_html"><div class="ttname"><a href="namespacemantis.html">mantis</a></div><div class="ttdef"><b>Definition:</b> <a href="mt__client__config_8cc_source.html#l00015">mt_client_config.cc:15</a></div></div>
-<div class="ttc" id="namespacemantis_html_af2e53afc85f931626d4db3cf8ba1e581"><div class="ttname"><a href="namespacemantis.html#af2e53afc85f931626d4db3cf8ba1e581">mantis::MTLOGGER</a></div><div class="ttdeci">MTLOGGER(mtlog,&quot;run_client&quot;)</div></div>
+<div class="ttc" id="namespacemantis_html"><div class="ttname"><a href="namespacemantis.html">mantis</a></div><div class="ttdef"><b>Definition:</b> <a href="mt__digitizer__px14400_8cc_source.html#l00016">mt_digitizer_px14400.cc:16</a></div></div>
+<div class="ttc" id="namespacemantis_html_ac08554af2bd8a3b487f1b8339fc7ee14"><div class="ttname"><a href="namespacemantis.html#ac08554af2bd8a3b487f1b8339fc7ee14">mantis::MTLOGGER</a></div><div class="ttdeci">MTLOGGER(mtlog,&quot;digitizer_px14400&quot;)</div></div>
 <div class="ttc" id="mt__logger_8hh_html"><div class="ttname"><a href="mt__logger_8hh.html">mt_logger.hh</a></div><div class="ttdoc">Contains the logger class and macros, based on Kasper&#39;s KLogger class. </div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri May 8 2015 21:26:33 for Mantis by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Jun 8 2015 17:08:01 for Mantis by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.8
 </small></address>

@@ -23,9 +23,9 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">Mantis
-   &#160;<span id="projectnumber">2.8.5</span>
+   &#160;<span id="projectnumber">3.0.0</span>
    </div>
-   <div id="projectbrief">Project 8 Fast DAQ</div>
+   <div id="projectbrief">Project 8 Streaming Data Acquisition</div>
   </td>
  </tr>
  </tbody>
@@ -102,107 +102,105 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;</div>
 <div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#ifndef _WIN32</span></div>
 <div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#include &lt;unistd.h&gt;</span></div>
-<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor">#else</span></div>
-<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#include &lt;Windows.h&gt;</span></div>
-<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;</div>
-<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespacemantis.html">mantis</a></div>
-<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;{</div>
-<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;    <a class="code" href="namespacemantis.html#af2e53afc85f931626d4db3cf8ba1e581">MTLOGGER</a>( mtlog, <span class="stringliteral">&quot;digitizer&quot;</span> );</div>
-<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;</div>
-<div class="line"><a name="l00021"></a><span class="lineno"><a class="line" href="classmantis_1_1digitizer.html#a1755c159a8be74631244334a029ae017">   21</a></span>&#160;    <a class="code" href="classmantis_1_1digitizer.html#a1755c159a8be74631244334a029ae017">digitizer::digitizer</a>() :</div>
-<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;            f_params( NULL ),</div>
-<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;            f_buffer( NULL ),</div>
-<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;            f_buffer_condition( new <a class="code" href="classmantis_1_1condition.html">condition</a>() )</div>
-<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;    {</div>
-<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;    }</div>
-<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;</div>
-<div class="line"><a name="l00028"></a><span class="lineno"><a class="line" href="classmantis_1_1digitizer.html#ad79c92bff19310621d97b5fe5b185ff0">   28</a></span>&#160;    <a class="code" href="classmantis_1_1digitizer.html#ad79c92bff19310621d97b5fe5b185ff0">digitizer::~digitizer</a>()</div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;    {</div>
-<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;        <span class="keywordflow">if</span>( <a class="code" href="classmantis_1_1digitizer.html#a59a950c57c053c3d9dd570cf2cd3c477">f_params</a> != NULL ) <span class="keyword">delete</span> [] <a class="code" href="classmantis_1_1digitizer.html#a59a950c57c053c3d9dd570cf2cd3c477">f_params</a>;</div>
-<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;        <span class="keyword">delete</span> <a class="code" href="classmantis_1_1digitizer.html#a91efafdff672117b7d475a9ac80282f2">f_buffer</a>;</div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;        <span class="keyword">delete</span> <a class="code" href="classmantis_1_1digitizer.html#aa3e5b453175afba0d39084d750803bad">f_buffer_condition</a>;</div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;    }</div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;</div>
-<div class="line"><a name="l00035"></a><span class="lineno"><a class="line" href="classmantis_1_1digitizer.html#a0ef0d12d44747b0d6723a178c354af7d">   35</a></span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classmantis_1_1digitizer.html#a0ef0d12d44747b0d6723a178c354af7d">digitizer::run_insitu_test</a>()</div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;    {</div>
-<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;        <a class="code" href="mt__logger_8hh.html#a73f847ecb18aadd65aef0ee194fcebd2">MTDEBUG</a>( mtlog, <span class="stringliteral">&quot;calling allocate&quot;</span> );</div>
-<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;        <span class="keywordflow">if</span>( ! this-&gt;<a class="code" href="classmantis_1_1digitizer.html#a79c50864bd3b5f963fedde9a916ee59a">allocate</a>() )</div>
-<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;        {</div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;            <a class="code" href="mt__logger_8hh.html#a66bf3249b4b316fad0e3b8276cdaf510">MTERROR</a>( mtlog, <span class="stringliteral">&quot;failure during allocation&quot;</span> );</div>
-<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;            <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;        }</div>
-<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;</div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;        <a class="code" href="mt__logger_8hh.html#a73f847ecb18aadd65aef0ee194fcebd2">MTDEBUG</a>( mtlog, <span class="stringliteral">&quot;calling initialize&quot;</span> );</div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;        <a class="code" href="classmantis_1_1param__node.html">param_node</a> t_global_config, t_dev_config;</div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;        t_dev_config.<a class="code" href="classmantis_1_1param__node.html#a71f3485046c292e77298d9e74113c614">add</a>( <span class="stringliteral">&quot;rate&quot;</span>, <a class="code" href="classmantis_1_1param__value.html">param_value</a>( 250.0 ) ); <span class="comment">// MHz</span></div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;        t_dev_config.<a class="code" href="classmantis_1_1param__node.html#a71f3485046c292e77298d9e74113c614">add</a>( <span class="stringliteral">&quot;record-size&quot;</span>, <a class="code" href="classmantis_1_1param__value.html">param_value</a>( 8192 ) );</div>
-<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;        t_global_config.<a class="code" href="classmantis_1_1param__node.html#a71f3485046c292e77298d9e74113c614">add</a>( <span class="stringliteral">&quot;duration&quot;</span>, <a class="code" href="classmantis_1_1param__value.html">param_value</a>( 100.0 ) ); <span class="comment">// ms</span></div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;        <span class="keywordflow">if</span>( !<a class="code" href="classmantis_1_1digitizer.html#a8f2c7229575305c1b0da07a0e421ef9e">initialize</a>( &amp;t_global_config, &amp;t_dev_config ) )</div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;        {</div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;            <a class="code" href="mt__logger_8hh.html#a66bf3249b4b316fad0e3b8276cdaf510">MTERROR</a>( mtlog, <span class="stringliteral">&quot;failure during initialize&quot;</span> );</div>
-<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;            <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
-<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;        }</div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;</div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespacemantis.html">mantis</a></div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;{</div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;    <a class="code" href="namespacemantis.html#ac08554af2bd8a3b487f1b8339fc7ee14">MTLOGGER</a>( mtlog, <span class="stringliteral">&quot;digitizer&quot;</span> );</div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;</div>
+<div class="line"><a name="l00019"></a><span class="lineno"><a class="line" href="classmantis_1_1digitizer.html#a1755c159a8be74631244334a029ae017">   19</a></span>&#160;    <a class="code" href="classmantis_1_1digitizer.html#a1755c159a8be74631244334a029ae017">digitizer::digitizer</a>() :</div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;            f_params( NULL ),</div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;            f_buffer( NULL ),</div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;            f_buffer_condition( new <a class="code" href="classmantis_1_1condition.html">condition</a>() )</div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;    {</div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;    }</div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;</div>
+<div class="line"><a name="l00026"></a><span class="lineno"><a class="line" href="classmantis_1_1digitizer.html#ad79c92bff19310621d97b5fe5b185ff0">   26</a></span>&#160;    <a class="code" href="classmantis_1_1digitizer.html#ad79c92bff19310621d97b5fe5b185ff0">digitizer::~digitizer</a>()</div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;    {</div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;        <span class="keywordflow">if</span>( <a class="code" href="classmantis_1_1digitizer.html#a59a950c57c053c3d9dd570cf2cd3c477">f_params</a> != NULL ) <span class="keyword">delete</span> [] <a class="code" href="classmantis_1_1digitizer.html#a59a950c57c053c3d9dd570cf2cd3c477">f_params</a>;</div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;        <span class="keyword">delete</span> <a class="code" href="classmantis_1_1digitizer.html#a91efafdff672117b7d475a9ac80282f2">f_buffer</a>;</div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;        <span class="keyword">delete</span> <a class="code" href="classmantis_1_1digitizer.html#aa3e5b453175afba0d39084d750803bad">f_buffer_condition</a>;</div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;    }</div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;</div>
+<div class="line"><a name="l00033"></a><span class="lineno"><a class="line" href="classmantis_1_1digitizer.html#a0ef0d12d44747b0d6723a178c354af7d">   33</a></span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classmantis_1_1digitizer.html#a0ef0d12d44747b0d6723a178c354af7d">digitizer::run_insitu_test</a>()</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;    {</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;        <a class="code" href="mt__logger_8hh.html#a73f847ecb18aadd65aef0ee194fcebd2">MTDEBUG</a>( mtlog, <span class="stringliteral">&quot;calling allocate&quot;</span> );</div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;        <span class="keywordflow">if</span>( ! this-&gt;<a class="code" href="classmantis_1_1digitizer.html#a79c50864bd3b5f963fedde9a916ee59a">allocate</a>() )</div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;        {</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;            <a class="code" href="mt__logger_8hh.html#a66bf3249b4b316fad0e3b8276cdaf510">MTERROR</a>( mtlog, <span class="stringliteral">&quot;failure during allocation&quot;</span> );</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;            <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;        }</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;        <a class="code" href="mt__logger_8hh.html#a73f847ecb18aadd65aef0ee194fcebd2">MTDEBUG</a>( mtlog, <span class="stringliteral">&quot;calling initialize&quot;</span> );</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;        <a class="code" href="classmantis_1_1param__node.html">param_node</a> t_global_config, t_dev_config;</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;        t_dev_config.<a class="code" href="classmantis_1_1param__node.html#a71f3485046c292e77298d9e74113c614">add</a>( <span class="stringliteral">&quot;rate&quot;</span>, <a class="code" href="classmantis_1_1param__value.html">param_value</a>( 250.0 ) ); <span class="comment">// MHz</span></div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;        t_dev_config.<a class="code" href="classmantis_1_1param__node.html#a71f3485046c292e77298d9e74113c614">add</a>( <span class="stringliteral">&quot;record-size&quot;</span>, <a class="code" href="classmantis_1_1param__value.html">param_value</a>( 8192 ) );</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;        t_global_config.<a class="code" href="classmantis_1_1param__node.html#a71f3485046c292e77298d9e74113c614">add</a>( <span class="stringliteral">&quot;duration&quot;</span>, <a class="code" href="classmantis_1_1param__value.html">param_value</a>( 100.0 ) ); <span class="comment">// ms</span></div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;        <span class="keywordflow">if</span>( !<a class="code" href="classmantis_1_1digitizer.html#a8f2c7229575305c1b0da07a0e421ef9e">initialize</a>( &amp;t_global_config, &amp;t_dev_config ) )</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;        {</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;            <a class="code" href="mt__logger_8hh.html#a66bf3249b4b316fad0e3b8276cdaf510">MTERROR</a>( mtlog, <span class="stringliteral">&quot;failure during initialize&quot;</span> );</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;            <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;        }</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;        <a class="code" href="classmantis_1_1thread.html">thread</a> t_digitizer_thread( <span class="keyword">this</span> );</div>
 <div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;</div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;        <a class="code" href="classmantis_1_1thread.html">thread</a> t_digitizer_thread( <span class="keyword">this</span> );</div>
-<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;</div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;        <a class="code" href="mt__logger_8hh.html#a73f847ecb18aadd65aef0ee194fcebd2">MTDEBUG</a>( mtlog, <span class="stringliteral">&quot;calling execute&quot;</span>);</div>
-<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;        t_digitizer_thread.<a class="code" href="classmantis_1_1thread.html#a60de64d75454385b23995437f1d72669">start</a>();</div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;</div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;        <a class="code" href="mt__logger_8hh.html#a73f847ecb18aadd65aef0ee194fcebd2">MTDEBUG</a>( mtlog, <span class="stringliteral">&quot;releasing&quot;</span> );</div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;        <a class="code" href="classmantis_1_1digitizer.html#aa3e5b453175afba0d39084d750803bad">f_buffer_condition</a>-&gt;<a class="code" href="classmantis_1_1condition.html#a23b477d0e2d399f75d585d154c346591">release</a>();</div>
-<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;</div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;        <a class="code" href="mt__logger_8hh.html#a73f847ecb18aadd65aef0ee194fcebd2">MTDEBUG</a>( mtlog, <span class="stringliteral">&quot;waiting&quot;</span> );</div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;<span class="preprocessor">#ifndef _WIN32</span></div>
-<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;        sleep(1);</div>
-<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;<span class="preprocessor">#else</span></div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;        Sleep(1000);</div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;</div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;        <a class="code" href="mt__logger_8hh.html#a73f847ecb18aadd65aef0ee194fcebd2">MTDEBUG</a>( mtlog, <span class="stringliteral">&quot;canceling&quot;</span> );</div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;        t_digitizer_thread.<a class="code" href="classmantis_1_1thread.html#a02d5fa6b14e221f3012a794b905be166">cancel</a>();</div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;</div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;        <a class="code" href="mt__logger_8hh.html#a73f847ecb18aadd65aef0ee194fcebd2">MTDEBUG</a>( mtlog, <span class="stringliteral">&quot;calling finalize&quot;</span>);</div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;        <a class="code" href="classmantis_1_1param__node.html">param_node</a> t_response;</div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;        <a class="code" href="classmantis_1_1digitizer.html#aa8da44d3b0b3c24801528bbaa9a1e566">finalize</a>( &amp;t_response );</div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;        <a class="code" href="mt__logger_8hh.html#a8c04e71060acfc898bbafa5b05706ddf">MTINFO</a>( mtlog, <span class="stringliteral">&quot;In-situ digitizer test result:\n&quot;</span> &lt;&lt; t_response );</div>
-<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;</div>
-<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;        <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
-<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;    }</div>
-<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;</div>
-<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;}</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;        <a class="code" href="mt__logger_8hh.html#a73f847ecb18aadd65aef0ee194fcebd2">MTDEBUG</a>( mtlog, <span class="stringliteral">&quot;calling execute&quot;</span>);</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;        t_digitizer_thread.<a class="code" href="classmantis_1_1thread.html#a60de64d75454385b23995437f1d72669">start</a>();</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;        <a class="code" href="mt__logger_8hh.html#a73f847ecb18aadd65aef0ee194fcebd2">MTDEBUG</a>( mtlog, <span class="stringliteral">&quot;releasing&quot;</span> );</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;        <a class="code" href="classmantis_1_1digitizer.html#aa3e5b453175afba0d39084d750803bad">f_buffer_condition</a>-&gt;<a class="code" href="classmantis_1_1condition.html#a23b477d0e2d399f75d585d154c346591">release</a>();</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;        <a class="code" href="mt__logger_8hh.html#a73f847ecb18aadd65aef0ee194fcebd2">MTDEBUG</a>( mtlog, <span class="stringliteral">&quot;waiting&quot;</span> );</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;<span class="preprocessor">#ifndef _WIN32</span></div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;        sleep(1);</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;<span class="preprocessor">#else</span></div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;        Sleep(1000);</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;        <a class="code" href="mt__logger_8hh.html#a73f847ecb18aadd65aef0ee194fcebd2">MTDEBUG</a>( mtlog, <span class="stringliteral">&quot;canceling&quot;</span> );</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;        t_digitizer_thread.<a class="code" href="classmantis_1_1thread.html#a02d5fa6b14e221f3012a794b905be166">cancel</a>();</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;        <a class="code" href="mt__logger_8hh.html#a73f847ecb18aadd65aef0ee194fcebd2">MTDEBUG</a>( mtlog, <span class="stringliteral">&quot;calling finalize&quot;</span>);</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;        <a class="code" href="classmantis_1_1param__node.html">param_node</a> t_response;</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;        <a class="code" href="classmantis_1_1digitizer.html#aa8da44d3b0b3c24801528bbaa9a1e566">finalize</a>( &amp;t_response );</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;        <a class="code" href="mt__logger_8hh.html#a8c04e71060acfc898bbafa5b05706ddf">MTINFO</a>( mtlog, <span class="stringliteral">&quot;In-situ digitizer test result:\n&quot;</span> &lt;&lt; t_response );</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;        <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;    }</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;}</div>
 <div class="ttc" id="mt__logger_8hh_html_a73f847ecb18aadd65aef0ee194fcebd2"><div class="ttname"><a href="mt__logger_8hh.html#a73f847ecb18aadd65aef0ee194fcebd2">MTDEBUG</a></div><div class="ttdeci">#define MTDEBUG(...)</div><div class="ttdef"><b>Definition:</b> <a href="mt__logger_8hh_source.html#l00344">mt_logger.hh:344</a></div></div>
 <div class="ttc" id="classmantis_1_1thread_html_a60de64d75454385b23995437f1d72669"><div class="ttname"><a href="classmantis_1_1thread.html#a60de64d75454385b23995437f1d72669">mantis::thread::start</a></div><div class="ttdeci">void start()</div><div class="ttdef"><b>Definition:</b> <a href="mt__thread_8cc_source.html#l00024">mt_thread.cc:24</a></div></div>
 <div class="ttc" id="mt__logger_8hh_html_a66bf3249b4b316fad0e3b8276cdaf510"><div class="ttname"><a href="mt__logger_8hh.html#a66bf3249b4b316fad0e3b8276cdaf510">MTERROR</a></div><div class="ttdeci">#define MTERROR(...)</div><div class="ttdef"><b>Definition:</b> <a href="mt__logger_8hh_source.html#l00347">mt_logger.hh:347</a></div></div>
-<div class="ttc" id="classmantis_1_1condition_html"><div class="ttname"><a href="classmantis_1_1condition.html">mantis::condition</a></div><div class="ttdef"><b>Definition:</b> <a href="mt__condition_8hh_source.html#l00016">mt_condition.hh:16</a></div></div>
+<div class="ttc" id="classmantis_1_1condition_html"><div class="ttname"><a href="classmantis_1_1condition.html">mantis::condition</a></div><div class="ttdef"><b>Definition:</b> <a href="mt__condition_8hh_source.html#l00014">mt_condition.hh:14</a></div></div>
 <div class="ttc" id="mt__buffer_8hh_html"><div class="ttname"><a href="mt__buffer_8hh.html">mt_buffer.hh</a></div></div>
 <div class="ttc" id="classmantis_1_1thread_html_a02d5fa6b14e221f3012a794b905be166"><div class="ttname"><a href="classmantis_1_1thread.html#a02d5fa6b14e221f3012a794b905be166">mantis::thread::cancel</a></div><div class="ttdeci">void cancel()</div><div class="ttdef"><b>Definition:</b> <a href="mt__thread_8cc_source.html#l00051">mt_thread.cc:51</a></div></div>
 <div class="ttc" id="classmantis_1_1digitizer_html_a79c50864bd3b5f963fedde9a916ee59a"><div class="ttname"><a href="classmantis_1_1digitizer.html#a79c50864bd3b5f963fedde9a916ee59a">mantis::digitizer::allocate</a></div><div class="ttdeci">virtual bool allocate()=0</div></div>
 <div class="ttc" id="classmantis_1_1param__value_html"><div class="ttname"><a href="classmantis_1_1param__value.html">mantis::param_value</a></div><div class="ttdef"><b>Definition:</b> <a href="mt__param_8hh_source.html#l00092">mt_param.hh:92</a></div></div>
 <div class="ttc" id="classmantis_1_1param__node_html_a71f3485046c292e77298d9e74113c614"><div class="ttname"><a href="classmantis_1_1param__node.html#a71f3485046c292e77298d9e74113c614">mantis::param_node::add</a></div><div class="ttdeci">bool add(const std::string &amp;a_name, const param &amp;a_value)</div><div class="ttdoc">creates a copy of a_value </div><div class="ttdef"><b>Definition:</b> <a href="mt__param_8hh_source.html#l01100">mt_param.hh:1100</a></div></div>
-<div class="ttc" id="namespacemantis_html"><div class="ttname"><a href="namespacemantis.html">mantis</a></div><div class="ttdef"><b>Definition:</b> <a href="mt__client__config_8cc_source.html#l00015">mt_client_config.cc:15</a></div></div>
+<div class="ttc" id="namespacemantis_html"><div class="ttname"><a href="namespacemantis.html">mantis</a></div><div class="ttdef"><b>Definition:</b> <a href="mt__digitizer__px14400_8cc_source.html#l00016">mt_digitizer_px14400.cc:16</a></div></div>
 <div class="ttc" id="classmantis_1_1digitizer_html_a59a950c57c053c3d9dd570cf2cd3c477"><div class="ttname"><a href="classmantis_1_1digitizer.html#a59a950c57c053c3d9dd570cf2cd3c477">mantis::digitizer::f_params</a></div><div class="ttdeci">struct dig_calib_params * f_params</div><div class="ttdef"><b>Definition:</b> <a href="mt__digitizer_8hh_source.html#l00047">mt_digitizer.hh:47</a></div></div>
 <div class="ttc" id="mt__param_8hh_html"><div class="ttname"><a href="mt__param_8hh.html">mt_param.hh</a></div></div>
-<div class="ttc" id="classmantis_1_1digitizer_html_ad79c92bff19310621d97b5fe5b185ff0"><div class="ttname"><a href="classmantis_1_1digitizer.html#ad79c92bff19310621d97b5fe5b185ff0">mantis::digitizer::~digitizer</a></div><div class="ttdeci">virtual ~digitizer()</div><div class="ttdef"><b>Definition:</b> <a href="mt__digitizer_8cc_source.html#l00028">mt_digitizer.cc:28</a></div></div>
+<div class="ttc" id="classmantis_1_1digitizer_html_ad79c92bff19310621d97b5fe5b185ff0"><div class="ttname"><a href="classmantis_1_1digitizer.html#ad79c92bff19310621d97b5fe5b185ff0">mantis::digitizer::~digitizer</a></div><div class="ttdeci">virtual ~digitizer()</div><div class="ttdef"><b>Definition:</b> <a href="mt__digitizer_8cc_source.html#l00026">mt_digitizer.cc:26</a></div></div>
 <div class="ttc" id="classmantis_1_1digitizer_html_a8f2c7229575305c1b0da07a0e421ef9e"><div class="ttname"><a href="classmantis_1_1digitizer.html#a8f2c7229575305c1b0da07a0e421ef9e">mantis::digitizer::initialize</a></div><div class="ttdeci">virtual bool initialize(param_node *a_global_config, param_node *a_dev_config)=0</div></div>
 <div class="ttc" id="classmantis_1_1param__node_html"><div class="ttname"><a href="classmantis_1_1param__node.html">mantis::param_node</a></div><div class="ttdef"><b>Definition:</b> <a href="mt__param_8hh_source.html#l00311">mt_param.hh:311</a></div></div>
-<div class="ttc" id="classmantis_1_1thread_html"><div class="ttname"><a href="classmantis_1_1thread.html">mantis::thread</a></div><div class="ttdef"><b>Definition:</b> <a href="mt__thread_8hh_source.html#l00016">mt_thread.hh:16</a></div></div>
+<div class="ttc" id="classmantis_1_1thread_html"><div class="ttname"><a href="classmantis_1_1thread.html">mantis::thread</a></div><div class="ttdef"><b>Definition:</b> <a href="mt__thread_8hh_source.html#l00014">mt_thread.hh:14</a></div></div>
+<div class="ttc" id="namespacemantis_html_ac08554af2bd8a3b487f1b8339fc7ee14"><div class="ttname"><a href="namespacemantis.html#ac08554af2bd8a3b487f1b8339fc7ee14">mantis::MTLOGGER</a></div><div class="ttdeci">MTLOGGER(mtlog,&quot;digitizer_px14400&quot;)</div></div>
 <div class="ttc" id="mt__logger_8hh_html_a8c04e71060acfc898bbafa5b05706ddf"><div class="ttname"><a href="mt__logger_8hh.html#a8c04e71060acfc898bbafa5b05706ddf">MTINFO</a></div><div class="ttdeci">#define MTINFO(...)</div><div class="ttdef"><b>Definition:</b> <a href="mt__logger_8hh_source.html#l00345">mt_logger.hh:345</a></div></div>
-<div class="ttc" id="namespacemantis_html_af2e53afc85f931626d4db3cf8ba1e581"><div class="ttname"><a href="namespacemantis.html#af2e53afc85f931626d4db3cf8ba1e581">mantis::MTLOGGER</a></div><div class="ttdeci">MTLOGGER(mtlog,&quot;run_client&quot;)</div></div>
 <div class="ttc" id="mt__logger_8hh_html"><div class="ttname"><a href="mt__logger_8hh.html">mt_logger.hh</a></div><div class="ttdoc">Contains the logger class and macros, based on Kasper&#39;s KLogger class. </div></div>
 <div class="ttc" id="mt__digitizer_8hh_html"><div class="ttname"><a href="mt__digitizer_8hh.html">mt_digitizer.hh</a></div></div>
 <div class="ttc" id="classmantis_1_1digitizer_html_aa8da44d3b0b3c24801528bbaa9a1e566"><div class="ttname"><a href="classmantis_1_1digitizer.html#aa8da44d3b0b3c24801528bbaa9a1e566">mantis::digitizer::finalize</a></div><div class="ttdeci">virtual void finalize(param_node *a_response)=0</div></div>
 <div class="ttc" id="classmantis_1_1condition_html_a23b477d0e2d399f75d585d154c346591"><div class="ttname"><a href="classmantis_1_1condition.html#a23b477d0e2d399f75d585d154c346591">mantis::condition::release</a></div><div class="ttdeci">void release()</div><div class="ttdef"><b>Definition:</b> <a href="mt__condition_8cc_source.html#l00046">mt_condition.cc:46</a></div></div>
-<div class="ttc" id="classmantis_1_1digitizer_html_a1755c159a8be74631244334a029ae017"><div class="ttname"><a href="classmantis_1_1digitizer.html#a1755c159a8be74631244334a029ae017">mantis::digitizer::digitizer</a></div><div class="ttdeci">digitizer()</div><div class="ttdef"><b>Definition:</b> <a href="mt__digitizer_8cc_source.html#l00021">mt_digitizer.cc:21</a></div></div>
+<div class="ttc" id="classmantis_1_1digitizer_html_a1755c159a8be74631244334a029ae017"><div class="ttname"><a href="classmantis_1_1digitizer.html#a1755c159a8be74631244334a029ae017">mantis::digitizer::digitizer</a></div><div class="ttdeci">digitizer()</div><div class="ttdef"><b>Definition:</b> <a href="mt__digitizer_8cc_source.html#l00019">mt_digitizer.cc:19</a></div></div>
 <div class="ttc" id="mt__thread_8hh_html"><div class="ttname"><a href="mt__thread_8hh.html">mt_thread.hh</a></div></div>
 <div class="ttc" id="classmantis_1_1digitizer_html_aa3e5b453175afba0d39084d750803bad"><div class="ttname"><a href="classmantis_1_1digitizer.html#aa3e5b453175afba0d39084d750803bad">mantis::digitizer::f_buffer_condition</a></div><div class="ttdeci">condition * f_buffer_condition</div><div class="ttdef"><b>Definition:</b> <a href="mt__digitizer_8hh_source.html#l00050">mt_digitizer.hh:50</a></div></div>
 <div class="ttc" id="mt__condition_8hh_html"><div class="ttname"><a href="mt__condition_8hh.html">mt_condition.hh</a></div></div>
-<div class="ttc" id="classmantis_1_1digitizer_html_a0ef0d12d44747b0d6723a178c354af7d"><div class="ttname"><a href="classmantis_1_1digitizer.html#a0ef0d12d44747b0d6723a178c354af7d">mantis::digitizer::run_insitu_test</a></div><div class="ttdeci">bool run_insitu_test()</div><div class="ttdef"><b>Definition:</b> <a href="mt__digitizer_8cc_source.html#l00035">mt_digitizer.cc:35</a></div></div>
+<div class="ttc" id="classmantis_1_1digitizer_html_a0ef0d12d44747b0d6723a178c354af7d"><div class="ttname"><a href="classmantis_1_1digitizer.html#a0ef0d12d44747b0d6723a178c354af7d">mantis::digitizer::run_insitu_test</a></div><div class="ttdeci">bool run_insitu_test()</div><div class="ttdef"><b>Definition:</b> <a href="mt__digitizer_8cc_source.html#l00033">mt_digitizer.cc:33</a></div></div>
 <div class="ttc" id="classmantis_1_1digitizer_html_a91efafdff672117b7d475a9ac80282f2"><div class="ttname"><a href="classmantis_1_1digitizer.html#a91efafdff672117b7d475a9ac80282f2">mantis::digitizer::f_buffer</a></div><div class="ttdeci">buffer * f_buffer</div><div class="ttdef"><b>Definition:</b> <a href="mt__digitizer_8hh_source.html#l00049">mt_digitizer.hh:49</a></div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri May 8 2015 21:26:33 for Mantis by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Jun 8 2015 17:08:01 for Mantis by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.8
 </small></address>

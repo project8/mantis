@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Full Doxygen Reference &mdash; Mantis 2.8.5 documentation</title>
+  <title>Full Doxygen Reference &mdash; Mantis 3.0.0 documentation</title>
   
 
   
@@ -30,7 +30,8 @@
   
 
   
-    <link rel="top" title="Mantis 2.8.5 documentation" href="index.html"/> 
+    <link rel="top" title="Mantis 3.0.0 documentation" href="index.html"/>
+        <link rel="prev" title="Usage" href="wiki/Usage.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -69,8 +70,8 @@
         
           
           
-              <ul>
-<li class="toctree-l1"><a class="reference internal" href="ClientManual.html">Client</a><ul>
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="ClientManual.html">Client Manual</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="ClientManual.html#usage">Usage</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="ClientManual.html#examples">Examples</a></li>
 </ul>
@@ -88,10 +89,8 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="DeviceConfigStandards.html">Device Configuration Standards</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="DeviceConfigStandards.html#required-by-the-file-writer">Required by the file writer</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="DeviceConfigStandards.html#may-be-required-in-the-future">May be required in the future</a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="DeviceConfigStandards.html#required-by-the-file-writer">Required by the file writer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="DeviceConfigStandards.html#may-be-required-in-the-future">May be required in the future</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="Reminders.html">Reminders</a><ul>
@@ -100,6 +99,20 @@
 <li class="toctree-l2"><a class="reference internal" href="Reminders.html#developing-mantis">Developing Mantis</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="wiki/wiki.html">Wiki</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="wiki/Mantis-DAQ-in-Windows.html">Mantis DAQ in WIndows</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="wiki/Mantis-DAQ-in-Windows.html#specifications">Specifications</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wiki/Mantis-DAQ-in-Windows.html#required-software">Required Software</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wiki/Mantis-DAQ-in-Windows.html#useful-documentation">Useful documentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wiki/Mantis-DAQ-in-Windows.html#install-protobuf">Install Protobuf</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wiki/Mantis-DAQ-in-Windows.html#install-mantis">Install Mantis</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="wiki/Mantis-logging-facilities.html">Mantis Logging Facilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wiki/Usage.html">Usage</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Full Doxygen Reference</a></li>
 </ul>
 
           
@@ -6689,118 +6702,6 @@ This base class defines the generic writer interface. Typical usage of a writer 
 <p class="breathe-sectiondef-title rubric">Functions</p>
 <dl class="function">
 <dt>
-<span class="target" id="Mantisnamespacemantis_1af2e53afc85f931626d4db3cf8ba1e581"></span><code class="descname">mantis::MTLOGGER(mtlog, &quot;run_client&quot;)</code></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-<span class="target" id="Mantisnamespacemantis_1a8bc12bfeb2c5ae7a26f8ac5955873ade"></span><code class="descname">mantis::MTLOGGER(mtlog, &quot;broker&quot;)</code></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-<span class="target" id="Mantisnamespacemantis_1a2e7ebaec2c6f8e79d76ad16262877a24"></span><code class="descname">mantis::MTLOGGER(mtlog, &quot;configurator&quot;)</code></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="_CPPv2N6mantis8EndColorEv">
-<span id="mantis::EndColor"></span><span class="target" id="Mantisnamespacemantis_1a19de35e4eda851e781c1b6429af3d38d"></span><em class="property">const</em> string &amp;<code class="descname">EndColor</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N6mantis8EndColorEv" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="_CPPv2N6mantis10FatalColorEv">
-<span id="mantis::FatalColor"></span><span class="target" id="Mantisnamespacemantis_1a852b663eafa8d894a5267a52c2a61b5e"></span><em class="property">const</em> string &amp;<code class="descname">FatalColor</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N6mantis10FatalColorEv" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="_CPPv2N6mantis10ErrorColorEv">
-<span id="mantis::ErrorColor"></span><span class="target" id="Mantisnamespacemantis_1aaa2d4c88e37b76f065e5f87fd0ccd4bf"></span><em class="property">const</em> string &amp;<code class="descname">ErrorColor</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N6mantis10ErrorColorEv" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="_CPPv2N6mantis9WarnColorEv">
-<span id="mantis::WarnColor"></span><span class="target" id="Mantisnamespacemantis_1aa94a29307b733168f7f11aaced2ee881"></span><em class="property">const</em> string &amp;<code class="descname">WarnColor</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N6mantis9WarnColorEv" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="_CPPv2N6mantis9InfoColorEv">
-<span id="mantis::InfoColor"></span><span class="target" id="Mantisnamespacemantis_1a7bcfea7ebc27d1cbcb887344714e43d4"></span><em class="property">const</em> string &amp;<code class="descname">InfoColor</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N6mantis9InfoColorEv" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="_CPPv2N6mantis10DebugColorEv">
-<span id="mantis::DebugColor"></span><span class="target" id="Mantisnamespacemantis_1a6df6c174098a5067ade4f8842c3d9645"></span><em class="property">const</em> string &amp;<code class="descname">DebugColor</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N6mantis10DebugColorEv" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="_CPPv2N6mantis10OtherColorEv">
-<span id="mantis::OtherColor"></span><span class="target" id="Mantisnamespacemantis_1a30ae0e0ab08af251e9024d1e1f52cec4"></span><em class="property">const</em> string &amp;<code class="descname">OtherColor</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N6mantis10OtherColorEv" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-<span class="target" id="Mantisnamespacemantis_1a0f58bd9982346ea99133c838a1df9306"></span><code class="descname">MTLOGGER(mtlog, &quot;param&quot;)</code></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-<span class="target" id="Mantisnamespacemantis_1af04c17b81e33fba7260c6ff61b5fe8d7"></span><code class="descname">MANTIS_API std::ostream &amp; operator&lt;&lt;(std::ostream &amp; out, const  param  &amp; a_value)</code></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-<span class="target" id="Mantisnamespacemantis_1ab8bbdb20f140b963ffddac354a09579a"></span><code class="descname">MANTIS_API std::ostream &amp; operator&lt;&lt;(std::ostream &amp; out, const  param_value  &amp; a_value)</code></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-<span class="target" id="Mantisnamespacemantis_1a21936ec7294a71c32464be6c77593517"></span><code class="descname">MANTIS_API std::ostream &amp; operator&lt;&lt;(std::ostream &amp; out, const  param_array  &amp; a_value)</code></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-<span class="target" id="Mantisnamespacemantis_1a5c7c6db57b46f60f76a3669244ac3677"></span><code class="descname">MANTIS_API std::ostream &amp; operator&lt;&lt;(std::ostream &amp; out, const  param_node  &amp; a_value)</code></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-<span class="target" id="Mantisnamespacemantis_1a6ae5f14466b5f325b663ae45d7ece442"></span><code class="descname">mantis::MTLOGGER(mtlog_p, &quot;param&quot;)</code></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-template &lt;&gt;</dt>
-<dt id="_CPPv2N6mantis11param_value3getINSt6stringEEEv">
-<span id="mantis::param_value::get:ss:"></span><span class="target" id="Mantisnamespacemantis_1a0f079222006f248951caa2cb5d91f21b"></span><a class="reference internal" href="#_CPPv2St" title="std">std</a>::string <code class="descname">get</code>&lt;<a class="reference internal" href="#_CPPv2St" title="std">std</a>::string&gt;<span class="sig-paren">(</span><span class="sig-paren">)</span> const<a class="headerlink" href="#_CPPv2N6mantis11param_value3getINSt6stringEEEv" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-<span class="target" id="Mantisnamespacemantis_1aec7397c1eefb9fc02c83aad96ac2dbd1"></span><code class="descname">mantis::MTLOGGER(mtlog_param_json, &quot;param&quot;)</code></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-<span class="target" id="Mantisnamespacemantis_1a3de44166842933640846010dc959456e"></span><code class="descname">mantis::MTLOGGER(mtlog_param_msgpack, &quot;param&quot;)</code></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-<span class="target" id="Mantisnamespacemantis_1ac0d2425a1cafd9344557e6fc2069b7e2"></span><code class="descname">mantis::MTLOGGER(mtlog, &quot;parser&quot;)</code></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-<span class="target" id="Mantisnamespacemantis_1abedf7406f7a4028ea2b0633f4d654dbe"></span><code class="descname">mantis::MTLOGGER(mtlog, &quot;signal_handler&quot;)</code></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-<span class="target" id="Mantisnamespacemantis_1abc50f0a99267a29241c465c7f038f7af"></span><code class="descname">mantis::MTLOGGER(mtlog, &quot;version&quot;)</code></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
 <span class="target" id="Mantisnamespacemantis_1ac08554af2bd8a3b487f1b8339fc7ee14"></span><code class="descname">mantis::MTLOGGER(mtlog, &quot;digitizer_px14400&quot;)</code></dt>
 <dd></dd></dl>
 
@@ -6969,6 +6870,118 @@ template &lt;&gt;</dt>
 <span class="target" id="Mantisnamespacemantis_1ab83271e27d7c78a565463c266b9457a2"></span><code class="descname">mantis::MTLOGGER(mtlog, &quot;writer&quot;)</code></dt>
 <dd></dd></dl>
 
+<dl class="function">
+<dt>
+<span class="target" id="Mantisnamespacemantis_1af2e53afc85f931626d4db3cf8ba1e581"></span><code class="descname">mantis::MTLOGGER(mtlog, &quot;run_client&quot;)</code></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<span class="target" id="Mantisnamespacemantis_1a8bc12bfeb2c5ae7a26f8ac5955873ade"></span><code class="descname">mantis::MTLOGGER(mtlog, &quot;broker&quot;)</code></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<span class="target" id="Mantisnamespacemantis_1a2e7ebaec2c6f8e79d76ad16262877a24"></span><code class="descname">mantis::MTLOGGER(mtlog, &quot;configurator&quot;)</code></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N6mantis8EndColorEv">
+<span id="mantis::EndColor"></span><span class="target" id="Mantisnamespacemantis_1a19de35e4eda851e781c1b6429af3d38d"></span><em class="property">const</em> string &amp;<code class="descname">EndColor</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N6mantis8EndColorEv" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N6mantis10FatalColorEv">
+<span id="mantis::FatalColor"></span><span class="target" id="Mantisnamespacemantis_1a852b663eafa8d894a5267a52c2a61b5e"></span><em class="property">const</em> string &amp;<code class="descname">FatalColor</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N6mantis10FatalColorEv" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N6mantis10ErrorColorEv">
+<span id="mantis::ErrorColor"></span><span class="target" id="Mantisnamespacemantis_1aaa2d4c88e37b76f065e5f87fd0ccd4bf"></span><em class="property">const</em> string &amp;<code class="descname">ErrorColor</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N6mantis10ErrorColorEv" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N6mantis9WarnColorEv">
+<span id="mantis::WarnColor"></span><span class="target" id="Mantisnamespacemantis_1aa94a29307b733168f7f11aaced2ee881"></span><em class="property">const</em> string &amp;<code class="descname">WarnColor</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N6mantis9WarnColorEv" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N6mantis9InfoColorEv">
+<span id="mantis::InfoColor"></span><span class="target" id="Mantisnamespacemantis_1a7bcfea7ebc27d1cbcb887344714e43d4"></span><em class="property">const</em> string &amp;<code class="descname">InfoColor</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N6mantis9InfoColorEv" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N6mantis10DebugColorEv">
+<span id="mantis::DebugColor"></span><span class="target" id="Mantisnamespacemantis_1a6df6c174098a5067ade4f8842c3d9645"></span><em class="property">const</em> string &amp;<code class="descname">DebugColor</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N6mantis10DebugColorEv" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N6mantis10OtherColorEv">
+<span id="mantis::OtherColor"></span><span class="target" id="Mantisnamespacemantis_1a30ae0e0ab08af251e9024d1e1f52cec4"></span><em class="property">const</em> string &amp;<code class="descname">OtherColor</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N6mantis10OtherColorEv" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<span class="target" id="Mantisnamespacemantis_1a0f58bd9982346ea99133c838a1df9306"></span><code class="descname">MTLOGGER(mtlog, &quot;param&quot;)</code></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<span class="target" id="Mantisnamespacemantis_1af04c17b81e33fba7260c6ff61b5fe8d7"></span><code class="descname">MANTIS_API std::ostream &amp; operator&lt;&lt;(std::ostream &amp; out, const  param  &amp; a_value)</code></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<span class="target" id="Mantisnamespacemantis_1ab8bbdb20f140b963ffddac354a09579a"></span><code class="descname">MANTIS_API std::ostream &amp; operator&lt;&lt;(std::ostream &amp; out, const  param_value  &amp; a_value)</code></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<span class="target" id="Mantisnamespacemantis_1a21936ec7294a71c32464be6c77593517"></span><code class="descname">MANTIS_API std::ostream &amp; operator&lt;&lt;(std::ostream &amp; out, const  param_array  &amp; a_value)</code></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<span class="target" id="Mantisnamespacemantis_1a5c7c6db57b46f60f76a3669244ac3677"></span><code class="descname">MANTIS_API std::ostream &amp; operator&lt;&lt;(std::ostream &amp; out, const  param_node  &amp; a_value)</code></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<span class="target" id="Mantisnamespacemantis_1a6ae5f14466b5f325b663ae45d7ece442"></span><code class="descname">mantis::MTLOGGER(mtlog_p, &quot;param&quot;)</code></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template &lt;&gt;</dt>
+<dt id="_CPPv2N6mantis11param_value3getINSt6stringEEEv">
+<span id="mantis::param_value::get:ss:"></span><span class="target" id="Mantisnamespacemantis_1a0f079222006f248951caa2cb5d91f21b"></span><a class="reference internal" href="#_CPPv2St" title="std">std</a>::string <code class="descname">get</code>&lt;<a class="reference internal" href="#_CPPv2St" title="std">std</a>::string&gt;<span class="sig-paren">(</span><span class="sig-paren">)</span> const<a class="headerlink" href="#_CPPv2N6mantis11param_value3getINSt6stringEEEv" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<span class="target" id="Mantisnamespacemantis_1aec7397c1eefb9fc02c83aad96ac2dbd1"></span><code class="descname">mantis::MTLOGGER(mtlog_param_json, &quot;param&quot;)</code></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<span class="target" id="Mantisnamespacemantis_1a3de44166842933640846010dc959456e"></span><code class="descname">mantis::MTLOGGER(mtlog_param_msgpack, &quot;param&quot;)</code></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<span class="target" id="Mantisnamespacemantis_1ac0d2425a1cafd9344557e6fc2069b7e2"></span><code class="descname">mantis::MTLOGGER(mtlog, &quot;parser&quot;)</code></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<span class="target" id="Mantisnamespacemantis_1abedf7406f7a4028ea2b0633f4d654dbe"></span><code class="descname">mantis::MTLOGGER(mtlog, &quot;signal_handler&quot;)</code></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<span class="target" id="Mantisnamespacemantis_1abc50f0a99267a29241c465c7f038f7af"></span><code class="descname">mantis::MTLOGGER(mtlog, &quot;version&quot;)</code></dt>
+<dd></dd></dl>
+
 </div>
 </dd></dl>
 
@@ -6976,6 +6989,42 @@ template &lt;&gt;</dt>
 <dt id="_CPPv2St">
 <span id="std"></span><span class="target" id="Mantisnamespacestd"></span><em class="property">namespace </em><code class="descname">std</code><a class="headerlink" href="#_CPPv2St" title="Permalink to this definition">¶</a></dt>
 <dd><p>STL namespace. </p>
+</dd></dl>
+
+<dl class="file">
+<dt>
+<span class="target" id="Mantismantis__client_8cc"></span><em>file</em> <code class="descname">mantis_client.cc</code></dt>
+<dd><em>#include &#8220;mt_broker.hh&#8221;</em><em>#include &#8220;mt_connection.hh&#8221;</em><em>#include &#8220;mt_constants.hh&#8221;</em><em>#include &#8220;mt_logger.hh&#8221;</em><em>#include &#8220;mt_client_config.hh&#8221;</em><em>#include &#8220;mt_configurator.hh&#8221;</em><em>#include &#8220;mt_run_client.hh&#8221;</em><div class="breathe-sectiondef container">
+<p class="breathe-sectiondef-title rubric">Functions</p>
+<dl class="function">
+<dt>
+<span class="target" id="Mantismantis__client_8cc_1a722f0e116d63f735b5b6871863229c03"></span><code class="descname">MTLOGGER(mtlog, &quot;mantis_client&quot;)</code></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv24mainiPPc">
+<span id="main__i.cPP"></span><span class="target" id="Mantismantis__client_8cc_1a3c04138a5bfe5d72780bb7e82a18e627"></span>int <code class="descname">main</code><span class="sig-paren">(</span>int <em>argc</em>, char **<em>argv</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv24mainiPPc" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="file">
+<dt>
+<span class="target" id="Mantismantis__server_8cc"></span><em>file</em> <code class="descname">mantis_server.cc</code></dt>
+<dd><em>#include &#8220;mt_broker.hh&#8221;</em><em>#include &#8220;mt_configurator.hh&#8221;</em><em>#include &#8220;mt_constants.hh&#8221;</em><em>#include &#8220;mt_logger.hh&#8221;</em><em>#include &#8220;mt_run_server.hh&#8221;</em><em>#include &#8220;mt_server_config.hh&#8221;</em><div class="breathe-sectiondef container">
+<p class="breathe-sectiondef-title rubric">Functions</p>
+<dl class="function">
+<dt>
+<span class="target" id="Mantismantis__server_8cc_1a57901dd9fbd2fffc68d667dcc12e9389"></span><code class="descname">MTLOGGER(mtlog, &quot;mantis_server&quot;)</code></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv24mainiPPc">
+<span id="main__i.cPP"></span><span class="target" id="Mantismantis__server_8cc_1a3c04138a5bfe5d72780bb7e82a18e627"></span>int <code class="descname">main</code><span class="sig-paren">(</span>int <em>argc</em>, char **<em>argv</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv24mainiPPc" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
 </dd></dl>
 
 <dl class="file">
@@ -7514,7 +7563,7 @@ template &lt;&gt;</dt>
 <dl class="file">
 <dt>
 <span class="target" id="Mantismt__file__writer_8cc"></span><em>file</em> <code class="descname">mt_file_writer.cc</code></dt>
-<dd><em>#include &#8220;mt_file_writer.hh&#8221;</em><em>#include &#8220;mt_configurator.hh&#8221;</em><em>#include &#8220;mt_device_manager.hh&#8221;</em><em>#include &#8220;mt_exception.hh&#8221;</em><em>#include &#8220;mt_factory.hh&#8221;</em><em>#include &#8220;mt_logger.hh&#8221;</em><em>#include &#8220;mt_acq_request.hh&#8221;</em><em>#include &#8220;M3Exception.hh&#8221;</em><em>#include &#8220;M3Types.hh&#8221;</em><em>#include &#8220;M3Version.hh&#8221;</em><em>#include &lt;cstring&gt;</em><div class="breathe-sectiondef container">
+<dd><em>#include &#8220;mt_file_writer.hh&#8221;</em><em>#include &#8220;mt_configurator.hh&#8221;</em><em>#include &#8220;mt_device_manager.hh&#8221;</em><em>#include &#8220;mt_exception.hh&#8221;</em><em>#include &#8220;mt_factory.hh&#8221;</em><em>#include &#8220;mt_logger.hh&#8221;</em><em>#include &#8220;mt_acq_request.hh&#8221;</em><em>#include &#8220;M3Exception.hh&#8221;</em><em>#include &#8220;M3Types.hh&#8221;</em><em>#include &#8220;M3Version.hh&#8221;</em><em>#include &lt;limits&gt;</em><em>#include &lt;cstring&gt;</em><div class="breathe-sectiondef container">
 <p class="breathe-sectiondef-title rubric">Defines</p>
 <dl class="macro">
 <dt>
@@ -7524,6 +7573,11 @@ template &lt;&gt;</dt>
 <dl class="macro">
 <dt>
 <span class="target" id="Mantismt__file__writer_8cc_1acfbf2cf171957be053f4674a2b372bac"></span><code class="descname">M3_API_EXPORTS</code></dt>
+<dd></dd></dl>
+
+<dl class="macro">
+<dt id="c.NOMINMAX">
+<span class="target" id="Mantismt__file__writer_8cc_1a9f918755b601cf4bffca775992e6fb90"></span><code class="descname">NOMINMAX</code><a class="headerlink" href="#c.NOMINMAX" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>
@@ -8310,6 +8364,125 @@ template &lt;&gt;</dt>
 </div>
 </dd></dl>
 
+<dl class="file">
+<dt>
+<span class="target" id="Mantistest__mantis__client_8cc"></span><em>file</em> <code class="descname">test_mantis_client.cc</code></dt>
+<dd><em>#include &#8220;mt_configurator.hh&#8221;</em><em>#include &#8220;mt_logger.hh&#8221;</em><em>#include &#8220;mt_client_tcp.hh&#8221;</em><em>#include &#8220;mt_client_config.hh&#8221;</em><em>#include &#8220;mt_run_context_dist.hh&#8221;</em><em>#include &#8220;thorax.hh&#8221;</em><em>#include &lt;string&gt;</em><em>#include &lt;sstream&gt;</em><div class="breathe-sectiondef container">
+<p class="breathe-sectiondef-title rubric">Functions</p>
+<dl class="function">
+<dt>
+<span class="target" id="Mantistest__mantis__client_8cc_1a5db824a45affb13635392369bc1b1554"></span><code class="descname">MTLOGGER(mtlog, &quot;test_mantis_client&quot;)</code></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv214analyze_statusP16run_context_dist">
+<span id="analyze_status__run_context_distP"></span><span class="target" id="Mantistest__mantis__client_8cc_1a4167515c70b115d077edb07b3247efbe"></span>int <code class="descname">analyze_status</code><span class="sig-paren">(</span>run_context_dist *<em>t_run_context</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv214analyze_statusP16run_context_dist" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv24mainiPPc">
+<span id="main__i.cPP"></span><span class="target" id="Mantistest__mantis__client_8cc_1a3c04138a5bfe5d72780bb7e82a18e627"></span>int <code class="descname">main</code><span class="sig-paren">(</span>int <em>argc</em>, char **<em>argv</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv24mainiPPc" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="file">
+<dt>
+<span class="target" id="Mantistest__mantis__config_8cc"></span><em>file</em> <code class="descname">test_mantis_config.cc</code></dt>
+<dd><em>#include &#8220;mt_client_config.hh&#8221;</em><em>#include &#8220;mt_configurator.hh&#8221;</em><em>#include &#8220;mt_logger.hh&#8221;</em><em>#include &lt;iostream&gt;</em><div class="breathe-sectiondef container">
+<p class="breathe-sectiondef-title rubric">Functions</p>
+<dl class="function">
+<dt>
+<span class="target" id="Mantistest__mantis__config_8cc_1a73194491ab0747ced2cbb79c6e7a5618"></span><code class="descname">MTLOGGER(mtlog, &quot;test_mantis_config&quot;)</code></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv24mainiPPc">
+<span id="main__i.cPP"></span><span class="target" id="Mantistest__mantis__config_8cc_1a3c04138a5bfe5d72780bb7e82a18e627"></span>int <code class="descname">main</code><span class="sig-paren">(</span>int <em>argc</em>, char **<em>argv</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv24mainiPPc" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="file">
+<dt>
+<span class="target" id="Mantistest__mantis__digitizer_8cc"></span><em>file</em> <code class="descname">test_mantis_digitizer.cc</code></dt>
+<dd><em>#include &#8220;mt_buffer.hh&#8221;</em><em>#include &#8220;mt_condition.hh&#8221;</em><em>#include &#8220;mt_configurator.hh&#8221;</em><em>#include &#8220;mt_device_manager.hh&#8221;</em><em>#include &#8220;mt_digitizer.hh&#8221;</em><em>#include &#8220;mt_factory.hh&#8221;</em><em>#include &#8220;mt_logger.hh&#8221;</em><em>#include &lt;string&gt;</em><div class="breathe-sectiondef container">
+<p class="breathe-sectiondef-title rubric">Enums</p>
+<dl class="type">
+<dt id="_CPPv29test_type">
+<span id="test_type"></span><span class="target" id="Mantistest__mantis__digitizer_8cc_1aac4452a7487c189982bfeaca04a1326f"></span><em class="property">enum </em><code class="descname">test_type</code><a class="headerlink" href="#_CPPv29test_type" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Values:</em></p>
+<dl class="member">
+<dt id="_CPPv27k_basic">
+<span id="k_basic"></span><span class="target" id="Mantistest__mantis__digitizer_8cc_1aac4452a7487c189982bfeaca04a1326fab089931a7af1b42a4a638be9ce80c3a7"></span><code class="descname">k_basic</code><a class="headerlink" href="#_CPPv27k_basic" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv28k_insitu">
+<span id="k_insitu"></span><span class="target" id="Mantistest__mantis__digitizer_8cc_1aac4452a7487c189982bfeaca04a1326fa4187c8850332ebd8c2b59122d69c9866"></span><code class="descname">k_insitu</code><a class="headerlink" href="#_CPPv28k_insitu" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="breathe-sectiondef container">
+<p class="breathe-sectiondef-title rubric">Functions</p>
+<dl class="function">
+<dt>
+<span class="target" id="Mantistest__mantis__digitizer_8cc_1afac47b964bf943a67297d4cd5b49060b"></span><code class="descname">MTLOGGER(mtlog, &quot;test_mantis_digitizer&quot;)</code></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv24mainiPPc">
+<span id="main__i.cPP"></span><span class="target" id="Mantistest__mantis__digitizer_8cc_1a3c04138a5bfe5d72780bb7e82a18e627"></span>int <code class="descname">main</code><span class="sig-paren">(</span>int <em>argc</em>, char **<em>argv</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv24mainiPPc" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="file">
+<dt>
+<span class="target" id="Mantistest__mantis__parser_8cc"></span><em>file</em> <code class="descname">test_mantis_parser.cc</code></dt>
+<dd><em>#include &#8220;mt_logger.cc&#8221;</em><em>#include &#8220;mt_parser.cc&#8221;</em><div class="breathe-sectiondef container">
+<p class="breathe-sectiondef-title rubric">Functions</p>
+<dl class="function">
+<dt>
+<span class="target" id="Mantistest__mantis__parser_8cc_1adad6f5ecc40c63a15d9e4e82a2ec0565"></span><code class="descname">MTLOGGER(mtlog, &quot;test_mantis_parser&quot;)</code></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv24mainv">
+<span id="main"></span><span class="target" id="Mantistest__mantis__parser_8cc_1ae66f6b31b5ad750f1fe042a706a4e3d4"></span>int <code class="descname">main</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv24mainv" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="file">
+<dt>
+<span class="target" id="Mantistest__mantis__server_8cc"></span><em>file</em> <code class="descname">test_mantis_server.cc</code></dt>
+<dd><em>#include &#8220;mt_configurator.hh&#8221;</em><em>#include &#8220;mt_logger.hh&#8221;</em><em>#include &#8220;mt_server_tcp.hh&#8221;</em><em>#include &#8220;mt_server_config.hh&#8221;</em><em>#include &#8220;mt_run_context_dist.hh&#8221;</em><em>#include &#8220;mt_connection.hh&#8221;</em><em>#include &lt;string&gt;</em><em>#include &lt;sstream&gt;</em><div class="breathe-sectiondef container">
+<p class="breathe-sectiondef-title rubric">Functions</p>
+<dl class="function">
+<dt>
+<span class="target" id="Mantistest__mantis__server_8cc_1a1b99dd042b51acb251aa1ef80aec0770"></span><code class="descname">MTLOGGER(mtlog, &quot;test_mantis_server&quot;)</code></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv24mainiPPc">
+<span id="main__i.cPP"></span><span class="target" id="Mantistest__mantis__server_8cc_1a3c04138a5bfe5d72780bb7e82a18e627"></span>int <code class="descname">main</code><span class="sig-paren">(</span>int <em>argc</em>, char **<em>argv</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv24mainiPPc" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="dir">
+<dt>
+<span class="target" id="Mantisdir_8c1195e4829fa17630c4278c41da729a"></span><em>dir</em> <code class="descname">Applications</code></dt>
+<dd></dd></dl>
+
 <dl class="dir">
 <dt>
 <span class="target" id="Mantisdir_922c588100a187620fdc1533bc178f73"></span><em>dir</em> <code class="descname">Client</code></dt>
@@ -8335,6 +8508,13 @@ template &lt;&gt;</dt>
 
           </div>
           <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="wiki/Usage.html" class="btn btn-neutral" title="Usage" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
   
 
   <hr/>
@@ -8362,7 +8542,7 @@ template &lt;&gt;</dt>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'2.8.5',
+            VERSION:'3.0.0',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

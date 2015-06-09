@@ -23,9 +23,9 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">Mantis
-   &#160;<span id="projectnumber">2.8.5</span>
+   &#160;<span id="projectnumber">3.0.0</span>
    </div>
-   <div id="projectbrief">Project 8 Fast DAQ</div>
+   <div id="projectbrief">Project 8 Streaming Data Acquisition</div>
   </td>
  </tr>
  </tbody>
@@ -101,7 +101,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;</div>
 <div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespacemantis.html">mantis</a></div>
 <div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;{</div>
-<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;    <a class="code" href="namespacemantis.html#af2e53afc85f931626d4db3cf8ba1e581">MTLOGGER</a>( mtlog, <span class="stringliteral">&quot;buffer&quot;</span> );</div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;    <a class="code" href="namespacemantis.html#ac08554af2bd8a3b487f1b8339fc7ee14">MTLOGGER</a>( mtlog, <span class="stringliteral">&quot;buffer&quot;</span> );</div>
 <div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;</div>
 <div class="line"><a name="l00014"></a><span class="lineno"><a class="line" href="classmantis_1_1buffer.html#a7b9a0de098b6a4f289343a866870bd07">   14</a></span>&#160;    <a class="code" href="classmantis_1_1buffer.html#a7b9a0de098b6a4f289343a866870bd07">buffer::buffer</a>( <span class="keyword">const</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span>&amp; a_size, <span class="keyword">const</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span>&amp; a_block_size ) :</div>
 <div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;            f_blocks( NULL ),</div>
@@ -169,16 +169,16 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="ttc" id="classmantis_1_1block_html_a5643509faeeb113ef97f93dc6acf9eeb"><div class="ttname"><a href="classmantis_1_1block.html#a5643509faeeb113ef97f93dc6acf9eeb">mantis::block::get_state</a></div><div class="ttdeci">state_t get_state() const </div><div class="ttdef"><b>Definition:</b> <a href="mt__block_8cc_source.html#l00031">mt_block.cc:31</a></div></div>
 <div class="ttc" id="mt__buffer_8hh_html"><div class="ttname"><a href="mt__buffer_8hh.html">mt_buffer.hh</a></div></div>
 <div class="ttc" id="classmantis_1_1buffer_html_a2a3f778498730091e082e91a435bf23c"><div class="ttname"><a href="classmantis_1_1buffer.html#a2a3f778498730091e082e91a435bf23c">mantis::buffer::size</a></div><div class="ttdeci">const unsigned int &amp; size() const </div><div class="ttdef"><b>Definition:</b> <a href="mt__buffer_8cc_source.html#l00039">mt_buffer.cc:39</a></div></div>
-<div class="ttc" id="classmantis_1_1mutex_html"><div class="ttname"><a href="classmantis_1_1mutex.html">mantis::mutex</a></div><div class="ttdef"><b>Definition:</b> <a href="mt__mutex_8hh_source.html#l00016">mt_mutex.hh:16</a></div></div>
-<div class="ttc" id="namespacemantis_html"><div class="ttname"><a href="namespacemantis.html">mantis</a></div><div class="ttdef"><b>Definition:</b> <a href="mt__client__config_8cc_source.html#l00015">mt_client_config.cc:15</a></div></div>
+<div class="ttc" id="classmantis_1_1mutex_html"><div class="ttname"><a href="classmantis_1_1mutex.html">mantis::mutex</a></div><div class="ttdef"><b>Definition:</b> <a href="mt__mutex_8hh_source.html#l00014">mt_mutex.hh:14</a></div></div>
+<div class="ttc" id="namespacemantis_html"><div class="ttname"><a href="namespacemantis.html">mantis</a></div><div class="ttdef"><b>Definition:</b> <a href="mt__digitizer__px14400_8cc_source.html#l00016">mt_digitizer_px14400.cc:16</a></div></div>
 <div class="ttc" id="classmantis_1_1buffer_html_a470b97b72b9c169aa923961aa0ffada9"><div class="ttname"><a href="classmantis_1_1buffer.html#a470b97b72b9c169aa923961aa0ffada9">mantis::buffer::f_mutexes</a></div><div class="ttdeci">mutex * f_mutexes</div><div class="ttdef"><b>Definition:</b> <a href="mt__buffer_8hh_source.html#l00028">mt_buffer.hh:28</a></div></div>
 <div class="ttc" id="classmantis_1_1buffer_html_ae47f508cb825609546b7ac3266cc4ac7"><div class="ttname"><a href="classmantis_1_1buffer.html#ae47f508cb825609546b7ac3266cc4ac7">mantis::buffer::delete_block</a></div><div class="ttdeci">void delete_block(unsigned a_index)</div><div class="ttdef"><b>Definition:</b> <a href="mt__buffer_8cc_source.html#l00058">mt_buffer.cc:58</a></div></div>
 <div class="ttc" id="classmantis_1_1buffer_html_af022daeb4d41a9bdb2613a2376899daa"><div class="ttname"><a href="classmantis_1_1buffer.html#af022daeb4d41a9bdb2613a2376899daa">mantis::buffer::f_block_size</a></div><div class="ttdeci">unsigned int f_block_size</div><div class="ttdef"><b>Definition:</b> <a href="mt__buffer_8hh_source.html#l00030">mt_buffer.hh:30</a></div></div>
 <div class="ttc" id="classmantis_1_1buffer_html_a216855ec3275ed757973027e7362106e"><div class="ttname"><a href="classmantis_1_1buffer.html#a216855ec3275ed757973027e7362106e">mantis::buffer::print_states</a></div><div class="ttdeci">void print_states()</div><div class="ttdef"><b>Definition:</b> <a href="mt__buffer_8cc_source.html#l00064">mt_buffer.cc:64</a></div></div>
 <div class="ttc" id="classmantis_1_1mutex_html_a9278be8203e1c42e2619179882ae4403"><div class="ttname"><a href="classmantis_1_1mutex.html#a9278be8203e1c42e2619179882ae4403">mantis::mutex::unlock</a></div><div class="ttdeci">void unlock()</div><div class="ttdef"><b>Definition:</b> <a href="mt__mutex_8cc_source.html#l00032">mt_mutex.cc:32</a></div></div>
 <div class="ttc" id="classmantis_1_1buffer_html_a7b9a0de098b6a4f289343a866870bd07"><div class="ttname"><a href="classmantis_1_1buffer.html#a7b9a0de098b6a4f289343a866870bd07">mantis::buffer::buffer</a></div><div class="ttdeci">buffer(const unsigned int &amp;a_size, const unsigned int &amp;a_block_size)</div><div class="ttdef"><b>Definition:</b> <a href="mt__buffer_8cc_source.html#l00014">mt_buffer.cc:14</a></div></div>
+<div class="ttc" id="namespacemantis_html_ac08554af2bd8a3b487f1b8339fc7ee14"><div class="ttname"><a href="namespacemantis.html#ac08554af2bd8a3b487f1b8339fc7ee14">mantis::MTLOGGER</a></div><div class="ttdeci">MTLOGGER(mtlog,&quot;digitizer_px14400&quot;)</div></div>
 <div class="ttc" id="classmantis_1_1mutex_html_aa81aed607133209dade63a226818224d"><div class="ttname"><a href="classmantis_1_1mutex.html#aa81aed607133209dade63a226818224d">mantis::mutex::lock</a></div><div class="ttdeci">void lock()</div><div class="ttdef"><b>Definition:</b> <a href="mt__mutex_8cc_source.html#l00027">mt_mutex.cc:27</a></div></div>
-<div class="ttc" id="namespacemantis_html_af2e53afc85f931626d4db3cf8ba1e581"><div class="ttname"><a href="namespacemantis.html#af2e53afc85f931626d4db3cf8ba1e581">mantis::MTLOGGER</a></div><div class="ttdeci">MTLOGGER(mtlog,&quot;run_client&quot;)</div></div>
 <div class="ttc" id="classmantis_1_1buffer_html_aa265b580ec13ad81e0c5e298ad2fb164"><div class="ttname"><a href="classmantis_1_1buffer.html#aa265b580ec13ad81e0c5e298ad2fb164">mantis::buffer::f_blocks</a></div><div class="ttdeci">block ** f_blocks</div><div class="ttdef"><b>Definition:</b> <a href="mt__buffer_8hh_source.html#l00027">mt_buffer.hh:27</a></div></div>
 <div class="ttc" id="mt__logger_8hh_html"><div class="ttname"><a href="mt__logger_8hh.html">mt_logger.hh</a></div><div class="ttdoc">Contains the logger class and macros, based on Kasper&#39;s KLogger class. </div></div>
 <div class="ttc" id="classmantis_1_1buffer_html_a0e10656a0f3653b88de430a33159293e"><div class="ttname"><a href="classmantis_1_1buffer.html#a0e10656a0f3653b88de430a33159293e">mantis::buffer::block_size</a></div><div class="ttdeci">const unsigned int &amp; block_size() const </div><div class="ttdef"><b>Definition:</b> <a href="mt__buffer_8cc_source.html#l00044">mt_buffer.cc:44</a></div></div>
@@ -189,7 +189,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri May 8 2015 21:26:33 for Mantis by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Jun 8 2015 17:08:01 for Mantis by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.8
 </small></address>

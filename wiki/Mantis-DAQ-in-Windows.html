@@ -1,0 +1,426 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Mantis DAQ in WIndows &mdash; Mantis 3.0.0 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="Mantis 3.0.0 documentation" href="../index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        
+
+        
+          <a href="../index.html" class="icon icon-home"> Mantis
+        
+
+        
+        </a>
+
+        
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+        
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+          
+          
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../ClientManual.html">Client Manual</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../ClientManual.html#usage">Usage</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../ClientManual.html#examples">Examples</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../ClientManual.html#full-option-list">Full option list</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../ClientManual.html#client-options">Client options</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../ClientManual.html#command-and-target">Command and Target</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../ClientManual.html#command">Command</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../ClientManual.html#target">Target</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../ClientManual.html#instruction-options">Instruction Options</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../DeviceConfigStandards.html">Device Configuration Standards</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../DeviceConfigStandards.html#required-by-the-file-writer">Required by the file writer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../DeviceConfigStandards.html#may-be-required-in-the-future">May be required in the future</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../Reminders.html">Reminders</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../Reminders.html#purpose">Purpose</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Reminders.html#using-mantis">Using Mantis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Reminders.html#developing-mantis">Developing Mantis</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="wiki.html">Wiki</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../from_doxygen.html">Full Doxygen Reference</a></li>
+</ul>
+
+          
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../index.html">Mantis</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../index.html">Docs</a> &raquo;</li>
+      
+    <li>Mantis DAQ in WIndows</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/wiki/Mantis-DAQ-in-Windows.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document">
+            
+  <div class="section" id="mantis-daq-in-windows">
+<h1>Mantis DAQ in WIndows<a class="headerlink" href="#mantis-daq-in-windows" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="specifications">
+<h2>Specifications<a class="headerlink" href="#specifications" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Software: Mantis branch Monarch3</li>
+<li>DAQ: NI-5122; using the NI_Scope driver</li>
+</ul>
+</div>
+<div class="section" id="required-software">
+<h2>Required Software<a class="headerlink" href="#required-software" title="Permalink to this headline">¶</a></h2>
+<ul>
+<li><p class="first">Visual Studio
+* Installed version Visual Studio Community 2013 Update 4</p>
+</li>
+<li><p class="first">NI Drivers
+* Installed version: August 2014 drivers, Part 1 and Part 2; NI Scope 14.0
+* Select “Modular Instruments” -&gt; “NI Scope&#8221;</p>
+<blockquote>
+<div><ul class="simple">
+<li>Under “NI-Scope”, select &#8220;Visual Basic Support&#8221;</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first">Cygwin (already installed in Irene)
+* This will give you ssh, might be useful
+* If not installed, you need to make sure you have the following packages: OpenSSH, make, gcc, g++, nano/emacs/vim (or your favorite editor), patch</p>
+</li>
+<li><p class="first">GitHub for Windows
+* <a class="reference external" href="https://github-windows.s3.amazonaws.com/GitHubSetup.exe">https://github-windows.s3.amazonaws.com/GitHubSetup.exe</a></p>
+</li>
+<li><p class="first">CMake for Windows
+* <a class="reference external" href="http://www.cmake.org/files/v3.1/cmake-3.1.1-win32-x86.exe">http://www.cmake.org/files/v3.1/cmake-3.1.1-win32-x86.exe</a></p>
+</li>
+<li><p class="first">Protobuf
+* <a class="reference external" href="https://code.google.com/p/protobuf/downloads/detail?name=protobuf-2.5.0.zip&amp;can=2&amp;q=">https://code.google.com/p/protobuf/downloads/detail?name=protobuf-2.5.0.zip&amp;can=2&amp;q=</a></p>
+</li>
+<li><p class="first">HDF5 for Windows
+* <a class="reference external" href="http://www.hdfgroup.org/ftp/HDF5/current/bin/windows/extra/hdf5-1.8.14-win32-vs2013-shared.zip">http://www.hdfgroup.org/ftp/HDF5/current/bin/windows/extra/hdf5-1.8.14-win32-vs2013-shared.zip</a>
+* Install it in a location without spaces in the path - this will make it easier to configure it in Visual Studio later
+* e.g. use C:/Local/, not C:/Program Files (x86)/</p>
+</li>
+<li><p class="first">Boost
+* <a class="reference external" href="http://sourceforge.net/projects/boost/files/boost/1.57.0/boost_1_57_0.zip/download">http://sourceforge.net/projects/boost/files/boost/1.57.0/boost_1_57_0.zip/download</a>
+* Install it in a location without spaces in the path - this will make it easier to configure it in Visual Studio later
+* e.g. use C:/Local/, not C:/Program Files (x86)/</p>
+</li>
+<li><p class="first">rabbitmq-c
+* <a class="reference external" href="https://github.com/alanxz/rabbitmq-c">https://github.com/alanxz/rabbitmq-c</a>
+* Cloned from github, created VS project with CMake, then built with VS
+* Disabled SSL support because of linking errors (despite the SSL libraries definitely being included in the &#8220;Additional Dependencies&#8221; in the VS project configuration)</p>
+</li>
+<li><p class="first">GnuWin32
+* <a class="reference external" href="http://sourceforge.net/projects/getgnuwin32/files/getgnuwin32/0.6.30/GetGnuWin32-0.6.3.exe/download">http://sourceforge.net/projects/getgnuwin32/files/getgnuwin32/0.6.30/GetGnuWin32-0.6.3.exe/download</a>
+* This contains unistd.h</p>
+</li>
+<li><p class="first">Doxygen
+* <a class="reference external" href="ftp://ftp.stack.nl/pub/users/dimitri/doxygen-1.8.9.1-setup.exe">ftp://ftp.stack.nl/pub/users/dimitri/doxygen-1.8.9.1-setup.exe</a></p>
+</li>
+</ul>
+</div>
+<div class="section" id="useful-documentation">
+<h2>Useful documentation<a class="headerlink" href="#useful-documentation" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><a class="reference external" href="http://zone.ni.com/reference/en-XX/help/370592W-01/digitizers/creating_an_application_with_visual_c/">http://zone.ni.com/reference/en-XX/help/370592W-01/digitizers/creating_an_application_with_visual_c/</a></li>
+</ul>
+<p>Help file:
+C:Program Files (x86)IVI FoundationIVIDriversniScopeDocumentationEnglish</p>
+<p>Examples:
+C:UsersPublicDocumentsNational InstrumentsNI-SCOPEexamplesVisualBasic</p>
+<p><a class="reference external" href="https://cognitivewaves.wordpress.com/cmake-and-visual-studio/">https://cognitivewaves.wordpress.com/cmake-and-visual-studio/</a></p>
+<p>Protobuf Installation
+<a class="reference external" href="https://github.com/google/protobuf/tree/master/vsprojects">https://github.com/google/protobuf/tree/master/vsprojects</a>
+<a class="reference external" href="https://code.google.com/p/protobuf/issues/detail?id=531">https://code.google.com/p/protobuf/issues/detail?id=531</a></p>
+</div>
+<div class="section" id="install-protobuf">
+<h2>Install Protobuf<a class="headerlink" href="#install-protobuf" title="Permalink to this headline">¶</a></h2>
+<ul>
+<li><p class="first">Download the latest release version of protobuf 2 from code.google.com
+* Do not download the latest version from GitHub, nor v3</p>
+</li>
+<li><p class="first">Apply the patch vs2013.patch
+* Alternatively, edit ./protobuf-2.5.0/src/google/protobuf/stubs/common.h, add the line</p>
+<blockquote>
+<div><ul class="simple">
+<li>#include &lt;algorithm&gt;</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first">Open the file protobufvsprojectsprotobuf.sln -&gt; it will start VS2013
+* VS2013 will ask if you want to update the files in the protobuf project - say yes</p>
+</li>
+<li><p class="first">In Visual Studio 2013
+* Open BUILD -&gt; Configuration Manager
+* Select “Release” in “Active Configuration Solution&#8221;
+* Now we need to add a compiler flag</p>
+<blockquote>
+<div><ul class="simple">
+<li>For each of the projects (with the exception gtest and test_main): “libprotobuf”, “libprotobuf-lite”, etc...
+* Click on PROJECT -&gt; Properties
+* Select “Configuration Properties” -&gt; “C/C++” -&gt; &#8220;Command Line&#8221;
+* In the field “Additional Options”, add /FS
+* Make sure you do that for all the projects</li>
+</ul>
+</div></blockquote>
+<ul class="simple">
+<li>Click on BUILD -&gt; Build Solution</li>
+</ul>
+</li>
+<li><p class="first">Test the build
+* Open PowerShell, go to the folder where you built protobuf:
+* .protobuf-2.5.0vsprojectsRelease* run tests.exe, run lite-test.exe</p>
+</li>
+<li><p class="first">Go to .protobuf-2.5.0vsprojects, run extract_includes.bat</p>
+</li>
+<li><p class="first">Create a folder to install protobuf  (i.e. ~/Documents/protobuf)</p>
+</li>
+<li><p class="first">Copy the headers and build files to the right place:
+* cp -r ~/Documents/protobuf-2.5.0/vsprojects/include ~/Documents/protobuf/
+* cp ~/Documents/protobuf-2.5.0/vsprojects/Release/protoc.exe ~/Documents/protobuf/bin/
+* cp ~/Documents/protobuf-2.5.0/vsprojects/Release/<a href="#id1"><span class="problematic" id="id2">*</span></a>.lib ~/Documents/protobuf/lib/</p>
+</li>
+</ul>
+<p>Note that protobuf only had configurations for 32-bits (win32), not for 64-bits.  It’s possible that it would work with 64-bits too, but I decided not to try it.  Let’s configure everything as 32-bits for the rest of this.</p>
+<p>Install other software:
+======================:
+* HDF5</p>
+<blockquote>
+<div><ul class="simple">
+<li>Install it in a location without spaces in the path - this will make it easier to configure it in Visual Studio later</li>
+<li>e.g. use C:/Local/, not C:/Program Files (x86)/</li>
+</ul>
+</div></blockquote>
+<ul class="simple">
+<li>Boost
+* Install it in a location without spaces in the path - this will make it easier to configure it in Visual Studio later
+* e.g. use C:/Local/, not C:/Program Files (x86)/</li>
+<li>DOXYGEN</li>
+<li>GnuWin32</li>
+</ul>
+</div>
+<div class="section" id="install-mantis">
+<h2>Install Mantis<a class="headerlink" href="#install-mantis" title="Permalink to this headline">¶</a></h2>
+<p>The idea is to use cmake to generate the Visual Studio Project Files, then open the project files in VS, and compile Mantis in VS.</p>
+<ul>
+<li><p class="first">First, use Git to download the Mantis source
+* Make sure mantis is on the monarch3 branch
+* Make sure the folder Monarch is on the hdf5 branch</p>
+</li>
+<li><p class="first">Open CMAKE-GUI
+* Select the source (the Mantis folder)
+* Select a build folder (I used ~/Documents/build/)
+* Click configure
+* Select Visual Studio 12.0 2013  (that’s the 32bit version)
+* You will need to manually configure the cmake options for:</p>
+<blockquote>
+<div><ul>
+<li><p class="first">HDF5
+* HDF5_CXX_LIBRARY = C:/Local/HDF_Group/HDF5/1.8.14/lib/
+* HDF5_CXX_INCLUDE_DIR = C:/Local/HDF_Group/HDF5/1.8.14/include/
+* HDF5_DIR = C:/Local/HDF_Group/HDF5/1.8.14/cmake/hdf5
+* Don’t bother with the other fields, they won’t be used in Visual Studio</p>
+<blockquote>
+<div><ul class="simple">
+<li>(We intend to change that, but haven’t had the time yet)</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first">PROTOBUF
+* Fill up all fields</p>
+</li>
+</ul>
+</div></blockquote>
+<ul class="simple">
+<li>Turn off warnings in the Options menu -&gt; select “Suppress Dev Warnings (-Wno-dev)&#8221;</li>
+<li>Click configure</li>
+<li>Click Generate</li>
+</ul>
+</li>
+<li><p class="first">Open the build folder, double-click the mantis.sln file
+* This will open the file in Visual Basic 2013
+* The .sln extension means “Solution”. A “solution” is made up of several “projects”, like MantisClient, Monarch3, lib thorax, etc…</p>
+</li>
+<li><p class="first">We will compile Mantis in Debug mode, for Win32
+* Windows 64-bits can run executables compiled in Win32 or Win64, so compiling in Win32 will make it more compatible;  besides, it’s usually easier to find libraries for Win32.  For example, Protobuf is only available for Win32.</p>
+</li>
+<li><p class="first">Compile libthorax by parts
+* Select the thorax project on the left pane, right-click on it, click on Build
+* Do same for thorax_tests and thorax_cpp_tests
+* Open a PowerShell, go to the build folder:</p>
+<blockquote>
+<div><ul class="simple">
+<li>cd c:UsermeDocumentsbuildMonarchlibthoraxDebug</li>
+<li>run the test executables: thorax_tests.exe and thorax_cpp_tests.exe</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first">Compile Monarch by parts
+* Select Monarch3 on the left pane, right click, click on Build
+* DebugMonarch3.lib will be built</p>
+</li>
+<li><p class="first">Select MantisProto on the left pane, right click, click on Build</p>
+</li>
+<li><p class="first">Select atomicboost on the left pane, right click, click on Properties
+* Compiling atomicboost on Windows seems to need more than just the atomic boost included in the GitHub distribution - it seems to need the rest of boost.
+* Select &#8220;VC++ Directories&#8221;
+* In the “Include Directories” field, add the path to the boost main folder (e.g.: C:Localboost_1_57_0)
+* Again, select atomicboost on the left pane, right click, now click on Build</p>
+</li>
+<li><p class="first">Select MantisCommon on the left pane, right click, click on Properties
+* Select &#8220;VC++ Directories&#8221;
+* In the “Include Directories” field, add the path to the boost main folder, to the HDF5 include folder, to the pthread include folder, and to the gnuwin32 include folder, e.g.:</p>
+<blockquote>
+<div><ul class="simple">
+<li>C:Localboost_1_57_0</li>
+<li>C:/Local/HDF_Group/HDF5/1.8.14/include/</li>
+<li>C:Localpthreads-w32-2-9-1include</li>
+<li>C:Localgnuwin32include</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first">Select MantisCommon on the left pane, right click, click on Build
+* <strong>You will see the compilation errors here - now you just need to fix all that!</strong>
+* Compilation errors are related to the missing _netinet/<a href="#id3"><span class="problematic" id="id4">in.h_</span></a> in Windows</p>
+</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, Project 8 Collaboration.
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'3.0.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
