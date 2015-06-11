@@ -71,7 +71,6 @@ namespace mantis
 #endif
         }
         f_exe_name = string( t_exe_buf );
-        MTWARN( mtlog, "exe name: " << f_exe_name );
 
         // second configuration: config file
         if( t_parser.has( t_name_config ) )

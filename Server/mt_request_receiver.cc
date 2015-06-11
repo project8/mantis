@@ -69,7 +69,6 @@ namespace mantis
         {
             MTWARN( mtlog, "Unable to get the username" );
         }
-        MTWARN( mtlog, "username is " << f_username );
 
         char t_hostname_buf[ t_bufsize ];
 #ifdef _WIN32
@@ -88,7 +87,6 @@ namespace mantis
 #ifdef _WIN32
         WSACleanup();
 #endif
-        MTWARN( mtlog, "hostname is " << f_hostname );
     }
 
     request_receiver::~request_receiver()
