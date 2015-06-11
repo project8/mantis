@@ -20,6 +20,14 @@
 
 #include <cstddef>
 
+#ifdef _WIN32
+#include <Winsock2.h> // for gethostname
+#include <Windows.h> // for GetUserName
+#else
+#include <unistd.h> // for gethostname and getlogin_r
+#endif
+
+
 using std::string;
 
 
@@ -38,6 +46,8 @@ namespace mantis
             f_queue_name(),
             f_consumer_tag(),
             f_exe_name( a_exe_name ),
+            f_hostname(),
+            f_username(),
             f_run_server( a_run_server ),
             f_conf_mgr( a_conf_mgr ),
             f_acq_request_db( a_acq_request_db ),
@@ -45,6 +55,33 @@ namespace mantis
             f_canceled( false ),
             f_status( k_initialized )
     {
+        const size_t t_bufsize = 1024;
+        char t_username_buf[ t_bufsize ];
+#ifdef _WIN32
+        if( GetUserName( t_username_buf, t_bufsize ) )
+#else
+        if( getlogin_r( t_username_buf, t_bufsize ) == 0 )
+#endif
+        {
+            f_username = string( t_username_buf );
+        }
+        else
+        {
+            MTWARN( mtlog, "Unable to get the username" );
+        }
+        MTWARN( mtlog, "username is " << f_username );
+
+        char t_hostname_buf[ t_bufsize ];
+        // gethostname is the same on posix and windows
+        if( gethostname( t_hostname_buf, t_bufsize ) == 0 )
+        {
+            f_hostname = string( t_hostname_buf );
+        }
+        else
+        {
+            MTWARN( mtlog, "Unable to get the hostname" );
+        }
+        MTWARN( mtlog, "hostname is " << f_hostname );
     }
 
     request_receiver::~request_receiver()
@@ -426,6 +463,18 @@ namespace mantis
         }
 
         return true;
+    }
+
+    param_node* request_receiver::create_sender_info() const
+    {
+        param_node* t_sender_node = new param_node();
+        t_sender_node->add( "commit", param_value( TOSTRING(Mantis_GIT_COMMIT) ) );
+        t_sender_node->add( "exe", param_value( f_exe_name ) );
+        t_sender_node->add( "version", param_value( TOSTRING(Mantis_VERSION) ) );
+        t_sender_node->add( "package", param_value( TOSTRING(Mantis_PACKAGE_NAME ) ) );
+        t_sender_node->add( "hostname", param_value( f_hostname ) );
+        t_sender_node->add( "username", param_value( f_username ) );
+        return t_sender_node;
     }
 
     void request_receiver::cancel()

@@ -55,27 +55,22 @@ namespace mantis
 #ifdef _WIN32
         TCHAR t_exe_buf[ MAX_PATH ];
         if( ! GetModuleFileName( NULL, t_exe_buf, MAX_PATH ) )
-        {
-            MTWARN( mtlog, "Could not retrieve executable file name" );
-        }
-        f_exe_name = string( t_exe_buf );
 #elif __APPLE__
         char t_exe_buf[ 2048 ];
         uint32_t t_bufsize = sizeof( t_exe_buf );
         if( _NSGetExecutablePath( t_exe_buf, &t_bufsize ) != 0 )
-        {
-            MTWARN( mtlog, "Executable name buffer is too small; need size %u\n" << t_bufsize );
-        }
-        f_exe_name = string( t_exe_buf );
 #elif __linux
         const size_t t_bufsize = 2048;
         char t_exe_buf[ t_bufsize ];
         if( readlink( "/proc/self/exe", t_exe_buf, t_bufsize ) < 0 )
+#endif
         {
-            MTWARN( mtlog, "Could not retrief executable file name" );
+            MTWARN( mtlog, "Could not retrieve executable file name" );
+#ifdef __APPLE__
+            MTWARN( mtlog, "Executable name buffer is too small; needs size %u\n" << t_bufsize );
+#endif
         }
         f_exe_name = string( t_exe_buf );
-#endif
         MTWARN( mtlog, "exe name: " << f_exe_name );
 
         // second configuration: config file

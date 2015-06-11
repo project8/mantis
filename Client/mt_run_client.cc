@@ -22,10 +22,10 @@
 #include <string>
 
 #ifdef _WIN32
-#include <Winsock2.h>
-#include <Windows.h>
+#include <Winsock2.h> // for gethostname
+#include <Windows.h> // for GetUserName
 #else
-#include <unistd.h> // for gethostname
+#include <unistd.h> // for gethostname and getlogin_r
 #endif
 
 using std::string;
@@ -72,7 +72,6 @@ namespace mantis
             MTWARN( mtlog, "Unable to get the hostname" );
         }
         MTWARN( mtlog, "hostname is " << f_hostname );
-
     }
 
     run_client::~run_client()
