@@ -12,6 +12,14 @@
 #include "mt_parser.hh"
 #include "mt_logger.hh"
 
+#ifdef _WIN32
+#include <Windows.h>
+#elif __APPLE__
+#include <mach-o/dyld.h>
+#elif __linux
+#include <unistd.h> // for readlink
+#endif
+
 using std::string;
 
 namespace mantis
@@ -43,7 +51,26 @@ namespace mantis
         string t_name_json( "json" );
 
         // name of executable
-        f_exe_name = t_parser.get_value( t_name_exe, f_exe_name );
+        //f_exe_name = t_parser.get_value( t_name_exe, f_exe_name );
+#ifdef _WIN32
+        TCHAR t_exe_buf[ MAX_PATH ];
+        if( ! GetModuleFileName( NULL, t_exe_buf, MAX_PATH ) )
+#elif __APPLE__
+        char t_exe_buf[ 2048 ];
+        uint32_t t_bufsize = sizeof( t_exe_buf );
+        if( _NSGetExecutablePath( t_exe_buf, &t_bufsize ) != 0 )
+#elif __linux
+        const size_t t_bufsize = 2048;
+        char t_exe_buf[ t_bufsize ];
+        if( readlink( "/proc/self/exe", t_exe_buf, t_bufsize ) < 0 )
+#endif
+        {
+            MTWARN( mtlog, "Could not retrieve executable file name" );
+#ifdef __APPLE__
+            MTWARN( mtlog, "Executable name buffer is too small; needs size %u\n" << t_bufsize );
+#endif
+        }
+        f_exe_name = string( t_exe_buf );
 
         // second configuration: config file
         if( t_parser.has( t_name_config ) )

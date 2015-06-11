@@ -21,6 +21,12 @@
 #include <algorithm> // for min
 #include <string>
 
+#ifdef _WIN32
+#include <Windows.h> // for gethostname and GetUserName
+#else
+#include <unistd.h> // for gethostname and getlogin_r
+#endif
+
 using std::string;
 
 
@@ -32,10 +38,45 @@ namespace mantis
             //callable(),
             f_config( a_node ),
             f_exe_name( a_exe_name ),
+            f_hostname(),
+            f_username(),
             f_exchange( a_exchange ),
             //f_canceled( false ),
             f_return( 0 )
     {
+        const size_t t_bufsize = 1024;
+        char t_username_buf[ t_bufsize ];
+#ifdef _WIN32
+        DWORD t_bufsize_win = t_bufsize;
+        if( GetUserName( t_username_buf, &t_bufsize_win ) )
+#else
+        if( getlogin_r( t_username_buf, t_bufsize ) == 0 )
+#endif
+        {
+            f_username = string( t_username_buf );
+        }
+        else
+        {
+            MTWARN( mtlog, "Unable to get the username" );
+        }
+
+        char t_hostname_buf[ t_bufsize ];
+#ifdef _WIN32
+        WSADATA wsaData;
+        WSAStartup( MAKEWORD( 2, 2 ), &wsaData );
+#endif
+        // gethostname is the same on posix and windows
+        if( gethostname( t_hostname_buf, t_bufsize ) == 0 )
+        {
+            f_hostname = string( t_hostname_buf );
+        }
+        else
+        {
+            MTWARN( mtlog, "Unable to get the hostname" );
+        }
+#ifdef _WIN32
+        WSACleanup();
+#endif
     }
 
     run_client::~run_client()
@@ -213,19 +254,11 @@ namespace mantis
         t_payload_node->add( "file", *f_config.at( "file ") ); // copy the file node
         if( f_config.has( "description" ) ) t_payload_node->add( "description", *f_config.at( "description" ) ); // (optional) copy the description node
 
-        param_node* t_sender_node = new param_node();
-        t_sender_node->add( "commit", param_value( TOSTRING(Mantis_GIT_COMMIT) ) );
-        t_sender_node->add( "exe", param_value( f_exe_name ) );
-        t_sender_node->add( "version", param_value( TOSTRING(Mantis_VERSION) ) );
-        t_sender_node->add( "package", param_value( TOSTRING(Mantis_PACKAGE_NAME) ) );
-
-        MTDEBUG( mtlog, "Sender node:\n" << *t_sender_node );
-
         param_node t_request;
         t_request.add( "msgtype", param_value( T_REQUEST ) );
         t_request.add( "msgop", param_value( OP_RUN ) );
         t_request.add( "timestamp", param_value( get_absolute_time_string() ) );
-        t_request.add( "sender_info", t_sender_node );
+        t_request.add( "sender_info", create_sender_info() );
         t_request.add( "payload", t_payload_node ); // use t_payload_node as is
 
         if(! param_output_json::write_string( t_request, a_request_str, param_output_json::k_compact ) )
@@ -248,17 +281,11 @@ namespace mantis
             t_payload_node->add( "values", t_values_array );
         }
 
-        param_node* t_sender_node = new param_node();
-        t_sender_node->add( "commit", param_value( TOSTRING(Mantis_GIT_COMMIT) ) );
-        t_sender_node->add( "exe", param_value( f_exe_name ) );
-        t_sender_node->add( "version", param_value( TOSTRING(Mantis_VERSION) ) );
-        t_sender_node->add( "package", param_value( "" ) );
-
         param_node t_request;
         t_request.add( "msgtype", param_value( T_REQUEST ) );
         t_request.add( "msgop", param_value( OP_GET ) );
         t_request.add( "timestamp", param_value( get_absolute_time_string() ) );
-        t_request.add( "sender_info", t_sender_node );
+        t_request.add( "sender_info", create_sender_info() );
         t_request.add( "payload", t_payload_node ); // use t_payload_node as is
 
         if(! param_output_json::write_string( t_request, a_request_str, param_output_json::k_compact ) )
@@ -284,17 +311,11 @@ namespace mantis
         param_node* t_payload_node = new param_node();
         t_payload_node->add( "values", t_values_array );
 
-        param_node* t_sender_node = new param_node();
-        t_sender_node->add( "commit", param_value( TOSTRING(Mantis_GIT_COMMIT) ) );
-        t_sender_node->add( "exe", param_value( f_exe_name ) );
-        t_sender_node->add( "version", param_value( TOSTRING(Mantis_VERSION) ) );
-        t_sender_node->add( "package", param_value( "" ) );
-
         param_node t_request;
         t_request.add( "msgtype", param_value( T_REQUEST ) );
         t_request.add( "msgop", param_value( OP_SET ) );
         t_request.add( "timestamp", param_value( get_absolute_time_string() ) );
-        t_request.add( "sender_info", t_sender_node );
+        t_request.add( "sender_info", create_sender_info() );
         t_request.add( "payload", t_payload_node ); // use t_payload_node as is
 
         MTDEBUG( mtlog, "Sending message:\n" << t_request );
@@ -338,17 +359,11 @@ namespace mantis
         // at this point, all that remains in f_config should be other options that we want to add to the payload node
         t_payload_node->merge( f_config ); // copy f_config
 
-        param_node* t_sender_node = new param_node();
-        t_sender_node->add( "commit", param_value( TOSTRING(Mantis_GIT_COMMIT) ) );
-        t_sender_node->add( "exe", param_value( f_exe_name ) );
-        t_sender_node->add( "version", param_value( TOSTRING(Mantis_VERSION) ) );
-        t_sender_node->add( "package", param_value( "" ) );
-
         param_node t_request;
         t_request.add( "msgtype", param_value( T_REQUEST ) );
         t_request.add( "msgop", param_value( OP_CMD ) );
         t_request.add( "timestamp", param_value( get_absolute_time_string() ) );
-        t_request.add( "sender_info", t_sender_node );
+        t_request.add( "sender_info", create_sender_info() );
         t_request.add( "payload", t_payload_node ); // use t_payload_node as is
 
         MTDEBUG( mtlog, "Sending message:\n" << t_request );
@@ -361,6 +376,20 @@ namespace mantis
 
         return true;
     }
+
+
+    param_node* run_client::create_sender_info() const
+    {
+        param_node* t_sender_node = new param_node();
+        t_sender_node->add( "commit", param_value( TOSTRING(Mantis_GIT_COMMIT) ) );
+        t_sender_node->add( "exe", param_value( f_exe_name ) );
+        t_sender_node->add( "version", param_value( TOSTRING(Mantis_VERSION) ) );
+        t_sender_node->add( "package", param_value( TOSTRING(Mantis_PACKAGE_NAME ) ) );
+        t_sender_node->add( "hostname", param_value( f_hostname ) );
+        t_sender_node->add( "username", param_value( f_username ) );
+        return t_sender_node;
+    }
+
 
 
 } /* namespace mantis */

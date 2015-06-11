@@ -56,11 +56,15 @@ namespace mantis
 
             bool send_reply( unsigned a_return_code, const std::string& a_return_msg, request_reply_package& a_pkg ) const;
 
+            param_node* create_sender_info() const;
+
             broker* f_broker;
             std::string f_queue_name;
             std::string f_consumer_tag;
 
             std::string f_exe_name;
+            std::string f_hostname;
+            std::string f_username;
 
             run_server* f_run_server;
             config_manager* f_conf_mgr;

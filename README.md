@@ -64,10 +64,8 @@ We recommend an out-of-source build:
 ```
     
 To configure the installation you can use cmake, ccmake, or cmake-gui.
-To build the server executable, enable `Mantis_BUILD_SERVER`.  A test digitizer 
-that creates a sawtooth time series is automatically included. 
-Other optionally-available digitizers are specified with `Mantis_INCLUDE_[type-of-digitizer]_SERVER`:
-- `Mantis_INCLUDE_PX1500_SERVER` for using the PX1500
+To build the server executable, enable `Mantis_BUILD_SERVER`.  Two test 
+digitizers are automatically included.
 
 To build and install:
 ```
@@ -100,7 +98,7 @@ For more detailed instructions on running the client, please see the [Client Man
 Documentation
 -------------
 
-Hosted at: http://www.project8.org/mantis/ClientManual.html
+Hosted at: http://www.project8.org/mantis
 
 
 Development

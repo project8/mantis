@@ -39,8 +39,12 @@ namespace mantis
             bool do_set_request( std::string& a_request_str );
             bool do_cmd_request( std::string& a_request_str );
 
+            param_node* create_sender_info() const;
+
             param_node f_config;
             std::string f_exe_name;
+            std::string f_hostname;
+            std::string f_username;
             std::string f_exchange;
             //atomic_bool f_canceled;
             int f_return;
