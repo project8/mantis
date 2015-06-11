@@ -138,6 +138,15 @@ find_package( Threads )
 pbuilder_add_ext_libraries( ${CMAKE_THREAD_LIBS_INIT} )
 
 
+#########################
+# Winsock (Windows only)
+#########################
+
+if( WIN32 )
+    pbuilder_add_ext_libraries( "Ws2_32" )
+endif( WIN32 )
+
+
 ################
 # Build Mantis #
 ################
