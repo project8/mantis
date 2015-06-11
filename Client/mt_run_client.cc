@@ -23,6 +23,7 @@
 
 #ifdef _WIN32
 #include <Winsock2.h>
+#include <Windows.h>
 #else
 #include <unistd.h> // for gethostname
 #endif
@@ -44,16 +45,27 @@ namespace mantis
             //f_canceled( false ),
             f_return( 0 )
     {
-#ifdef _WIN32
-
-#else
-#endif
-        // gethostname is the same on posix and windows
         const size_t t_bufsize = 1024;
-        char t_buf[ t_bufsize ];
-        if( gethostname( t_buf, t_bufsize ) == 0 )
+        char t_username_buf[ t_bufsize ];
+#ifdef _WIN32
+        if( GetUserName( t_username_buf, t_bufsize ) )
+#else
+        if( getlogin_r( t_username_buf, t_bufsize ) == 0 )
+#endif
         {
-            f_hostname = string( t_buf );
+            f_username = string( t_username_buf );
+        }
+        else
+        {
+            MTWARN( mtlog, "Unable to get the username" );
+        }
+        MTWARN( mtlog, "username is " << f_username );
+
+        char t_hostname_buf[ t_bufsize ];
+        // gethostname is the same on posix and windows
+        if( gethostname( t_hostname_buf, t_bufsize ) == 0 )
+        {
+            f_hostname = string( t_hostname_buf );
         }
         else
         {
