@@ -73,5 +73,5 @@ set( URDL_SOURCEFILES
 add_library( Urdl ${URDL_SOURCEFILES} )
 target_link_libraries( Urdl ${EXTERNAL_LIBRARIES} )
 
-pbuilder_install_headers( ${URDL_HEADERFILES} )
+pbuilder_install_header_dirs( * include/urdl )
 pbuilder_install_libraries( Urdl )
