@@ -2,7 +2,7 @@
 // config.hpp
 // ~~~~~~~~~~
 //
-// Copyright (c) 2009 Christopher M. Kohlhoff (chris at kohlhoff dot com)
+// Copyright (c) 2009-2013 Christopher M. Kohlhoff (chris at kohlhoff dot com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -11,6 +11,7 @@
 // No include guard.
 
 #include <boost/config.hpp>
+#include <boost/version.hpp>
 
 #if defined(URDL_HEADER_ONLY)
 # define URDL_DECL inline
@@ -39,6 +40,20 @@
 #if !defined(URDL_DECL)
 # define URDL_DECL
 #endif // !defined(URDL_DECL)
+
+#if !defined(URDL_ERROR_CATEGORY_NOEXCEPT)
+# if (BOOST_VERSION >= 105300)
+#  define URDL_ERROR_CATEGORY_NOEXCEPT BOOST_NOEXCEPT
+# else // (BOOOST_VERSION >= 105300)
+#  define URDL_ERROR_CATEGORY_NOEXCEPT
+# endif // (BOOOST_VERSION >= 105300)
+#endif // !defined(URDL_ERROR_CATEGORY_NOEXCEPT)
+
+#if (BOOST_VERSION >= 105400)
+# define URDL_INITFN_RESULT_TYPE(h, sig) BOOST_ASIO_INITFN_RESULT_TYPE(h, sig)
+#else // (BOOST_VERSION >= 105400)
+# define URDL_INITFN_RESULT_TYPE(h, sig) void
+#endif // (BOOST_VERSION >= 105400)
 
 // Enable library autolinking for MSVC.
 

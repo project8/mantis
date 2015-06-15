@@ -2,7 +2,7 @@
 // file_read_stream.hpp
 // ~~~~~~~~~~~~~~~~~~~~
 //
-// Copyright (c) 2009 Christopher M. Kohlhoff (chris at kohlhoff dot com)
+// Copyright (c) 2009-2013 Christopher M. Kohlhoff (chris at kohlhoff dot com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -29,9 +29,9 @@ class file_read_stream
 {
 public:
   explicit file_read_stream(boost::asio::io_service& io_service,
-      option_set& options)
-    : io_service_(io_service),
-      options_(options)
+      option_set& /*options*/)
+    : io_service_(io_service)/*,
+      options_(options)*/
   {
   }
 
@@ -117,7 +117,7 @@ public:
 
 private:
   boost::asio::io_service& io_service_;
-  option_set& options_;
+  //option_set& options_;
   std::ifstream file_;
 };
 

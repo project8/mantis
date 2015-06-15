@@ -2,7 +2,7 @@
 // read_stream.hpp
 // ~~~~~~~~~~~~~~~
 //
-// Copyright (c) 2009 Christopher M. Kohlhoff (chris at kohlhoff dot com)
+// Copyright (c) 2009-2013 Christopher M. Kohlhoff (chris at kohlhoff dot com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -373,9 +373,26 @@ public:
    * @endcode
    */
   template <typename Handler>
-  void async_open(const url& u, Handler handler)
+  URDL_INITFN_RESULT_TYPE(Handler,
+      void (boost::system::error_code))
+  async_open(const url& u, Handler handler)
   {
-    open_coro<Handler>(this, u, handler)(boost::system::error_code());
+#if (BOOST_VERSION >= 105400)
+    typedef typename boost::asio::handler_type<Handler,
+      void (boost::system::error_code)>::type real_handler_type;
+    real_handler_type real_handler(handler);
+    boost::asio::async_result<real_handler_type> result(real_handler);
+#else // (BOOST_VERSION >= 105400)
+    typedef Handler real_handler_type;
+    Handler real_handler(handler);
+#endif // (BOOST_VERSION >= 105400)
+
+    open_coro<real_handler_type>(this, u, real_handler)(
+        boost::system::error_code());
+
+#if (BOOST_VERSION >= 105400)
+    return result.get();
+#endif // (BOOST_VERSION >= 105400)
   }
 
   /// Closes the stream.
@@ -637,27 +654,42 @@ public:
    * with arrays, @c boost::array or @c std::vector.
    */
   template <typename MutableBufferSequence, typename Handler>
-  void async_read_some(const MutableBufferSequence& buffers, Handler handler)
+  URDL_INITFN_RESULT_TYPE(Handler,
+      void (boost::system::error_code, std::size_t))
+  async_read_some(const MutableBufferSequence& buffers, Handler handler)
   {
+#if (BOOST_VERSION >= 105400)
+    typedef typename boost::asio::handler_type<Handler,
+      void (boost::system::error_code, std::size_t)>::type real_handler_type;
+    real_handler_type real_handler(handler);
+    boost::asio::async_result<real_handler_type> result(real_handler);
+#else // (BOOST_VERSION >= 105400)
+    Handler real_handler(handler);
+#endif // (BOOST_VERSION >= 105400)
+
     switch (protocol_)
     {
     case file:
-      file_.async_read_some(buffers, handler);
+      file_.async_read_some(buffers, real_handler);
       break;
     case http:
-      http_.async_read_some(buffers, handler);
+      http_.async_read_some(buffers, real_handler);
       break;
 #if !defined(URDL_DISABLE_SSL)
     case https:
-      https_.async_read_some(buffers, handler);
+      https_.async_read_some(buffers, real_handler);
       break;
 #endif // !defined(URDL_DISABLE_SSL)
     default:
       boost::system::error_code ec
         = boost::asio::error::operation_not_supported;
-      io_service_.post(boost::asio::detail::bind_handler(handler, ec, 0));
+      io_service_.post(boost::asio::detail::bind_handler(real_handler, ec, 0));
       break;
     }
+
+#if (BOOST_VERSION >= 105400)
+    return result.get();
+#endif // (BOOST_VERSION >= 105400)
   }
 
 private:
@@ -737,6 +769,14 @@ private:
     {
       using boost::asio::asio_handler_deallocate;
       asio_handler_deallocate(pointer, size, &this_handler->handler_);
+    }
+
+    template <typename Function>
+    friend void asio_handler_invoke(Function& function,
+        open_coro<Handler>* this_handler)
+    {
+      using boost::asio::asio_handler_invoke;
+      asio_handler_invoke(function, &this_handler->handler_);
     }
 
     template <typename Function>

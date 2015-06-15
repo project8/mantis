@@ -2,7 +2,7 @@
 // istreambuf.ipp
 // ~~~~~~~~~~~~~~
 //
-// Copyright (c) 2009 Christopher M. Kohlhoff (chris at kohlhoff dot com)
+// Copyright (c) 2009-2013 Christopher M. Kohlhoff (chris at kohlhoff dot com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -11,6 +11,7 @@
 #ifndef URDL_IMPL_ISTREAMBUF_IPP
 #define URDL_IMPL_ISTREAMBUF_IPP
 
+#include <boost/array.hpp>
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/deadline_timer.hpp>
 #include <boost/system/system_error.hpp>

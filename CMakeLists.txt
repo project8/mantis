@@ -99,6 +99,17 @@ include_directories( BEFORE ${PROJECT_SOURCE_DIR}/External/msgpack-c )
 include_directories( BEFORE ${PROJECT_SOURCE_DIR}/External/msgpack-c/include )
 
 
+#######
+# urdl (as included with Mantis
+#######
+
+add_subdirectory( External/Urdl )
+pbuilder_add_submodule_libraries( Urdl )
+include_directories( BEFORE
+    External/Urdl/include
+)
+
+
 ##########
 # Monarch
 ##########

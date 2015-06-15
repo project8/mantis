@@ -2,7 +2,7 @@
 // connect.hpp
 // ~~~~~~~~~~~
 //
-// Copyright (c) 2009 Christopher M. Kohlhoff (chris at kohlhoff dot com)
+// Copyright (c) 2009-2013 Christopher M. Kohlhoff (chris at kohlhoff dot com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -144,6 +144,14 @@ public:
   {
     using boost::asio::asio_handler_deallocate;
     asio_handler_deallocate(pointer, size, &this_handler->handler_);
+  }
+
+  template <typename Function>
+  friend void asio_handler_invoke(Function& function,
+      connect_coro<Handler>* this_handler)
+  {
+    using boost::asio::asio_handler_invoke;
+    asio_handler_invoke(function, &this_handler->handler_);
   }
 
   template <typename Function>
