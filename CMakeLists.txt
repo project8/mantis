@@ -83,6 +83,15 @@ include_directories( ${Boost_INCLUDE_DIRS} )
 pbuilder_add_ext_libraries( ${Boost_LIBRARIES} )
 
 
+#######
+# Poco
+#######
+
+find_package( Poco REQUIRED )
+message(STATUS "POCO include dirs: ${POCO_INCLUDE_DIRS}" )
+message( STATUS "POCO libraries: ${POCO_LIBRARY_REL} ${POCO_Net_LIBRARY_REL} ${POCO_NetSSL_LIBRARY_REL}")
+include_directories( ${POCO_INCLUDE_DIRS} )
+pbuilder_add_ext_libraries( ${POCO_LIBRARY_REL} ${POCO_Net_LIBRARY_REL} ${POCO_NetSSL_LIBRARY_REL} )
 
 ############
 # RapidJSON (as included with Mantis)
@@ -103,11 +112,11 @@ include_directories( BEFORE ${PROJECT_SOURCE_DIR}/External/msgpack-c/include )
 # urdl (as included with Mantis
 #######
 
-add_subdirectory( External/Urdl )
-pbuilder_add_submodule_libraries( Urdl )
-include_directories( BEFORE
-    External/Urdl/include
-)
+#add_subdirectory( External/Urdl )
+#pbuilder_add_submodule_libraries( Urdl )
+#include_directories( BEFORE
+#    External/Urdl/include
+#)
 
 
 ##########
