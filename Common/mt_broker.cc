@@ -9,6 +9,7 @@
 
 #include "mt_broker.hh"
 
+#include "mt_authentication.hh"
 #include "mt_connection.hh"
 #include "mt_logger.hh"
 
@@ -44,7 +45,19 @@ namespace mantis
         connection* t_connection = NULL;
         try
         {
-            t_connection = new connection( AmqpClient::Channel::Create( a_address, a_port ) );
+            authentication* t_auth = authentication::get_instance();
+            if( ! t_auth->is_loaded() )
+            {
+                MTERROR( mtlog, "Authentications were not loaded; create AMQP connection" );
+                return false;
+            }
+            const param_node* t_amqp_auth = t_auth->node_at( "amqp" );
+            if( t_amqp_auth == NULL || ! t_amqp_auth->has( "username" ) || ! t_amqp_auth->has( "password" ) )
+            {
+                MTERROR( mtlog, "AMQP authentication is not available or is not complete" );
+                return false;
+            }
+            t_connection = new connection( AmqpClient::Channel::Create( a_address, a_port, t_amqp_auth->get_value( "username" ), t_amqp_auth->get_value( "password" ) ) );
         }
         catch( AmqpClient::AmqpLibraryException& e )
         {
