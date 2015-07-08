@@ -9,6 +9,7 @@
 
 #include "mt_run_server.hh"
 
+#include "mt_amqp_relayer.hh"
 #include "mt_condition.hh"
 #include "mt_config_manager.hh"
 #include "mt_constants.hh"
@@ -63,8 +64,21 @@ namespace mantis
         acq_request_db t_acq_request_db( &t_config_mgr, f_exe_name );
         f_acq_request_db = &t_acq_request_db;
 
+        // amqp relayer
+        amqp_relayer* t_amqp_relayer_ptr;
+        try
+        {
+            t_amqp_relayer_ptr = new amqp_relayer( f_config.node_at( "amqp" ) );
+        }
+        catch( exception& e )
+        {
+            MTERROR( mtlog, "Unable to start the amqp relayer:\n\t" << e.what() );
+            f_return = R_AMQP_ERROR;
+            return;
+        }
+
         // server worker
-        server_worker t_worker( &t_dev_mgr, &t_acq_request_db );
+        server_worker t_worker( &t_dev_mgr, &t_acq_request_db, t_amqp_relayer_ptr );
         f_server_worker = &t_worker;
 
         // request receiver

@@ -3,6 +3,7 @@
 
 #include "mt_server_worker.hh"
 
+#include "mt_amqp_relayer.hh"
 #include "mt_acq_request_db.hh"
 #include "mt_acq_request.hh"
 #include "mt_buffer.hh"
@@ -28,12 +29,13 @@ namespace mantis
 {
     MTLOGGER( mtlog, "server_worker" );
 
-    server_worker::server_worker( device_manager* a_dev_mgr, acq_request_db* a_run_db ) :
+    server_worker::server_worker( device_manager* a_dev_mgr, acq_request_db* a_run_db, amqp_relayer* a_amqp_relayer ) :
             f_dev_mgr( a_dev_mgr ),
             f_acq_request_db( a_run_db ),
             f_digitizer( NULL ),
             f_writer( NULL ),
             f_component_mutex(),
+            f_amqp_relayer( a_amqp_relayer ),
             f_canceled( false ),
             f_digitizer_state( k_inactive ),
             f_writer_state( k_inactive ),
@@ -158,6 +160,7 @@ namespace mantis
             t_acq_req->set_response( t_response );
             t_acq_req->set_status( acq_request::stopped );
             MTINFO( mtlog, "Run response:\n" << t_response );
+            f_amqp_relayer->send_alert( t_acq_req, "completed_data", amqp_relayer::k_json );
         }
 
         return;

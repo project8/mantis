@@ -24,45 +24,47 @@ namespace mantis
             f_queue(),
             f_canceled( false )
     {
-        if( ! f_broker->is_connected() )
+        if( a_amqp_config != NULL )
         {
-            if(! f_broker->connect( a_amqp_config->get_value( "broker" ),
-                    a_amqp_config->get_value< unsigned >( "broker-port" ) ) )
+            if( ! f_broker->is_connected() )
             {
-                throw exception() << "Cannot create connection to the AMQP broker";
+                if(! f_broker->connect( a_amqp_config->get_value( "broker", "" ),
+                        a_amqp_config->get_value< unsigned >( "broker-port", 0 ) ) )
+                {
+                    throw exception() << "Cannot create connection to the AMQP broker";
+                }
+            }
+            else
+            {
+                if( f_broker->get_address() != a_amqp_config->get_value( "broker" ) ||
+                        f_broker->get_port() != a_amqp_config->get_value< unsigned >( "broker-port" ) )
+                {
+                    throw exception() << "Already connected to a different AMQP broker: " << f_broker->get_address() << ":" << f_broker->get_port() ;
+                }
+            }
+
+            try
+            {
+                f_request_exchange = a_amqp_config->get_value( "exchange", f_request_exchange );
+                f_broker->get_connection().amqp()->DeclareExchange( f_request_exchange, AmqpClient::Channel::EXCHANGE_TYPE_TOPIC, true );
+            }
+            catch( std::exception& e )
+            {
+                f_broker->disconnect();
+                throw exception() << "Unable to declare exchange <" << f_request_exchange << ">; aborting.\n(" << e.what() << ")";
+            }
+
+            try
+            {
+                f_alert_exchange = a_amqp_config->get_value( "alert-exchange", f_alert_exchange );
+                f_broker->get_connection().amqp()->DeclareExchange( f_alert_exchange, AmqpClient::Channel::EXCHANGE_TYPE_TOPIC, true );
+            }
+            catch( std::exception& e )
+            {
+                f_broker->disconnect();
+                throw exception() << "Unable to declare exchange <" << f_alert_exchange << ">; aborting.\n(" << e.what() << ")";
             }
         }
-        else
-        {
-            if( f_broker->get_address() != a_amqp_config->get_value( "broker" ) ||
-                    f_broker->get_port() != a_amqp_config->get_value< unsigned >( "broker-port" ) )
-            {
-                throw exception() << "Already connected to a different AMQP broker: " << f_broker->get_address() << ":" << f_broker->get_port() ;
-            }
-        }
-
-        try
-        {
-            f_request_exchange = a_amqp_config->get_value( "exchange", f_request_exchange );
-            f_broker->get_connection().amqp()->DeclareExchange( f_request_exchange, AmqpClient::Channel::EXCHANGE_TYPE_TOPIC, true );
-        }
-        catch( std::exception& e )
-        {
-            f_broker->disconnect();
-            throw exception() << "Unable to declare exchange <" << f_request_exchange << ">; aborting.\n(" << e.what() << ")";
-        }
-
-        try
-        {
-            f_alert_exchange = a_amqp_config->get_value( "alert-exchange", f_alert_exchange );
-            f_broker->get_connection().amqp()->DeclareExchange( f_alert_exchange, AmqpClient::Channel::EXCHANGE_TYPE_TOPIC, true );
-        }
-        catch( std::exception& e )
-        {
-            f_broker->disconnect();
-            throw exception() << "Unable to declare exchange <" << f_alert_exchange << ">; aborting.\n(" << e.what() << ")";
-        }
-
     }
 
     amqp_relayer::~amqp_relayer()

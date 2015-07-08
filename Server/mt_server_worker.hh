@@ -10,6 +10,7 @@
 
 namespace mantis
 {
+    class amqp_relayer;
     class buffer;
     class condition;
     class device_manager;
@@ -26,7 +27,7 @@ namespace mantis
     class MANTIS_API server_worker : public callable
     {
         public:
-            server_worker( device_manager* a_dev_mgr, acq_request_db* a_run_queue );
+            server_worker( device_manager* a_dev_mgr, acq_request_db* a_run_queue, amqp_relayer* a_amqp_relayer );
             virtual ~server_worker();
 
             void execute();
@@ -46,6 +47,8 @@ namespace mantis
             digitizer* f_digitizer;
             writer* f_writer;
             mutex f_component_mutex;
+
+            amqp_relayer* f_amqp_relayer;
 
             atomic_bool f_canceled;
 

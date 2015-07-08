@@ -22,6 +22,19 @@ namespace mantis
     class MANTIS_API amqp_relayer : public callable
     {
         public:
+            enum encoding
+            {
+                k_json
+            };
+
+            enum message_type
+            {
+                k_request = T_REQUEST,
+                k_alert = T_ALERT
+            };
+
+
+        public:
             amqp_relayer( const param_node* a_amqp_config );
             virtual ~amqp_relayer();
 
@@ -40,17 +53,6 @@ namespace mantis
             std::string f_alert_exchange;
 
             boost::uuids::random_generator f_uuid_gen;
-
-            enum encoding
-            {
-                k_json
-            };
-
-            enum message_type
-            {
-                k_request = T_REQUEST,
-                k_alert = T_ALERT
-            };
 
             struct message_data
             {
