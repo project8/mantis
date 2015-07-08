@@ -151,7 +151,7 @@ namespace mantis
 
         // strings for passing to the various do_[type]_request functions
         std::string t_reply_to = broker::get_instance()->get_connection().amqp()->DeclareQueue( "" );
-        std::string t_consumer_tag = broker::get_instance()->get_connection().  amqp()->BasicConsume( t_reply_to );
+        std::string t_consumer_tag = broker::get_instance()->get_connection().amqp()->BasicConsume( t_reply_to );
         MTDEBUG( mtlog, "Consumer tag for reply: " << t_consumer_tag );
 
         MTINFO( mtlog, "Sending request with routing key <" << t_routing_key << ">" );

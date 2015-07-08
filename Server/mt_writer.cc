@@ -177,7 +177,7 @@ namespace mantis
         t_resp_node->add( "mb-written", param_value( t_mb_written ) );
         t_resp_node->add( "writer-rate", param_value( t_mb_written / t_livetime ) );
 
-        a_response->add( "file-writer", t_resp_node );
+        a_response->add( "writer", t_resp_node );
 
         finalize_derived( a_response );
 

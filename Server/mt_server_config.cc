@@ -26,6 +26,7 @@ namespace mantis
         t_amqp_node->add( "broker-port", param_value( 5672 ) );
         t_amqp_node->add( "broker", param_value( "localhost" ) );
         t_amqp_node->add( "exchange", param_value( "requests" ) );
+        t_amqp_node->add( "alert-exchange", param_value( "alerts" ) );
         t_amqp_node->add( "queue", param_value( "mantis" ) );
         add( "amqp", t_amqp_node );
 
