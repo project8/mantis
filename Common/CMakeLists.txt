@@ -3,10 +3,12 @@
 # Created: Nov 13, 2014
 
 set( MANTIS_COMMON_HEADERFILES
+    mt_amqp_relayer.hh
     mt_atomic.hh
     mt_authentication.hh
     mt_broker.hh
     mt_callable.hh
+    mt_concurrent_queue.hh
     mt_condition.hh
     mt_configurator.hh
     mt_connection.hh
@@ -25,6 +27,7 @@ set( MANTIS_COMMON_HEADERFILES
 )
 
 set( MANTIS_COMMON_SOURCEFILES
+    mt_amqp_relayer.cc
     mt_authentication.cc
     mt_broker.cc
     mt_callable.cc
