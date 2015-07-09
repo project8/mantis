@@ -52,6 +52,8 @@ namespace mantis
 
         set_status( k_starting );
 
+        signal_handler t_sig_hand;
+
         // device manager
         device_manager t_dev_mgr;
 
@@ -65,20 +67,20 @@ namespace mantis
         f_acq_request_db = &t_acq_request_db;
 
         // amqp relayer
-        amqp_relayer* t_amqp_relayer_ptr;
-        try
+        amqp_relayer t_amqp_relayer;
+        if( ! t_amqp_relayer.initialize( f_config.node_at( "amqp" ) ) )
         {
-            t_amqp_relayer_ptr = new amqp_relayer( f_config.node_at( "amqp" ) );
-        }
-        catch( exception& e )
-        {
-            MTERROR( mtlog, "Unable to start the amqp relayer:\n\t" << e.what() );
+            MTERROR( mtlog, "Unable to start the AMQP relayer" );
             f_return = R_AMQP_ERROR;
             return;
         }
 
+        thread t_amqp_relayer_thread( &t_amqp_relayer );
+        t_sig_hand.push_thread( &t_amqp_relayer_thread );
+        t_amqp_relayer_thread.start();
+
         // server worker
-        server_worker t_worker( &t_dev_mgr, &t_acq_request_db, t_amqp_relayer_ptr );
+        server_worker t_worker( &t_dev_mgr, &t_acq_request_db, &t_amqp_relayer );
         f_server_worker = &t_worker;
 
         // request receiver
@@ -92,7 +94,6 @@ namespace mantis
         thread t_receiver_thread( &t_receiver );
         thread t_worker_thread( &t_worker );
 
-        signal_handler t_sig_hand;
         t_sig_hand.push_thread( &t_receiver_thread );
         t_sig_hand.push_thread( &t_worker_thread );
 
@@ -117,6 +118,8 @@ namespace mantis
         {
             t_sig_hand.pop_thread(); // worker thread
             t_sig_hand.pop_thread(); // receiver thread
+            t_sig_hand.pop_thread(); // amqp_relayer thread
+            t_amqp_relayer.cancel();
         }
 
         MTINFO( mtlog, "Threads stopped" );

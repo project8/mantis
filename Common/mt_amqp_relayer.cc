@@ -16,7 +16,7 @@ namespace mantis
 {
     MTLOGGER( mtlog, "amqp_relayer" );
 
-    amqp_relayer::amqp_relayer( const param_node* a_amqp_config ) :
+    amqp_relayer::amqp_relayer() :
             f_broker( broker::get_instance() ),
             f_request_exchange( "requests" ),
             f_alert_exchange( "alerts" ),
@@ -24,59 +24,70 @@ namespace mantis
             f_queue(),
             f_canceled( false )
     {
-        if( a_amqp_config != NULL )
-        {
-            if( ! f_broker->is_connected() )
-            {
-                if(! f_broker->connect( a_amqp_config->get_value( "broker", "" ),
-                        a_amqp_config->get_value< unsigned >( "broker-port", 0 ) ) )
-                {
-                    throw exception() << "Cannot create connection to the AMQP broker";
-                }
-            }
-            else
-            {
-                if( f_broker->get_address() != a_amqp_config->get_value( "broker" ) ||
-                        f_broker->get_port() != a_amqp_config->get_value< unsigned >( "broker-port" ) )
-                {
-                    throw exception() << "Already connected to a different AMQP broker: " << f_broker->get_address() << ":" << f_broker->get_port() ;
-                }
-            }
-
-            try
-            {
-                f_request_exchange = a_amqp_config->get_value( "exchange", f_request_exchange );
-                f_broker->get_connection().amqp()->DeclareExchange( f_request_exchange, AmqpClient::Channel::EXCHANGE_TYPE_TOPIC, true );
-            }
-            catch( std::exception& e )
-            {
-                f_broker->disconnect();
-                throw exception() << "Unable to declare exchange <" << f_request_exchange << ">; aborting.\n(" << e.what() << ")";
-            }
-
-            try
-            {
-                f_alert_exchange = a_amqp_config->get_value( "alert-exchange", f_alert_exchange );
-                f_broker->get_connection().amqp()->DeclareExchange( f_alert_exchange, AmqpClient::Channel::EXCHANGE_TYPE_TOPIC, true );
-            }
-            catch( std::exception& e )
-            {
-                f_broker->disconnect();
-                throw exception() << "Unable to declare exchange <" << f_alert_exchange << ">; aborting.\n(" << e.what() << ")";
-            }
-        }
     }
 
     amqp_relayer::~amqp_relayer()
     {
     }
 
+    bool amqp_relayer::initialize( const param_node* a_amqp_config )
+    {
+        if( a_amqp_config == NULL ) return false;
+
+        if( ! f_broker->is_connected() )
+        {
+            if(! f_broker->connect( a_amqp_config->get_value( "broker", "" ),
+                    a_amqp_config->get_value< unsigned >( "broker-port", 0 ) ) )
+            {
+                MTERROR( mtlog, "Cannot create connection to the AMQP broker" );
+                return false;
+            }
+        }
+        else
+        {
+            if( f_broker->get_address() != a_amqp_config->get_value( "broker" ) ||
+                    f_broker->get_port() != a_amqp_config->get_value< unsigned >( "broker-port" ) )
+            {
+                MTERROR( mtlog, "Already connected to a different AMQP broker: " << f_broker->get_address() << ":" << f_broker->get_port() );
+                return false;
+            }
+        }
+
+        try
+        {
+            f_request_exchange = a_amqp_config->get_value( "exchange", f_request_exchange );
+            f_broker->get_connection().amqp()->DeclareExchange( f_request_exchange, AmqpClient::Channel::EXCHANGE_TYPE_TOPIC, true );
+        }
+        catch( std::exception& e )
+        {
+            f_broker->disconnect();
+            MTERROR( mtlog, "Unable to declare exchange <" << f_request_exchange << ">; aborting.\n(" << e.what() << ")" );
+            return false;
+        }
+
+        try
+        {
+            f_alert_exchange = a_amqp_config->get_value( "alert-exchange", f_alert_exchange );
+            f_broker->get_connection().amqp()->DeclareExchange( f_alert_exchange, AmqpClient::Channel::EXCHANGE_TYPE_TOPIC, true );
+        }
+        catch( std::exception& e )
+        {
+            f_broker->disconnect();
+            MTERROR( mtlog, "Unable to declare exchange <" << f_alert_exchange << ">; aborting.\n(" << e.what() << ")" );
+            return false;
+        }
+
+        return true;
+    }
+
     void amqp_relayer::execute()
     {
+        MTDEBUG( mtlog, "AMQP relayer starting" );
         while( ! f_canceled.load() )
         {
             message_data* t_data = NULL;
-            f_queue.timed_wait_and_pop( t_data ); // blocking call for next message to send; timed so that cancellation can be rechecked
+            bool t_have_message = f_queue.timed_wait_and_pop( t_data ); // blocking call for next message to send; timed so that cancellation can be rechecked
+            if( ! t_have_message ) continue;
 
             switch( t_data->f_message_type ) {
                 case k_request:
@@ -89,6 +100,8 @@ namespace mantis
                     MTWARN( mtlog, "Unknown message type <" << t_data->f_message_type << ">; will be ignored");
                     break;
             }
+
+            delete t_data;
         }
 
         MTDEBUG( mtlog, "Exiting the AMQP relayer" );
@@ -112,6 +125,7 @@ namespace mantis
 
     bool amqp_relayer::relay_request( message_data* a_data )
     {
+        MTDEBUG( mtlog, "Relaying request" );
         string t_request_str;
         if( ! encode_message( a_data, t_request_str ) )
         {
@@ -149,6 +163,7 @@ namespace mantis
 
     bool amqp_relayer::relay_alert( message_data* a_data )
     {
+        MTDEBUG( mtlog, "Relaying alert" );
         string t_alert_str;
         if( ! encode_message( a_data, t_alert_str ) )
         {
@@ -206,6 +221,8 @@ namespace mantis
         t_data->f_message_type = k_request;
         t_data->f_routing_key = a_routing_key;
         t_data->f_encoding = a_encoding;
+        MTDEBUG( mtlog, "Received send-request request addressed to <" << a_routing_key << ">" );
+        f_queue.push( t_data );
         return true;
     }
 
@@ -216,6 +233,8 @@ namespace mantis
         t_data->f_message_type = k_alert;
         t_data->f_routing_key = a_routing_key;
         t_data->f_encoding = a_encoding;
+        MTDEBUG( mtlog, "Received send-alert request addressed to <" << a_routing_key << ">" );
+        f_queue.push( t_data );
         return true;
     }
 

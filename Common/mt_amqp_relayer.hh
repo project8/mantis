@@ -35,8 +35,10 @@ namespace mantis
 
 
         public:
-            amqp_relayer( const param_node* a_amqp_config );
+            amqp_relayer();
             virtual ~amqp_relayer();
+
+            bool initialize( const param_node* a_amqp_config );
 
             void execute();
 
