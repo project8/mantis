@@ -3,12 +3,14 @@
 
 #include "mt_callable.hh"
 
+#include "mt_amqp.hh"
 #include "mt_atomic.hh"
 #include "mt_concurrent_queue.hh"
 #include "mt_constants.hh"
+#include "mt_message.hh"
 #include "mt_mutex.hh"
 
-#include <boost/uuid/random_generator.hpp>
+//#include <boost/uuid/random_generator.hpp>
 
 #include <string>
 
@@ -35,7 +37,7 @@ namespace mantis
 
 
         public:
-            amqp_relayer();
+            amqp_relayer( const broker* a_broker );
             virtual ~amqp_relayer();
 
             bool initialize( const param_node* a_amqp_config );
@@ -49,13 +51,13 @@ namespace mantis
             //bool handle_stop_acq_request( const param_node& a_msg_payload, const std::string& a_mantis_routing_key, request_reply_package& a_pkg );
 
         private:
-            broker* f_broker;
+            amqp_channel_ptr f_channel;
 
             std::string f_request_exchange;
             std::string f_alert_exchange;
 
-            boost::uuids::random_generator f_uuid_gen;
-
+            //boost::uuids::random_generator f_uuid_gen;
+            /*
             struct message_data
             {
                 const param_node* f_message;
@@ -63,23 +65,23 @@ namespace mantis
                 std::string f_routing_key;
                 encoding f_encoding;
             };
+            */
+            bool relay_request( message* a_message );
+            bool relay_alert( message* a_message );
 
-            bool relay_request( message_data* a_data );
-            bool relay_alert( message_data* a_data );
+            //bool encode_message( const message_data* a_data, std::string& a_message ) const;
 
-            bool encode_message( const message_data* a_data, std::string& a_message ) const;
-
-            concurrent_queue< message_data* > f_queue;
+            concurrent_queue< message* > f_queue;
 
             atomic_bool f_canceled;
 
         public:
-            bool send_request( const param_node* a_message, std::string a_routing_key, encoding a_encoding );
+            bool send_message( message* a_message );
 
-            bool send_alert( const param_node* a_message, std::string a_routing_key, encoding a_encoding );
+            //bool send_alert( const param_node* a_message, std::string a_routing_key, encoding a_encoding );
 
         private:
-            std::string interpret_encoding( encoding a_encoding) const;
+            //std::string interpret_encoding( encoding a_encoding) const;
 
             /*
 

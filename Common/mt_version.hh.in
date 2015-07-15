@@ -10,6 +10,8 @@
 #ifndef MT_VERSION_HH_
 #define MT_VERSION_HH_
 
+#include "mt_singleton.hh"
+
 #include "mt_constants.hh"
 
 #include <string>
@@ -23,9 +25,7 @@
 #define Mantis_GIT_COMMIT @Mantis_GIT_COMMIT@
 #define Mantis_GIT_DESCRIBE @Mantis_GIT_DESCRIBE@
 
-//#ifdef _WIN32
-//MANTIS_EXPIMP_TEMPLATE template class MANTIS_API std::basic_string< char, std::char_traits< char >, std::allocator< char > >;
-//#endif
+
 
 namespace mantis
 {
@@ -46,6 +46,15 @@ namespace mantis
             
             bool combine( unsigned a_maj_ver, unsigned a_min_ver, unsigned a_patch_ver );
             
+            const std::string& package() const;
+            const std::string& commit() const;
+            
+            const std::string& exe_name() const;
+            const std::string& hostname() const;
+            const std::string& username() const;
+            
+            bool update_exe_host_user();
+            
         private:
             static char s_delimeter;
         
@@ -53,7 +62,68 @@ namespace mantis
             unsigned f_minor_ver;
             unsigned f_patch_ver;
             std::string f_version;
+            
+            std::string f_package;
+            std::string f_commit;
+            
+            std::string f_exe_name;
+            std::string f_hostname;
+            std::string f_username;
     };
-}
+    
+    
+    class MANTIS_API version_global : public singleton< version_global >, public version
+    {
+        protected:
+            friend class singleton< version_global >;
+            friend class destroyer< version_global >;
+            version_global();
+            ~version_global();
+    
+    };
+    
+
+    inline unsigned version::major_version() const
+    {
+        return f_major_ver;
+    }
+    inline unsigned version::minor_version() const
+    {
+        return f_minor_ver;
+    }
+    inline unsigned version::patch_version() const
+    {
+        return f_patch_ver;
+    }
+
+    inline const std::string& version::version_str() const
+    {
+        return f_version;
+    }
+    
+    inline const std::string& version::package() const
+    {
+        return f_package;
+    }
+    
+    inline const std::string& version::commit() const
+    {
+        return f_commit;
+    }
+
+    inline const std::string& version::exe_name() const
+    {
+        return f_exe_name;
+    }
+    inline const std::string& version::hostname() const
+    {
+        return f_hostname;
+    }
+    inline const std::string& version::username() const
+    {
+        return f_username;
+    }
+
+} // namespace mantis
 
 #endif /* MT_VERSION_HH_ */

@@ -4,27 +4,19 @@
 
 #include "mt_acq_request_db.hh"
 #include "mt_acq_request.hh"
-#include "mt_broker.hh"
 #include "mt_buffer.hh"
 #include "mt_config_manager.hh"
-#include "mt_connection.hh"
 #include "mt_constants.hh"
 #include "mt_device_manager.hh"
 #include "mt_logger.hh"
+#include "mt_message.hh"
 #include "mt_param_json.hh"
 #include "mt_param_msgpack.hh"
 #include "mt_parser.hh"
 #include "mt_run_server.hh"
 #include "mt_server_worker.hh"
-#include "mt_version.hh"
 
 #include <cstddef>
-
-#ifdef _WIN32
-#include <Windows.h> // for gethostname and GetUserName
-#else
-#include <unistd.h> // for gethostname and getlogin_r
-#endif
 
 
 using std::string;
@@ -40,13 +32,10 @@ namespace mantis
     }
 
 
-    request_receiver::request_receiver( run_server* a_run_server, config_manager* a_conf_mgr, acq_request_db* a_acq_request_db, server_worker* a_server_worker, const std::string& a_exe_name ) :
-            f_broker( NULL ),
+    request_receiver::request_receiver( run_server* a_run_server, config_manager* a_conf_mgr, acq_request_db* a_acq_request_db, server_worker* a_server_worker, amqp_channel_ptr a_channel ) :
+            f_channel( a_channel ),
             f_queue_name(),
             f_consumer_tag(),
-            f_exe_name( a_exe_name ),
-            f_hostname(),
-            f_username(),
             f_run_server( a_run_server ),
             f_conf_mgr( a_conf_mgr ),
             f_acq_request_db( a_acq_request_db ),
@@ -54,39 +43,6 @@ namespace mantis
             f_canceled( false ),
             f_status( k_initialized )
     {
-        const size_t t_bufsize = 1024;
-        char t_username_buf[ t_bufsize ];
-#ifdef _WIN32
-        DWORD t_bufsize_win = t_bufsize;
-        if( GetUserName( t_username_buf, &t_bufsize_win ) )
-#else
-        if( getlogin_r( t_username_buf, t_bufsize ) == 0 )
-#endif
-        {
-            f_username = string( t_username_buf );
-        }
-        else
-        {
-            MTWARN( mtlog, "Unable to get the username" );
-        }
-
-        char t_hostname_buf[ t_bufsize ];
-#ifdef _WIN32
-        WSADATA wsaData;
-        WSAStartup( MAKEWORD( 2, 2 ), &wsaData );
-#endif
-        // gethostname is the same on posix and windows
-        if( gethostname( t_hostname_buf, t_bufsize ) == 0 )
-        {
-            f_hostname = string( t_hostname_buf );
-        }
-        else
-        {
-            MTWARN( mtlog, "Unable to get the hostname" );
-        }
-#ifdef _WIN32
-        WSACleanup();
-#endif
     }
 
     request_receiver::~request_receiver()
@@ -117,16 +73,6 @@ namespace mantis
         std::string t_exchange_name;
         try
         {
-            f_broker = broker::get_instance();
-
-            if( ! f_broker->is_connected() )
-            {
-                MTERROR( mtlog, "Not connected to AMQP broker" );
-                //cancel();
-                f_run_server->quit_server();
-                return;
-            }
-
             param_node* t_broker_node = f_conf_mgr->copy_master_server_config( "amqp" );
 
             t_exchange_name = t_broker_node->get_value( "exchange" );
@@ -134,12 +80,12 @@ namespace mantis
 
             delete t_broker_node;
 
-            f_broker->get_connection().amqp()->DeclareExchange( t_exchange_name, AmqpClient::Channel::EXCHANGE_TYPE_TOPIC, false, false, false );
+            f_channel->DeclareExchange( t_exchange_name, AmqpClient::Channel::EXCHANGE_TYPE_TOPIC, false, false, false );
 
-            f_broker->get_connection().amqp()->DeclareQueue( f_queue_name, false, false, true, true );
-            f_broker->get_connection().amqp()->BindQueue( f_queue_name, t_exchange_name, f_queue_name + string( ".#" ) ); // all routing keys prepended with the queue name are accepted
+            f_channel->DeclareQueue( f_queue_name, false, false, true, true );
+            f_channel->BindQueue( f_queue_name, t_exchange_name, f_queue_name + string( ".#" ) ); // all routing keys prepended with the queue name are accepted
 
-            f_consumer_tag = f_broker->get_connection().amqp()->BasicConsume( f_queue_name, f_queue_name, true, false ); // route name used for the queue and the consumer tag; second bool is setting no_ack to false
+            f_consumer_tag = f_channel->BasicConsume( f_queue_name, f_queue_name, true, false ); // route name used for the queue and the consumer tag; second bool is setting no_ack to false
         }
         catch( AmqpClient::AmqpException& e )
         {
@@ -163,7 +109,7 @@ namespace mantis
             // blocking call to wait for incoming message
             f_status.store( k_listening );
             MTINFO( mtlog, "Waiting for incoming message" );
-            AmqpClient::Envelope::ptr_t t_envelope = f_broker->get_connection().amqp()->BasicConsumeMessage( f_consumer_tag );
+            AmqpClient::Envelope::ptr_t t_envelope = f_channel->BasicConsumeMessage( f_consumer_tag );
 
             if (f_canceled.load()) return;
 
@@ -181,14 +127,14 @@ namespace mantis
             else
             {
                 MTERROR( mtlog, "Unable to parse message with content type <" << t_envelope->Message()->ContentEncoding() << ">" );
-                f_broker->get_connection().amqp()->BasicAck( t_envelope );
+                f_channel->BasicAck( t_envelope );
                 continue;
             }
 
             if( t_msg_node == NULL )
             {
                 MTERROR( mtlog, "Message body could not be parsed; skipping request" );
-                f_broker->get_connection().amqp()->BasicAck( t_envelope );
+                f_channel->BasicAck( t_envelope );
                 continue;
             }
 
@@ -202,7 +148,7 @@ namespace mantis
             if( t_routing_key.find( f_queue_name ) != 0 )
             {
                 MTWARN( mtlog, "Routing key does not start with the queue name");
-                f_broker->get_connection().amqp()->BasicAck( t_envelope );
+                f_channel->BasicAck( t_envelope );
                 continue;
             }
             t_routing_key.erase( 0, f_queue_name.size() + 1 ); // 1 added to remove the '.' that separates nodes
@@ -225,7 +171,7 @@ namespace mantis
 
             const param_node* t_sender_node = t_msg_node->node_at( "sender_info" );
 
-            f_broker->get_connection().amqp()->BasicAck( t_envelope );
+            f_channel->BasicAck( t_envelope );
 
             param_node t_reply_node;
             t_reply_node.add( "return-msg", new param_value( "(no message provided)" ) );
@@ -271,11 +217,11 @@ namespace mantis
         MTDEBUG( mtlog, "Request receiver is done" );
 
         MTDEBUG( mtlog, "Canceling consume of tag <" << f_consumer_tag << ">" );
-        f_broker->get_connection().amqp()->BasicCancel( f_consumer_tag );
+        f_channel->BasicCancel( f_consumer_tag );
         f_consumer_tag.clear();
 
         MTDEBUG( mtlog, "Deleting queue <" << f_queue_name << ">" );
-        f_broker->get_connection().amqp()->DeleteQueue( f_queue_name, false );
+        f_channel->DeleteQueue( f_queue_name, false );
         f_queue_name.clear();
 
         return;
@@ -427,61 +373,33 @@ namespace mantis
             return false;
         }
 
-        std::string t_reply_to( a_pkg.f_envelope->Message()->ReplyTo() );
+        msg_reply* t_reply = msg_reply::create( a_return_code, a_return_msg, new param_node( a_pkg.f_reply_node ), a_pkg.f_envelope->Message()->ReplyTo(), message::k_json );
+        t_reply->set_correlation_id( a_pkg.f_envelope->Message()->CorrelationId() );
 
-        a_pkg.f_reply_node.replace( "return-msg", param_value( a_return_msg ) );
+        MTDEBUG( mtlog, "Sending reply message:\n" << a_pkg.f_reply_node );
 
-        param_node* t_sender_node = new param_node();
-        t_sender_node->add( "commit", param_value( TOSTRING(Mantis_GIT_COMMIT) ) );
-        t_sender_node->add( "exe", param_value( f_exe_name ) );
-        t_sender_node->add( "version", param_value( TOSTRING(Mantis_VERSION) ) );
-        t_sender_node->add( "package", param_value( TOSTRING(Mantis_PACKAGE_NAME) ) );
-
-        param_node t_reply;
-        t_reply.add( "msgtype", new param_value( T_REPLY ) );
-        t_reply.add( "retcode", new param_value( a_return_code ) );
-        t_reply.add( "payload", a_pkg.f_reply_node );
-        t_reply.add( "sender_info", t_sender_node );
-        t_reply.add( "timestamp", param_value( get_absolute_time_string() ) );
-
-        MTDEBUG( mtlog, "Sending reply message:\n" << t_reply );
-
-        std::string t_reply_str;
-        if(! param_output_json::write_string( t_reply, t_reply_str, param_output_json::k_compact ) )
+        string t_consumer_tag;
+        if( ! t_reply->do_publish( f_channel, "", t_consumer_tag ) )
         {
-            MTERROR( mtlog, "Could not convert reply to string" );
-            return false;
-        }
-
-        AmqpClient::BasicMessage::ptr_t t_reply_msg = AmqpClient::BasicMessage::Create( t_reply_str );
-        t_reply_msg->ContentEncoding( "application/json" );
-        t_reply_msg->CorrelationId( a_pkg.f_envelope->Message()->CorrelationId() );
-
-        try
-        {
-            f_broker->get_connection().amqp()->BasicPublish( "", a_pkg.f_envelope->Message()->ReplyTo(), t_reply_msg );
-        }
-        catch( AmqpClient::MessageReturnedException& e )
-        {
-            MTERROR( mtlog, "Reply message could not be sent: " << e.what() );
+            MTWARN( mtlog, "Unable to send reply" );
             return false;
         }
 
         return true;
     }
-
+/*
     param_node* request_receiver::create_sender_info() const
     {
         param_node* t_sender_node = new param_node();
-        t_sender_node->add( "commit", param_value( TOSTRING(Mantis_GIT_COMMIT) ) );
-        t_sender_node->add( "exe", param_value( f_exe_name ) );
-        t_sender_node->add( "version", param_value( TOSTRING(Mantis_VERSION) ) );
-        t_sender_node->add( "package", param_value( TOSTRING(Mantis_PACKAGE_NAME ) ) );
-        t_sender_node->add( "hostname", param_value( f_hostname ) );
-        t_sender_node->add( "username", param_value( f_username ) );
+        t_sender_node->add( "commit", param_value( f_version->commit() ) );
+        t_sender_node->add( "exe", param_value( f_version->exe_name() ) );
+        t_sender_node->add( "version", param_value( f_version->version_str() ) );
+        t_sender_node->add( "package", param_value( f_version->package() ) );
+        t_sender_node->add( "hostname", param_value( f_version->hostname() ) );
+        t_sender_node->add( "username", param_value( f_version->username() ) );
         return t_sender_node;
     }
-
+*/
     void request_receiver::cancel()
     {
         MTDEBUG( mtlog, "Canceling request receiver" );

@@ -3,6 +3,7 @@
 # Created: Nov 13, 2014
 
 set( MANTIS_COMMON_HEADERFILES
+    mt_amqp.hh
     mt_amqp_relayer.hh
     mt_atomic.hh
     mt_authentication.hh
@@ -11,11 +12,11 @@ set( MANTIS_COMMON_HEADERFILES
     mt_concurrent_queue.hh
     mt_condition.hh
     mt_configurator.hh
-    mt_connection.hh
     mt_constants.hh
     mt_destroyer.hh
     mt_exception.hh
     mt_logger.hh
+    mt_message.hh
     mt_mutex.hh
     mt_param.hh
     mt_param_json.hh
@@ -33,9 +34,9 @@ set( MANTIS_COMMON_SOURCEFILES
     mt_callable.cc
     mt_condition.cc
     mt_configurator.cc    
-    mt_connection.cc
     mt_exception.cc
     mt_logger.cc
+    mt_message.cc
     mt_mutex.cc
     mt_param.cc
     mt_param_json.cc

@@ -160,7 +160,9 @@ namespace mantis
             t_acq_req->set_response( t_response );
             t_acq_req->set_status( acq_request::stopped );
             MTINFO( mtlog, "Run response:\n" << t_response );
-            f_amqp_relayer->send_alert( t_acq_req, "completed_data", amqp_relayer::k_json );
+            //f_amqp_relayer->send_message( msg_alert::create( new param_node( *t_acq_req ), "completed_data", message::k_json ) );
+            //f_amqp_relayer->send_message( msg_request::create( new param_node( *t_acq_req ), OP_CMD, "hornet.print-message", message::k_json ) );
+            f_amqp_relayer->send_message( msg_alert::create( new param_node( *t_acq_req ), "hornet.print-message", message::k_json ) );
         }
 
         return;

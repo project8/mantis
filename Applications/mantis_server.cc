@@ -26,12 +26,12 @@
  *    e.g.:   port/i=8235
  */
 
-#include "mt_broker.hh"
 #include "mt_configurator.hh"
 #include "mt_constants.hh"
 #include "mt_logger.hh"
 #include "mt_run_server.hh"
 #include "mt_server_config.hh"
+#include "mt_version.hh"
 
 using namespace mantis;
 
@@ -56,38 +56,13 @@ int main( int argc, char** argv )
         server_config t_sc;
         configurator t_configurator( argc, argv, &t_sc );
 
-        MTINFO( mtlog, "Connecting to AMQP broker" );
-
-        const param_node* t_broker_node = &t_configurator.config().at( "amqp" )->as_node();
-
-        broker* t_broker = broker::get_instance();
-
-        if( ! t_broker->is_connected() )
-        {
-            if(! t_broker->connect( t_broker_node->get_value( "broker" ),
-                    t_broker_node->get_value< unsigned >( "broker-port" ) ) )
-            {
-                MTERROR( mtlog, "Cannot create connection to AMQP broker" );
-                return RETURN_ERROR;
-            }
-        }
-        else
-        {
-            if( t_broker->get_address() != t_broker_node->get_value( "broker" ) ||
-                    t_broker->get_port() != t_broker_node->get_value< unsigned >( "broker-port" ) )
-            {
-                MTERROR( mtlog, "Already connected to a different AMQP broker: " << t_broker->get_address() << ":" << t_broker->get_port() );
-                return RETURN_ERROR;
-            }
-        }
+        version t_version;
 
         // Run the server
 
-        run_server the_server( t_configurator.config(), t_configurator.exe_name() );
+        run_server the_server( t_configurator.config(), &t_version );
 
         the_server.execute();
-
-        t_broker->disconnect();
 
         return the_server.get_return();
     }

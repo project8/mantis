@@ -11,6 +11,7 @@
 #include "mt_atomic.hh"
 #include "mt_mutex.hh"
 #include "mt_param.hh"
+#include "mt_version.hh"
 
 namespace mantis
 {
@@ -23,7 +24,7 @@ namespace mantis
     class MANTIS_API run_server
     {
         public:
-            run_server( const param_node& a_node, const std::string& a_exe_name );
+            run_server( const param_node& a_node, const version* a_version );
             virtual ~run_server();
 
             void execute();
@@ -39,7 +40,7 @@ namespace mantis
 
         private:
             param_node f_config;
-            std::string f_exe_name;
+            const version* f_version;
 
             int f_return;
 
