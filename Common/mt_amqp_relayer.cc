@@ -100,6 +100,7 @@ namespace mantis
     {
         MTDEBUG( mtlog, "Canceling amqp_relayer" );
         f_canceled.store( true );
+        f_queue.interrupt();
 
         //close_connection();
 

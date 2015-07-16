@@ -132,7 +132,7 @@ namespace mantis
                 boost::system_time const waitUntil = boost::get_system_time() + f_timeout;
                 if( ! f_condition_var.timed_wait( lock, waitUntil, queue_not_empty( f_queue ) ) )
                 {
-                    MTDEBUG( mtlog_cq, "Queue wait has timed out" );
+                    //MTDEBUG( mtlog_cq, "Queue wait has timed out" );
                     return false;
                 }
                 if( f_interrupt )

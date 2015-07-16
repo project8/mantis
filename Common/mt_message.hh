@@ -438,8 +438,9 @@ namespace mantis
         return true;
     }
 
-    inline bool msg_request::derived_modify_message_body( param_node& /*a_node*/ ) const
+    inline bool msg_request::derived_modify_message_body( param_node& a_node ) const
     {
+        a_node.add( "msgop", new param_value( f_message_op ) );
         return true;
     }
 

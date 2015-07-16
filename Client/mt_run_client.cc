@@ -91,6 +91,8 @@ namespace mantis
             return;
         }
 
+        MTDEBUG( mtlog, "Sending message w/ msgop = " << t_request->get_message_op() );
+
         std::string t_consumer_tag;
         t_request->do_publish( f_channel, f_exchange, t_consumer_tag );
 

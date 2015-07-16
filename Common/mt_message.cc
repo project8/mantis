@@ -81,7 +81,6 @@ namespace mantis
 
         param_node t_body_node;
         t_body_node.add( "msgtype", param_value( T_REQUEST ) );
-        t_body_node.add( "msgop", param_value( OP_RUN ) );
         t_body_node.add( "timestamp", param_value( get_absolute_time_string() ) );
         t_body_node.add( "sender_info", t_sender_node );
         t_body_node.add( "payload", f_payload->clone() ); // use a clone of f_payload
