@@ -3,6 +3,7 @@
 
 #include "mt_callable.hh"
 
+#include "mt_amqp.hh"
 #include "mt_atomic.hh"
 #include "mt_mutex.hh"
 #include "mt_param.hh"
@@ -12,11 +13,9 @@
 namespace mantis
 {
     class acq_request_db;
-    class broker;
     class buffer;
     class condition;
     class config_manager;
-    class connection;
     class device_manager;
     class run_server;
     class server_worker;
@@ -40,7 +39,7 @@ namespace mantis
     class MANTIS_API request_receiver : public callable
     {
         public:
-            request_receiver( run_server* a_run_server, config_manager* a_conf_mgr, acq_request_db* a_acq_request_db, server_worker* a_server_worker, const std::string& a_exe_name = "N/A" );
+            request_receiver( run_server* a_run_server, config_manager* a_conf_mgr, acq_request_db* a_acq_request_db, server_worker* a_server_worker, amqp_channel_ptr a_channel );
             virtual ~request_receiver();
 
             void execute();
@@ -56,15 +55,11 @@ namespace mantis
 
             bool send_reply( unsigned a_return_code, const std::string& a_return_msg, request_reply_package& a_pkg ) const;
 
-            param_node* create_sender_info() const;
+            //param_node* create_sender_info() const;
 
-            broker* f_broker;
+            amqp_channel_ptr f_channel;
             std::string f_queue_name;
             std::string f_consumer_tag;
-
-            std::string f_exe_name;
-            std::string f_hostname;
-            std::string f_username;
 
             run_server* f_run_server;
             config_manager* f_conf_mgr;

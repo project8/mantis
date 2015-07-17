@@ -9,6 +9,8 @@
 
 #include "mt_run_server.hh"
 
+#include "mt_amqp_relayer.hh"
+#include "mt_broker.hh"
 #include "mt_condition.hh"
 #include "mt_config_manager.hh"
 #include "mt_constants.hh"
@@ -29,9 +31,9 @@ namespace mantis
 {
     MTLOGGER( mtlog, "run_server" );
 
-    run_server::run_server( const param_node& a_node, const std::string& a_exe_name ) :
+    run_server::run_server( const param_node& a_node, const version* a_version ) :
             f_config( a_node ),
-            f_exe_name( a_exe_name ),
+            f_version( a_version ),
             f_return( RETURN_ERROR ),
             f_request_receiver( NULL ),
             f_server_worker( NULL ),
@@ -51,6 +53,18 @@ namespace mantis
 
         set_status( k_starting );
 
+        const param_node* t_broker_node = f_config.node_at( "amqp" );
+        broker t_broker( t_broker_node->get_value( "broker" ), t_broker_node->get_value< unsigned >( "broker-port" ) );
+        amqp_channel_ptr t_channel = t_broker.open_channel();
+        if( ! t_channel )
+        {
+            MTERROR( mtlog, "AMQP channel did not open: " << t_broker.get_address() << ":" << t_broker.get_port());
+            f_return = RETURN_ERROR;
+            return;
+        }
+
+        signal_handler t_sig_hand;
+
         // device manager
         device_manager t_dev_mgr;
 
@@ -60,15 +74,28 @@ namespace mantis
         f_component_mutex.lock();
 
         // run database and queue condition
-        acq_request_db t_acq_request_db( &t_config_mgr, f_exe_name );
+        acq_request_db t_acq_request_db( &t_config_mgr, f_version->exe_name() );
         f_acq_request_db = &t_acq_request_db;
 
+        // amqp relayer
+        amqp_relayer t_amqp_relayer( &t_broker );
+        if( ! t_amqp_relayer.initialize( t_broker_node ) )
+        {
+            MTERROR( mtlog, "Unable to start the AMQP relayer" );
+            f_return = R_AMQP_ERROR;
+            return;
+        }
+
+        thread t_amqp_relayer_thread( &t_amqp_relayer );
+        t_sig_hand.push_thread( &t_amqp_relayer_thread );
+        t_amqp_relayer_thread.start();
+
         // server worker
-        server_worker t_worker( &t_dev_mgr, &t_acq_request_db );
+        server_worker t_worker( &t_dev_mgr, &t_acq_request_db, &t_amqp_relayer, t_broker_node );
         f_server_worker = &t_worker;
 
         // request receiver
-        request_receiver t_receiver( this, &t_config_mgr, &t_acq_request_db, &t_worker, f_exe_name );
+        request_receiver t_receiver( this, &t_config_mgr, &t_acq_request_db, &t_worker, t_channel );
         f_request_receiver = &t_receiver;
 
         f_component_mutex.unlock();
@@ -78,7 +105,6 @@ namespace mantis
         thread t_receiver_thread( &t_receiver );
         thread t_worker_thread( &t_worker );
 
-        signal_handler t_sig_hand;
         t_sig_hand.push_thread( &t_receiver_thread );
         t_sig_hand.push_thread( &t_worker_thread );
 
@@ -103,6 +129,8 @@ namespace mantis
         {
             t_sig_hand.pop_thread(); // worker thread
             t_sig_hand.pop_thread(); // receiver thread
+            t_sig_hand.pop_thread(); // amqp_relayer thread
+            t_amqp_relayer.cancel();
         }
 
         MTINFO( mtlog, "Threads stopped" );

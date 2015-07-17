@@ -9,23 +9,16 @@
 
 #include "mt_run_client.hh"
 
-#include "mt_broker.hh"
-#include "mt_connection.hh"
 #include "mt_constants.hh"
 #include "mt_exception.hh"
 #include "mt_logger.hh"
+#include "mt_message.hh"
 #include "mt_param_json.hh"
 #include "mt_version.hh"
 #include "thorax.hh"
 
 #include <algorithm> // for min
 #include <string>
-
-#ifdef _WIN32
-#include <Windows.h> // for gethostname and GetUserName
-#else
-#include <unistd.h> // for gethostname and getlogin_r
-#endif
 
 using std::string;
 
@@ -34,49 +27,14 @@ namespace mantis
 {
     MTLOGGER( mtlog, "run_client" );
 
-    run_client::run_client( const param_node& a_node, const string& a_exe_name, const string& a_exchange ) :
+    run_client::run_client( const param_node& a_node, const string& a_exchange, amqp_channel_ptr a_channel ) :
             //callable(),
             f_config( a_node ),
-            f_exe_name( a_exe_name ),
-            f_hostname(),
-            f_username(),
             f_exchange( a_exchange ),
+            f_channel( a_channel ),
             //f_canceled( false ),
             f_return( 0 )
     {
-        const size_t t_bufsize = 1024;
-        char t_username_buf[ t_bufsize ];
-#ifdef _WIN32
-        DWORD t_bufsize_win = t_bufsize;
-        if( GetUserName( t_username_buf, &t_bufsize_win ) )
-#else
-        if( getlogin_r( t_username_buf, t_bufsize ) == 0 )
-#endif
-        {
-            f_username = string( t_username_buf );
-        }
-        else
-        {
-            MTWARN( mtlog, "Unable to get the username" );
-        }
-
-        char t_hostname_buf[ t_bufsize ];
-#ifdef _WIN32
-        WSADATA wsaData;
-        WSAStartup( MAKEWORD( 2, 2 ), &wsaData );
-#endif
-        // gethostname is the same on posix and windows
-        if( gethostname( t_hostname_buf, t_bufsize ) == 0 )
-        {
-            f_hostname = string( t_hostname_buf );
-        }
-        else
-        {
-            MTWARN( mtlog, "Unable to get the hostname" );
-        }
-#ifdef _WIN32
-        WSACleanup();
-#endif
     }
 
     run_client::~run_client()
@@ -85,8 +43,6 @@ namespace mantis
 
     void run_client::execute()
     {
-        broker* t_broker = broker::get_instance();
-
         MTINFO( mtlog, "Creating request" );
 
         std::string t_request_type( f_config.get_value( "do", "" ) );
@@ -104,42 +60,22 @@ namespace mantis
 
         // now all that remains in f_config should be values to pass to the server as arguments to the request
 
-        std::string t_request_str;
+        msg_request* t_request = NULL;
         if( t_request_type == "run" )
         {
-            if( ! do_run_request( t_request_str ) )
-            {
-                MTERROR( mtlog, "There was an error while processing the run request" );
-                f_return = RETURN_ERROR;
-                return;
-            }
+            t_request = create_run_request( t_routing_key );
         }
         else if( t_request_type == "get" )
         {
-            if( ! do_get_request( t_request_str ) )
-            {
-                MTERROR( mtlog, "There was an error while processing the get request" );
-                f_return = RETURN_ERROR;
-                return;
-            }
+            t_request = create_get_request( t_routing_key );
         }
         else if( t_request_type == "set" )
         {
-            if( ! do_set_request( t_request_str ) )
-            {
-                MTERROR( mtlog, "There was an error while processing the set request" );
-                f_return = RETURN_ERROR;
-                return;
-            }
+            t_request = create_set_request( t_routing_key );
         }
         else if( t_request_type == "cmd" )
         {
-            if( ! do_cmd_request( t_request_str ) )
-            {
-                MTERROR( mtlog, "There was an error while processing the cmd request" );
-                f_return = RETURN_ERROR;
-                return;
-            }
+            t_request = create_cmd_request( t_routing_key );
         }
         else
         {
@@ -148,43 +84,24 @@ namespace mantis
             return;
         }
 
-
-        // strings for passing to the various do_[type]_request functions
-        std::string t_reply_to = broker::get_instance()->get_connection().amqp()->DeclareQueue( "" );
-        std::string t_consumer_tag = broker::get_instance()->get_connection().  amqp()->BasicConsume( t_reply_to );
-        MTDEBUG( mtlog, "Consumer tag for reply: " << t_consumer_tag );
-
-        MTINFO( mtlog, "Sending request with routing key <" << t_routing_key << ">" );
-
-        AmqpClient::BasicMessage::ptr_t t_message = AmqpClient::BasicMessage::Create( t_request_str );
-        t_message->ContentEncoding( "application/json" );
-        std::string t_correlation_id;
-        t_message->CorrelationId( t_correlation_id ); // currently always ""
-        t_message->ReplyTo( t_reply_to );
-
-        try
+        if( t_request == NULL )
         {
-            t_broker->get_connection().amqp()->BasicPublish( f_exchange, t_routing_key, t_message, true, true );
-        }
-        catch( AmqpClient::MessageReturnedException& e )
-        {
-            MTERROR( mtlog, "Message could not be sent: " << e.what() );
+            MTERROR( mtlog, "Unable to create request" );
             f_return = RETURN_ERROR;
             return;
         }
-        catch( std::exception& e )
-        {
-            MTERROR( mtlog, "Error publishing to queue: " << e.what() );
-            f_return = RETURN_ERROR;
-            return;
-        }
+
+        MTDEBUG( mtlog, "Sending message w/ msgop = " << t_request->get_message_op() );
+
+        std::string t_consumer_tag;
+        t_request->do_publish( f_channel, f_exchange, t_consumer_tag );
 
         if( ! t_consumer_tag.empty() )  // then we should wait for a reply
         {
             MTINFO( mtlog, "Waiting for a reply from the server; use ctrl-c to cancel" );
 
             // blocking call to wait for incoming message
-            AmqpClient::Envelope::ptr_t t_envelope = t_broker->get_connection().amqp()->BasicConsumeMessage( t_consumer_tag );
+            AmqpClient::Envelope::ptr_t t_envelope = f_channel->BasicConsumeMessage( t_consumer_tag );
 
             MTINFO( mtlog, "Response received" );
 
@@ -242,35 +159,22 @@ namespace mantis
         return f_return;
     }
 
-    bool run_client::do_run_request( std::string& a_request_str )
+    msg_request* run_client::create_run_request( const std::string& a_routing_key )
     {
         if( ! f_config.has( "file" ) )
         {
             MTERROR( mtlog, "The filename to be saved must be specified with the \"file\" option" );
-            return false;
+            return NULL;
         }
 
         param_node* t_payload_node = new param_node( f_config ); // copy of f_config, which should consist of only the request arguments
         t_payload_node->add( "file", *f_config.at( "file ") ); // copy the file node
         if( f_config.has( "description" ) ) t_payload_node->add( "description", *f_config.at( "description" ) ); // (optional) copy the description node
 
-        param_node t_request;
-        t_request.add( "msgtype", param_value( T_REQUEST ) );
-        t_request.add( "msgop", param_value( OP_RUN ) );
-        t_request.add( "timestamp", param_value( get_absolute_time_string() ) );
-        t_request.add( "sender_info", create_sender_info() );
-        t_request.add( "payload", t_payload_node ); // use t_payload_node as is
-
-        if(! param_output_json::write_string( t_request, a_request_str, param_output_json::k_compact ) )
-        {
-            MTERROR( mtlog, "Could not convert request to string" );
-            return false;
-        }
-
-        return true;
+        return msg_request::create( t_payload_node, OP_RUN, a_routing_key, message::k_json );
     }
 
-    bool run_client::do_get_request( std::string& a_request_str )
+    msg_request* run_client::create_get_request( const std::string& a_routing_key )
     {
         param_node* t_payload_node = new param_node();
 
@@ -281,28 +185,15 @@ namespace mantis
             t_payload_node->add( "values", t_values_array );
         }
 
-        param_node t_request;
-        t_request.add( "msgtype", param_value( T_REQUEST ) );
-        t_request.add( "msgop", param_value( OP_GET ) );
-        t_request.add( "timestamp", param_value( get_absolute_time_string() ) );
-        t_request.add( "sender_info", create_sender_info() );
-        t_request.add( "payload", t_payload_node ); // use t_payload_node as is
-
-        if(! param_output_json::write_string( t_request, a_request_str, param_output_json::k_compact ) )
-        {
-            MTERROR( mtlog, "Could not convert request to string" );
-            return false;
-        }
-
-        return true;
+        return msg_request::create( t_payload_node, OP_GET, a_routing_key, message::k_json );
     }
 
-    bool run_client::do_set_request( std::string& a_request_str )
+    msg_request* run_client::create_set_request( const std::string& a_routing_key )
     {
         if( ! f_config.has( "value" ) )
         {
             MTERROR( mtlog, "No \"value\" option given" );
-            return false;
+            return NULL;
         }
 
         param_array* t_values_array = new param_array();
@@ -311,25 +202,10 @@ namespace mantis
         param_node* t_payload_node = new param_node();
         t_payload_node->add( "values", t_values_array );
 
-        param_node t_request;
-        t_request.add( "msgtype", param_value( T_REQUEST ) );
-        t_request.add( "msgop", param_value( OP_SET ) );
-        t_request.add( "timestamp", param_value( get_absolute_time_string() ) );
-        t_request.add( "sender_info", create_sender_info() );
-        t_request.add( "payload", t_payload_node ); // use t_payload_node as is
-
-        MTDEBUG( mtlog, "Sending message:\n" << t_request );
-
-        if(! param_output_json::write_string( t_request, a_request_str, param_output_json::k_compact ) )
-        {
-            MTERROR( mtlog, "Could not convert request to string" );
-            return false;
-        }
-
-        return true;
+        return msg_request::create( t_payload_node, OP_SET, a_routing_key, message::k_json );
     }
 
-    bool run_client::do_cmd_request( std::string& a_request_str )
+    msg_request* run_client::create_cmd_request( const std::string& a_routing_key )
     {
         param_node* t_payload_node = new param_node();
 
@@ -340,7 +216,7 @@ namespace mantis
             {
                 MTERROR( mtlog, "Load instruction did not contain a valid file type");
                 delete t_payload_node;
-                return false;
+                return NULL;
             }
 
             string t_load_filename( f_config.node_at( "load" )->get_value( "json" ) );
@@ -349,7 +225,7 @@ namespace mantis
             {
                 MTERROR( mtlog, "Unable to read JSON file <" << t_load_filename << ">" );
                 delete t_payload_node;
-                return false;
+                return NULL;
             }
 
             t_payload_node->merge( *t_node_from_file );
@@ -359,37 +235,22 @@ namespace mantis
         // at this point, all that remains in f_config should be other options that we want to add to the payload node
         t_payload_node->merge( f_config ); // copy f_config
 
-        param_node t_request;
-        t_request.add( "msgtype", param_value( T_REQUEST ) );
-        t_request.add( "msgop", param_value( OP_CMD ) );
-        t_request.add( "timestamp", param_value( get_absolute_time_string() ) );
-        t_request.add( "sender_info", create_sender_info() );
-        t_request.add( "payload", t_payload_node ); // use t_payload_node as is
-
-        MTDEBUG( mtlog, "Sending message:\n" << t_request );
-
-        if(! param_output_json::write_string( t_request, a_request_str, param_output_json::k_compact ) )
-        {
-            MTERROR( mtlog, "Could not convert request to string" );
-            return false;
-        }
-
-        return true;
+        return msg_request::create( t_payload_node, OP_CMD, a_routing_key, message::k_json );
     }
 
-
+/*
     param_node* run_client::create_sender_info() const
     {
         param_node* t_sender_node = new param_node();
-        t_sender_node->add( "commit", param_value( TOSTRING(Mantis_GIT_COMMIT) ) );
-        t_sender_node->add( "exe", param_value( f_exe_name ) );
-        t_sender_node->add( "version", param_value( TOSTRING(Mantis_VERSION) ) );
-        t_sender_node->add( "package", param_value( TOSTRING(Mantis_PACKAGE_NAME ) ) );
-        t_sender_node->add( "hostname", param_value( f_hostname ) );
-        t_sender_node->add( "username", param_value( f_username ) );
+        t_sender_node->add( "commit", param_value( f_version->commit() ) );
+        t_sender_node->add( "exe", param_value( f_version->exe_name() ) );
+        t_sender_node->add( "version", param_value( f_version->version_str() ) );
+        t_sender_node->add( "package", param_value( f_version->package() ) );
+        t_sender_node->add( "hostname", param_value( f_version->hostname() ) );
+        t_sender_node->add( "username", param_value( f_version->username() ) );
         return t_sender_node;
     }
-
+*/
 
 
 } /* namespace mantis */

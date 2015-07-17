@@ -8,11 +8,8 @@
 #ifndef MT_BROKER_HH_
 #define MT_BROKER_HH_
 
-#include "mt_singleton.hh"
-
+#include "mt_amqp.hh"
 #include "mt_constants.hh"
-
-#include "SimpleAmqpClient/SimpleAmqpClient.h"
 
 #include <string>
 
@@ -20,46 +17,23 @@ namespace mantis
 {
     class connection;
 
-    class MANTIS_API broker : public singleton< broker >
+
+
+    class MANTIS_API broker
     {
         public:
-            bool connect( const std::string& a_address, unsigned port );
-            void disconnect();
+            broker( const std::string& a_address, unsigned port );
+            ~broker();
 
-            connection& get_connection();
-            const connection& get_connection() const;
-
-            bool is_connected() const;
+            amqp_channel_ptr open_channel() const;
 
             const std::string& get_address() const;
             unsigned get_port() const;
 
-        protected:
-            friend class singleton< broker >;
-            friend class destroyer< broker >;
-            broker();
-            ~broker();
-
         private:
             std::string f_address;
             unsigned f_port;
-            connection* f_connection;
     };
-
-    inline connection& broker::get_connection()
-    {
-        return *f_connection;
-    }
-
-    inline const connection& broker::get_connection() const
-    {
-        return *f_connection;
-    }
-
-    inline bool broker::is_connected() const
-    {
-        return ! (f_connection == NULL);
-    }
 
     inline const std::string& broker::get_address() const
     {
