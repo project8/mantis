@@ -91,7 +91,7 @@ namespace mantis
         t_amqp_relayer_thread.start();
 
         // server worker
-        server_worker t_worker( &t_dev_mgr, &t_acq_request_db, &t_amqp_relayer );
+        server_worker t_worker( &t_dev_mgr, &t_acq_request_db, &t_amqp_relayer, t_broker_node );
         f_server_worker = &t_worker;
 
         // request receiver

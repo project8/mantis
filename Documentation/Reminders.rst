@@ -13,7 +13,7 @@ Please try to keep it organized.
 Using Mantis
 ============
 
-
+* In the server config, `completed-file-key` is used to specify the routing key for sending an alert about each file completed; this can be turned off by making this an empty string.
 
 
 Developing Mantis

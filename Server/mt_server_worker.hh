@@ -27,7 +27,7 @@ namespace mantis
     class MANTIS_API server_worker : public callable
     {
         public:
-            server_worker( device_manager* a_dev_mgr, acq_request_db* a_run_queue, amqp_relayer* a_amqp_relayer );
+            server_worker( device_manager* a_dev_mgr, acq_request_db* a_run_queue, amqp_relayer* a_amqp_relayer, const param_node* a_amqp_node );
             virtual ~server_worker();
 
             void execute();
@@ -49,6 +49,7 @@ namespace mantis
             mutex f_component_mutex;
 
             amqp_relayer* f_amqp_relayer;
+            std::string f_completed_file_key;
 
             atomic_bool f_canceled;
 

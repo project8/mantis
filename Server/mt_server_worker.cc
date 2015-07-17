@@ -29,13 +29,14 @@ namespace mantis
 {
     MTLOGGER( mtlog, "server_worker" );
 
-    server_worker::server_worker( device_manager* a_dev_mgr, acq_request_db* a_run_db, amqp_relayer* a_amqp_relayer ) :
+    server_worker::server_worker( device_manager* a_dev_mgr, acq_request_db* a_run_db, amqp_relayer* a_amqp_relayer, const param_node* a_amqp_node ) :
             f_dev_mgr( a_dev_mgr ),
             f_acq_request_db( a_run_db ),
             f_digitizer( NULL ),
             f_writer( NULL ),
             f_component_mutex(),
             f_amqp_relayer( a_amqp_relayer ),
+            f_completed_file_key( a_amqp_node->get_value( "completed-file-key", "" ) ),
             f_canceled( false ),
             f_digitizer_state( k_inactive ),
             f_writer_state( k_inactive ),
@@ -160,9 +161,10 @@ namespace mantis
             t_acq_req->set_response( t_response );
             t_acq_req->set_status( acq_request::stopped );
             MTINFO( mtlog, "Run response:\n" << t_response );
-            f_amqp_relayer->send_message( msg_alert::create( new param_node( *t_acq_req ), "completed_data", message::k_json ) );
-            //f_amqp_relayer->send_message( msg_request::create( new param_node( *t_acq_req ), OP_CMD, "hornet.print-message", message::k_json ) );
-            //f_amqp_relayer->send_message( msg_alert::create( new param_node( *t_acq_req ), "hornet.print-message", message::k_json ) );
+            if( ! f_completed_file_key.empty() )
+            {
+                f_amqp_relayer->send_message( msg_alert::create( new param_node( *t_acq_req ), f_completed_file_key, message::k_json ) );
+            }
         }
 
         return;
