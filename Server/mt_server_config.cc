@@ -28,7 +28,7 @@ namespace mantis
         t_amqp_node->add( "exchange", new param_value( "requests" ) );
         t_amqp_node->add( "alert-exchange", new param_value( "alerts" ) );
         t_amqp_node->add( "queue", new param_value( "mantis" ) );
-        t_amqp_node->add( "file-finished-key", new param_value( "completed_files" ) );
+        //t_amqp_node->add( "file-finished-key", new param_value( "completed_files" ) );
         add( "amqp", t_amqp_node );
 
         param_node* t_acq_node = new param_node();
