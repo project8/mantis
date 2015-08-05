@@ -614,7 +614,7 @@ namespace mantis
         a_block->set_record_id( f_record_count );
         a_block->set_acquisition_id( f_acquisition_count );
 
-        MTDEBUG( mtlog, "block data size: " << a_block->get_data_size() );
+        MTDEBUG( mtlog, "block data size: " << a_block->get_data_size() << "   data ptr: " << (ViInt16*)a_block->data_bytes() );
         if( ! HANDLE_ERROR( niScope_FetchBinary16( f_handle, f_chan_string.c_str(), f_acq_timeout, a_block->get_data_size(), (ViInt16*)a_block->data_bytes(), &f_waveform_info) ) )
         {
             return false;
