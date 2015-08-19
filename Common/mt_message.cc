@@ -131,12 +131,6 @@ namespace mantis
     // Request
     //***********
 
-    unsigned msg_request::f_message_type = T_REQUEST;
-    unsigned msg_request::message_type()
-    {
-        return f_message_type;
-    }
-
     msg_request::msg_request() :
             message(),
             f_reply_to(),
@@ -148,6 +142,16 @@ namespace mantis
     msg_request::~msg_request()
     {
 
+    }
+
+    unsigned msg_request::f_message_type = T_REQUEST;
+    unsigned msg_request::message_type()
+    {
+        return msg_request::f_message_type;
+    }
+    unsigned msg_request::get_message_type() const
+    {
+        return msg_request::f_message_type;
     }
 
     msg_request* msg_request::create( param_node* a_payload, unsigned a_msg_op, const std::string& a_routing_key, message::encoding a_encoding )
@@ -197,12 +201,6 @@ namespace mantis
     // Reply
     //*********
 
-    unsigned msg_reply::f_message_type = T_REPLY;
-    unsigned msg_reply::message_type()
-    {
-        return f_message_type;
-    }
-
     msg_reply::msg_reply() :
             message(),
             f_return_code( R_SUCCESS ),
@@ -214,6 +212,16 @@ namespace mantis
     msg_reply::~msg_reply()
     {
 
+    }
+
+    unsigned msg_reply::f_message_type = T_REPLY;
+    unsigned msg_reply::message_type()
+    {
+        return msg_reply::f_message_type;
+    }
+    unsigned msg_reply::get_message_type() const
+    {
+        return msg_reply::f_message_type;
     }
 
     msg_reply* msg_reply::create( unsigned a_retcode, const std::string& a_ret_msg, param_node* a_payload, const std::string& a_routing_key, message::encoding a_encoding )
@@ -257,12 +265,6 @@ namespace mantis
     // Alert
     //*********
 
-    unsigned msg_alert::f_message_type = T_ALERT;
-    unsigned msg_alert::message_type()
-    {
-        return f_message_type;
-    }
-
     msg_alert* msg_alert::create( param_node* a_payload, const std::string& a_routing_key, message::encoding a_encoding )
     {
         msg_alert* t_alert = new msg_alert();
@@ -281,6 +283,16 @@ namespace mantis
     msg_alert::~msg_alert()
     {
 
+    }
+
+    unsigned msg_alert::f_message_type = T_ALERT;
+    unsigned msg_alert::message_type()
+    {
+        return msg_alert::f_message_type;
+    }
+    unsigned msg_alert::get_message_type() const
+    {
+        return msg_alert::f_message_type;
     }
 
     bool msg_alert::do_publish( amqp_channel_ptr a_channel, const std::string& a_exchange, std::string& a_reply_consumer_tag )
@@ -313,12 +325,6 @@ namespace mantis
     // Info
     //********
 
-    unsigned msg_info::f_message_type = T_INFO;
-    unsigned msg_info::message_type()
-    {
-        return f_message_type;
-    }
-
     msg_info::msg_info() :
             message()
     {
@@ -328,6 +334,16 @@ namespace mantis
     msg_info::~msg_info()
     {
 
+    }
+
+    unsigned msg_info::f_message_type = T_INFO;
+    unsigned msg_info::message_type()
+    {
+        return msg_info::f_message_type;
+    }
+    unsigned msg_info::get_message_type() const
+    {
+        return msg_info::f_message_type;
     }
 
     bool msg_info::do_publish( amqp_channel_ptr a_channel, const std::string& a_exchange, std::string& a_reply_consumer_tag )
