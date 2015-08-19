@@ -40,7 +40,7 @@ namespace mantis
 #ifndef _WIN32
         if( getlogin_r( t_username_buf, t_uname_bufsize ) == 0 )
 #else
-        DWORD t_bufsize_win = t_bufsize;
+        DWORD t_bufsize_win = t_uname_bufsize;
         if( GetUserName( t_username_buf, &t_bufsize_win ) )
 #endif
         {
@@ -107,7 +107,7 @@ namespace mantis
         // if so, load it
         if( t_auth_file_present )
         {
-            param_node* t_read_file = param_input_json::read_file( t_auth_file_path.c_str() );
+            param_node* t_read_file = param_input_json::read_file( t_auth_file_path.string() );
             this->param_node::operator=( *t_read_file );
             delete t_read_file;
             MTDEBUG( mtlog, "Authentications:\n" << *this );
