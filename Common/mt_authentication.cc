@@ -81,7 +81,7 @@ namespace mantis
                 }
             }
 #else
-            t_auth_file_path = path( getenv( "HOMEDRIVE" ) ) / path( getenv( "HOMEPATH" ) );
+            t_auth_file_path = path( getenv( "HOMEDRIVE" ) ) / path( getenv( "HOMEPATH" ) ) / f_auth_filename;
 #endif
         }
 
