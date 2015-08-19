@@ -465,11 +465,6 @@ namespace mantis
         return f_reply_to;
     }
 
-    inline unsigned msg_request::get_message_type() const
-    {
-        return msg_request::f_message_type;
-    }
-
     inline void msg_request::set_message_op( unsigned a_op )
     {
         f_message_op = a_op;
@@ -512,11 +507,6 @@ namespace mantis
     {
         a_node.add( "ret-code", new param_value( f_return_code ) );
         return true;
-    }
-
-    inline unsigned msg_reply::get_message_type() const
-    {
-        return msg_reply::f_message_type;
     }
 
     inline void msg_reply::set_return_code( unsigned a_retcode )
@@ -575,10 +565,6 @@ namespace mantis
         return true;
     }
 
-    inline unsigned msg_alert::get_message_type() const
-    {
-        return msg_alert::f_message_type;
-    }
 
 
     //********
@@ -611,13 +597,6 @@ namespace mantis
     {
         return true;
     }
-
-    inline unsigned msg_info::get_message_type() const
-    {
-        return msg_info::f_message_type;
-    }
-
-
 
 
 
