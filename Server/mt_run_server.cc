@@ -177,7 +177,7 @@ namespace mantis
         }
         f_component_mutex.unlock();
 
-        a_pkg.f_reply_node.node_at( "content" )->add( "server", t_server_node );
+        a_pkg.f_reply_node.add( "server", t_server_node );
 
         return a_pkg.send_reply( R_SUCCESS, "Server status request succeeded" );
     }
@@ -211,7 +211,7 @@ namespace mantis
         }
         f_component_mutex.unlock();
 
-        a_pkg.f_reply_node.node_at( "content" )->add( "server", t_server_node );
+        a_pkg.f_reply_node.add( "server", t_server_node );
 
         return a_pkg.send_reply( R_SUCCESS, "Server status request succeeded" );
     }

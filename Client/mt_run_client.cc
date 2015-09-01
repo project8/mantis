@@ -115,7 +115,10 @@ namespace mantis
                 MTERROR( mtlog, "Unable to parse message with content type <" << t_envelope->Message()->ContentEncoding() << ">" );
             }
 
-            MTINFO( mtlog, "Response from Mantis:\n" << *t_msg_node->node_at( "payload" ) );
+            MTINFO( mtlog, "Response from Mantis:\n" <<
+                    "Return code: " << t_msg_node->get_value< int >( "retcode", -1 ) << '\n' <<
+                    "Return message: " << t_msg_node->get_value( "return_msg", "" ) << '\n' <<
+                    *t_msg_node->node_at( "payload" ) );
 
             // optionally save "master-config" from the response
             if( t_save_node.size() != 0 )
@@ -123,10 +126,10 @@ namespace mantis
                 if( t_save_node.has( "json" ) )
                 {
                     string t_save_filename( t_save_node.get_value( "json" ) );
-                    const param_node* t_master_config_node = t_msg_node->node_at( "payload" )->node_at( "content" );
+                    const param_node* t_master_config_node = t_msg_node->node_at( "payload" );
                     if( t_master_config_node == NULL )
                     {
-                        MTERROR( mtlog, "Node \"master-config\" is not present to save" );
+                        MTERROR( mtlog, "Payload is not present" );
                     }
                     else
                     {

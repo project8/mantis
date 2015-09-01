@@ -372,8 +372,8 @@ namespace mantis
         MTINFO( mtlog, "Queuing request" );
         enqueue( t_acq_req );
 
-        a_pkg.f_reply_node.node_at( "content" )->merge( *t_acq_req );
-        a_pkg.f_reply_node.node_at( "content" )->add( "status-meaning", new param_value( acq_request::interpret_status( t_acq_req->get_status() ) ) );
+        a_pkg.f_reply_node.merge( *t_acq_req );
+        a_pkg.f_reply_node.add( "status-meaning", new param_value( acq_request::interpret_status( t_acq_req->get_status() ) ) );
         if( ! a_pkg.send_reply( R_SUCCESS, "Run request succeeded" ) )
         {
             MTWARN( mtlog, "Failed to send reply regarding the run request" );
@@ -411,8 +411,8 @@ namespace mantis
         }
 
         f_db_mutex.lock();
-        a_pkg.f_reply_node.node_at( "content" )->merge( *t_request );
-        a_pkg.f_reply_node.node_at( "content" )->add( "status-meaning", new param_value( acq_request::interpret_status( t_request->get_status() ) ) );
+        a_pkg.f_reply_node.merge( *t_request );
+        a_pkg.f_reply_node.add( "status-meaning", new param_value( acq_request::interpret_status( t_request->get_status() ) ) );
         f_db_mutex.unlock();
 
         return a_pkg.send_reply( R_SUCCESS, "Acquisition status request succeeded" );
@@ -430,13 +430,13 @@ namespace mantis
             t_queue_array->push_back( t_acq_node );
         }
         f_queue_mutex.unlock();
-        a_pkg.f_reply_node.node_at( "content" )->add( "queue", t_queue_array );
+        a_pkg.f_reply_node.add( "queue", t_queue_array );
         return a_pkg.send_reply( R_SUCCESS, "Queue request succeeded" );
     }
 
     bool acq_request_db::handle_queue_size_request( const param_node& /*a_msg_payload*/, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg  )
     {
-        a_pkg.f_reply_node.node_at( "content" )->add( "queue-size", new param_value( (uint32_t)queue_size() ) );
+        a_pkg.f_reply_node.add( "queue-size", new param_value( (uint32_t)queue_size() ) );
         return a_pkg.send_reply( R_SUCCESS, "Queue size request succeeded" );
     }
 
@@ -469,8 +469,8 @@ namespace mantis
 
         const acq_request* t_request = get_acq_request( t_id );
         f_db_mutex.lock();
-        a_pkg.f_reply_node.node_at( "content" )->merge( *t_request );
-        a_pkg.f_reply_node.node_at( "content" )->add( "status-meaning", new param_value( acq_request::interpret_status( t_request->get_status() ) ) );
+        a_pkg.f_reply_node.merge( *t_request );
+        a_pkg.f_reply_node.add( "status-meaning", new param_value( acq_request::interpret_status( t_request->get_status() ) ) );
         f_db_mutex.unlock();
         return a_pkg.send_reply( R_SUCCESS, "Cancellation succeeded" );
     }

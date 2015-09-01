@@ -204,6 +204,7 @@ namespace mantis
             static unsigned f_message_type;
 
             unsigned f_return_code;
+            std::string f_return_msg;
 
             mutable std::string f_return_buffer;
     };
@@ -506,6 +507,7 @@ namespace mantis
     inline bool msg_reply::derived_modify_message_body( param_node& a_node ) const
     {
         a_node.add( "retcode", new param_value( f_return_code ) );
+        a_node.add( "return_msg", new param_value( f_return_code ) );
         return true;
     }
 
@@ -522,15 +524,13 @@ namespace mantis
 
     inline void msg_reply::set_return_message( const std::string& a_ret_msg )
     {
-        if( f_payload == NULL ) f_payload = new param_node();
-        f_payload->replace( "return-msg", new param_value( a_ret_msg ) );
+        f_return_msg = a_ret_msg;
         return;
     }
 
     inline const std::string& msg_reply::get_return_message() const
     {
-        f_return_buffer = f_payload->get_value( "return-msg" );
-        return f_return_buffer;
+        return f_return_msg;
     }
 
 

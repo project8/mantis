@@ -204,9 +204,9 @@ namespace mantis
     msg_reply::msg_reply() :
             message(),
             f_return_code( R_SUCCESS ),
+            f_return_msg(),
             f_return_buffer()
     {
-        f_payload->add( "return-msg", new param_value( "" ) );
     }
 
     msg_reply::~msg_reply()
@@ -228,8 +228,8 @@ namespace mantis
     {
         msg_reply* t_reply = new msg_reply();
         t_reply->set_return_code( a_retcode );
+        t_reply->set_return_message( a_ret_msg );
         t_reply->set_payload( a_payload );
-        t_reply->set_return_message( a_ret_msg ); // this must be after setting the payload, otherwise it gets overwritten
         t_reply->set_routing_key( a_routing_key );
         t_reply->set_encoding( a_encoding );
         return t_reply;

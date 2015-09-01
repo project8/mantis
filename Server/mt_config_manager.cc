@@ -43,7 +43,7 @@ namespace mantis
     bool config_manager::handle_get_acq_config_request( const param_node& /*a_msg_payload*/, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg )
     {
         f_msc_mutex.lock();
-        a_pkg.f_reply_node.node_at( "content" )->merge( *f_master_server_config.node_at( "acq" ) );
+        a_pkg.f_reply_node.merge( *f_master_server_config.node_at( "acq" ) );
         f_msc_mutex.unlock();
         return a_pkg.send_reply( R_SUCCESS, "Get request succeeded" );
     }
@@ -51,7 +51,7 @@ namespace mantis
     bool config_manager::handle_get_server_config_request( const param_node& /*a_msg_payload*/, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg )
     {
         f_msc_mutex.lock();
-        a_pkg.f_reply_node.node_at( "content" )->merge( f_master_server_config );
+        a_pkg.f_reply_node.merge( f_master_server_config );
         f_msc_mutex.unlock();
         return a_pkg.send_reply( R_SUCCESS, "Get request succeeded" );
     }
@@ -91,7 +91,7 @@ namespace mantis
         }
 
         f_msc_mutex.lock();
-        a_pkg.f_reply_node.node_at( "content" )->add( "master-config", *f_master_server_config.node_at( "acq" ) );
+        a_pkg.f_reply_node.add( "master-config", *f_master_server_config.node_at( "acq" ) );
         f_msc_mutex.unlock();
 
         return a_pkg.send_reply( R_SUCCESS, "Request succeeded" );
@@ -160,7 +160,7 @@ namespace mantis
         }
 
         f_msc_mutex.lock();
-        a_pkg.f_reply_node.node_at( "content" )->add( "master-config", f_master_server_config );
+        a_pkg.f_reply_node.add( "master-config", f_master_server_config );
         f_msc_mutex.unlock();
 
         return a_pkg.send_reply( R_SUCCESS, "Add request succeeded" );
@@ -207,7 +207,7 @@ namespace mantis
         }
 
         f_msc_mutex.lock();
-        a_pkg.f_reply_node.node_at( "content" )->add( "master-config", f_master_server_config );
+        a_pkg.f_reply_node.add( "master-config", f_master_server_config );
         f_msc_mutex.unlock();
 
         return a_pkg.send_reply( R_AMQP_ERROR_ROUTINGKEY_NOTFOUND, "Remove instruction succeeded" );
@@ -221,7 +221,7 @@ namespace mantis
         f_msc_mutex.lock();
         (*f_master_server_config.node_at( "acq" )) = a_msg_payload;
 
-        a_pkg.f_reply_node.node_at( "content" )->add( "master-config", f_master_server_config );
+        a_pkg.f_reply_node.add( "master-config", f_master_server_config );
         f_msc_mutex.unlock();
 
         return a_pkg.send_reply( R_SUCCESS, "Request_succeeded" );

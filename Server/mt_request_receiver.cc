@@ -174,8 +174,6 @@ namespace mantis
             f_channel->BasicAck( t_envelope );
 
             param_node t_reply_node;
-            t_reply_node.add( "return-msg", new param_value( "(no message provided)" ) );
-            t_reply_node.add( "content", new param_node() );
 
             request_reply_package t_reply_pkg( t_envelope, t_reply_node, this );
 
@@ -376,7 +374,10 @@ namespace mantis
         msg_reply* t_reply = msg_reply::create( a_return_code, a_return_msg, new param_node( a_pkg.f_reply_node ), a_pkg.f_envelope->Message()->ReplyTo(), message::k_json );
         t_reply->set_correlation_id( a_pkg.f_envelope->Message()->CorrelationId() );
 
-        MTDEBUG( mtlog, "Sending reply message:\n" << a_pkg.f_reply_node );
+        MTDEBUG( mtlog, "Sending reply message:\n" <<
+                 "Return code: " << t_reply->get_return_code() << '\n' <<
+                 "Return message: " << t_reply->get_return_message() <<
+                 a_pkg.f_reply_node );
 
         string t_consumer_tag;
         if( ! t_reply->do_publish( f_channel, "", t_consumer_tag ) )
