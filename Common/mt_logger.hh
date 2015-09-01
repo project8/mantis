@@ -362,8 +362,13 @@ namespace mantis
 #define MTLOGGER(I,K)      
 
 #define MTLOG(I,K)         std::cout << "LOG: " << K << std::endl;
+#ifndef NDEBUG
 #define MTTRACE(I,K)       std::cout << "TRACE: " << K << std::endl;
 #define MTDEBUG(I,K)       std::cout << "DEBUG: " << K << std::endl;
+#else
+#define MTTRACE(I,K)
+#define MTDEBUG(I,K)
+#endif
 #define MTINFO(I,K)        std::cout << "INFO: " << K << std::endl;
 #define MTWARN(I,K)        std::cout << "WARN: " << K << std::endl;
 #define MTERROR(I,K)       std::cout << "ERROR: " << K << std::endl;
@@ -371,8 +376,13 @@ namespace mantis
 #define MTASSERT(I,K)      std::cout << "ASSERT: " << K << std::endl;
 
 #define MTLOG_ONCE(I,K)    std::cout << "LOG: " << K << std::endl;
+#ifndef NDEBUG
 #define MTTRACE_ONCE(I,K)  std::cout << "TRACE: " << K << std::endl;
 #define MTDEBUG_ONCE(I,K)  std::cout << "DEBUG: " << K << std::endl;
+#else
+#define MTTRACE_ONCE(I,K)
+#define MTDEBUG_ONCE(I,K)
+#endif
 #define MTINFO_ONCE(I,K)   std::cout << "INFO: " << K << std::endl;
 #define MTWARN_ONCE(I,K)   std::cout << "WARN: " << K << std::endl;
 #define MTERROR_ONCE(I,K)  std::cout << "ERROR: " << K << std::endl;
