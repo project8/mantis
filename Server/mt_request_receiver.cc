@@ -303,16 +303,28 @@ namespace mantis
         MTDEBUG( mtlog, "Cmd request received" );
 
         std::string t_instruction;
-        try
+        if( a_mantis_routing_key.find( '.' ) != std::string::npos )
         {
-            parsable t_routing_key_node( a_mantis_routing_key );
-            t_instruction = t_routing_key_node.begin()->first;
-            MTDEBUG( mtlog, "I type: " << t_instruction );
+            try
+            {
+                parsable t_routing_key_node( a_mantis_routing_key );
+                t_instruction = t_routing_key_node.begin()->first;
+                MTDEBUG( mtlog, "I type: " << t_instruction );
+            }
+            catch( exception& e )
+            {
+                send_reply( R_DEVICE_ERROR, string( "Routing key was not formatted correctly: " ) + e.what(), a_pkg );
+                return false;
+            }
         }
-        catch( exception& e )
+        else
         {
-            send_reply( R_DEVICE_ERROR, string( "Routing key was not formatted correctly: " ) + e.what(), a_pkg );
-            return false;
+            if( ! a_msg_payload.has( "values" ) || ! a_msg_payload.at( "values" )->is_array() )
+            {
+                send_reply( R_DEVICE_ERROR, string( "No values array present (required for cmd instruction)" ), a_pkg );
+                return false;
+            }
+            t_instruction = a_msg_payload.array_at( "values" )->get_value( 0 );
         }
 
         if( t_instruction == "replace-config" )
