@@ -2,7 +2,7 @@
 Server API
 ==========
 
-The server communicates with `dripline-standard<https://github.com/project8/hardware/wiki/Wire-Protocol>`_ AMQP messages.
+The server communicates with `dripline-standard <https://github.com/project8/hardware/wiki/Wire-Protocol>`_ AMQP messages.
 
 The API documentation below is organized by message type.
 
@@ -78,16 +78,16 @@ The `cmd` message type is used to run a variety of different command instruction
 Command Instructions
 ^^^^^^^^^^^^^^^^^^^^
 
--- ``add.device`` -- Adds a device to the master run configuration. Requires that the device be specified as an instruction option (see Payload section below).
--- ``remove.device.[device name]`` -- Removes a device from the master run configuration.
--- ``replace-config`` -- Replaces the server's run configuration with the contents of the instruction options, or the JSON file specified in those options (see below).
--- ``cancel-acq`` -- Remove an acquisition that is waiting to run from the queue.
--- ``clear-queue`` -- Clear scheduled acquisitions from the queue.
--- ``start-queue`` -- Start processing the requests in the queue (if the queue had previously been stopped)
--- ``stop-queue`` -- Stop processing the requests in the queue (queue is left intact and acquisition in progress is not stopped; restart with ``start-queue``)
--- ``stop-acq`` -- Stop any acquisition that is currently running (queue processing will continue).
--- ``stop-all`` -- Stop processing the requests in the queue and any acquisition that is currently running.  
--- ``quit-mantis`` -- Stop execution of the Mantis server.
+- ``add.device`` -- Adds a device to the master run configuration. Requires that the device be specified as an instruction option (see Payload section below).
+- ``remove.device.[device name]`` -- Removes a device from the master run configuration.
+- ``replace-config`` -- Replaces the server's run configuration with the contents of the instruction options, or the JSON file specified in those options (see below).
+- ``cancel-acq`` -- Remove an acquisition that is waiting to run from the queue.
+- ``clear-queue`` -- Clear scheduled acquisitions from the queue.
+- ``start-queue`` -- Start processing the requests in the queue (if the queue had previously been stopped)
+- ``stop-queue`` -- Stop processing the requests in the queue (queue is left intact and acquisition in progress is not stopped; restart with ``start-queue``)
+- ``stop-acq`` -- Stop any acquisition that is currently running (queue processing will continue).
+- ``stop-all`` -- Stop processing the requests in the queue and any acquisition that is currently running.  
+- ``quit-mantis`` -- Stop execution of the Mantis server.
 
 
 Routing Key Specifiers
@@ -99,10 +99,11 @@ If the instruction is not given here, it will be expected as the first component
 Payload
 ^^^^^^^
 
-None
-----
+If the command instruction is not included in the routing key specifier, it should be given in the payload:
 
-- ``values=[[instruction]]`` -- *(optional)* Command instructions can also be specified as the first 
+- ``values=[[instruction]]`` -- *(optional)* Command instructions can also be specified as the first element of the ``values`` array.
+
+Other payload options depend on the command instruction:
 
 add.device
 ----------
@@ -111,5 +112,4 @@ add.device
 run.config
 ----------
 - ``load.json=[filename; string]`` -- *(optional)* This JSON file will be parsed by the client, and the contents (plus any other instruction options given) will be used by the server to replace the run configuration.
-
 
