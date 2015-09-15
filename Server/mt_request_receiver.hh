@@ -10,6 +10,9 @@
 
 #include "SimpleAmqpClient/Envelope.h"
 
+#include <boost/uuid/uuid.hpp>
+
+
 namespace mantis
 {
     class acq_request_db;
@@ -57,6 +60,10 @@ namespace mantis
 
             //param_node* create_sender_info() const;
 
+            bool handle_lock_request( const param_node& a_msg_payload, const std::string& a_mantis_routing_key, request_reply_package& a_pkg );
+            bool handle_unlock_request( const param_node& a_msg_payload, const std::string& a_mantis_routing_key, request_reply_package& a_pkg );
+            bool handle_is_locked_request( const param_node& a_msg_payload, const std::string& a_mantis_routing_key, request_reply_package& a_pkg );
+
             amqp_channel_ptr f_channel;
             std::string f_queue_name;
             std::string f_consumer_tag;
@@ -67,6 +74,16 @@ namespace mantis
             server_worker* f_server_worker;
 
             atomic_bool f_canceled;
+
+        public:
+            std::string enable_lockout();
+            bool disable_lockout( std::string a_key, bool a_force = false );
+
+            bool is_locked() const;
+            bool check_key( std::string a_key );
+
+        private:
+            boost::uuids::uuid f_lockout_tag;
 
         public:
             enum status

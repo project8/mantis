@@ -16,6 +16,10 @@
 #include "mt_run_server.hh"
 #include "mt_server_worker.hh"
 
+#include <boost/uuid/uuid_io.hpp>
+#include <boost/uuid/nil_generator.hpp>
+#include <boost/uuid/random_generator.hpp>
+
 #include <cstddef>
 
 
@@ -40,6 +44,7 @@ namespace mantis
             f_conf_mgr( a_conf_mgr ),
             f_acq_request_db( a_acq_request_db ),
             f_server_worker( a_server_worker ),
+            f_lockout_tag(),
             f_canceled( false ),
             f_status( k_initialized )
     {
@@ -268,6 +273,10 @@ namespace mantis
         {
             return f_conf_mgr->handle_get_server_config_request( a_msg_payload, a_mantis_routing_key, a_pkg );
         }
+        else if( t_query_type == "is_locked" )
+        {
+            return handle_is_locked_request( a_msg_payload, a_mantis_routing_key, a_pkg );
+        }
         else if( t_query_type == "acq-status" )
         {
             return f_acq_request_db->handle_get_acq_status_request( a_msg_payload, a_mantis_routing_key, a_pkg );
@@ -338,6 +347,14 @@ namespace mantis
         else if( t_instruction == "remove" )
         {
             return f_conf_mgr->handle_remove_request( a_msg_payload, a_mantis_routing_key, a_pkg );
+        }
+        else if( t_instruction == "lock" )
+        {
+            return handle_lock_request( a_msg_payload, a_mantis_routing_key, a_pkg );
+        }
+        else if( t_instruction == "unlock" )
+        {
+            return handle_unlock_request( a_msg_payload, a_mantis_routing_key, a_pkg );
         }
         else if( t_instruction == "cancel-acq" )
         {
@@ -413,6 +430,23 @@ namespace mantis
         return t_sender_node;
     }
 */
+
+    bool request_receiver::handle_lock_request( const param_node& a_msg_payload, const std::string& a_mantis_routing_key, request_reply_package& a_pkg )
+    {
+
+    }
+
+    bool request_receiver::handle_unlock_request( const param_node& a_msg_payload, const std::string& a_mantis_routing_key, request_reply_package& a_pkg )
+    {
+
+    }
+
+    bool request_receiver::handle_is_locked_request( const param_node& a_msg_payload, const std::string& a_mantis_routing_key, request_reply_package& a_pkg )
+    {
+
+    }
+
+
     void request_receiver::cancel()
     {
         MTDEBUG( mtlog, "Canceling request receiver" );
@@ -423,6 +457,30 @@ namespace mantis
             return;
         }
         return;
+    }
+
+    string request_receiver::enable_lockout()
+    {
+        if( is_locked() ) return string();
+        boost::uuids::random_generator t_gen;
+
+    }
+
+    bool request_receiver::disable_lockout( std::string a_key, bool a_force )
+    {
+        if( ! a_force && a_key != f_lockout_tag ) return false;
+        f_lockout_tag.clear();
+        return true;
+    }
+
+    bool request_receiver::is_locked() const
+    {
+        return ! f_lockout_tag.empty();
+    }
+
+    bool request_receiver::check_key( std::string a_key )
+    {
+        return f_lockout_tag == a_key;
     }
 
     std::string request_receiver::interpret_status( status a_status )
