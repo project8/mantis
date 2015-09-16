@@ -16,10 +16,6 @@
 #include "mt_run_server.hh"
 #include "mt_server_worker.hh"
 
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/uuid/nil_generator.hpp>
-#include <boost/uuid/random_generator.hpp>
-
 #include <cstddef>
 
 
@@ -46,7 +42,7 @@ namespace mantis
             f_server_worker( a_server_worker ),
             f_canceled( false ),
             f_lockout_tag(),
-            f_lockout_key( boost::uuids::nil_uuid() ),
+            f_lockout_key( generate_nil_uuid() ),
             f_status( k_initialized )
     {
     }
@@ -482,12 +478,7 @@ namespace mantis
         }
         bool t_force = a_msg_payload.get_value( "force", false );
 
-        key_t t_key;
-        std::stringstream t_conv;
-        t_conv << t_key_string;
-        t_conv >> t_key;
-
-        if( disable_lockout( t_key, t_force ) )
+        if( disable_lockout( uuid_from_string( t_key_string ), t_force ) )
         {
             return a_pkg.send_reply( R_SUCCESS, "Server unlocked" );
         }
@@ -518,9 +509,8 @@ namespace mantis
 
     request_receiver::key_t request_receiver::enable_lockout( const param_node& a_tag )
     {
-        if( is_locked() ) return boost::uuids::nil_uuid();
-        boost::uuids::random_generator t_gen;
-        f_lockout_key = t_gen();
+        if( is_locked() ) return generate_nil_uuid();
+        f_lockout_key = generate_random_uuid();
         f_lockout_tag = a_tag;
         return f_lockout_key;
     }
@@ -529,7 +519,7 @@ namespace mantis
     {
         if( ! is_locked() ) return true;
         if( ! a_force && a_key != f_lockout_key ) return false;
-        f_lockout_key = boost::uuids::nil_uuid();
+        f_lockout_key = generate_nil_uuid();
         f_lockout_tag.clear();
         return true;
     }
@@ -547,6 +537,13 @@ namespace mantis
     bool request_receiver::check_key( const key_t& a_key ) const
     {
         return f_lockout_key == a_key;
+    }
+
+    bool request_receiver::authenticate( const key_t& a_key ) const
+    {
+        MTDEBUG( mtlog, "Authenticating with key <" << a_key << ">" );
+        if( is_locked() ) return check_key( a_key );
+        return true;
     }
 
     std::string request_receiver::interpret_status( status a_status )

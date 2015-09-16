@@ -67,7 +67,7 @@ The information being requested should be specified.  The options are:
 - ``server-status`` -- Returns the status of the server, including the queue, server worker (digitizer & writer), and request receiver.
 - ``queue`` -- Returns the current acquisition queue, including the UUID and filename for each acquisition request.
 - ``queue-size`` -- Returns the size of the acquisition queue.
-- ``is-locked-out`` -- Returns whether or not the server is locked out.
+- ``is-locked`` -- Returns whether or not the server is locked out.
 
 Payload
 -------

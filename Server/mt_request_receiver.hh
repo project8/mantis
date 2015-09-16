@@ -7,11 +7,9 @@
 #include "mt_atomic.hh"
 #include "mt_mutex.hh"
 #include "mt_param.hh"
+#include "mt_uuid.hh"
 
 #include "SimpleAmqpClient/Envelope.h"
-
-#include <boost/uuid/uuid.hpp>
-
 
 namespace mantis
 {
@@ -91,6 +89,9 @@ namespace mantis
             bool check_key( const key_t& a_key ) const;
 
         private:
+            // Returns true if the server is unlocked or if it's locked and the key matches the lockout key; returns false otherwise.
+            bool authenticate( const key_t& a_key ) const;
+
             param_node f_lockout_tag;
             key_t f_lockout_key;
 

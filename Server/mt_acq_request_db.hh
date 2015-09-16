@@ -4,8 +4,7 @@
 #include "mt_atomic.hh"
 #include "mt_condition.hh"
 #include "mt_mutex.hh"
-
-#include <boost/uuid/uuid.hpp>
+#include "mt_uuid.hh"
 
 #include <list>
 #include <map>
@@ -38,17 +37,17 @@ namespace mantis
 
             bool empty();
 
-            acq_request* get_acq_request( boost::uuids::uuid a_id );
-            const acq_request* get_acq_request( boost::uuids::uuid a_id ) const;
+            acq_request* get_acq_request( uuid_t a_id );
+            const acq_request* get_acq_request( uuid_t a_id ) const;
 
-            boost::uuids::uuid add( acq_request* a_acq_request ); /// adds acq_request to the database (but not the queue); returns the assigned acq_request ID number
-            acq_request* remove( boost::uuids::uuid a_id ); /// removes acq_request with id a_id, and returns the pointer to it
+            uuid_t add( acq_request* a_acq_request ); /// adds acq_request to the database (but not the queue); returns the assigned acq_request ID number
+            acq_request* remove( uuid_t a_id ); /// removes acq_request with id a_id, and returns the pointer to it
 
             void flush(); /// remove completed & failed acq_requests; removed acq_requests are deleted
             void clear(); /// remove all acq_requests; acq_requests are deleted
 
         private:
-            typedef std::map< boost::uuids::uuid, acq_request* > acq_request_db_data;
+            typedef std::map< uuid_t, acq_request* > acq_request_db_data;
 
             mutable mutex f_db_mutex;
             acq_request_db_data f_acq_request_db;
@@ -62,8 +61,8 @@ namespace mantis
             bool queue_empty();
             size_t queue_size();
 
-            boost::uuids::uuid enqueue( acq_request* a_acq_request ); /// adds acq_request to the queue and database; returns the assigned acq_request ID number
-            bool cancel( boost::uuids::uuid a_id ); /// removes acq_request with id a_id from the queue
+            uuid_t enqueue( acq_request* a_acq_request ); /// adds acq_request to the queue and database; returns the assigned acq_request ID number
+            bool cancel( uuid_t a_id ); /// removes acq_request with id a_id from the queue
             acq_request* pop();
 
             void wait_for_request_in_queue();

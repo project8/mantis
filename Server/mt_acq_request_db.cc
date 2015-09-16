@@ -12,10 +12,6 @@
 
 #include "M3Version.hh"
 
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/uuid/nil_generator.hpp>
-#include <boost/uuid/random_generator.hpp>
-
 
 using std::string;
 
@@ -56,7 +52,7 @@ namespace mantis
         return t_empty;
     }
 
-    acq_request* acq_request_db::get_acq_request( boost::uuids::uuid a_id )
+    acq_request* acq_request_db::get_acq_request( uuid_t a_id )
     {
         acq_request* t_desc = NULL;
         f_db_mutex.lock();
@@ -67,7 +63,7 @@ namespace mantis
         return t_desc;
     }
 
-    const acq_request* acq_request_db::get_acq_request( boost::uuids::uuid a_id ) const
+    const acq_request* acq_request_db::get_acq_request( uuid_t a_id ) const
     {
         const acq_request* t_desc = NULL;
         f_db_mutex.lock();
@@ -78,9 +74,9 @@ namespace mantis
         return t_desc;
     }
 
-    boost::uuids::uuid acq_request_db::add( acq_request* a_acq_request )
+    uuid_t acq_request_db::add( acq_request* a_acq_request )
     {
-        boost::uuids::uuid t_id = boost::uuids::nil_uuid();
+        uuid_t t_id = generate_nil_uuid();
         f_db_mutex.lock();
         f_acq_request_db[ a_acq_request->get_id() ] = a_acq_request;
         t_id = a_acq_request->get_id();
@@ -88,7 +84,7 @@ namespace mantis
         return t_id;
     }
 
-    acq_request* acq_request_db::remove( boost::uuids::uuid a_id )
+    acq_request* acq_request_db::remove( uuid_t a_id )
     {
         acq_request* t_request = NULL;
         f_db_mutex.lock();
@@ -163,9 +159,9 @@ namespace mantis
         return t_size;
     }
 
-    boost::uuids::uuid acq_request_db::enqueue( acq_request* a_acq_request )
+    uuid_t acq_request_db::enqueue( acq_request* a_acq_request )
     {
-        boost::uuids::uuid t_id = boost::uuids::nil_uuid();
+        uuid_t t_id = generate_nil_uuid();
         f_db_mutex.lock();
         if( f_acq_request_db.find( a_acq_request->get_id() ) == f_acq_request_db.end() )
         {
@@ -190,7 +186,7 @@ namespace mantis
         return t_id;
     }
 
-    bool acq_request_db::cancel( boost::uuids::uuid a_id )
+    bool acq_request_db::cancel( uuid_t a_id )
     {
         bool t_result = false;
         f_db_mutex.lock();
@@ -310,11 +306,7 @@ namespace mantis
             return false;
         }
 
-        // optional
-        const param_node* t_client_node = a_msg_payload.node_at( "client" );
-
-        boost::uuids::random_generator t_gen;
-        acq_request* t_acq_req = new acq_request( t_gen() );
+        acq_request* t_acq_req = new acq_request( generate_random_uuid() );
         t_acq_req->set_status( acq_request::created );
 
         t_acq_req->set_file_config( *t_file_node );
@@ -386,10 +378,7 @@ namespace mantis
             return false;
         }
 
-        boost::uuids::uuid t_id;
-        std::stringstream t_conv;
-        t_conv << t_acq_id_str;
-        t_conv >> t_id;
+        uuid_t t_id = uuid_from_string(t_acq_id_str );
         MTDEBUG( mtlog, "Requesting status of acquisition <" << t_id << ">" );
 
         const acq_request* t_request = get_acq_request( t_id );
@@ -444,15 +433,12 @@ namespace mantis
             return false;
         }
 
-        boost::uuids::uuid t_id;
-        std::stringstream t_conv;
-        t_conv << t_acq_id_str;
-        t_conv >> t_id;
+        uuid_t t_id = uuid_from_string( t_acq_id_str );
         MTINFO( mtlog, "Canceling acquisition <" << t_id << ">" );
 
         if( ! cancel( t_id ) )
         {
-            a_pkg.send_reply( R_MESSAGE_ERROR_BAD_PAYLOAD, "Failed to cancel acquisition <" + to_string( t_id ) + ">; it may not exist" );
+            a_pkg.send_reply( R_MESSAGE_ERROR_BAD_PAYLOAD, "Failed to cancel acquisition <" + string_from_uuid( t_id ) + ">; it may not exist" );
             return false;
         }
 

@@ -79,6 +79,7 @@ namespace mantis
 #define R_MESSAGE_ERROR_INVALID_VALUE     304
 #define R_MESSAGE_ERROR_TIMEOUT           305
 #define R_MESSAGE_ERROR_INVALID_METHOD    306
+#define R_DEVICE_ERROR_ACCESS_DENIED      307
 
 }
 
