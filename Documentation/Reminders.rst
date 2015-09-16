@@ -20,3 +20,5 @@ Developing Mantis
 =================
 
 * Block size = record size * # of channels
+* Request handler function signature: bool handler_class::handler_func(const param_node& a_payload, , const param_node& a_sender_node, const std::string& a_mantis_routing_key, request_reply_package& a_pkg )
+* The ``mantis_routing_key`` in the request handler function signature is the message routing key without the queue name.

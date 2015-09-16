@@ -51,18 +51,14 @@ namespace mantis
         private:
             friend struct request_reply_package;
 
-            bool do_run_request( param_node& a_msg_payload, const std::string& a_mantis_routing_key, request_reply_package& a_pkg, const param_node* a_sender_node );
-            bool do_get_request( param_node& a_msg_payload, const std::string& a_mantis_routing_key, request_reply_package& a_pkg );
-            bool do_set_request( param_node& a_msg_payload, const std::string& a_mantis_routing_key, request_reply_package& a_pkg );
-            bool do_cmd_request( param_node& a_msg_payload, const std::string& a_mantis_routing_key, request_reply_package& a_pkg );
+            bool do_run_request( const param_node& a_msg_payload, const param_node& a_sender_node, const std::string& a_mantis_routing_key, request_reply_package& a_pkg );
+            bool do_get_request( const param_node& a_msg_payload, const param_node& a_sender_node, const std::string& a_mantis_routing_key, request_reply_package& a_pkg );
+            bool do_set_request( const param_node& a_msg_payload, const param_node& a_sender_node, const std::string& a_mantis_routing_key, request_reply_package& a_pkg );
+            bool do_cmd_request( const param_node& a_msg_payload, const param_node& a_sender_node, const std::string& a_mantis_routing_key, request_reply_package& a_pkg );
 
             bool send_reply( unsigned a_return_code, const std::string& a_return_msg, request_reply_package& a_pkg ) const;
 
             //param_node* create_sender_info() const;
-
-            bool handle_lock_request( const param_node& a_msg_payload, const std::string& a_mantis_routing_key, request_reply_package& a_pkg );
-            bool handle_unlock_request( const param_node& a_msg_payload, const std::string& a_mantis_routing_key, request_reply_package& a_pkg );
-            bool handle_is_locked_request( const param_node& a_msg_payload, const std::string& a_mantis_routing_key, request_reply_package& a_pkg );
 
             amqp_channel_ptr f_channel;
             std::string f_queue_name;
@@ -75,8 +71,17 @@ namespace mantis
 
             atomic_bool f_canceled;
 
+        private:
+            //*****************
+            // Request handlers
+            //*****************
+
+            bool handle_lock_request( const param_node& a_msg_payload, const param_node& a_sender_node, const std::string& a_mantis_routing_key, request_reply_package& a_pkg );
+            bool handle_unlock_request( const param_node& a_msg_payload, const param_node& a_sender_node, const std::string& a_mantis_routing_key, request_reply_package& a_pkg );
+            bool handle_is_locked_request( const param_node& a_msg_payload, const param_node& a_sender_node, const std::string& a_mantis_routing_key, request_reply_package& a_pkg );
+
         public:
-            typedef boost::uuids::uuid key_t;
+            typedef uuid_t key_t;
 
             key_t enable_lockout( const param_node& a_tag );
             bool disable_lockout( const key_t& a_key, bool a_force = false );

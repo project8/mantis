@@ -212,7 +212,7 @@ namespace mantis
         return;
     }
 
-    bool server_worker::handle_stop_acq_request( const param_node& /*a_msg_payload*/, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg )
+    bool server_worker::handle_stop_acq_request( const param_node& /*a_msg_payload*/, const param_node& /*a_sender_node*/, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg )
     {
         stop_acquisition();
         return a_pkg.send_reply( R_SUCCESS, "Stop-acquisition request succeeded" );

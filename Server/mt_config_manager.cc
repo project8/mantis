@@ -40,7 +40,7 @@ namespace mantis
         return t_copy;
     }
 
-    bool config_manager::handle_get_acq_config_request( const param_node& /*a_msg_payload*/, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg )
+    bool config_manager::handle_get_acq_config_request( const param_node& /*a_msg_payload*/, const param_node& /*a_sender_node*/, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg )
     {
         f_msc_mutex.lock();
         a_pkg.f_reply_node.merge( *f_master_server_config.node_at( "acq" ) );
@@ -48,7 +48,7 @@ namespace mantis
         return a_pkg.send_reply( R_SUCCESS, "Get request succeeded" );
     }
 
-    bool config_manager::handle_get_server_config_request( const param_node& /*a_msg_payload*/, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg )
+    bool config_manager::handle_get_server_config_request( const param_node& /*a_msg_payload*/, const param_node& /*a_sender_node*/, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg )
     {
         f_msc_mutex.lock();
         a_pkg.f_reply_node.merge( f_master_server_config );
@@ -56,7 +56,7 @@ namespace mantis
         return a_pkg.send_reply( R_SUCCESS, "Get request succeeded" );
     }
 
-    bool config_manager::handle_set_request( const param_node& a_msg_payload, const std::string& a_mantis_routing_key, request_reply_package& a_pkg )
+    bool config_manager::handle_set_request( const param_node& a_msg_payload, const param_node& /*a_sender_node*/, const std::string& a_mantis_routing_key, request_reply_package& a_pkg )
     {
         string t_routing_key = a_mantis_routing_key;
         if( t_routing_key.empty() )
@@ -98,7 +98,7 @@ namespace mantis
     }
 
 
-    bool config_manager::handle_add_request( const param_node& a_msg_payload, const std::string& a_mantis_routing_key, request_reply_package& a_pkg )
+    bool config_manager::handle_add_request( const param_node& a_msg_payload, const param_node& /*a_sender_node*/, const std::string& a_mantis_routing_key, request_reply_package& a_pkg )
     {
         // add something to the master config
 
@@ -166,7 +166,7 @@ namespace mantis
         return a_pkg.send_reply( R_SUCCESS, "Add request succeeded" );
     }
 
-    bool config_manager::handle_remove_request( const param_node& /*a_msg_payload*/, const std::string& a_mantis_routing_key, request_reply_package& a_pkg )
+    bool config_manager::handle_remove_request( const param_node& /*a_msg_payload*/, const param_node& /*a_sender_node*/, const std::string& a_mantis_routing_key, request_reply_package& a_pkg )
     {
         // remove something from the master config
 
@@ -214,7 +214,7 @@ namespace mantis
     }
 
 
-    bool config_manager::handle_replace_acq_config( const param_node& a_msg_payload, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg )
+    bool config_manager::handle_replace_acq_config( const param_node& a_msg_payload, const param_node& /*a_sender_node*/, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg )
     {
         // payload contents should replace the acquisition config
         MTDEBUG( mtlog, "Loading a full configuration" );

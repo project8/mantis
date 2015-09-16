@@ -36,7 +36,7 @@ namespace mantis
 
             void cancel(); /// cancels the server worker entirely
 
-            bool handle_stop_acq_request( const param_node& a_msg_payload, const std::string& a_mantis_routing_key, request_reply_package& a_pkg );
+            bool handle_stop_acq_request( const param_node& a_msg_payload, const param_node& a_sender_node, const std::string& a_mantis_routing_key, request_reply_package& a_pkg );
 
         private:
             device_manager* f_dev_mgr;

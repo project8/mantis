@@ -299,7 +299,7 @@ namespace mantis
     // Request handlers
     //********************
 
-    bool acq_request_db::handle_new_acq_request( const param_node& a_msg_payload, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg )
+    bool acq_request_db::handle_new_acq_request( const param_node& a_msg_payload, const param_node& a_sender_node, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg )
     {
         // required
         const param_value* t_file_node = a_msg_payload.value_at( "file" );
@@ -351,21 +351,10 @@ namespace mantis
             t_dev_node->remove( *it );
         }
 
-
-        if( t_client_node != NULL )
-        {
-            t_acq_req->set_client_commit( t_client_node->get_value( "commit", "N/A" ) );
-            t_acq_req->set_client_exe( t_client_node->get_value( "exe", "N/A" ) );
-            t_acq_req->set_client_version( t_client_node->get_value( "version", "N/A" ) );
-            t_acq_req->set_client_package( t_client_node->get_value( "package", "N/A" ) );
-        }
-        else
-        {
-            t_acq_req->set_client_commit( "N/A" );
-            t_acq_req->set_client_exe( "N/A" );
-            t_acq_req->set_client_version( "N/A" );
-            t_acq_req->set_client_package( "N/A" );
-        }
+        t_acq_req->set_client_commit( a_sender_node.get_value( "commit", "N/A" ) );
+        t_acq_req->set_client_exe( a_sender_node.get_value( "exe", "N/A" ) );
+        t_acq_req->set_client_version( a_sender_node.get_value( "version", "N/A" ) );
+        t_acq_req->set_client_package( a_sender_node.get_value( "package", "N/A" ) );
 
         t_acq_req->set_status( acq_request::acknowledged );
 
@@ -382,7 +371,7 @@ namespace mantis
         return true;
     }
 
-    bool acq_request_db::handle_get_acq_status_request( const param_node& a_msg_payload, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg )
+    bool acq_request_db::handle_get_acq_status_request( const param_node& a_msg_payload, const param_node& /*a_sender_node*/, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg )
     {
         if( ! a_msg_payload.has( "values" ) || ! a_msg_payload[ "values" ].is_array() )
         {
@@ -418,7 +407,7 @@ namespace mantis
         return a_pkg.send_reply( R_SUCCESS, "Acquisition status request succeeded" );
     }
 
-    bool acq_request_db::handle_queue_request( const param_node& /*a_msg_payload*/, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg  )
+    bool acq_request_db::handle_queue_request( const param_node& /*a_msg_payload*/, const param_node& /*a_sender_node*/, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg  )
     {
         param_array* t_queue_array = new param_array();
         f_queue_mutex.lock();
@@ -434,13 +423,13 @@ namespace mantis
         return a_pkg.send_reply( R_SUCCESS, "Queue request succeeded" );
     }
 
-    bool acq_request_db::handle_queue_size_request( const param_node& /*a_msg_payload*/, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg  )
+    bool acq_request_db::handle_queue_size_request( const param_node& /*a_msg_payload*/, const param_node& /*a_sender_node*/, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg  )
     {
         a_pkg.f_reply_node.add( "queue-size", new param_value( (uint32_t)queue_size() ) );
         return a_pkg.send_reply( R_SUCCESS, "Queue size request succeeded" );
     }
 
-    bool acq_request_db::handle_cancel_acq_request( const param_node& a_msg_payload, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg  )
+    bool acq_request_db::handle_cancel_acq_request( const param_node& a_msg_payload, const param_node& /*a_sender_node*/, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg  )
     {
         if( ! a_msg_payload.has( "values" ) || ! a_msg_payload[ "values" ].is_array() )
         {
@@ -475,19 +464,19 @@ namespace mantis
         return a_pkg.send_reply( R_SUCCESS, "Cancellation succeeded" );
     }
 
-    bool acq_request_db::handle_clear_queue_request( const param_node& /*a_msg_payload*/, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg  )
+    bool acq_request_db::handle_clear_queue_request( const param_node& /*a_msg_payload*/, const param_node& /*a_sender_node*/, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg  )
     {
         clear_queue();
         return a_pkg.send_reply( R_SUCCESS, "Queue is clear (aside for runs in progress" );
     }
 
-    bool acq_request_db::handle_start_queue_request( const param_node& /*a_msg_payload*/, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg )
+    bool acq_request_db::handle_start_queue_request( const param_node& /*a_msg_payload*/, const param_node& /*a_sender_node*/, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg )
     {
         start_queue();
         return a_pkg.send_reply( R_SUCCESS, "Queue started" );
     }
 
-    bool acq_request_db::handle_stop_queue_request( const param_node& /*a_msg_payload*/, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg )
+    bool acq_request_db::handle_stop_queue_request( const param_node& /*a_msg_payload*/, const param_node& /*a_sender_node*/, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg )
     {
         stop_queue();
         return a_pkg.send_reply( R_SUCCESS, "Queue stopped" );

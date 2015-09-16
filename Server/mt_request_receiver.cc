@@ -187,22 +187,22 @@ namespace mantis
             {
                 case OP_RUN:
                 {
-                    do_run_request( *t_msg_payload, t_routing_key, t_reply_pkg, t_sender_node );
+                    do_run_request( *t_msg_payload, *t_sender_node, t_routing_key, t_reply_pkg );
                     break;
                 }
                 case OP_GET:
                 {
-                    do_get_request( *t_msg_payload, t_routing_key, t_reply_pkg );
+                    do_get_request( *t_msg_payload, *t_sender_node, t_routing_key, t_reply_pkg );
                     break;
                 } // end "get" operation
                 case OP_SET:
                 {
-                    do_set_request( *t_msg_payload, t_routing_key, t_reply_pkg );
+                    do_set_request( *t_msg_payload, *t_sender_node, t_routing_key, t_reply_pkg );
                     break;
                 } // end "set" operation
                 case OP_CMD:
                 {
-                    do_cmd_request( *t_msg_payload, t_routing_key, t_reply_pkg );
+                    do_cmd_request( *t_msg_payload, *t_sender_node, t_routing_key, t_reply_pkg );
                     break;
                 }
                 default:
@@ -231,17 +231,22 @@ namespace mantis
         return;
     }
 
-    bool request_receiver::do_run_request( param_node& a_msg_payload, const std::string& a_mantis_routing_key, request_reply_package& a_pkg, const param_node* a_sender_node )
+    bool request_receiver::do_run_request( const param_node& a_msg_payload, const param_node& a_sender_node, const std::string& a_mantis_routing_key, request_reply_package& a_pkg )
     {
         MTDEBUG( mtlog, "Run operation request received" );
 
-        // add the sender information to the payload; copies a_sender_node
-        a_msg_payload.add( "client", *a_sender_node );
+        if( ! authenticate( uuid_from_string( a_msg_payload.get_value( "key", "") ) ) )
+        {
+            string t_key_used( a_msg_payload.get_value( "key", "" ) );
+            MTINFO( mtlog, "Request denied due to lockout (key used: " << t_key_used << ")" );
+            a_pkg.send_reply( R_DEVICE_ERROR_ACCESS_DENIED, "Request denied due to lockout (key used: " + t_key_used + ")" );
+            return false;
+        }
 
-        return f_acq_request_db->handle_new_acq_request( a_msg_payload, a_mantis_routing_key, a_pkg );
+        return f_acq_request_db->handle_new_acq_request( a_msg_payload, a_sender_node, a_mantis_routing_key, a_pkg );
     }
 
-    bool request_receiver::do_get_request( param_node& a_msg_payload, const std::string& a_mantis_routing_key, request_reply_package& a_pkg )
+    bool request_receiver::do_get_request( const param_node& a_msg_payload, const param_node& a_sender_node, const std::string& a_mantis_routing_key, request_reply_package& a_pkg )
     {
         MTDEBUG( mtlog, "Get request received" );
 
@@ -268,31 +273,31 @@ namespace mantis
         param_node t_reply;
         if( t_query_type == "acq-config" )
         {
-            return f_conf_mgr->handle_get_acq_config_request( a_msg_payload, a_mantis_routing_key, a_pkg );
+            return f_conf_mgr->handle_get_acq_config_request( a_msg_payload, a_sender_node, a_mantis_routing_key, a_pkg );
         }
         else if( t_query_type == "server-config" )
         {
-            return f_conf_mgr->handle_get_server_config_request( a_msg_payload, a_mantis_routing_key, a_pkg );
+            return f_conf_mgr->handle_get_server_config_request( a_msg_payload, a_sender_node, a_mantis_routing_key, a_pkg );
         }
         else if( t_query_type == "is-locked" )
         {
-            return handle_is_locked_request( a_msg_payload, a_mantis_routing_key, a_pkg );
+            return handle_is_locked_request( a_msg_payload, a_sender_node, a_mantis_routing_key, a_pkg );
         }
         else if( t_query_type == "acq-status" )
         {
-            return f_acq_request_db->handle_get_acq_status_request( a_msg_payload, a_mantis_routing_key, a_pkg );
+            return f_acq_request_db->handle_get_acq_status_request( a_msg_payload, a_sender_node, a_mantis_routing_key, a_pkg );
         }
         else if( t_query_type == "queue" )
         {
-            return f_acq_request_db->handle_queue_request( a_msg_payload, a_mantis_routing_key, a_pkg );
+            return f_acq_request_db->handle_queue_request( a_msg_payload, a_sender_node, a_mantis_routing_key, a_pkg );
         }
         else if( t_query_type == "queue-size" )
         {
-            return f_acq_request_db->handle_queue_size_request( a_msg_payload, a_mantis_routing_key, a_pkg );
+            return f_acq_request_db->handle_queue_size_request( a_msg_payload, a_sender_node, a_mantis_routing_key, a_pkg );
         }
         else if( t_query_type == "server-status" )
         {
-            return f_run_server->handle_get_server_status_request( a_msg_payload, a_mantis_routing_key, a_pkg );
+            return f_run_server->handle_get_server_status_request( a_msg_payload, a_sender_node, a_mantis_routing_key, a_pkg );
         }
         else
         {
@@ -301,25 +306,42 @@ namespace mantis
         }
     }
 
-    bool request_receiver::do_set_request( param_node& a_msg_payload, const std::string& a_mantis_routing_key, request_reply_package& a_pkg )
+    bool request_receiver::do_set_request( const param_node& a_msg_payload, const param_node& a_sender_node, const std::string& a_mantis_routing_key, request_reply_package& a_pkg )
     {
         MTDEBUG( mtlog, "Set request received" );
 
-        return f_conf_mgr->handle_set_request( a_msg_payload, a_mantis_routing_key, a_pkg );
+        if( ! authenticate( uuid_from_string( a_msg_payload.get_value( "key", "") ) ) )
+        {
+            string t_key_used( a_msg_payload.get_value( "key", "" ) );
+            MTINFO( mtlog, "Request denied due to lockout (key used: " << t_key_used << ")" );
+            a_pkg.send_reply( R_DEVICE_ERROR_ACCESS_DENIED, "Request denied due to lockout (key used: " + t_key_used + ")" );
+            return false;
+        }
+
+        return f_conf_mgr->handle_set_request( a_msg_payload, a_sender_node, a_mantis_routing_key, a_pkg );
     }
 
-    bool request_receiver::do_cmd_request( param_node& a_msg_payload, const std::string& a_mantis_routing_key, request_reply_package& a_pkg )
+    bool request_receiver::do_cmd_request( const param_node& a_msg_payload, const param_node& a_sender_node, const std::string& a_mantis_routing_key, request_reply_package& a_pkg )
     {
         MTDEBUG( mtlog, "Cmd request received" );
 
+        //MTWARN( mtlog, "uuid string: " << a_msg_payload.get_value( "key", "") << ", uuid: " << uuid_from_string( a_msg_payload.get_value( "key", "") ) );
+        if( ! authenticate( uuid_from_string( a_msg_payload.get_value( "key", "") ) ) )
+        {
+            string t_key_used( a_msg_payload.get_value( "key", "" ) );
+            MTINFO( mtlog, "Request denied due to lockout (key used: " << t_key_used << ")" );
+            a_pkg.send_reply( R_DEVICE_ERROR_ACCESS_DENIED, "Request denied due to lockout (key used: " + t_key_used + ")" );
+            return false;
+        }
+
         std::string t_instruction;
-        if( a_mantis_routing_key.find( '.' ) != std::string::npos )
+        if( ! a_mantis_routing_key.empty() )
         {
             try
             {
                 parsable t_routing_key_node( a_mantis_routing_key );
                 t_instruction = t_routing_key_node.begin()->first;
-                MTDEBUG( mtlog, "I type: " << t_instruction );
+                MTDEBUG( mtlog, "Instruction: " << t_instruction );
             }
             catch( exception& e )
             {
@@ -339,51 +361,51 @@ namespace mantis
 
         if( t_instruction == "replace-config" )
         {
-            return f_conf_mgr->handle_replace_acq_config( a_msg_payload, a_mantis_routing_key, a_pkg );
+            return f_conf_mgr->handle_replace_acq_config( a_msg_payload, a_sender_node, a_mantis_routing_key, a_pkg );
         }
         else if( t_instruction == "add" )
         {
-            return f_conf_mgr->handle_add_request( a_msg_payload, a_mantis_routing_key, a_pkg );
+            return f_conf_mgr->handle_add_request( a_msg_payload, a_sender_node, a_mantis_routing_key, a_pkg );
         }
         else if( t_instruction == "remove" )
         {
-            return f_conf_mgr->handle_remove_request( a_msg_payload, a_mantis_routing_key, a_pkg );
+            return f_conf_mgr->handle_remove_request( a_msg_payload, a_sender_node, a_mantis_routing_key, a_pkg );
         }
         else if( t_instruction == "lock" )
         {
-            return handle_lock_request( a_msg_payload, a_mantis_routing_key, a_pkg );
+            return handle_lock_request( a_msg_payload, a_sender_node, a_mantis_routing_key, a_pkg );
         }
         else if( t_instruction == "unlock" )
         {
-            return handle_unlock_request( a_msg_payload, a_mantis_routing_key, a_pkg );
+            return handle_unlock_request( a_msg_payload, a_sender_node, a_mantis_routing_key, a_pkg );
         }
         else if( t_instruction == "cancel-acq" )
         {
-            return f_acq_request_db->handle_cancel_acq_request( a_msg_payload, a_mantis_routing_key, a_pkg );
+            return f_acq_request_db->handle_cancel_acq_request( a_msg_payload, a_sender_node, a_mantis_routing_key, a_pkg );
         }
         else if( t_instruction == "clear-queue" )
         {
-            return f_acq_request_db->handle_clear_queue_request( a_msg_payload, a_mantis_routing_key, a_pkg );
+            return f_acq_request_db->handle_clear_queue_request( a_msg_payload, a_sender_node, a_mantis_routing_key, a_pkg );
         }
         else if( t_instruction == "start-queue" )
         {
-            return f_acq_request_db->handle_start_queue_request( a_msg_payload, a_mantis_routing_key, a_pkg );
+            return f_acq_request_db->handle_start_queue_request( a_msg_payload, a_sender_node, a_mantis_routing_key, a_pkg );
         }
         else if( t_instruction == "stop-queue" )
         {
-            return f_acq_request_db->handle_stop_queue_request( a_msg_payload, a_mantis_routing_key, a_pkg );
+            return f_acq_request_db->handle_stop_queue_request( a_msg_payload, a_sender_node, a_mantis_routing_key, a_pkg );
         }
         else if( t_instruction == "stop-acq" )
         {
-            return f_server_worker->handle_stop_acq_request( a_msg_payload, a_mantis_routing_key, a_pkg );
+            return f_server_worker->handle_stop_acq_request( a_msg_payload, a_sender_node, a_mantis_routing_key, a_pkg );
         }
         else if( t_instruction == "stop-all" )
         {
-            return f_run_server->handle_stop_all_request( a_msg_payload, a_mantis_routing_key, a_pkg );
+            return f_run_server->handle_stop_all_request( a_msg_payload, a_sender_node, a_mantis_routing_key, a_pkg );
         }
         else if( t_instruction == "quit-mantis" )
         {
-            return f_run_server->handle_quit_server_request( a_msg_payload, a_mantis_routing_key, a_pkg );
+            return f_run_server->handle_quit_server_request( a_msg_payload, a_sender_node, a_mantis_routing_key, a_pkg );
         }
         else
         {
@@ -432,28 +454,20 @@ namespace mantis
     }
 */
 
-    bool request_receiver::handle_lock_request( const param_node& a_msg_payload, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg )
+    bool request_receiver::handle_lock_request( const param_node& /*a_msg_payload*/, const param_node& a_sender_node, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg )
     {
-        // require client node for the lockout tag
-        const param_node* t_client_node = a_msg_payload.node_at( "client" );
-        if( t_client_node == NULL )
-        {
-            a_pkg.send_reply( R_DEVICE_ERROR, "No client information provided for the lockout tag" );
-            return false;
-        }
-
-        key_t t_new_key = enable_lockout( *t_client_node );
+        key_t t_new_key = enable_lockout( a_sender_node );
         if( t_new_key.is_nil() )
         {
             a_pkg.send_reply( R_DEVICE_ERROR, "Unable to lock server" );
             return false;
         }
 
-        a_pkg.f_reply_node.add( "key", new param_value( boost::uuids::to_string( t_new_key ) ) );
+        a_pkg.f_reply_node.add( "key", new param_value( string_from_uuid( t_new_key ) ) );
         return a_pkg.send_reply( R_SUCCESS, "Server is now locked" );
     }
 
-    bool request_receiver::handle_unlock_request( const param_node& a_msg_payload, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg )
+    bool request_receiver::handle_unlock_request( const param_node& a_msg_payload, const param_node& /*a_sender_node*/, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg )
     {
         if( ! is_locked() )
         {
@@ -481,7 +495,7 @@ namespace mantis
         return false;
     }
 
-    bool request_receiver::handle_is_locked_request( const param_node& /*a_msg_payload*/, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg )
+    bool request_receiver::handle_is_locked_request( const param_node& /*a_msg_payload*/, const param_node& /*a_sender_node*/, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg )
     {
         bool t_is_locked = is_locked();
         a_pkg.f_reply_node.add( "is_locked", param_value( t_is_locked ) );
