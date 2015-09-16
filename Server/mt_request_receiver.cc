@@ -44,8 +44,9 @@ namespace mantis
             f_conf_mgr( a_conf_mgr ),
             f_acq_request_db( a_acq_request_db ),
             f_server_worker( a_server_worker ),
-            f_lockout_tag(),
             f_canceled( false ),
+            f_lockout_tag(),
+            f_lockout_key( boost::uuids::nil_uuid() ),
             f_status( k_initialized )
     {
     }
@@ -273,7 +274,7 @@ namespace mantis
         {
             return f_conf_mgr->handle_get_server_config_request( a_msg_payload, a_mantis_routing_key, a_pkg );
         }
-        else if( t_query_type == "is_locked" )
+        else if( t_query_type == "is-locked" )
         {
             return handle_is_locked_request( a_msg_payload, a_mantis_routing_key, a_pkg );
         }
@@ -431,19 +432,61 @@ namespace mantis
     }
 */
 
-    bool request_receiver::handle_lock_request( const param_node& a_msg_payload, const std::string& a_mantis_routing_key, request_reply_package& a_pkg )
+    bool request_receiver::handle_lock_request( const param_node& a_msg_payload, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg )
     {
+        // require client node for the lockout tag
+        const param_node* t_client_node = a_msg_payload.node_at( "client" );
+        if( t_client_node == NULL )
+        {
+            a_pkg.send_reply( R_DEVICE_ERROR, "No client information provided for the lockout tag" );
+            return false;
+        }
 
+        key_t t_new_key = enable_lockout( *t_client_node );
+        if( t_new_key.is_nil() )
+        {
+            a_pkg.send_reply( R_DEVICE_ERROR, "Unable to lock server" );
+            return false;
+        }
+
+        a_pkg.f_reply_node.add( "key", new param_value( boost::uuids::to_string( t_new_key ) ) );
+        return a_pkg.send_reply( R_SUCCESS, "Server is now locked" );
     }
 
-    bool request_receiver::handle_unlock_request( const param_node& a_msg_payload, const std::string& a_mantis_routing_key, request_reply_package& a_pkg )
+    bool request_receiver::handle_unlock_request( const param_node& a_msg_payload, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg )
     {
+        if( ! is_locked() )
+        {
+            return a_pkg.send_reply( R_WARNING_NO_ACTION_TAKEN, "Already unlocked" );
+        }
 
+        string t_key_string = a_msg_payload.get_value( "key", "" );
+        if( t_key_string.empty() )
+        {
+            a_pkg.send_reply( R_MESSAGE_ERROR_BAD_PAYLOAD, "No key provided" );
+            return false;
+        }
+        bool t_force = a_msg_payload.get_value( "force", false );
+
+        key_t t_key;
+        std::stringstream t_conv;
+        t_conv << t_key_string;
+        t_conv >> t_key;
+
+        if( disable_lockout( t_key, t_force ) )
+        {
+            return a_pkg.send_reply( R_SUCCESS, "Server unlocked" );
+        }
+        a_pkg.send_reply( R_DEVICE_ERROR, "Failed to unlock server" );
+        return false;
     }
 
-    bool request_receiver::handle_is_locked_request( const param_node& a_msg_payload, const std::string& a_mantis_routing_key, request_reply_package& a_pkg )
+    bool request_receiver::handle_is_locked_request( const param_node& /*a_msg_payload*/, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg )
     {
-
+        bool t_is_locked = is_locked();
+        a_pkg.f_reply_node.add( "is_locked", param_value( t_is_locked ) );
+        if( t_is_locked ) a_pkg.f_reply_node.add( "tag", f_lockout_tag );
+        return a_pkg.send_reply( R_SUCCESS, "Checked lock status" );
     }
 
 
@@ -459,28 +502,37 @@ namespace mantis
         return;
     }
 
-    string request_receiver::enable_lockout()
+    request_receiver::key_t request_receiver::enable_lockout( const param_node& a_tag )
     {
-        if( is_locked() ) return string();
+        if( is_locked() ) return boost::uuids::nil_uuid();
         boost::uuids::random_generator t_gen;
-
+        f_lockout_key = t_gen();
+        f_lockout_tag = a_tag;
+        return f_lockout_key;
     }
 
-    bool request_receiver::disable_lockout( std::string a_key, bool a_force )
+    bool request_receiver::disable_lockout( const key_t& a_key, bool a_force )
     {
-        if( ! a_force && a_key != f_lockout_tag ) return false;
+        if( ! is_locked() ) return true;
+        if( ! a_force && a_key != f_lockout_key ) return false;
+        f_lockout_key = boost::uuids::nil_uuid();
         f_lockout_tag.clear();
         return true;
     }
 
     bool request_receiver::is_locked() const
     {
-        return ! f_lockout_tag.empty();
+        return ! f_lockout_key.is_nil();
     }
 
-    bool request_receiver::check_key( std::string a_key )
+    const param_node& request_receiver::get_lockout_tag() const
     {
-        return f_lockout_tag == a_key;
+        return f_lockout_tag;
+    }
+
+    bool request_receiver::check_key( const key_t& a_key ) const
+    {
+        return f_lockout_key == a_key;
     }
 
     std::string request_receiver::interpret_status( status a_status )

@@ -76,14 +76,18 @@ namespace mantis
             atomic_bool f_canceled;
 
         public:
-            std::string enable_lockout();
-            bool disable_lockout( std::string a_key, bool a_force = false );
+            typedef boost::uuids::uuid key_t;
+
+            key_t enable_lockout( const param_node& a_tag );
+            bool disable_lockout( const key_t& a_key, bool a_force = false );
 
             bool is_locked() const;
-            bool check_key( std::string a_key );
+            const param_node& get_lockout_tag() const;
+            bool check_key( const key_t& a_key ) const;
 
         private:
-            boost::uuids::uuid f_lockout_tag;
+            param_node f_lockout_tag;
+            key_t f_lockout_key;
 
         public:
             enum status
