@@ -596,7 +596,7 @@ namespace mantis
     inline bool msg_reply::derived_modify_message_body( param_node& a_node ) const
     {
         a_node.add( "retcode", new param_value( f_return_code ) );
-        a_node.add( "return_msg", new param_value( f_return_code ) );
+        a_node.add( "return_msg", new param_value( f_return_msg ) );
         return true;
     }
 
