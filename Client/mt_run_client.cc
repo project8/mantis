@@ -45,11 +45,24 @@ namespace mantis
     {
         MTINFO( mtlog, "Creating request" );
 
+        // pull the special CL arguments out of the configuration
+
         std::string t_request_type( f_config.get_value( "do", "" ) );
         f_config.erase( "do" );
 
         std::string t_routing_key( f_config.get_value( "dest", "mantis" ) );
         f_config.erase( "dest" );
+
+        std::string t_lockout_key_str( f_config.get_value( "key", "" ) );
+        f_config.erase( "key" );
+        bool t_lk_valid = true;
+        uuid_t t_lockout_key = uuid_from_string( t_lockout_key_str, t_lk_valid );
+        if( ! t_lk_valid )
+        {
+            MTERROR( mtlog, "Invalid lockout key provided: <" << t_lockout_key_str << ">" );
+            f_return = RETURN_ERROR;
+            return;
+        }
 
         param_node t_save_node;
         if( f_config.has( "save" ) )
@@ -90,6 +103,8 @@ namespace mantis
             f_return = RETURN_ERROR;
             return;
         }
+
+        t_request->set_lockout_key( t_lockout_key );
 
         MTDEBUG( mtlog, "Sending message w/ msgop = " << t_request->get_message_op() );
 
@@ -240,20 +255,5 @@ namespace mantis
 
         return msg_request::create( t_payload_node, OP_CMD, a_routing_key, "", message::k_json );
     }
-
-/*
-    param_node* run_client::create_sender_info() const
-    {
-        param_node* t_sender_node = new param_node();
-        t_sender_node->add( "commit", param_value( f_version->commit() ) );
-        t_sender_node->add( "exe", param_value( f_version->exe_name() ) );
-        t_sender_node->add( "version", param_value( f_version->version_str() ) );
-        t_sender_node->add( "package", param_value( f_version->package() ) );
-        t_sender_node->add( "hostname", param_value( f_version->hostname() ) );
-        t_sender_node->add( "username", param_value( f_version->username() ) );
-        return t_sender_node;
-    }
-*/
-
 
 } /* namespace mantis */

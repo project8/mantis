@@ -392,7 +392,7 @@ namespace mantis
 
     bool request_receiver::handle_lock_request( const msg_request* a_request, request_reply_package& a_pkg )
     {
-        key_t t_new_key = enable_lockout( a_request->get_sender_info() );
+        uuid_t t_new_key = enable_lockout( a_request->get_sender_info(), a_request->get_lockout_key() );
         if( t_new_key.is_nil() )
         {
             a_pkg.send_reply( R_DEVICE_ERROR, "Unable to lock server" );
@@ -410,15 +410,9 @@ namespace mantis
             return a_pkg.send_reply( R_WARNING_NO_ACTION_TAKEN, "Already unlocked" );
         }
 
-        string t_key_string = a_request->get_payload().get_value( "key", "" );
-        if( t_key_string.empty() )
-        {
-            a_pkg.send_reply( R_MESSAGE_ERROR_BAD_PAYLOAD, "No key provided" );
-            return false;
-        }
         bool t_force = a_request->get_payload().get_value( "force", false );
 
-        if( disable_lockout( uuid_from_string( t_key_string ), t_force ) )
+        if( disable_lockout( a_request->get_lockout_key(), t_force ) )
         {
             return a_pkg.send_reply( R_SUCCESS, "Server unlocked" );
         }
@@ -447,15 +441,21 @@ namespace mantis
         return;
     }
 
-    request_receiver::key_t request_receiver::enable_lockout( const param_node& a_tag )
+    uuid_t request_receiver::enable_lockout( const param_node& a_tag )
+    {
+        return enable_lockout( a_tag, generate_random_uuid() );
+    }
+
+    uuid_t request_receiver::enable_lockout( const param_node& a_tag, uuid_t a_key )
     {
         if( is_locked() ) return generate_nil_uuid();
-        f_lockout_key = generate_random_uuid();
+        if( a_key.is_nil() ) f_lockout_key = generate_random_uuid();
+        else f_lockout_key = a_key;
         f_lockout_tag = a_tag;
         return f_lockout_key;
     }
 
-    bool request_receiver::disable_lockout( const key_t& a_key, bool a_force )
+    bool request_receiver::disable_lockout( const uuid_t& a_key, bool a_force )
     {
         if( ! is_locked() ) return true;
         if( ! a_force && a_key != f_lockout_key ) return false;
@@ -474,12 +474,12 @@ namespace mantis
         return f_lockout_tag;
     }
 
-    bool request_receiver::check_key( const key_t& a_key ) const
+    bool request_receiver::check_key( const uuid_t& a_key ) const
     {
         return f_lockout_key == a_key;
     }
 
-    bool request_receiver::authenticate( const key_t& a_key ) const
+    bool request_receiver::authenticate( const uuid_t& a_key ) const
     {
         MTDEBUG( mtlog, "Authenticating with key <" << a_key << ">" );
         if( is_locked() ) return check_key( a_key );

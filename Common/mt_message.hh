@@ -508,6 +508,7 @@ namespace mantis
     inline bool msg_request::derived_modify_message_body( param_node& a_node ) const
     {
         a_node.add( "msgop", new param_value( f_message_op ) );
+        a_node.add( "lockout_key", new param_value( string_from_uuid( get_lockout_key() ) ) );
         return true;
     }
 

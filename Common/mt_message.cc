@@ -169,7 +169,7 @@ namespace mantis
     bool message::encode_message_body( std::string& a_body ) const
     {
         param_node t_body_node;
-        t_body_node.add( "msgtype", param_value( T_REQUEST ) );
+        t_body_node.add( "msgtype", param_value( get_message_type() ) );
         t_body_node.add( "timestamp", param_value( get_absolute_time_string() ) );
         t_body_node.add( "sender_info", new param_node( *f_sender_info ) );
         t_body_node.add( "payload", f_payload->clone() ); // use a clone of f_payload
