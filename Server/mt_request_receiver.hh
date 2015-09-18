@@ -7,6 +7,7 @@
 #include "mt_atomic.hh"
 #include "mt_mutex.hh"
 #include "mt_param.hh"
+#include "mt_uuid.hh"
 
 #include "SimpleAmqpClient/Envelope.h"
 
@@ -17,6 +18,7 @@ namespace mantis
     class condition;
     class config_manager;
     class device_manager;
+    class msg_request;
     class run_server;
     class server_worker;
 
@@ -24,13 +26,13 @@ namespace mantis
 
     struct MANTIS_API request_reply_package
     {
-        AmqpClient::Envelope::ptr_t f_envelope;
-        param_node& f_reply_node;
-        const request_receiver* f_request_receiver;
-        request_reply_package( AmqpClient::Envelope::ptr_t a_envelope, param_node& a_reply_node, const request_receiver* a_req_recvr ) :
-            f_envelope( a_envelope ),
-            f_reply_node( a_reply_node ),
-            f_request_receiver( a_req_recvr )
+        const msg_request* f_request;
+        param_node f_payload;
+        amqp_channel_ptr f_channel;
+        request_reply_package( const msg_request* a_request, amqp_channel_ptr a_channel ) :
+            f_request( a_request ),
+            f_payload(),
+            f_channel( a_channel )
         {}
         bool send_reply( unsigned a_return_code, const std::string& a_return_msg );
     };
@@ -48,12 +50,12 @@ namespace mantis
         private:
             friend struct request_reply_package;
 
-            bool do_run_request( param_node& a_msg_payload, const std::string& a_mantis_routing_key, request_reply_package& a_pkg, const param_node* a_sender_node );
-            bool do_get_request( param_node& a_msg_payload, const std::string& a_mantis_routing_key, request_reply_package& a_pkg );
-            bool do_set_request( param_node& a_msg_payload, const std::string& a_mantis_routing_key, request_reply_package& a_pkg );
-            bool do_cmd_request( param_node& a_msg_payload, const std::string& a_mantis_routing_key, request_reply_package& a_pkg );
+            bool do_run_request( const msg_request* a_request, request_reply_package& a_reply_pkg );
+            bool do_get_request( const msg_request* a_request, request_reply_package& a_reply_pkg );
+            bool do_set_request( const msg_request* a_request, request_reply_package& a_reply_pkg );
+            bool do_cmd_request( const msg_request* a_request, request_reply_package& a_reply_pkg );
 
-            bool send_reply( unsigned a_return_code, const std::string& a_return_msg, request_reply_package& a_pkg ) const;
+            //bool send_reply( unsigned a_return_code, const std::string& a_return_msg, request_reply_package& a_pkg ) const;
 
             //param_node* create_sender_info() const;
 
@@ -67,6 +69,33 @@ namespace mantis
             server_worker* f_server_worker;
 
             atomic_bool f_canceled;
+
+        private:
+            //*****************
+            // Request handlers
+            //*****************
+
+            bool handle_lock_request( const msg_request* a_request, request_reply_package& a_pkg );
+            bool handle_unlock_request( const msg_request* a_request, request_reply_package& a_pkg );
+            bool handle_is_locked_request( const msg_request* a_request, request_reply_package& a_pkg );
+
+        public:
+            /// enable lockout with randomly-generated key
+            uuid_t enable_lockout( const param_node& a_tag );
+            /// enable lockout with user-supplied key
+            uuid_t enable_lockout( const param_node& a_tag, uuid_t a_key );
+            bool disable_lockout( const uuid_t& a_key, bool a_force = false );
+
+            bool is_locked() const;
+            const param_node& get_lockout_tag() const;
+            bool check_key( const uuid_t& a_key ) const;
+
+        private:
+            // Returns true if the server is unlocked or if it's locked and the key matches the lockout key; returns false otherwise.
+            bool authenticate( const uuid_t& a_key ) const;
+
+            param_node f_lockout_tag;
+            uuid_t f_lockout_key;
 
         public:
             enum status

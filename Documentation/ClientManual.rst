@@ -155,7 +155,7 @@ Instruction Options
 :cmd:
   :add.device:
     ``[device type]=[device name]`` -- *(required)* The device type should be one of the valid device types for the server being run.  The device name is the name that will be used to refer to this particular instance of the device in the server configuration.
-  :run-config:
+  :replace-config:
     ``load.json=[filename]`` -- *(optional)* This JSON file will be parsed by the client, and the contents (plus any other instruction options given) will be used by the server to replace the run configuration.
 
     ``[other run configuration options]`` -- *(optional)* These options (plus any given in a loaded configuration file) will be used by the server to replace the run configuration.

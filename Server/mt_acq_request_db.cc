@@ -6,15 +6,12 @@
 #include "mt_acq_request.hh"
 #include "mt_config_manager.hh"
 #include "mt_logger.hh"
+#include "mt_message.hh"
 #include "mt_param.hh"
 #include "mt_request_receiver.hh"
 #include "mt_version.hh"
 
 #include "M3Version.hh"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/uuid/nil_generator.hpp>
-#include <boost/uuid/random_generator.hpp>
 
 
 using std::string;
@@ -56,7 +53,7 @@ namespace mantis
         return t_empty;
     }
 
-    acq_request* acq_request_db::get_acq_request( boost::uuids::uuid a_id )
+    acq_request* acq_request_db::get_acq_request( uuid_t a_id )
     {
         acq_request* t_desc = NULL;
         f_db_mutex.lock();
@@ -67,7 +64,7 @@ namespace mantis
         return t_desc;
     }
 
-    const acq_request* acq_request_db::get_acq_request( boost::uuids::uuid a_id ) const
+    const acq_request* acq_request_db::get_acq_request( uuid_t a_id ) const
     {
         const acq_request* t_desc = NULL;
         f_db_mutex.lock();
@@ -78,9 +75,9 @@ namespace mantis
         return t_desc;
     }
 
-    boost::uuids::uuid acq_request_db::add( acq_request* a_acq_request )
+    uuid_t acq_request_db::add( acq_request* a_acq_request )
     {
-        boost::uuids::uuid t_id = boost::uuids::nil_uuid();
+        uuid_t t_id = generate_nil_uuid();
         f_db_mutex.lock();
         f_acq_request_db[ a_acq_request->get_id() ] = a_acq_request;
         t_id = a_acq_request->get_id();
@@ -88,7 +85,7 @@ namespace mantis
         return t_id;
     }
 
-    acq_request* acq_request_db::remove( boost::uuids::uuid a_id )
+    acq_request* acq_request_db::remove( uuid_t a_id )
     {
         acq_request* t_request = NULL;
         f_db_mutex.lock();
@@ -163,9 +160,9 @@ namespace mantis
         return t_size;
     }
 
-    boost::uuids::uuid acq_request_db::enqueue( acq_request* a_acq_request )
+    uuid_t acq_request_db::enqueue( acq_request* a_acq_request )
     {
-        boost::uuids::uuid t_id = boost::uuids::nil_uuid();
+        uuid_t t_id = generate_nil_uuid();
         f_db_mutex.lock();
         if( f_acq_request_db.find( a_acq_request->get_id() ) == f_acq_request_db.end() )
         {
@@ -190,7 +187,7 @@ namespace mantis
         return t_id;
     }
 
-    bool acq_request_db::cancel( boost::uuids::uuid a_id )
+    bool acq_request_db::cancel( uuid_t a_id )
     {
         bool t_result = false;
         f_db_mutex.lock();
@@ -299,10 +296,10 @@ namespace mantis
     // Request handlers
     //********************
 
-    bool acq_request_db::handle_new_acq_request( const param_node& a_msg_payload, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg )
+    bool acq_request_db::handle_new_acq_request( const msg_request* a_request, request_reply_package& a_pkg )
     {
         // required
-        const param_value* t_file_node = a_msg_payload.value_at( "file" );
+        const param_value* t_file_node = a_request->get_payload().value_at( "file" );
         if( t_file_node == NULL )
         {
             MTWARN( mtlog, "No or invalid file configuration present; aborting run request" );
@@ -310,15 +307,11 @@ namespace mantis
             return false;
         }
 
-        // optional
-        const param_node* t_client_node = a_msg_payload.node_at( "client" );
-
-        boost::uuids::random_generator t_gen;
-        acq_request* t_acq_req = new acq_request( t_gen() );
+        acq_request* t_acq_req = new acq_request( generate_random_uuid() );
         t_acq_req->set_status( acq_request::created );
 
         t_acq_req->set_file_config( *t_file_node );
-        if( a_msg_payload.has( "description" ) ) t_acq_req->set_description_config( *(a_msg_payload.value_at( "description" ) ) );
+        if( a_request->get_payload().has( "description" ) ) t_acq_req->set_description_config( *(a_request->get_payload().value_at( "description" ) ) );
 
         t_acq_req->set_mantis_server_commit( TOSTRING(Mantis_GIT_COMMIT) );
         t_acq_req->set_mantis_server_exe( f_exe_name );
@@ -351,29 +344,18 @@ namespace mantis
             t_dev_node->remove( *it );
         }
 
-
-        if( t_client_node != NULL )
-        {
-            t_acq_req->set_client_commit( t_client_node->get_value( "commit", "N/A" ) );
-            t_acq_req->set_client_exe( t_client_node->get_value( "exe", "N/A" ) );
-            t_acq_req->set_client_version( t_client_node->get_value( "version", "N/A" ) );
-            t_acq_req->set_client_package( t_client_node->get_value( "package", "N/A" ) );
-        }
-        else
-        {
-            t_acq_req->set_client_commit( "N/A" );
-            t_acq_req->set_client_exe( "N/A" );
-            t_acq_req->set_client_version( "N/A" );
-            t_acq_req->set_client_package( "N/A" );
-        }
+        t_acq_req->set_client_commit( a_request->get_sender_commit() );
+        t_acq_req->set_client_exe( a_request->get_sender_exe() );
+        t_acq_req->set_client_version( a_request->get_sender_version() );
+        t_acq_req->set_client_package( a_request->get_sender_package() );
 
         t_acq_req->set_status( acq_request::acknowledged );
 
         MTINFO( mtlog, "Queuing request" );
         enqueue( t_acq_req );
 
-        a_pkg.f_reply_node.merge( *t_acq_req );
-        a_pkg.f_reply_node.add( "status-meaning", new param_value( acq_request::interpret_status( t_acq_req->get_status() ) ) );
+        a_pkg.f_payload.merge( *t_acq_req );
+        a_pkg.f_payload.add( "status-meaning", new param_value( acq_request::interpret_status( t_acq_req->get_status() ) ) );
         if( ! a_pkg.send_reply( R_SUCCESS, "Run request succeeded" ) )
         {
             MTWARN( mtlog, "Failed to send reply regarding the run request" );
@@ -382,14 +364,14 @@ namespace mantis
         return true;
     }
 
-    bool acq_request_db::handle_get_acq_status_request( const param_node& a_msg_payload, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg )
+    bool acq_request_db::handle_get_acq_status_request( const msg_request* a_request, request_reply_package& a_pkg )
     {
-        if( ! a_msg_payload.has( "values" ) || ! a_msg_payload[ "values" ].is_array() )
+        if( ! a_request->get_payload().has( "values" ) || ! a_request->get_payload()[ "values" ].is_array() )
         {
             a_pkg.send_reply( R_MESSAGE_ERROR_BAD_PAYLOAD, "Invalid payload: no <values> array present" );
             return false;
         }
-        string t_acq_id_str = a_msg_payload.array_at( "values" )->get_value( 0 );
+        string t_acq_id_str = a_request->get_payload().array_at( "values" )->get_value( 0 );
 
         if( t_acq_id_str.empty() )
         {
@@ -397,10 +379,7 @@ namespace mantis
             return false;
         }
 
-        boost::uuids::uuid t_id;
-        std::stringstream t_conv;
-        t_conv << t_acq_id_str;
-        t_conv >> t_id;
+        uuid_t t_id = uuid_from_string(t_acq_id_str );
         MTDEBUG( mtlog, "Requesting status of acquisition <" << t_id << ">" );
 
         const acq_request* t_request = get_acq_request( t_id );
@@ -411,14 +390,14 @@ namespace mantis
         }
 
         f_db_mutex.lock();
-        a_pkg.f_reply_node.merge( *t_request );
-        a_pkg.f_reply_node.add( "status-meaning", new param_value( acq_request::interpret_status( t_request->get_status() ) ) );
+        a_pkg.f_payload.merge( *t_request );
+        a_pkg.f_payload.add( "status-meaning", new param_value( acq_request::interpret_status( t_request->get_status() ) ) );
         f_db_mutex.unlock();
 
         return a_pkg.send_reply( R_SUCCESS, "Acquisition status request succeeded" );
     }
 
-    bool acq_request_db::handle_queue_request( const param_node& /*a_msg_payload*/, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg  )
+    bool acq_request_db::handle_queue_request( const msg_request* /*a_request*/, request_reply_package& a_pkg )
     {
         param_array* t_queue_array = new param_array();
         f_queue_mutex.lock();
@@ -430,24 +409,24 @@ namespace mantis
             t_queue_array->push_back( t_acq_node );
         }
         f_queue_mutex.unlock();
-        a_pkg.f_reply_node.add( "queue", t_queue_array );
+        a_pkg.f_payload.add( "queue", t_queue_array );
         return a_pkg.send_reply( R_SUCCESS, "Queue request succeeded" );
     }
 
-    bool acq_request_db::handle_queue_size_request( const param_node& /*a_msg_payload*/, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg  )
+    bool acq_request_db::handle_queue_size_request( const msg_request* /*a_request*/, request_reply_package& a_pkg )
     {
-        a_pkg.f_reply_node.add( "queue-size", new param_value( (uint32_t)queue_size() ) );
+        a_pkg.f_payload.add( "queue-size", new param_value( (uint32_t)queue_size() ) );
         return a_pkg.send_reply( R_SUCCESS, "Queue size request succeeded" );
     }
 
-    bool acq_request_db::handle_cancel_acq_request( const param_node& a_msg_payload, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg  )
+    bool acq_request_db::handle_cancel_acq_request( const msg_request* a_request, request_reply_package& a_pkg  )
     {
-        if( ! a_msg_payload.has( "values" ) || ! a_msg_payload[ "values" ].is_array() )
+        if( ! a_request->get_payload().has( "values" ) || ! a_request->get_payload()[ "values" ].is_array() )
         {
             a_pkg.send_reply( R_MESSAGE_ERROR_BAD_PAYLOAD, "Invalid payload: no <values> array present" );
             return false;
         }
-        string t_acq_id_str = a_msg_payload.array_at( "values" )->get_value( 0 );
+        string t_acq_id_str = a_request->get_payload().array_at( "values" )->get_value( 0 );
 
         if( t_acq_id_str.empty() )
         {
@@ -455,39 +434,36 @@ namespace mantis
             return false;
         }
 
-        boost::uuids::uuid t_id;
-        std::stringstream t_conv;
-        t_conv << t_acq_id_str;
-        t_conv >> t_id;
+        uuid_t t_id = uuid_from_string( t_acq_id_str );
         MTINFO( mtlog, "Canceling acquisition <" << t_id << ">" );
 
         if( ! cancel( t_id ) )
         {
-            a_pkg.send_reply( R_MESSAGE_ERROR_BAD_PAYLOAD, "Failed to cancel acquisition <" + to_string( t_id ) + ">; it may not exist" );
+            a_pkg.send_reply( R_MESSAGE_ERROR_BAD_PAYLOAD, "Failed to cancel acquisition <" + string_from_uuid( t_id ) + ">; it may not exist" );
             return false;
         }
 
         const acq_request* t_request = get_acq_request( t_id );
         f_db_mutex.lock();
-        a_pkg.f_reply_node.merge( *t_request );
-        a_pkg.f_reply_node.add( "status-meaning", new param_value( acq_request::interpret_status( t_request->get_status() ) ) );
+        a_pkg.f_payload.merge( *t_request );
+        a_pkg.f_payload.add( "status-meaning", new param_value( acq_request::interpret_status( t_request->get_status() ) ) );
         f_db_mutex.unlock();
         return a_pkg.send_reply( R_SUCCESS, "Cancellation succeeded" );
     }
 
-    bool acq_request_db::handle_clear_queue_request( const param_node& /*a_msg_payload*/, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg  )
+    bool acq_request_db::handle_clear_queue_request( const msg_request* /*a_request*/, request_reply_package& a_pkg )
     {
         clear_queue();
         return a_pkg.send_reply( R_SUCCESS, "Queue is clear (aside for runs in progress" );
     }
 
-    bool acq_request_db::handle_start_queue_request( const param_node& /*a_msg_payload*/, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg )
+    bool acq_request_db::handle_start_queue_request( const msg_request* /*a_request*/, request_reply_package& a_pkg )
     {
         start_queue();
         return a_pkg.send_reply( R_SUCCESS, "Queue started" );
     }
 
-    bool acq_request_db::handle_stop_queue_request( const param_node& /*a_msg_payload*/, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg )
+    bool acq_request_db::handle_stop_queue_request( const msg_request* /*a_request*/, request_reply_package& a_pkg )
     {
         stop_queue();
         return a_pkg.send_reply( R_SUCCESS, "Queue stopped" );

@@ -18,6 +18,7 @@
 #include "mt_device_manager.hh"
 #include "mt_exception.hh"
 #include "mt_logger.hh"
+#include "mt_message.hh"
 #include "mt_request_receiver.hh"
 #include "mt_acq_request_db.hh"
 #include "mt_server_worker.hh"
@@ -148,7 +149,7 @@ namespace mantis
     }
 
 
-    bool run_server::handle_get_server_status_request( const param_node& /*a_msg_payload*/, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg )
+    bool run_server::handle_get_server_status_request( const msg_request* /*a_request*/, request_reply_package& a_pkg )
     {
         param_node* t_server_node = new param_node();
         t_server_node->add( "status", new param_value( run_server::interpret_status( get_status() ) ) );
@@ -177,12 +178,12 @@ namespace mantis
         }
         f_component_mutex.unlock();
 
-        a_pkg.f_reply_node.add( "server", t_server_node );
+        a_pkg.f_payload.add( "server", t_server_node );
 
         return a_pkg.send_reply( R_SUCCESS, "Server status request succeeded" );
     }
 
-    bool run_server::handle_stop_all_request( const param_node& /*a_msg_payload*/, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg )
+    bool run_server::handle_stop_all_request( const msg_request* /*a_request*/, request_reply_package& a_pkg )
     {
         param_node* t_server_node = new param_node();
         t_server_node->add( "status", new param_value( run_server::interpret_status( get_status() ) ) );
@@ -211,12 +212,12 @@ namespace mantis
         }
         f_component_mutex.unlock();
 
-        a_pkg.f_reply_node.add( "server", t_server_node );
+        a_pkg.f_payload.add( "server", t_server_node );
 
         return a_pkg.send_reply( R_SUCCESS, "Server status request succeeded" );
     }
 
-    bool run_server::handle_quit_server_request( const param_node& /*a_msg_payload*/, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg )
+    bool run_server::handle_quit_server_request( const msg_request* /*a_request*/, request_reply_package& a_pkg )
     {
         bool t_return = a_pkg.send_reply( R_SUCCESS, "Server-quit command processed" );
         quit_server();

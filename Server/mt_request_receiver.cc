@@ -7,7 +7,6 @@
 #include "mt_buffer.hh"
 #include "mt_config_manager.hh"
 #include "mt_constants.hh"
-#include "mt_device_manager.hh"
 #include "mt_logger.hh"
 #include "mt_message.hh"
 #include "mt_param_json.hh"
@@ -17,6 +16,7 @@
 #include "mt_server_worker.hh"
 
 #include <cstddef>
+#include <sstream>
 
 
 using std::string;
@@ -28,7 +28,21 @@ namespace mantis
 
     bool request_reply_package::send_reply( unsigned a_return_code, const std::string& a_return_msg )
     {
-        return f_request_receiver->send_reply( a_return_code, a_return_msg, *this );
+        msg_reply* t_reply = msg_reply::create( a_return_code, a_return_msg, new param_node( f_payload ), f_request->get_reply_to(), "", message::k_json );
+
+        MTDEBUG( mtlog, "Sending reply message:\n" <<
+                 "Return code: " << t_reply->get_return_code() << '\n' <<
+                 "Return message: " << t_reply->get_return_message() <<
+                 f_payload );
+
+        string t_consumer_tag;
+        if( ! t_reply->do_publish( f_channel, "", t_consumer_tag ) )
+        {
+            MTWARN( mtlog, "Unable to send reply" );
+            return false;
+        }
+
+        return true;
     }
 
 
@@ -41,6 +55,8 @@ namespace mantis
             f_acq_request_db( a_acq_request_db ),
             f_server_worker( a_server_worker ),
             f_canceled( false ),
+            f_lockout_tag(),
+            f_lockout_key( generate_nil_uuid() ),
             f_status( k_initialized )
     {
     }
@@ -111,102 +127,66 @@ namespace mantis
             MTINFO( mtlog, "Waiting for incoming message" );
             AmqpClient::Envelope::ptr_t t_envelope = f_channel->BasicConsumeMessage( f_consumer_tag );
 
+            f_channel->BasicAck( t_envelope );
+            MTINFO( mtlog, "Message received" );
+
             if (f_canceled.load()) return;
 
             f_status.store( k_processing );
 
-            param_node* t_msg_node = NULL;
-            if( t_envelope->Message()->ContentEncoding() == "application/json" )
-            {
-                t_msg_node = param_input_json::read_string( t_envelope->Message()->Body() );
-            }
-            else if( t_envelope->Message()->ContentEncoding() == "application/msgpack" )
-            {
-                t_msg_node = param_input_msgpack::read_string( t_envelope->Message()->Body() );
-            }
-            else
-            {
-                MTERROR( mtlog, "Unable to parse message with content type <" << t_envelope->Message()->ContentEncoding() << ">" );
-                f_channel->BasicAck( t_envelope );
-                continue;
-            }
+            message* t_message = message::process_envelope( t_envelope, f_queue_name );
 
-            if( t_msg_node == NULL )
+            if( t_message->is_request() )
             {
-                MTERROR( mtlog, "Message body could not be parsed; skipping request" );
-                f_channel->BasicAck( t_envelope );
-                continue;
-            }
+                msg_request* t_request = static_cast< msg_request* >( t_message );
+                request_reply_package t_reply_pkg( t_request, f_channel );
 
-            string t_routing_key = t_envelope->RoutingKey();
-
-            MTINFO( mtlog, "Message received" );
-            MTDEBUG( mtlog, "Message received:\n" <<
-                     "Routing key: " << t_routing_key <<
-                     *t_msg_node );
-
-            if( t_routing_key.find( f_queue_name ) != 0 )
-            {
-                MTWARN( mtlog, "Routing key does not start with the queue name");
-                f_channel->BasicAck( t_envelope );
-                continue;
-            }
-            t_routing_key.erase( 0, f_queue_name.size() + 1 ); // 1 added to remove the '.' that separates nodes
-            MTDEBUG( mtlog, "Mantis routing key: " << t_routing_key );
-
-
-            param_node* t_msg_payload = NULL;
-            param* t_payload_param = t_msg_node->remove( "payload" );
-            if( t_payload_param == NULL ) t_msg_payload = new param_node();
-            else
-            {
-                if( t_payload_param->is_node() ) t_msg_payload = static_cast< param_node* >( t_payload_param );
+                // the lockout key must be valid
+                if( ! t_request->get_lockout_key_valid() )
+                {
+                    t_reply_pkg.send_reply( R_MESSAGE_ERROR_INVALID_KEY, "Lockout key could not be parsed" );
+                    MTWARN( mtlog, "Message had an invalid lockout key" );
+                }
                 else
                 {
-                    MTWARN( mtlog, "Non-node payload is present; it will be ignored" );
-                    t_msg_payload = new param_node();
-                    delete t_payload_param;
+                    switch( t_request->get_message_op() )
+                    {
+                        case OP_RUN:
+                        {
+                            do_run_request( t_request, t_reply_pkg );
+                            break;
+                        }
+                        case OP_GET:
+                        {
+                            do_get_request( t_request, t_reply_pkg );
+                            break;
+                        } // end "get" operation
+                        case OP_SET:
+                        {
+                            do_set_request( t_request, t_reply_pkg );
+                            break;
+                        } // end "set" operation
+                        case OP_CMD:
+                        {
+                            do_cmd_request( t_request, t_reply_pkg );
+                            break;
+                        }
+                        default:
+                            std::stringstream t_error_stream;
+                            t_error_stream << "Unrecognized message operation: <" << t_request->get_message_type() << ">";
+                            string t_error_msg( t_error_stream.str() );
+                            MTERROR( mtlog, t_error_msg );
+                            t_reply_pkg.send_reply( R_MESSAGE_ERROR_INVALID_METHOD, t_error_msg );
+                            break;
+                    } // end switch on message type
                 }
             }
-
-            const param_node* t_sender_node = t_msg_node->node_at( "sender_info" );
-
-            f_channel->BasicAck( t_envelope );
-
-            param_node t_reply_node;
-
-            request_reply_package t_reply_pkg( t_envelope, t_reply_node, this );
-
-            switch( t_msg_node->get_value< unsigned >( "msgop", OP_UNKNOWN ) )
+            else
             {
-                case OP_RUN:
-                {
-                    do_run_request( *t_msg_payload, t_routing_key, t_reply_pkg, t_sender_node );
-                    break;
-                }
-                case OP_GET:
-                {
-                    do_get_request( *t_msg_payload, t_routing_key, t_reply_pkg );
-                    break;
-                } // end "get" operation
-                case OP_SET:
-                {
-                    do_set_request( *t_msg_payload, t_routing_key, t_reply_pkg );
-                    break;
-                } // end "set" operation
-                case OP_CMD:
-                {
-                    do_cmd_request( *t_msg_payload, t_routing_key, t_reply_pkg );
-                    break;
-                }
-                default:
-                    MTERROR( mtlog, "Unrecognized message operation: <" << t_msg_node->get_value< unsigned >( "msgop" ) << ">" );
-                    break;
-            } // end switch on message type
+                MTWARN( mtlog, "Non-request message received by the request_receiver, and will be ignored" );
+            }
 
-            // nothing should happen after the switch block except deleting objects
-            delete t_msg_node;
-            delete t_msg_payload;
+            delete t_message;
 
             MTINFO( mtlog, "Message handled" );
         } // end while (true)
@@ -225,194 +205,230 @@ namespace mantis
         return;
     }
 
-    bool request_receiver::do_run_request( param_node& a_msg_payload, const std::string& a_mantis_routing_key, request_reply_package& a_pkg, const param_node* a_sender_node )
+    bool request_receiver::do_run_request( const msg_request* a_request, request_reply_package& a_pkg )
     {
         MTDEBUG( mtlog, "Run operation request received" );
 
-        // add the sender information to the payload; copies a_sender_node
-        a_msg_payload.add( "client", *a_sender_node );
+        if( ! authenticate( a_request->get_lockout_key() ) )
+        {
+            string t_key_used( a_request->get_payload().get_value( "key", "" ) );
+            MTINFO( mtlog, "Request denied due to lockout (key used: " << t_key_used << ")" );
+            a_pkg.send_reply( R_MESSAGE_ERROR_ACCESS_DENIED, "Request denied due to lockout (key used: " + t_key_used + ")" );
+            return false;
+        }
 
-        return f_acq_request_db->handle_new_acq_request( a_msg_payload, a_mantis_routing_key, a_pkg );
+        return f_acq_request_db->handle_new_acq_request( a_request, a_pkg );
     }
 
-    bool request_receiver::do_get_request( param_node& a_msg_payload, const std::string& a_mantis_routing_key, request_reply_package& a_pkg )
+    bool request_receiver::do_get_request( const msg_request* a_request, request_reply_package& a_pkg )
     {
         MTDEBUG( mtlog, "Get request received" );
 
         // require that there is a reply-to
-        if( ! a_pkg.f_envelope->Message()->ReplyToIsSet() )
+        if( a_request->get_reply_to().empty() )
         {
-            MTWARN( mtlog, "Query request has no reply-to" );
+            MTWARN( mtlog, "Get request has no reply-to" );
             return false;
         }
 
         std::string t_query_type;
         try
         {
-            parsable t_routing_key_node( a_mantis_routing_key );
+            parsable t_routing_key_node( a_request->get_mantis_routing_key() );
             t_query_type = t_routing_key_node.begin()->first;
             MTDEBUG( mtlog, "Query type: " << t_query_type );
         }
         catch( exception& e )
         {
-            send_reply( R_DEVICE_ERROR, string( "Routing key was not formatted correctly: " ) + e.what(), a_pkg );
+            a_pkg.send_reply( R_DEVICE_ERROR, string( "Routing key was not formatted correctly: " ) + e.what() );
             return false;
         }
 
         param_node t_reply;
         if( t_query_type == "acq-config" )
         {
-            return f_conf_mgr->handle_get_acq_config_request( a_msg_payload, a_mantis_routing_key, a_pkg );
+            return f_conf_mgr->handle_get_acq_config_request( a_request, a_pkg );
         }
         else if( t_query_type == "server-config" )
         {
-            return f_conf_mgr->handle_get_server_config_request( a_msg_payload, a_mantis_routing_key, a_pkg );
+            return f_conf_mgr->handle_get_server_config_request( a_request, a_pkg );
+        }
+        else if( t_query_type == "is-locked" )
+        {
+            return handle_is_locked_request( a_request, a_pkg );
         }
         else if( t_query_type == "acq-status" )
         {
-            return f_acq_request_db->handle_get_acq_status_request( a_msg_payload, a_mantis_routing_key, a_pkg );
+            return f_acq_request_db->handle_get_acq_status_request( a_request, a_pkg );
         }
         else if( t_query_type == "queue" )
         {
-            return f_acq_request_db->handle_queue_request( a_msg_payload, a_mantis_routing_key, a_pkg );
+            return f_acq_request_db->handle_queue_request( a_request, a_pkg );
         }
         else if( t_query_type == "queue-size" )
         {
-            return f_acq_request_db->handle_queue_size_request( a_msg_payload, a_mantis_routing_key, a_pkg );
+            return f_acq_request_db->handle_queue_size_request( a_request, a_pkg );
         }
         else if( t_query_type == "server-status" )
         {
-            return f_run_server->handle_get_server_status_request( a_msg_payload, a_mantis_routing_key, a_pkg );
+            return f_run_server->handle_get_server_status_request( a_request, a_pkg );
         }
         else
         {
-            send_reply( R_MESSAGE_ERROR_BAD_PAYLOAD, "Unrecognized query type or no query type provided", a_pkg );
+            a_pkg.send_reply( R_MESSAGE_ERROR_BAD_PAYLOAD, "Unrecognized query type or no query type provided" );
             return false;
         }
     }
 
-    bool request_receiver::do_set_request( param_node& a_msg_payload, const std::string& a_mantis_routing_key, request_reply_package& a_pkg )
+    bool request_receiver::do_set_request( const msg_request* a_request, request_reply_package& a_pkg )
     {
         MTDEBUG( mtlog, "Set request received" );
 
-        return f_conf_mgr->handle_set_request( a_msg_payload, a_mantis_routing_key, a_pkg );
+        if( ! authenticate( a_request->get_lockout_key() ) )
+        {
+            string t_key_used( a_request->get_payload().get_value( "key", "" ) );
+            MTINFO( mtlog, "Request denied due to lockout (key used: " << t_key_used << ")" );
+            a_pkg.send_reply( R_MESSAGE_ERROR_ACCESS_DENIED, "Request denied due to lockout (key used: " + t_key_used + ")" );
+            return false;
+        }
+
+        return f_conf_mgr->handle_set_request( a_request, a_pkg );
     }
 
-    bool request_receiver::do_cmd_request( param_node& a_msg_payload, const std::string& a_mantis_routing_key, request_reply_package& a_pkg )
+    bool request_receiver::do_cmd_request( const msg_request* a_request, request_reply_package& a_pkg )
     {
         MTDEBUG( mtlog, "Cmd request received" );
 
+        //MTWARN( mtlog, "uuid string: " << a_request->get_payload().get_value( "key", "") << ", uuid: " << uuid_from_string( a_request->get_payload().get_value( "key", "") ) );
+        if( ! authenticate( a_request->get_lockout_key() ) )
+        {
+            string t_key_used( a_request->get_payload().get_value( "key", "" ) );
+            MTINFO( mtlog, "Request denied due to lockout (key used: " << t_key_used << ")" );
+            a_pkg.send_reply( R_MESSAGE_ERROR_ACCESS_DENIED, "Request denied due to lockout (key used: " + t_key_used + ")" );
+            return false;
+        }
+
         std::string t_instruction;
-        if( a_mantis_routing_key.find( '.' ) != std::string::npos )
+        if( ! a_request->get_mantis_routing_key().empty() )
         {
             try
             {
-                parsable t_routing_key_node( a_mantis_routing_key );
+                parsable t_routing_key_node( a_request->get_mantis_routing_key() );
                 t_instruction = t_routing_key_node.begin()->first;
-                MTDEBUG( mtlog, "I type: " << t_instruction );
+                MTDEBUG( mtlog, "Instruction: " << t_instruction );
             }
             catch( exception& e )
             {
-                send_reply( R_DEVICE_ERROR, string( "Routing key was not formatted correctly: " ) + e.what(), a_pkg );
+                a_pkg.send_reply( R_DEVICE_ERROR, string( "Routing key was not formatted correctly: " ) + e.what() );
                 return false;
             }
         }
         else
         {
-            if( ! a_msg_payload.has( "values" ) || ! a_msg_payload.at( "values" )->is_array() )
+            if( ! a_request->get_payload().has( "values" ) || ! a_request->get_payload().at( "values" )->is_array() )
             {
-                send_reply( R_DEVICE_ERROR, string( "No values array present (required for cmd instruction)" ), a_pkg );
+                a_pkg.send_reply( R_DEVICE_ERROR, string( "No values array present (required for cmd instruction)" ) );
                 return false;
             }
-            t_instruction = a_msg_payload.array_at( "values" )->get_value( 0 );
+            t_instruction = a_request->get_payload().array_at( "values" )->get_value( 0 );
         }
 
         if( t_instruction == "replace-config" )
         {
-            return f_conf_mgr->handle_replace_acq_config( a_msg_payload, a_mantis_routing_key, a_pkg );
+            return f_conf_mgr->handle_replace_acq_config( a_request, a_pkg );
         }
         else if( t_instruction == "add" )
         {
-            return f_conf_mgr->handle_add_request( a_msg_payload, a_mantis_routing_key, a_pkg );
+            return f_conf_mgr->handle_add_request( a_request, a_pkg );
         }
         else if( t_instruction == "remove" )
         {
-            return f_conf_mgr->handle_remove_request( a_msg_payload, a_mantis_routing_key, a_pkg );
+            return f_conf_mgr->handle_remove_request( a_request, a_pkg );
+        }
+        else if( t_instruction == "lock" )
+        {
+            return handle_lock_request( a_request, a_pkg );
+        }
+        else if( t_instruction == "unlock" )
+        {
+            return handle_unlock_request( a_request, a_pkg );
         }
         else if( t_instruction == "cancel-acq" )
         {
-            return f_acq_request_db->handle_cancel_acq_request( a_msg_payload, a_mantis_routing_key, a_pkg );
+            return f_acq_request_db->handle_cancel_acq_request( a_request, a_pkg );
         }
         else if( t_instruction == "clear-queue" )
         {
-            return f_acq_request_db->handle_clear_queue_request( a_msg_payload, a_mantis_routing_key, a_pkg );
+            return f_acq_request_db->handle_clear_queue_request( a_request, a_pkg );
         }
         else if( t_instruction == "start-queue" )
         {
-            return f_acq_request_db->handle_start_queue_request( a_msg_payload, a_mantis_routing_key, a_pkg );
+            return f_acq_request_db->handle_start_queue_request( a_request, a_pkg );
         }
         else if( t_instruction == "stop-queue" )
         {
-            return f_acq_request_db->handle_stop_queue_request( a_msg_payload, a_mantis_routing_key, a_pkg );
+            return f_acq_request_db->handle_stop_queue_request( a_request, a_pkg );
         }
         else if( t_instruction == "stop-acq" )
         {
-            return f_server_worker->handle_stop_acq_request( a_msg_payload, a_mantis_routing_key, a_pkg );
+            return f_server_worker->handle_stop_acq_request( a_request, a_pkg );
         }
         else if( t_instruction == "stop-all" )
         {
-            return f_run_server->handle_stop_all_request( a_msg_payload, a_mantis_routing_key, a_pkg );
+            return f_run_server->handle_stop_all_request( a_request, a_pkg );
         }
         else if( t_instruction == "quit-mantis" )
         {
-            return f_run_server->handle_quit_server_request( a_msg_payload, a_mantis_routing_key, a_pkg );
+            return f_run_server->handle_quit_server_request( a_request, a_pkg );
         }
         else
         {
             MTWARN( mtlog, "Instruction <" << t_instruction << "> not understood" );
-            send_reply( R_MESSAGE_ERROR_BAD_PAYLOAD, "Instruction <" + t_instruction + "> not understood", a_pkg );
+            a_pkg.send_reply( R_MESSAGE_ERROR_BAD_PAYLOAD, "Instruction <" + t_instruction + "> not understood" );
             return false;
         }
     }
 
-    bool request_receiver::send_reply( unsigned a_return_code, const std::string& a_return_msg, request_reply_package& a_pkg ) const
+
+    bool request_receiver::handle_lock_request( const msg_request* a_request, request_reply_package& a_pkg )
     {
-        if( ! a_pkg.f_envelope->Message()->ReplyToIsSet() )
+        uuid_t t_new_key = enable_lockout( a_request->get_sender_info(), a_request->get_lockout_key() );
+        if( t_new_key.is_nil() )
         {
-            MTWARN( mtlog, "Set request has no reply-to" );
+            a_pkg.send_reply( R_DEVICE_ERROR, "Unable to lock server" );
             return false;
         }
 
-        msg_reply* t_reply = msg_reply::create( a_return_code, a_return_msg, new param_node( a_pkg.f_reply_node ), a_pkg.f_envelope->Message()->ReplyTo(), message::k_json );
-        t_reply->set_correlation_id( a_pkg.f_envelope->Message()->CorrelationId() );
-
-        MTDEBUG( mtlog, "Sending reply message:\n" <<
-                 "Return code: " << t_reply->get_return_code() << '\n' <<
-                 "Return message: " << t_reply->get_return_message() <<
-                 a_pkg.f_reply_node );
-
-        string t_consumer_tag;
-        if( ! t_reply->do_publish( f_channel, "", t_consumer_tag ) )
-        {
-            MTWARN( mtlog, "Unable to send reply" );
-            return false;
-        }
-
-        return true;
+        a_pkg.f_payload.add( "key", new param_value( string_from_uuid( t_new_key ) ) );
+        return a_pkg.send_reply( R_SUCCESS, "Server is now locked" );
     }
-/*
-    param_node* request_receiver::create_sender_info() const
+
+    bool request_receiver::handle_unlock_request( const msg_request* a_request, request_reply_package& a_pkg )
     {
-        param_node* t_sender_node = new param_node();
-        t_sender_node->add( "commit", param_value( f_version->commit() ) );
-        t_sender_node->add( "exe", param_value( f_version->exe_name() ) );
-        t_sender_node->add( "version", param_value( f_version->version_str() ) );
-        t_sender_node->add( "package", param_value( f_version->package() ) );
-        t_sender_node->add( "hostname", param_value( f_version->hostname() ) );
-        t_sender_node->add( "username", param_value( f_version->username() ) );
-        return t_sender_node;
+        if( ! is_locked() )
+        {
+            return a_pkg.send_reply( R_WARNING_NO_ACTION_TAKEN, "Already unlocked" );
+        }
+
+        bool t_force = a_request->get_payload().get_value( "force", false );
+
+        if( disable_lockout( a_request->get_lockout_key(), t_force ) )
+        {
+            return a_pkg.send_reply( R_SUCCESS, "Server unlocked" );
+        }
+        a_pkg.send_reply( R_DEVICE_ERROR, "Failed to unlock server" );
+        return false;
     }
-*/
+
+    bool request_receiver::handle_is_locked_request( const msg_request* /*a_request*/, request_reply_package& a_pkg )
+    {
+        bool t_is_locked = is_locked();
+        a_pkg.f_payload.add( "is_locked", param_value( t_is_locked ) );
+        if( t_is_locked ) a_pkg.f_payload.add( "tag", f_lockout_tag );
+        return a_pkg.send_reply( R_SUCCESS, "Checked lock status" );
+    }
+
+
     void request_receiver::cancel()
     {
         MTDEBUG( mtlog, "Canceling request receiver" );
@@ -423,6 +439,51 @@ namespace mantis
             return;
         }
         return;
+    }
+
+    uuid_t request_receiver::enable_lockout( const param_node& a_tag )
+    {
+        return enable_lockout( a_tag, generate_random_uuid() );
+    }
+
+    uuid_t request_receiver::enable_lockout( const param_node& a_tag, uuid_t a_key )
+    {
+        if( is_locked() ) return generate_nil_uuid();
+        if( a_key.is_nil() ) f_lockout_key = generate_random_uuid();
+        else f_lockout_key = a_key;
+        f_lockout_tag = a_tag;
+        return f_lockout_key;
+    }
+
+    bool request_receiver::disable_lockout( const uuid_t& a_key, bool a_force )
+    {
+        if( ! is_locked() ) return true;
+        if( ! a_force && a_key != f_lockout_key ) return false;
+        f_lockout_key = generate_nil_uuid();
+        f_lockout_tag.clear();
+        return true;
+    }
+
+    bool request_receiver::is_locked() const
+    {
+        return ! f_lockout_key.is_nil();
+    }
+
+    const param_node& request_receiver::get_lockout_tag() const
+    {
+        return f_lockout_tag;
+    }
+
+    bool request_receiver::check_key( const uuid_t& a_key ) const
+    {
+        return f_lockout_key == a_key;
+    }
+
+    bool request_receiver::authenticate( const uuid_t& a_key ) const
+    {
+        MTDEBUG( mtlog, "Authenticating with key <" << a_key << ">" );
+        if( is_locked() ) return check_key( a_key );
+        return true;
     }
 
     std::string request_receiver::interpret_status( status a_status )

@@ -11,6 +11,7 @@
 
 #include "mt_device_manager.hh"
 #include "mt_logger.hh"
+#include "mt_message.hh"
 #include "mt_parser.hh"
 #include "mt_request_receiver.hh"
 
@@ -40,25 +41,25 @@ namespace mantis
         return t_copy;
     }
 
-    bool config_manager::handle_get_acq_config_request( const param_node& /*a_msg_payload*/, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg )
+    bool config_manager::handle_get_acq_config_request( const msg_request* /*a_request*/, request_reply_package& a_pkg )
     {
         f_msc_mutex.lock();
-        a_pkg.f_reply_node.merge( *f_master_server_config.node_at( "acq" ) );
+        a_pkg.f_payload.merge( *f_master_server_config.node_at( "acq" ) );
         f_msc_mutex.unlock();
         return a_pkg.send_reply( R_SUCCESS, "Get request succeeded" );
     }
 
-    bool config_manager::handle_get_server_config_request( const param_node& /*a_msg_payload*/, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg )
+    bool config_manager::handle_get_server_config_request( const msg_request* /*a_request*/, request_reply_package& a_pkg )
     {
         f_msc_mutex.lock();
-        a_pkg.f_reply_node.merge( f_master_server_config );
+        a_pkg.f_payload.merge( f_master_server_config );
         f_msc_mutex.unlock();
         return a_pkg.send_reply( R_SUCCESS, "Get request succeeded" );
     }
 
-    bool config_manager::handle_set_request( const param_node& a_msg_payload, const std::string& a_mantis_routing_key, request_reply_package& a_pkg )
+    bool config_manager::handle_set_request( const msg_request* a_request, request_reply_package& a_pkg)
     {
-        string t_routing_key = a_mantis_routing_key;
+        string t_routing_key = a_request->get_mantis_routing_key();
         if( t_routing_key.empty() )
         {
             a_pkg.send_reply( R_AMQP_ERROR_ROUTINGKEY_NOTFOUND, "No routing key was provided" );
@@ -71,7 +72,7 @@ namespace mantis
         try
         {
             f_msc_mutex.lock();
-            t_routing_key += string( "=" ) + a_msg_payload.array_at( "values" )->get_value( 0 );
+            t_routing_key += string( "=" ) + a_request->get_payload().array_at( "values" )->get_value( 0 );
             parsable t_routing_key_node_with_value( t_routing_key );
             MTDEBUG( mtlog, "Parsed routing key and added value:\n" << t_routing_key_node_with_value );
             if( ! f_master_server_config.node_at( "acq" )->has_subset( t_routing_key_node_with_value ) )
@@ -91,20 +92,20 @@ namespace mantis
         }
 
         f_msc_mutex.lock();
-        a_pkg.f_reply_node.add( "master-config", *f_master_server_config.node_at( "acq" ) );
+        a_pkg.f_payload.add( "master-config", *f_master_server_config.node_at( "acq" ) );
         f_msc_mutex.unlock();
 
         return a_pkg.send_reply( R_SUCCESS, "Request succeeded" );
     }
 
 
-    bool config_manager::handle_add_request( const param_node& a_msg_payload, const std::string& a_mantis_routing_key, request_reply_package& a_pkg )
+    bool config_manager::handle_add_request( const msg_request* a_request, request_reply_package& a_pkg )
     {
         // add something to the master config
 
-        parsable t_dest_node( a_mantis_routing_key );
+        parsable t_dest_node( a_request->get_mantis_routing_key() );
 
-       if( ! t_dest_node[ "add" ].is_node() )
+        if( ! t_dest_node[ "add" ].is_node() )
         {
             a_pkg.send_reply( R_DEVICE_ERROR, "<add> instruction was not properly formatted" );
             return false;
@@ -116,12 +117,13 @@ namespace mantis
             try
             {
                 param_node* t_devices_node = f_master_server_config.node_at( "acq" )->node_at( "devices" );
-                for( param_node::const_iterator t_dev_it = a_msg_payload.begin(); t_dev_it != a_msg_payload.end(); ++t_dev_it )
+                const param_node& t_req_payload = a_request->get_payload();
+                for( param_node::const_iterator t_dev_it = t_req_payload.begin(); t_dev_it != t_req_payload.end(); ++t_dev_it )
                 {
                     string t_device_type = t_dev_it->first;
                     if( ! t_dev_it->second->is_value() )
                     {
-                        MTDEBUG( mtlog, "Skipping <t_device_type> because it's not a value" );
+                        MTDEBUG( mtlog, "Skipping <" << t_device_type << "> because it's not a value" );
                         continue;
                     }
                     string t_device_name = t_dev_it->second->as_value().as_string();
@@ -160,17 +162,17 @@ namespace mantis
         }
 
         f_msc_mutex.lock();
-        a_pkg.f_reply_node.add( "master-config", f_master_server_config );
+        a_pkg.f_payload.add( "master-config", f_master_server_config );
         f_msc_mutex.unlock();
 
         return a_pkg.send_reply( R_SUCCESS, "Add request succeeded" );
     }
 
-    bool config_manager::handle_remove_request( const param_node& /*a_msg_payload*/, const std::string& a_mantis_routing_key, request_reply_package& a_pkg )
+    bool config_manager::handle_remove_request( const msg_request* a_request, request_reply_package& a_pkg )
     {
         // remove something from the master config
 
-        parsable t_dest_node( a_mantis_routing_key );
+        parsable t_dest_node( a_request->get_mantis_routing_key() );
 
         if( ! t_dest_node[ "remove" ].is_node() )
         {
@@ -207,21 +209,21 @@ namespace mantis
         }
 
         f_msc_mutex.lock();
-        a_pkg.f_reply_node.add( "master-config", f_master_server_config );
+        a_pkg.f_payload.add( "master-config", f_master_server_config );
         f_msc_mutex.unlock();
 
         return a_pkg.send_reply( R_AMQP_ERROR_ROUTINGKEY_NOTFOUND, "Remove instruction succeeded" );
     }
 
 
-    bool config_manager::handle_replace_acq_config( const param_node& a_msg_payload, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg )
+    bool config_manager::handle_replace_acq_config( const msg_request* a_request, request_reply_package& a_pkg )
     {
         // payload contents should replace the acquisition config
         MTDEBUG( mtlog, "Loading a full configuration" );
         f_msc_mutex.lock();
-        (*f_master_server_config.node_at( "acq" )) = a_msg_payload;
+        (*f_master_server_config.node_at( "acq" )) = a_request->get_payload();
 
-        a_pkg.f_reply_node.add( "master-config", f_master_server_config );
+        a_pkg.f_payload.add( "master-config", f_master_server_config );
         f_msc_mutex.unlock();
 
         return a_pkg.send_reply( R_SUCCESS, "Request_succeeded" );

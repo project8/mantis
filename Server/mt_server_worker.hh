@@ -15,6 +15,7 @@ namespace mantis
     class condition;
     class device_manager;
     class digitizer;
+    class msg_request;
     class param_node;
     class run_context_dist;
     class acq_request_db;
@@ -36,7 +37,7 @@ namespace mantis
 
             void cancel(); /// cancels the server worker entirely
 
-            bool handle_stop_acq_request( const param_node& a_msg_payload, const std::string& a_mantis_routing_key, request_reply_package& a_pkg );
+            bool handle_stop_acq_request( const msg_request* a_request, request_reply_package& a_pkg );
 
         private:
             device_manager* f_dev_mgr;
