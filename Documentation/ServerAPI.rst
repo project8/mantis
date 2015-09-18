@@ -13,16 +13,10 @@ For each of the message types below, the allowed routing key specifiers will be 
 Lockout
 =======
 
-The server can be locked out to require a key for some types of messages.  Lockable messages are specified below.
-
-The lockout system follows the following rules:
-
-- When a ``lock`` request is made, the UUID key will be returned.  That key should accompany all lockable requests until the server is unlocked.
-- When needed, the lock key should be provided in the message payload with the form ``lockout-key=[key; string]``.
-- If the lock is enabled, and the key is not provided or is incorrect, then an error will be returned.
-- When a ``unlock`` request is made, the return will indicate whether the lock has been successfully disabled.
-- If a lockout key is provided but the server is unlocked (or the message is not lockable), it will be ignored.
-- In the event that the lock key is lost, the ``unlock`` command can be forced, in which case the server lockout will be disabled without needing the key.
+The server can be locked out to require a key for some types of messages.  
+It obeys the lockout behavior specified by the dripline wire protocol.  
+The server keeps a lockout tag that holds the information about who enabled the lock.  
+Additionally, there is a ``OP_GET`` request ``is-locked`` that can be used to assess the state of the lock.
 
 
 Message Types
@@ -43,9 +37,8 @@ None
 Payload
 -------
 
-- ``file=[filename; string]`` -- *(required)* Filename for the acquisition.
-- ``description=[description; string]`` -- *(optional)* Text description for the acquisition; saved in the file header.
-- ``lockout-key=[key; string]`` -- *(required if locked)* UUID lockout key.
+- ``file=[filename (string)]`` -- *(required)* Filename for the acquisition.
+- ``description=[description (string)]`` -- *(optional)* Text description for the acquisition; saved in the file header.
 
 
 
@@ -76,7 +69,7 @@ The payload options depend on the routing key specifier used:
 
 acq-status
 """"""""""
-- ``value=[UUID; string]`` -- *(required)* UUID of the run being queried.
+- ``value=[UUID (string)]`` -- *(required)* UUID of the run being queried.
 
 
 
@@ -95,8 +88,7 @@ The configuration parameter being set should be specified.
 Payload
 -------
 
-- ``value=[value; varied]`` -- *(required)* Specify the value to which the run-configuration item should be set.  Any values valid in the JSON standard will work, including strings, numbers, and ``true`` or ``false`` for booleans.
-- ``lockout-key=[key; string]`` -- *(required if locked)* UUID lockout key.
+- ``value=[value (varied)]`` -- *(required)* Specify the value to which the run-configuration item should be set.  Any values valid in the JSON standard will work, including strings, numbers, and ``true`` or ``false`` for booleans.
 
 
 
@@ -134,19 +126,19 @@ Payload
 -------
 
 - ``values=[[instruction]]`` -- *(optional)* If the command instruction is not included in the routing key specifier, it should be given in the payload as the first element of the ``values`` array.
-- ``lockout-key=[key; string]`` -- *(required if locked)* UUID lockout key.
 
 Other payload options depend on the command instruction:
 
 add.device
 """"""""""
-- ``[device type]=[device name; string]`` -- *(required)* The device type should be one of the valid device types for the server being run.  The device name is the name that will be used to refer to this particular instance of the device in the server configuration.
+- ``[device type]=[device name (string)]`` -- *(required)* The device type should be one of the valid device types for the server being run.  The device name is the name that will be used to refer to this particular instance of the device in the server configuration.
 
 replace.config
 """"""""""""""
-- ``load.json=[filename; string]`` -- *(optional)* This JSON file will be parsed by the client, and the contents (plus any other instruction options given) will be used by the server to replace the run configuration.
+- ``[full config]`` -- The full acquisition configuration should be specified.
 
+.. _unlock:
 unlock
 """"""
-- ``force=[true; bool]`` -- *(optional)* Disables the lockout without a key.
+- ``force=[true (bool)]`` -- *(optional)* Disables the lockout without a key.
 

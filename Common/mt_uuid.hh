@@ -26,6 +26,10 @@ namespace mantis
     uuid_t MANTIS_API generate_nil_uuid();
 
     uuid_t MANTIS_API uuid_from_string( const std::string& a_id_str );
+    uuid_t MANTIS_API uuid_from_string( const char* a_id_str );
+
+    uuid_t MANTIS_API uuid_from_string( const std::string& a_id_str, bool& a_valid_flag );
+    uuid_t MANTIS_API uuid_from_string( const char* a_id_str, bool& a_valid_flag );
 
     std::string MANTIS_API string_from_uuid( const uuid_t& a_id );
 

@@ -174,7 +174,7 @@ namespace mantis
         t_payload_node->add( "file", *f_config.at( "file ") ); // copy the file node
         if( f_config.has( "description" ) ) t_payload_node->add( "description", *f_config.at( "description" ) ); // (optional) copy the description node
 
-        return msg_request::create( t_payload_node, OP_RUN, a_routing_key, message::k_json );
+        return msg_request::create( t_payload_node, OP_RUN, a_routing_key, "", message::k_json );
     }
 
     msg_request* run_client::create_get_request( const std::string& a_routing_key )
@@ -188,7 +188,7 @@ namespace mantis
             t_payload_node->add( "values", t_values_array );
         }
 
-        return msg_request::create( t_payload_node, OP_GET, a_routing_key, message::k_json );
+        return msg_request::create( t_payload_node, OP_GET, a_routing_key, "", message::k_json );
     }
 
     msg_request* run_client::create_set_request( const std::string& a_routing_key )
@@ -205,7 +205,7 @@ namespace mantis
         param_node* t_payload_node = new param_node();
         t_payload_node->add( "values", t_values_array );
 
-        return msg_request::create( t_payload_node, OP_SET, a_routing_key, message::k_json );
+        return msg_request::create( t_payload_node, OP_SET, a_routing_key, "", message::k_json );
     }
 
     msg_request* run_client::create_cmd_request( const std::string& a_routing_key )
@@ -238,7 +238,7 @@ namespace mantis
         // at this point, all that remains in f_config should be other options that we want to add to the payload node
         t_payload_node->merge( f_config ); // copy f_config
 
-        return msg_request::create( t_payload_node, OP_CMD, a_routing_key, message::k_json );
+        return msg_request::create( t_payload_node, OP_CMD, a_routing_key, "", message::k_json );
     }
 
 /*

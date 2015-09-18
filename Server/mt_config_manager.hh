@@ -14,6 +14,7 @@
 namespace mantis
 {
     class device_manager;
+    class msg_request;
     struct request_reply_package;
 
     class config_manager
@@ -24,15 +25,15 @@ namespace mantis
 
             param_node* copy_master_server_config( const std::string& a_node_name = "" ) const;
 
-            bool handle_get_acq_config_request( const param_node& a_msg_payload, const param_node& a_sender_node, const std::string& a_mantis_routing_key, request_reply_package& a_pkg );
-            bool handle_get_server_config_request( const param_node& a_msg_payload, const param_node& a_sender_node, const std::string& a_mantis_routing_key, request_reply_package& a_pkg );
+            bool handle_get_acq_config_request( const msg_request* a_request, request_reply_package& a_pkg );
+            bool handle_get_server_config_request( const msg_request* a_request, request_reply_package& a_pkg );
 
-            bool handle_set_request( const param_node& a_msg_payload, const param_node& a_sender_node, const std::string& a_mantis_routing_key, request_reply_package& a_pkg );
+            bool handle_set_request( const msg_request* a_request, request_reply_package& a_pkg );
 
-            bool handle_replace_acq_config( const param_node& a_msg_payload, const param_node& a_sender_node, const std::string& a_mantis_routing_key, request_reply_package& a_pkg );
+            bool handle_replace_acq_config( const msg_request* a_request, request_reply_package& a_pkg );
 
-            bool handle_add_request( const param_node& a_msg_payload, const param_node& a_sender_node, const std::string& a_mantis_routing_key, request_reply_package& a_pkg );
-            bool handle_remove_request( const param_node& a_msg_payload, const param_node& a_sender_node, const std::string& a_mantis_routing_key, request_reply_package& a_pkg );
+            bool handle_add_request( const msg_request* a_request, request_reply_package& a_pkg );
+            bool handle_remove_request( const msg_request* a_request, request_reply_package& a_pkg );
 
         private:
             mutable mutex f_msc_mutex;

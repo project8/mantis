@@ -14,6 +14,7 @@ namespace mantis
 {
     class acq_request;
     class config_manager;
+    class msg_request;
     class param_node;
 
     struct request_reply_package;
@@ -93,17 +94,17 @@ namespace mantis
             //********************
         public:
 
-            bool handle_new_acq_request( const param_node& a_msg_payload, const param_node& a_sender_node, const std::string& a_mantis_routing_key, request_reply_package& a_pkg );
+            bool handle_new_acq_request( const msg_request* a_request, request_reply_package& a_pkg );
 
-            bool handle_get_acq_status_request( const param_node& a_msg_payload, const param_node& a_sender_node, const std::string& a_mantis_routing_key, request_reply_package& a_pkg );
-            bool handle_queue_request( const param_node& a_msg_payload, const param_node& a_sender_node, const std::string& a_mantis_routing_key, request_reply_package& a_pkg );
-            bool handle_queue_size_request( const param_node& a_msg_payload, const param_node& a_sender_node, const std::string& a_mantis_routing_key, request_reply_package& a_pkg );
+            bool handle_get_acq_status_request( const msg_request* a_request, request_reply_package& a_pkg );
+            bool handle_queue_request( const msg_request* a_request, request_reply_package& a_pkg );
+            bool handle_queue_size_request( const msg_request* a_request, request_reply_package& a_pkg );
 
-            bool handle_cancel_acq_request( const param_node& a_msg_payload, const param_node& a_sender_node, const std::string& a_mantis_routing_key, request_reply_package& a_pkg );
-            bool handle_clear_queue_request( const param_node& a_msg_payload, const param_node& a_sender_node, const std::string& a_mantis_routing_key, request_reply_package& a_pkg );
+            bool handle_cancel_acq_request( const msg_request* a_request, request_reply_package& a_pkg );
+            bool handle_clear_queue_request( const msg_request* a_request, request_reply_package& a_pkg );
 
-            bool handle_start_queue_request( const param_node& a_msg_payload, const param_node& a_sender_node, const std::string& a_mantis_routing_key, request_reply_package& a_pkg );
-            bool handle_stop_queue_request( const param_node& a_msg_payload, const param_node& a_sender_node, const std::string& a_mantis_routing_key, request_reply_package& a_pkg );
+            bool handle_start_queue_request( const msg_request* a_request, request_reply_package& a_pkg );
+            bool handle_stop_queue_request( const msg_request* a_request, request_reply_package& a_pkg );
 
         private:
             config_manager* f_config_mgr;

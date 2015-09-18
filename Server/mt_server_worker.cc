@@ -13,6 +13,7 @@
 #include "mt_digitizer.hh"
 #include "mt_file_writer.hh"
 #include "mt_logger.hh"
+#include "mt_message.hh"
 #include "mt_request_receiver.hh"
 #include "mt_signal_handler.hh"
 #include "mt_thread.hh"
@@ -163,7 +164,7 @@ namespace mantis
             MTINFO( mtlog, "Run response:\n" << t_response );
             if( ! f_completed_file_key.empty() )
             {
-                f_amqp_relayer->send_message( msg_alert::create( new param_node( *t_acq_req ), f_completed_file_key, message::k_json ) );
+                f_amqp_relayer->send_message( msg_alert::create( new param_node( *t_acq_req ), f_completed_file_key, "", message::k_json ) );
             }
         }
 
@@ -212,7 +213,7 @@ namespace mantis
         return;
     }
 
-    bool server_worker::handle_stop_acq_request( const param_node& /*a_msg_payload*/, const param_node& /*a_sender_node*/, const std::string& /*a_mantis_routing_key*/, request_reply_package& a_pkg )
+    bool server_worker::handle_stop_acq_request( const msg_request* /*a_request*/, request_reply_package& a_pkg )
     {
         stop_acquisition();
         return a_pkg.send_reply( R_SUCCESS, "Stop-acquisition request succeeded" );

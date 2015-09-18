@@ -18,6 +18,7 @@ namespace mantis
     class condition;
     class config_manager;
     class device_manager;
+    class msg_request;
     class run_server;
     class server_worker;
 
@@ -25,13 +26,13 @@ namespace mantis
 
     struct MANTIS_API request_reply_package
     {
-        AmqpClient::Envelope::ptr_t f_envelope;
-        param_node& f_reply_node;
-        const request_receiver* f_request_receiver;
-        request_reply_package( AmqpClient::Envelope::ptr_t a_envelope, param_node& a_reply_node, const request_receiver* a_req_recvr ) :
-            f_envelope( a_envelope ),
-            f_reply_node( a_reply_node ),
-            f_request_receiver( a_req_recvr )
+        const msg_request* f_request;
+        param_node f_payload;
+        amqp_channel_ptr f_channel;
+        request_reply_package( const msg_request* a_request, amqp_channel_ptr a_channel ) :
+            f_request( a_request ),
+            f_payload(),
+            f_channel( a_channel )
         {}
         bool send_reply( unsigned a_return_code, const std::string& a_return_msg );
     };
@@ -49,12 +50,12 @@ namespace mantis
         private:
             friend struct request_reply_package;
 
-            bool do_run_request( const param_node& a_msg_payload, const param_node& a_sender_node, const std::string& a_mantis_routing_key, request_reply_package& a_pkg );
-            bool do_get_request( const param_node& a_msg_payload, const param_node& a_sender_node, const std::string& a_mantis_routing_key, request_reply_package& a_pkg );
-            bool do_set_request( const param_node& a_msg_payload, const param_node& a_sender_node, const std::string& a_mantis_routing_key, request_reply_package& a_pkg );
-            bool do_cmd_request( const param_node& a_msg_payload, const param_node& a_sender_node, const std::string& a_mantis_routing_key, request_reply_package& a_pkg );
+            bool do_run_request( const msg_request* a_request, request_reply_package& a_reply_pkg );
+            bool do_get_request( const msg_request* a_request, request_reply_package& a_reply_pkg );
+            bool do_set_request( const msg_request* a_request, request_reply_package& a_reply_pkg );
+            bool do_cmd_request( const msg_request* a_request, request_reply_package& a_reply_pkg );
 
-            bool send_reply( unsigned a_return_code, const std::string& a_return_msg, request_reply_package& a_pkg ) const;
+            //bool send_reply( unsigned a_return_code, const std::string& a_return_msg, request_reply_package& a_pkg ) const;
 
             //param_node* create_sender_info() const;
 
@@ -74,9 +75,9 @@ namespace mantis
             // Request handlers
             //*****************
 
-            bool handle_lock_request( const param_node& a_msg_payload, const param_node& a_sender_node, const std::string& a_mantis_routing_key, request_reply_package& a_pkg );
-            bool handle_unlock_request( const param_node& a_msg_payload, const param_node& a_sender_node, const std::string& a_mantis_routing_key, request_reply_package& a_pkg );
-            bool handle_is_locked_request( const param_node& a_msg_payload, const param_node& a_sender_node, const std::string& a_mantis_routing_key, request_reply_package& a_pkg );
+            bool handle_lock_request( const msg_request* a_request, request_reply_package& a_pkg );
+            bool handle_unlock_request( const msg_request* a_request, request_reply_package& a_pkg );
+            bool handle_is_locked_request( const msg_request* a_request, request_reply_package& a_pkg );
 
         public:
             typedef uuid_t key_t;

@@ -40,14 +40,14 @@ namespace mantis
 
 
     // AMQP message constants
-    // Conforming to the dripline standards defined in [dripline]/python/dripline/core/constants.py
+    // Conforming to the dripline wire protocol: https://github.com/project8/hardware/wiki/Wire-Protocol
     // Please be sure that these constants are kept in sync with the dripline constants.
 
     // Operation constants
 #define OP_SET  0
 #define OP_GET  1
-    // 6 is reserved for OP_CONFIG
-    // 7 is reserved for OP_SEND
+#define OP_CONFIG 6
+#define OP_SEND 7
 #define OP_RUN  8
 #define OP_CMD  9
 #define OP_UNKNOWN UINT_MAX
@@ -79,7 +79,8 @@ namespace mantis
 #define R_MESSAGE_ERROR_INVALID_VALUE     304
 #define R_MESSAGE_ERROR_TIMEOUT           305
 #define R_MESSAGE_ERROR_INVALID_METHOD    306
-#define R_DEVICE_ERROR_ACCESS_DENIED      307
+#define R_MESSAGE_ERROR_ACCESS_DENIED      307
+#define R_MESSAGE_ERROR_INVALID_KEY        308
 
 }
 
