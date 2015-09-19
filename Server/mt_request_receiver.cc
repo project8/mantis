@@ -36,7 +36,7 @@ namespace mantis
                  f_payload );
 
         string t_consumer_tag;
-        if( ! t_reply->do_publish( f_channel, "", t_consumer_tag ) )
+        if( ! t_reply->do_publish( f_channel, f_exchange, t_consumer_tag ) )
         {
             MTWARN( mtlog, "Unable to send reply" );
             return false;
@@ -139,7 +139,7 @@ namespace mantis
             if( t_message->is_request() )
             {
                 msg_request* t_request = static_cast< msg_request* >( t_message );
-                request_reply_package t_reply_pkg( t_request, f_channel );
+                request_reply_package t_reply_pkg( t_request, f_channel, t_exchange_name );
 
                 // the lockout key must be valid
                 if( ! t_request->get_lockout_key_valid() )
