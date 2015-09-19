@@ -29,6 +29,7 @@ namespace mantis
     bool request_reply_package::send_reply( unsigned a_return_code, const std::string& a_return_msg )
     {
         msg_reply* t_reply = msg_reply::create( a_return_code, a_return_msg, new param_node( f_payload ), f_request->get_reply_to(), "", message::k_json );
+        t_reply->set_correlation_id( f_request->get_correlation_id() );
 
         MTDEBUG( mtlog, "Sending reply message:\n" <<
                  "Return code: " << t_reply->get_return_code() << '\n' <<

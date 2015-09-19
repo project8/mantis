@@ -125,6 +125,7 @@ namespace mantis
         }
 
         // set message fields
+        t_message->set_correlation_id( a_envelope->Message()->CorrelationId() );
         t_message->set_timestamp( t_msg_node->get_value( "timestamp", "" ) );
 
         t_message->set_sender_info( new param_node( *(t_msg_node->node_at( "sender_info" ) ) ) );
