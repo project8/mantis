@@ -5,7 +5,7 @@ Client Manual
 Usage
 =====
 
-``mantis_client [client options] do=[verb] dest=[queue].[mantis destination] [instruction options]``
+``mantis_client [client options] key=[lockout key] do=[message type] dest=[queue].[mantis target] [instruction options]``
 
 Examples
 ^^^^^^^^
@@ -46,6 +46,10 @@ Queue name is assumed to be ``mantis``.  The first two examples show the usage o
 * Submit an acquisition request to the queue::
 
     mantis_client do=run dest=mantis file=my_file.egg
+    
+* Send any request with a lockout key::
+
+    mantis_client key=0123456789abcdef0123456789abcdef [...]
 
 
 Full option list
@@ -66,14 +70,25 @@ Specify the AMQP broker details::
   amqp.exchange=[exchange name (default=requests)]
 
 
-Command and Target
-^^^^^^^^^^^^^^^^^^
+Lockout Key
+^^^^^^^^^^^
 
-Command
--------
-Tell Mantis what type of instruction it's receiving.
+Mantis follows the dripline wire protocol specification for the `lockout feature <https://github.com/project8/hardware/wiki/Wire-Protocol#lockout>`_.
 
-The available commands are:
+The key can be provided in either supported format::
+
+  key=0123456789abcdef0123456789abcdef
+  key=01234567-89ab-cdef-0123-456789abcdef
+
+
+Message Type and Target
+^^^^^^^^^^^^^^^^^^^^^^^
+
+Message Type
+------------
+Tell Mantis what type of message it's receiving.
+
+The message types used by Mantis are:
 
 :run: ``do=run`` -- Queue an acquisition with the current acquisition configuration
 :get: ``do=get`` -- Request information from the server
@@ -87,9 +102,9 @@ Typically much of the information about the instruction is encoded in the target
 
 The general form for the target is::
 
-  dest=[queue].[mantis destination]
+  dest=[queue].[mantis target]
   
-The target is used in different ways for different commands:
+The target is used in different ways for different message types:
 
 :run:
   ``dest=[queue]`` -- No further information is needed for queueing an acquisition request.
@@ -134,8 +149,8 @@ The target is used in different ways for different commands:
   
   ``dest=[queue].quit-mantis`` -- Stop execution of the Mantis server.
   
-Instruction Options
-^^^^^^^^^^^^^^^^^^^
+Message Options
+^^^^^^^^^^^^^^^
 
 :any:
   ``save.json=[filename]`` -- *(optional)* File in which to save the information returned.  This is primarily useful for saving the run configuration for loading via the client, or saving the full configuration for loading into the server at startup.
