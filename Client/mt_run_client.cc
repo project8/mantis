@@ -108,10 +108,11 @@ namespace mantis
 
         MTDEBUG( mtlog, "Sending message w/ msgop = " << t_request->get_message_op() );
 
-        std::string t_consumer_tag;
+        std::string t_consumer_tag; // for the reply queue
+        // do_publish will declare the reply queue, start consuming on it, and then publish the request
         t_request->do_publish( f_channel, f_exchange, t_consumer_tag );
 
-        if( ! t_consumer_tag.empty() )  // then we should wait for a reply
+        if( ! t_consumer_tag.empty() )  // this indicates that the reply queue was created, and we've started consuming on it; we should wait for a reply
         {
             MTINFO( mtlog, "Waiting for a reply from the server; use ctrl-c to cancel" );
 
