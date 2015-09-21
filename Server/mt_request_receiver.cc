@@ -29,6 +29,7 @@ namespace mantis
     bool request_reply_package::send_reply( unsigned a_return_code, const std::string& a_return_msg )
     {
         msg_reply* t_reply = msg_reply::create( a_return_code, a_return_msg, new param_node( f_payload ), f_request->get_reply_to(), "", message::k_json );
+        t_reply->set_correlation_id( f_request->get_correlation_id() );
 
         MTDEBUG( mtlog, "Sending reply message:\n" <<
                  "Return code: " << t_reply->get_return_code() << '\n' <<
@@ -36,7 +37,7 @@ namespace mantis
                  f_payload );
 
         string t_consumer_tag;
-        if( ! t_reply->do_publish( f_channel, "", t_consumer_tag ) )
+        if( ! t_reply->do_publish( f_channel, f_exchange, t_consumer_tag ) )
         {
             MTWARN( mtlog, "Unable to send reply" );
             return false;
@@ -139,7 +140,7 @@ namespace mantis
             if( t_message->is_request() )
             {
                 msg_request* t_request = static_cast< msg_request* >( t_message );
-                request_reply_package t_reply_pkg( t_request, f_channel );
+                request_reply_package t_reply_pkg( t_request, f_channel, t_exchange_name );
 
                 // the lockout key must be valid
                 if( ! t_request->get_lockout_key_valid() )
@@ -353,6 +354,10 @@ namespace mantis
         {
             return handle_unlock_request( a_request, a_pkg );
         }
+        else if( t_instruction == "ping" )
+        {
+            return handle_ping_request( a_request, a_pkg );
+        }
         else if( t_instruction == "cancel-acq" )
         {
             return f_acq_request_db->handle_cancel_acq_request( a_request, a_pkg );
@@ -426,6 +431,12 @@ namespace mantis
         a_pkg.f_payload.add( "is_locked", param_value( t_is_locked ) );
         if( t_is_locked ) a_pkg.f_payload.add( "tag", f_lockout_tag );
         return a_pkg.send_reply( R_SUCCESS, "Checked lock status" );
+    }
+
+    bool request_receiver::handle_ping_request( const msg_request* a_request, request_reply_package& a_pkg )
+    {
+        string t_sender = a_request->get_sender_package();
+        return a_pkg.send_reply( R_SUCCESS, "Hello, " + t_sender );
     }
 
 
