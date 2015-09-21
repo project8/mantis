@@ -29,10 +29,12 @@ namespace mantis
         const msg_request* f_request;
         param_node f_payload;
         amqp_channel_ptr f_channel;
-        request_reply_package( const msg_request* a_request, amqp_channel_ptr a_channel ) :
+        std::string f_exchange;
+        request_reply_package( const msg_request* a_request, amqp_channel_ptr a_channel, const std::string& a_exchange = "" ) :
             f_request( a_request ),
             f_payload(),
-            f_channel( a_channel )
+            f_channel( a_channel ),
+            f_exchange( a_exchange )
         {}
         bool send_reply( unsigned a_return_code, const std::string& a_return_msg );
     };
@@ -78,6 +80,7 @@ namespace mantis
             bool handle_lock_request( const msg_request* a_request, request_reply_package& a_pkg );
             bool handle_unlock_request( const msg_request* a_request, request_reply_package& a_pkg );
             bool handle_is_locked_request( const msg_request* a_request, request_reply_package& a_pkg );
+            bool handle_ping_request( const msg_request* a_request, request_reply_package& a_pkg );
 
         public:
             /// enable lockout with randomly-generated key

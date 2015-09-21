@@ -107,6 +107,7 @@ Command Instructions
 - ``replace-config`` -- Replaces the server's run configuration with the contents of the instruction options, or the JSON file specified in those options (see below).
 - ``lock`` -- Requests that the server lockout be enabled. Nothing is done if already locked.
 - ``unlock`` -- Requests that the server lockout be disabled.
+- ``ping`` -- Check that the server receives requests and sends replies. No other action is taken.
 - ``cancel-acq`` -- Remove an acquisition that is waiting to run from the queue.
 - ``clear-queue`` -- Clear scheduled acquisitions from the queue.
 - ``start-queue`` -- Start processing the requests in the queue (if the queue had previously been stopped)
