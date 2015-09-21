@@ -258,9 +258,11 @@ namespace mantis
 
     bool msg_request::do_publish( amqp_channel_ptr a_channel, const std::string& a_exchange, std::string& a_reply_consumer_tag )
     {
-        // create the reply-to queue
+        // create the reply-to queue, and bind the queue to the routing key over the given exchange
         string t_reply_to = a_channel->DeclareQueue( "" );
+        a_channel->BindQueue( t_reply_to, a_exchange, t_reply_to );
         set_reply_to( t_reply_to );
+        MTDEBUG( mtlog, "Reply-to for request: " << t_reply_to );
 
         // begin consuming on the reply-to queue
         // TODO: is this where this should be done?
