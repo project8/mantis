@@ -80,6 +80,7 @@ namespace mantis
             bool handle_lock_request( const msg_request* a_request, request_reply_package& a_pkg );
             bool handle_unlock_request( const msg_request* a_request, request_reply_package& a_pkg );
             bool handle_is_locked_request( const msg_request* a_request, request_reply_package& a_pkg );
+            bool handle_ping_request( const msg_request* a_request, request_reply_package& a_pkg );
 
         public:
             /// enable lockout with randomly-generated key

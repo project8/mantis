@@ -354,6 +354,10 @@ namespace mantis
         {
             return handle_unlock_request( a_request, a_pkg );
         }
+        else if( t_instruction == "ping" )
+        {
+            return handle_ping_request( a_request, a_pkg );
+        }
         else if( t_instruction == "cancel-acq" )
         {
             return f_acq_request_db->handle_cancel_acq_request( a_request, a_pkg );
@@ -427,6 +431,12 @@ namespace mantis
         a_pkg.f_payload.add( "is_locked", param_value( t_is_locked ) );
         if( t_is_locked ) a_pkg.f_payload.add( "tag", f_lockout_tag );
         return a_pkg.send_reply( R_SUCCESS, "Checked lock status" );
+    }
+
+    bool request_receiver::handle_ping_request( const msg_request* a_request, request_reply_package& a_pkg )
+    {
+        string t_sender = a_request->get_sender_package();
+        return a_pkg.send_reply( R_SUCCESS, "Hello, " + t_sender );
     }
 
 
