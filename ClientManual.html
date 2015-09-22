@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Client Manual &mdash; Mantis 3.0.0 documentation</title>
+  <title>Client Manual &mdash; Mantis 3.1.4 documentation</title>
   
 
   
@@ -32,7 +32,7 @@
   
 
   
-    <link rel="top" title="Mantis 3.0.0 documentation" href="index.html"/>
+    <link rel="top" title="Mantis 3.1.4 documentation" href="index.html"/>
         <link rel="next" title="Device Configuration Standards" href="DeviceConfigStandards.html"/>
         <link rel="prev" title="Welcome to Mantis’s documentation!" href="index.html"/> 
 
@@ -75,18 +75,23 @@
           
               <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="">Client Manual</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#purpose">Purpose</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#usage">Usage</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#examples">Examples</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#full-option-list">Full option list</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#client-options">Client options</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#command-and-target">Command and Target</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#command">Command</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#lockout-key">Lockout Key</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#message-type-and-target">Message Type and Target</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#message-type">Message Type</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#target">Target</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#instruction-options">Instruction Options</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#server-options">Server Options</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#special-features">Special Features</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -155,12 +160,23 @@
             
   <div class="section" id="client-manual">
 <h1>Client Manual<a class="headerlink" href="#client-manual" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="purpose">
+<h2>Purpose<a class="headerlink" href="#purpose" title="Permalink to this headline">¶</a></h2>
+<p>The <code class="docutils literal"><span class="pre">mantis_client</span></code> is a utility that is used to control the <code class="docutils literal"><span class="pre">mantis_server</span></code>.  This is done by sending requests using
+<a class="reference external" href="https://github.com/project8/hardware/wiki/Wire-Protocol">dripline-standard</a> AMQP messages.
+The <code class="docutils literal"><span class="pre">mantis_server</span></code> <a class="reference internal" href="ServerAPI.html"><em>API</em></a> describes the instructions that are available.  This manual describes
+how to use the <code class="docutils literal"><span class="pre">mantis_client</span></code> to access that API.</p>
+<p>The full server API is accessible from a general dripline client, such as <code class="docutils literal"><span class="pre">dripline_agent</span></code>.  The <code class="docutils literal"><span class="pre">mantis_client</span></code>
+includes some functionality that is specific to Mantis, such as loading the full acquisition configuration from a JSON file.
+That extended functionality will be described below.</p>
+</div>
 <div class="section" id="usage">
 <h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
-<p><code class="docutils literal"><span class="pre">mantis_client</span> <span class="pre">[client</span> <span class="pre">options]</span> <span class="pre">do=[verb]</span> <span class="pre">dest=[queue].[mantis</span> <span class="pre">destination]</span> <span class="pre">[instruction</span> <span class="pre">options]</span></code></p>
+<p><code class="docutils literal"><span class="pre">mantis_client</span> <span class="pre">[client</span> <span class="pre">options]</span> <span class="pre">key=[lockout</span> <span class="pre">key]</span> <span class="pre">do=[message</span> <span class="pre">type]</span> <span class="pre">dest=[queue].[mantis</span> <span class="pre">target]</span> <span class="pre">[server</span> <span class="pre">options]</span></code></p>
 <div class="section" id="examples">
 <h3>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h3>
-<p>Queue name is assumed to be <code class="docutils literal"><span class="pre">mantis</span></code>.  The first two examples show the usage of client options, and in all of the later examples, any client options are left out for clarity.</p>
+<p>The queue name is assumed to be <code class="docutils literal"><span class="pre">mantis</span></code> in these examples.
+The first two examples show the usage of client options, and in all of the later examples, any client options are left out for clarity.</p>
 <ul>
 <li><p class="first">Read client configuration from a JSON file:</p>
 <div class="highlight-python"><div class="highlight"><pre>mantis_client config=my_config.json
@@ -207,6 +223,11 @@
 </pre></div>
 </div>
 </li>
+<li><p class="first">Send any request with a lockout key:</p>
+<div class="highlight-python"><div class="highlight"><pre>mantis_client key=0123456789abcdef0123456789abcdef [...]
+</pre></div>
+</div>
+</li>
 </ul>
 </div>
 </div>
@@ -214,6 +235,7 @@
 <h2>Full option list<a class="headerlink" href="#full-option-list" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="client-options">
 <h3>Client options<a class="headerlink" href="#client-options" title="Permalink to this headline">¶</a></h3>
+<p>The client options allow the user to configure the client itself.  These options do not get passed to the server.</p>
 <p>Load a client config file. This file is parsed and used by the client.
 In it you can specify any option that would otherwise be specified on the command line:</p>
 <div class="highlight-python"><div class="highlight"><pre>config=[json file]
@@ -226,119 +248,67 @@ amqp.exchange=[exchange name (default=requests)]
 </pre></div>
 </div>
 </div>
-<div class="section" id="command-and-target">
-<h3>Command and Target<a class="headerlink" href="#command-and-target" title="Permalink to this headline">¶</a></h3>
-<div class="section" id="command">
-<h4>Command<a class="headerlink" href="#command" title="Permalink to this headline">¶</a></h4>
-<p>Tell Mantis what type of instruction it&#8217;s receiving.</p>
-<p>The available commands are:</p>
+<div class="section" id="lockout-key">
+<h3>Lockout Key<a class="headerlink" href="#lockout-key" title="Permalink to this headline">¶</a></h3>
+<p>Mantis follows the dripline wire protocol specification for the <a class="reference external" href="https://github.com/project8/hardware/wiki/Wire-Protocol#lockout">lockout feature</a>.</p>
+<p>The key can be provided in either supported format:</p>
+<div class="highlight-python"><div class="highlight"><pre>key=0123456789abcdef0123456789abcdef
+key=01234567-89ab-cdef-0123-456789abcdef
+</pre></div>
+</div>
+</div>
+<div class="section" id="message-type-and-target">
+<h3>Message Type and Target<a class="headerlink" href="#message-type-and-target" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="message-type">
+<h4>Message Type<a class="headerlink" href="#message-type" title="Permalink to this headline">¶</a></h4>
+<p>The message type tells the server what type of request it&#8217;s receiving.</p>
+<p>The message types used by Mantis are:</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">run:</th><td class="field-body"><code class="docutils literal"><span class="pre">do=run</span></code> &#8211; Queue an acquisition with the current acquisition configuration</td>
+<tr class="field-odd field"><th class="field-name">OP_RUN:</th><td class="field-body"><code class="docutils literal"><span class="pre">do=run</span></code> &#8211; Queue an acquisition with the current acquisition configuration</td>
 </tr>
-<tr class="field-even field"><th class="field-name">get:</th><td class="field-body"><code class="docutils literal"><span class="pre">do=get</span></code> &#8211; Request information from the server</td>
+<tr class="field-even field"><th class="field-name">OP_GET:</th><td class="field-body"><code class="docutils literal"><span class="pre">do=get</span></code> &#8211; Request information from the server</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">set:</th><td class="field-body"><code class="docutils literal"><span class="pre">do=set</span></code> &#8211; Change a setting in the acquisition configuration</td>
+<tr class="field-odd field"><th class="field-name">OP_SET:</th><td class="field-body"><code class="docutils literal"><span class="pre">do=set</span></code> &#8211; Change a setting in the acquisition configuration</td>
 </tr>
-<tr class="field-even field"><th class="field-name">cmd:</th><td class="field-body"><code class="docutils literal"><span class="pre">do=cmd</span></code> &#8211; Run a command (see below)</td>
+<tr class="field-even field"><th class="field-name">OP_CMD:</th><td class="field-body"><code class="docutils literal"><span class="pre">do=cmd</span></code> &#8211; Run a command</td>
 </tr>
 </tbody>
 </table>
 </div>
 <div class="section" id="target">
 <h4>Target<a class="headerlink" href="#target" title="Permalink to this headline">¶</a></h4>
-<p>Specify the AMQP queue name and tell Mantis where to direct the instruction.
-Typically much of the information about the instruction is encoded in the target.</p>
+<p>The target is a combination of the AMQP queue name used by the server, and a Mantis-specific specifier that
+tells the server how to direct the request.  In the parlance of dripline and the <a class="reference internal" href="ServerAPI.html"><em>Server API</em></a>, the
+target is the message routing key, and it combines the queue and the routing key specifier.</p>
 <p>The general form for the target is:</p>
-<div class="highlight-python"><div class="highlight"><pre>dest=[queue].[mantis destination]
+<div class="highlight-python"><div class="highlight"><pre>dest=[queue].[mantis target]
 </pre></div>
 </div>
-<p>The target is used in different ways for different commands:</p>
+<p>The options for the <code class="docutils literal"><span class="pre">mantis</span> <span class="pre">target</span></code> are given as Routing Key Specifiers in the <a class="reference internal" href="ServerAPI.html"><em>Server API</em></a>.</p>
+</div>
+</div>
+<div class="section" id="server-options">
+<h3>Server Options<a class="headerlink" href="#server-options" title="Permalink to this headline">¶</a></h3>
+<p>In general the server options that are passed to the <code class="docutils literal"><span class="pre">mantis_client</span></code> are directly placed into the request payload
+as <code class="docutils literal"><span class="pre">(name:</span> <span class="pre">value)</span></code> pairs.  The available options are listed under the Payload sections in the <a class="reference internal" href="ServerAPI.html"><em>Server API</em></a>.</p>
+<div class="section" id="special-features">
+<h4>Special Features<a class="headerlink" href="#special-features" title="Permalink to this headline">¶</a></h4>
+<p>In addition to those options, the <code class="docutils literal"><span class="pre">mantis_client</span></code> has a few special features that get specified here, but are not
+directly included in the payload.  They depend on the message type and Mantis target:</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">run:</th><td class="field-body"><dl class="first docutils">
-<dt><code class="docutils literal"><span class="pre">dest=[queue]</span></code> &#8211; No further information is needed for queueing an acquisition request.</dt>
-<dd><p class="first last">See the instruction options below.</p>
-</dd>
-</dl>
-</td>
+<tr class="field-odd field"><th class="field-name">any:</th><td class="field-body"><code class="docutils literal"><span class="pre">save.json=[filename</span> <span class="pre">(string)]</span></code> &#8211; <em>(optional)</em> File in which to save the information returned.  This is primarily useful for saving the acquisition configuration for loading via the client, or saving the full configuration for loading into the server at startup.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">get:</th><td class="field-body"><p class="first"><code class="docutils literal"><span class="pre">dest=[queue].acq-config</span></code> &#8211; Returns the current acquisition configuration.</p>
-<p><code class="docutils literal"><span class="pre">dest=[queue].server-config</span></code> &#8211; Returns the current full configuration for the server.</p>
-<p><code class="docutils literal"><span class="pre">dest=[queue].acq-status</span></code> &#8211; Returns the status of an acquisition request.</p>
-<p><code class="docutils literal"><span class="pre">dest=[queue].server-status</span></code> &#8211; Returns the status of the server, including the queue, server worker (digitizer &amp; writer), and request receiver.</p>
-<p><code class="docutils literal"><span class="pre">dest=[queue].queue</span></code> &#8211; Returns the current acquisition queue, including the UUID and filename for each acquisition request.</p>
-<p><code class="docutils literal"><span class="pre">dest=[queue].queue-size</span></code> &#8211; Returns the size of the acquisition queue.</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">set:</th><td class="field-body"><p class="first"><code class="docutils literal"><span class="pre">dest=[queue].[acq</span> <span class="pre">config</span> <span class="pre">item]</span></code> &#8211; Sets the value of an item in the run configuration.
-Requires the &#8220;values&#8221; instruction option below.
-Returns the current run configuration.</p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">cmd:</th><td class="field-body"><p class="first"><code class="docutils literal"><span class="pre">dest=[queue].add.device</span></code> &#8211; Adds a device to the master run configuration. Requires that the device be specified as an instruction option (see below).</p>
-<p><code class="docutils literal"><span class="pre">dest=[queue].remove.device.[device</span> <span class="pre">name]</span></code> &#8211; Removes a device from the master run configuration.</p>
-<p><code class="docutils literal"><span class="pre">dest=[queue].replace-config</span></code> &#8211; Replaces the server&#8217;s run configuration with the contents of the instruction options, or the JSON file specified in those options (see below).</p>
-<p><code class="docutils literal"><span class="pre">dest=[queue].cancel-acq</span></code> &#8211; Remove an acquisition that is waiting to run from the queue.</p>
-<p><code class="docutils literal"><span class="pre">dest=[queue].clear-queue</span></code> &#8211; Clear scheduled acquisitions from the queue.</p>
-<p><code class="docutils literal"><span class="pre">dest=[queue].start-queue</span></code> &#8211; Start processing the requests in the queue (if the queue had previously been stopped)</p>
-<p><code class="docutils literal"><span class="pre">dest=[queue].stop-queue</span></code> &#8211; Stop processing the requests in the queue (queue is left intact and acquisition in progress is not stopped; restart with <code class="docutils literal"><span class="pre">start-queue</span></code>)</p>
-<p><code class="docutils literal"><span class="pre">dest=[queue].stop-acq</span></code> &#8211; Stop any acquisition that is currently running (queue processing will continue).</p>
-<p><code class="docutils literal"><span class="pre">dest=[queue].stop-all</span></code> &#8211; Stop processing the requests in the queue and any acquisition that is currently running.</p>
-<p class="last"><code class="docutils literal"><span class="pre">dest=[queue].quit-mantis</span></code> &#8211; Stop execution of the Mantis server.</p>
-</td>
+<tr class="field-even field"><th class="field-name">replace-config:</th><td class="field-body"><code class="docutils literal"><span class="pre">load.json=[filename]</span></code> &#8211; <em>(optional)</em> This JSON file will be parsed by the client, and the contents (plus any other instruction options given) will be used by the server to replace the run configuration.</td>
 </tr>
 </tbody>
 </table>
 </div>
-</div>
-<div class="section" id="instruction-options">
-<h3>Instruction Options<a class="headerlink" href="#instruction-options" title="Permalink to this headline">¶</a></h3>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">any:</th><td class="field-body"><p class="first"><code class="docutils literal"><span class="pre">save.json=[filename]</span></code> &#8211; <em>(optional)</em> File in which to save the information returned.  This is primarily useful for saving the run configuration for loading via the client, or saving the full configuration for loading into the server at startup.</p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">run:</th><td class="field-body"><p class="first"><code class="docutils literal"><span class="pre">file=[filename]</span></code> &#8211; <em>(required)</em> Name of the file that will be created.</p>
-<p><code class="docutils literal"><span class="pre">description=[description]</span></code> &#8211; <em>(optional)</em> Description string</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">get:</th><td class="field-body"><table class="first docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">acq-status:</th><td class="field-body"><code class="docutils literal"><span class="pre">value=[value]</span></code> &#8211; <em>(required)</em> UUID of the run being queried</td>
-</tr>
-</tbody>
-</table>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">set:</th><td class="field-body"><p class="first"><code class="docutils literal"><span class="pre">value=[value]</span></code> &#8211; <em>(required)</em> Specify the value to which the run-configuration item should be set.  Any values valid in the JSON standard will work, including strings, numbers, and <code class="docutils literal"><span class="pre">true</span></code> or <code class="docutils literal"><span class="pre">false</span></code> for booleans.</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">cmd:</th><td class="field-body"><table class="first last docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">add.device:</th><td class="field-body"><p class="first"><code class="docutils literal"><span class="pre">[device</span> <span class="pre">type]=[device</span> <span class="pre">name]</span></code> &#8211; <em>(required)</em> The device type should be one of the valid device types for the server being run.  The device name is the name that will be used to refer to this particular instance of the device in the server configuration.</p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">run-config:</th><td class="field-body"><p class="first"><code class="docutils literal"><span class="pre">load.json=[filename]</span></code> &#8211; <em>(optional)</em> This JSON file will be parsed by the client, and the contents (plus any other instruction options given) will be used by the server to replace the run configuration.</p>
-<p class="last"><code class="docutils literal"><span class="pre">[other</span> <span class="pre">run</span> <span class="pre">configuration</span> <span class="pre">options]</span></code> &#8211; <em>(optional)</em> These options (plus any given in a loaded configuration file) will be used by the server to replace the run configuration.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</td>
-</tr>
-</tbody>
-</table>
 </div>
 </div>
 </div>
@@ -382,7 +352,7 @@ Returns the current run configuration.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'3.0.0',
+            VERSION:'3.1.4',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

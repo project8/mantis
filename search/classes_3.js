@@ -1,7 +1,7 @@
 var searchData=
 [
   ['destroyer',['destroyer',['../classmantis_1_1destroyer.html',1,'mantis']]],
-  ['destroyer_3c_20broker_20_3e',['destroyer&lt; broker &gt;',['../classmantis_1_1destroyer.html',1,'mantis']]],
+  ['destroyer_3c_20authentication_20_3e',['destroyer&lt; authentication &gt;',['../classmantis_1_1destroyer.html',1,'mantis']]],
   ['destroyer_3c_20factory_3c_20xbasetype_20_3e_20_3e',['destroyer&lt; factory&lt; XBaseType &gt; &gt;',['../classmantis_1_1destroyer.html',1,'mantis']]],
   ['destroyer_3c_20xtype_20_3e',['destroyer&lt; XType &gt;',['../classmantis_1_1destroyer.html',1,'mantis']]],
   ['device_5fmanager',['device_manager',['../classmantis_1_1device__manager.html',1,'mantis']]],

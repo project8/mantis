@@ -1,0 +1,455 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Server API &mdash; Mantis 3.1.4 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="Mantis 3.1.4 documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        
+
+        
+          <a href="index.html" class="icon icon-home"> Mantis
+        
+
+        
+        </a>
+
+        
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+        
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+          
+          
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="ClientManual.html">Client Manual</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="ClientManual.html#purpose">Purpose</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ClientManual.html#usage">Usage</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="ClientManual.html#examples">Examples</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="ClientManual.html#full-option-list">Full option list</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="ClientManual.html#client-options">Client options</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ClientManual.html#lockout-key">Lockout Key</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ClientManual.html#message-type-and-target">Message Type and Target</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ClientManual.html#message-type">Message Type</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ClientManual.html#target">Target</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="ClientManual.html#server-options">Server Options</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ClientManual.html#special-features">Special Features</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="DeviceConfigStandards.html">Device Configuration Standards</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="DeviceConfigStandards.html#required-by-the-file-writer">Required by the file writer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="DeviceConfigStandards.html#may-be-required-in-the-future">May be required in the future</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Reminders.html">Reminders</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Reminders.html#purpose">Purpose</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Reminders.html#using-mantis">Using Mantis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Reminders.html#developing-mantis">Developing Mantis</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="wiki/wiki.html">Wiki</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="wiki/Mantis-DAQ-in-Windows.html">Mantis DAQ in WIndows</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="wiki/Mantis-DAQ-in-Windows.html#specifications">Specifications</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wiki/Mantis-DAQ-in-Windows.html#required-software">Required Software</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wiki/Mantis-DAQ-in-Windows.html#useful-documentation">Useful documentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wiki/Mantis-DAQ-in-Windows.html#install-protobuf">Install Protobuf</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wiki/Mantis-DAQ-in-Windows.html#install-mantis">Install Mantis</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="wiki/Mantis-logging-facilities.html">Mantis Logging Facilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wiki/Usage.html">Usage</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="from_doxygen.html">Full Doxygen Reference</a></li>
+</ul>
+
+          
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">Mantis</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>Server API</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/ServerAPI.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document">
+            
+  <div class="section" id="server-api">
+<h1>Server API<a class="headerlink" href="#server-api" title="Permalink to this headline">¶</a></h1>
+<p>The server communicates with <a class="reference external" href="https://github.com/project8/hardware/wiki/Wire-Protocol">dripline-standard</a> AMQP messages.</p>
+<p>The API documentation below is organized by message type.</p>
+<p>The routing key should consist of the server queue name, optionally followed by other dot-delimited specifiers.</p>
+<p>For each message type, the API includes the allowed Routing Key Specifiers (RKS), Payload options, and contents of the Reply Payload.</p>
+<div class="section" id="lockout">
+<h2>Lockout<a class="headerlink" href="#lockout" title="Permalink to this headline">¶</a></h2>
+<p>The server can be locked out to require a key for some types of messages.
+It obeys the lockout behavior specified by the dripline wire protocol.
+The server keeps a lockout tag that holds the information about who enabled the lock.
+Additionally, there is a <code class="docutils literal"><span class="pre">OP_GET</span></code> request <code class="docutils literal"><span class="pre">is-locked</span></code> that can be used to assess the state of the lock.</p>
+</div>
+<div class="section" id="message-types">
+<h2>Message Types<a class="headerlink" href="#message-types" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="op-run">
+<h3>OP_RUN<a class="headerlink" href="#op-run" title="Permalink to this headline">¶</a></h3>
+<p>The <cite>run</cite> message type is used to start an acquisition.</p>
+<p>All <cite>run</cite> requests are lockable.</p>
+<p>There are no Routing Key Specifiers for <em>run</em> requests.</p>
+<p><em>Payload</em></p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">file=[filename</span> <span class="pre">(string)]</span></code> &#8211; <em>(required)</em> Filename for the acquisition.</li>
+<li><code class="docutils literal"><span class="pre">description=[description</span> <span class="pre">(string)]</span></code> &#8211; <em>(optional)</em> Text description for the acquisition; saved in the file header.</li>
+</ul>
+<p><em>Reply Payload</em></p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">[Acquisition</span> <span class="pre">Request]</span></code> &#8211; The full request for the acquisition.</li>
+<li><code class="docutils literal"><span class="pre">status-meaning</span></code> &#8211; A human-readable interpretation of the acquisition status.</li>
+</ul>
+</div>
+<div class="section" id="op-get">
+<h3>OP_GET<a class="headerlink" href="#op-get" title="Permalink to this headline">¶</a></h3>
+<p>The <cite>get</cite> message is used to request the status of various components of the server.</p>
+<p>No <cite>get</cite> requests are lockable.</p>
+<div class="section" id="routing-key-specifiers">
+<h4>Routing Key Specifiers<a class="headerlink" href="#routing-key-specifiers" title="Permalink to this headline">¶</a></h4>
+<p>The Routing Key Specifier (RKS) indicates the information that is being requested from the server.  Some specifiers have <em>Payload</em> options.  The RKS and <em>Payload</em> options are listed below, along with the relevant <em>Reply Payload</em>.</p>
+</div>
+<div class="section" id="acq-config">
+<h4><code class="docutils literal"><span class="pre">acq-config</span></code><a class="headerlink" href="#acq-config" title="Permalink to this headline">¶</a></h4>
+<p>Returns the current acquisition configuration.</p>
+<p><em>Reply Payload</em></p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">[acquisition</span> <span class="pre">configuration]</span></code></li>
+</ul>
+</div>
+<div class="section" id="server-config">
+<h4><code class="docutils literal"><span class="pre">server-config</span></code><a class="headerlink" href="#server-config" title="Permalink to this headline">¶</a></h4>
+<p>Returns the current full configuration for the server.</p>
+<p><em>Reply Payload</em></p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">[Full</span> <span class="pre">server</span> <span class="pre">configuration]</span></code></li>
+</ul>
+</div>
+<div class="section" id="acq-status">
+<h4><code class="docutils literal"><span class="pre">acq-status</span></code><a class="headerlink" href="#acq-status" title="Permalink to this headline">¶</a></h4>
+<p>Returns the status of an acquisition request.</p>
+<p><em>Payload</em></p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">value=[UUID</span> <span class="pre">(string)]</span></code> &#8211; <em>(required)</em> UUID of the run being queried.</li>
+</ul>
+<p><em>Reply Payload</em></p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">status=[status</span> <span class="pre">(string)]</span></code> &#8211; human-readable status of the requested acquisition</li>
+</ul>
+</div>
+<div class="section" id="server-status">
+<h4><code class="docutils literal"><span class="pre">server-status</span></code><a class="headerlink" href="#server-status" title="Permalink to this headline">¶</a></h4>
+<p>Returns the status of the server, including the queue, server worker (digitizer &amp; writer), and request receiver.</p>
+<p><em>Reply Payload</em></p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">queue</span></code><ul>
+<li><code class="docutils literal"><span class="pre">is-active=[true/false</span> <span class="pre">(bool)]</span></code> &#8211; whether or not acquisition requests from the queue are currently being processed</li>
+<li><code class="docutils literal"><span class="pre">size=[size</span> <span class="pre">(unsigned</span> <span class="pre">int)]</span></code> &#8211; number of requests in the queue</li>
+</ul>
+</li>
+<li><code class="docutils literal"><span class="pre">request-receiver</span></code><ul>
+<li><code class="docutils literal"><span class="pre">status=[status</span> <span class="pre">(string)]</span></code> &#8211; human-readable status message</li>
+</ul>
+</li>
+<li><code class="docutils literal"><span class="pre">server-worker</span></code><ul>
+<li><code class="docutils literal"><span class="pre">digitizer-state=[status</span> <span class="pre">(string)]</span></code> &#8211; human-readable digitizer status message</li>
+<li><code class="docutils literal"><span class="pre">status``=[status</span> <span class="pre">(string)]</span></code> &#8211; human-readable server-worker status message</li>
+<li><code class="docutils literal"><span class="pre">writer-state=[status</span> <span class="pre">(string)]</span></code> &#8211; human-readable writer status message</li>
+</ul>
+</li>
+<li><code class="docutils literal"><span class="pre">status=[status</span> <span class="pre">(string)]</span></code> &#8211; human-readable server status message</li>
+</ul>
+</div>
+<div class="section" id="queue">
+<h4><code class="docutils literal"><span class="pre">queue</span></code><a class="headerlink" href="#queue" title="Permalink to this headline">¶</a></h4>
+<p>Returns the current acquisition queue, including the UUID and filename for each acquisition request.</p>
+<p><em>Reply Payload</em></p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">queue=[[UUIDs;</span> <span class="pre">(string)]]</span></code> &#8211; Array of acquisition UUIDs</li>
+</ul>
+</div>
+<div class="section" id="queue-size">
+<h4><code class="docutils literal"><span class="pre">queue-size</span></code><a class="headerlink" href="#queue-size" title="Permalink to this headline">¶</a></h4>
+<p>Returns the size of the acquisition queue.</p>
+<p><em>Reply Payload</em></p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">queue-size=[size;</span> <span class="pre">(unsigned</span> <span class="pre">int)]</span></code> &#8211; Number of acquisition requests currently in the queue</li>
+</ul>
+</div>
+<div class="section" id="is-locked">
+<h4><code class="docutils literal"><span class="pre">is-locked</span></code><a class="headerlink" href="#is-locked" title="Permalink to this headline">¶</a></h4>
+<p>Returns whether or not the server is locked out.</p>
+<p><em>Reply Payload</em></p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">is-locked=[true/false</span> <span class="pre">(bool)]</span></code></li>
+</ul>
+</div>
+</div>
+<div class="section" id="op-set">
+<h3>OP_SET<a class="headerlink" href="#op-set" title="Permalink to this headline">¶</a></h3>
+<p>The <cite>set</cite> message type is used to set a value to a parameter in the acquisition configuration.</p>
+<p>All <cite>set</cite> requests are lockable.</p>
+<div class="section" id="id1">
+<h4>Routing Key Specifiers<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h4>
+<p>The RKS for <cite>set</cite> commands is the name of the configuration parameter being set.  For example:</p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">devices.pxie.enabled</span></code></li>
+<li><code class="docutils literal"><span class="pre">duration</span></code></li>
+</ul>
+<p><em>Payload</em></p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">value=[value</span> <span class="pre">(varied)]</span></code> &#8211; <em>(required)</em> Specify the value to which the run-configuration item should be set.  Any values valid in the JSON standard will work, including strings, numbers, and <code class="docutils literal"><span class="pre">true</span></code> or <code class="docutils literal"><span class="pre">false</span></code> for booleans.</li>
+</ul>
+<p><em>Reply Payload</em></p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">[Acquisition</span> <span class="pre">configuration]</span></code> &#8211; the full acquisition configuration <strong>after</strong> the <cite>set</cite> operation</li>
+</ul>
+</div>
+</div>
+<div class="section" id="op-cmd">
+<h3>OP_CMD<a class="headerlink" href="#op-cmd" title="Permalink to this headline">¶</a></h3>
+<p>The <cite>cmd</cite> message type is used to run a variety of different command instructions.  The instruction can be specified either as a Routing Key Specifier or as the first element in the <code class="docutils literal"><span class="pre">values</span></code> array in the payload.  They are listed below in the Command Instructions section.</p>
+<p>All <cite>command</cite> requests are lockable.</p>
+<div class="section" id="global-payload-options">
+<h4>Global Payload Options<a class="headerlink" href="#global-payload-options" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">values=[[instruction]]</span></code> &#8211; <em>(optional)</em> If the command instruction is not included in the routing key specifier, it should be given in the payload as the first element of the <code class="docutils literal"><span class="pre">values</span></code> array.</li>
+</ul>
+</div>
+<div class="section" id="command-instructions">
+<h4>Command Instructions<a class="headerlink" href="#command-instructions" title="Permalink to this headline">¶</a></h4>
+</div>
+<div class="section" id="add-device">
+<h4><code class="docutils literal"><span class="pre">add.device</span></code><a class="headerlink" href="#add-device" title="Permalink to this headline">¶</a></h4>
+<p>Adds a device to the master run configuration. Requires that the device be specified as an instruction option (see Payload section below).</p>
+<p><em>Payload</em></p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">[device</span> <span class="pre">type]=[device</span> <span class="pre">name</span> <span class="pre">(string)]</span></code> &#8211; <em>(required)</em> The device type should be one of the valid device types for the server being run.  The device name is the name that will be used to refer to this particular instance of the device in the server configuration.</li>
+</ul>
+<p><em>Reply Payload</em></p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">[acquisition</span> <span class="pre">configuration]</span></code></li>
+</ul>
+</div>
+<div class="section" id="remove-device-device-name">
+<h4><code class="docutils literal"><span class="pre">remove.device.[device</span> <span class="pre">name]</span></code><a class="headerlink" href="#remove-device-device-name" title="Permalink to this headline">¶</a></h4>
+<p>Removes a device from the master run configuration.</p>
+<p><em>Reply Payload</em></p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">[acquisition</span> <span class="pre">configuration]</span></code></li>
+</ul>
+</div>
+<div class="section" id="replace-config">
+<h4><code class="docutils literal"><span class="pre">replace-config</span></code><a class="headerlink" href="#replace-config" title="Permalink to this headline">¶</a></h4>
+<p>Replaces the server&#8217;s run configuration with the contents of the instruction options, or the JSON file specified in those options (see below).</p>
+<p><em>Payload</em></p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">[acquisition</span> <span class="pre">configuration]</span></code> &#8211; <em>(required)</em> The full acquisition configuration should be specified.  The payload, whatever it is, is assumed to be the acquisition configuration.</li>
+</ul>
+<p><em>Reply Payload</em></p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">[acquisition</span> <span class="pre">configuration]</span></code></li>
+</ul>
+</div>
+<div class="section" id="lock">
+<h4><code class="docutils literal"><span class="pre">lock</span></code><a class="headerlink" href="#lock" title="Permalink to this headline">¶</a></h4>
+<p>Requests that the server lockout be enabled. Nothing is done if already locked.</p>
+<p><em>Reply Payload</em></p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">key=[UUID</span> <span class="pre">(string)]</span></code> &#8211; lockout key required for any lockable requests as long as the lock remains enabled</li>
+<li><code class="docutils literal"><span class="pre">tag=[lockout</span> <span class="pre">tag</span> <span class="pre">(object)]</span></code> &#8211; information about the client that requested that the lock be enabled</li>
+</ul>
+</div>
+<div class="section" id="unlock">
+<h4><code class="docutils literal"><span class="pre">unlock</span></code><a class="headerlink" href="#unlock" title="Permalink to this headline">¶</a></h4>
+<p>Requests that the server lockout be disabled.</p>
+<p><em>Payload</em></p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">force=[true</span> <span class="pre">(bool)]</span></code> &#8211; <em>(optional)</em> Disables the lockout without a key.</li>
+</ul>
+</div>
+<div class="section" id="ping">
+<h4><code class="docutils literal"><span class="pre">ping</span></code><a class="headerlink" href="#ping" title="Permalink to this headline">¶</a></h4>
+<p>Check that the server receives requests and sends replies. No other action is taken.</p>
+</div>
+<div class="section" id="cancel-acq">
+<h4><code class="docutils literal"><span class="pre">cancel-acq</span></code><a class="headerlink" href="#cancel-acq" title="Permalink to this headline">¶</a></h4>
+<p>Remove an acquisition that is waiting to run from the queue.</p>
+<p><em>Reply Payload</em></p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">[Acquisition</span> <span class="pre">Request]</span></code> &#8211; The full request for the acquisition.</li>
+<li><code class="docutils literal"><span class="pre">status-meaning</span></code> &#8211; A human-readable interpretation of the acquisition status.</li>
+</ul>
+</div>
+<div class="section" id="clear-queue">
+<h4><code class="docutils literal"><span class="pre">clear-queue</span></code><a class="headerlink" href="#clear-queue" title="Permalink to this headline">¶</a></h4>
+<p>Clear scheduled acquisitions from the queue.</p>
+</div>
+<div class="section" id="start-queue">
+<h4><code class="docutils literal"><span class="pre">start-queue</span></code><a class="headerlink" href="#start-queue" title="Permalink to this headline">¶</a></h4>
+<p>Start processing the requests in the queue (if the queue had previously been stopped)</p>
+</div>
+<div class="section" id="stop-queue">
+<h4><code class="docutils literal"><span class="pre">stop-queue</span></code><a class="headerlink" href="#stop-queue" title="Permalink to this headline">¶</a></h4>
+<p>Stop processing the requests in the queue (queue is left intact and acquisition in progress is not stopped; restart with <code class="docutils literal"><span class="pre">start-queue</span></code>)</p>
+</div>
+<div class="section" id="stop-acq">
+<h4><code class="docutils literal"><span class="pre">stop-acq</span></code><a class="headerlink" href="#stop-acq" title="Permalink to this headline">¶</a></h4>
+<p>Stop any acquisition that is currently running (queue processing will continue).</p>
+</div>
+<div class="section" id="stop-all">
+<h4><code class="docutils literal"><span class="pre">stop-all</span></code><a class="headerlink" href="#stop-all" title="Permalink to this headline">¶</a></h4>
+<p>Stop processing the requests in the queue and any acquisition that is currently running. This is the same as issuing both a <code class="docutils literal"><span class="pre">stop-queue</span></code> command and a <code class="docutils literal"><span class="pre">stop-acq</span></code> command.</p>
+</div>
+<div class="section" id="quit-mantis">
+<h4><code class="docutils literal"><span class="pre">quit-mantis</span></code><a class="headerlink" href="#quit-mantis" title="Permalink to this headline">¶</a></h4>
+<p>Stop execution of the Mantis server.</p>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, Project 8 Collaboration.
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'3.1.4',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['mantis',['mantis',['../namespacemantis.html',1,'']]]
+  ['junk',['junk',['../namespacejunk.html',1,'']]]
 ];

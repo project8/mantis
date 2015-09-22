@@ -14,7 +14,7 @@ Contents:
    ClientManual
    DeviceConfigStandards
    Reminders
-   wiki/wiki
+   ServerAPI
 
    from_doxygen
 

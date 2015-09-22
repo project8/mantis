@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Reminders &mdash; Mantis 3.0.0 documentation</title>
+  <title>Reminders &mdash; Mantis 3.1.4 documentation</title>
   
 
   
@@ -32,7 +32,7 @@
   
 
   
-    <link rel="top" title="Mantis 3.0.0 documentation" href="index.html"/>
+    <link rel="top" title="Mantis 3.1.4 documentation" href="index.html"/>
         <link rel="next" title="Wiki" href="wiki/wiki.html"/>
         <link rel="prev" title="Device Configuration Standards" href="DeviceConfigStandards.html"/> 
 
@@ -75,18 +75,23 @@
           
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="ClientManual.html">Client Manual</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="ClientManual.html#purpose">Purpose</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ClientManual.html#usage">Usage</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="ClientManual.html#examples">Examples</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="ClientManual.html#full-option-list">Full option list</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="ClientManual.html#client-options">Client options</a></li>
-<li class="toctree-l3"><a class="reference internal" href="ClientManual.html#command-and-target">Command and Target</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="ClientManual.html#command">Command</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ClientManual.html#lockout-key">Lockout Key</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ClientManual.html#message-type-and-target">Message Type and Target</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ClientManual.html#message-type">Message Type</a></li>
 <li class="toctree-l4"><a class="reference internal" href="ClientManual.html#target">Target</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="ClientManual.html#instruction-options">Instruction Options</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ClientManual.html#server-options">Server Options</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ClientManual.html#special-features">Special Features</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -163,11 +168,16 @@ but don&#8217;t necessarily have a good alternative home.</p>
 </div>
 <div class="section" id="using-mantis">
 <h2>Using Mantis<a class="headerlink" href="#using-mantis" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>In the server config, <cite>completed-file-key</cite> is used to specify the routing key for sending an alert about each file completed; this can be turned off by making this an empty string.</li>
+</ul>
 </div>
 <div class="section" id="developing-mantis">
 <h2>Developing Mantis<a class="headerlink" href="#developing-mantis" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li>Block size = record size * # of channels</li>
+<li>Request handler function signature: bool handler_class::handler_func(const msg_request* a_request, request_reply_package&amp; a_pkg )</li>
+<li>The <code class="docutils literal"><span class="pre">mantis_routing_key</span></code> in the request handler function signature is the message routing key without the queue name.</li>
 </ul>
 </div>
 </div>
@@ -211,7 +221,7 @@ but don&#8217;t necessarily have a good alternative home.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'3.0.0',
+            VERSION:'3.1.4',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

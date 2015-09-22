@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Search &mdash; Mantis 3.0.0 documentation</title>
+  <title>Search &mdash; Mantis 3.1.4 documentation</title>
   
 
   
@@ -32,7 +32,7 @@
   
 
   
-    <link rel="top" title="Mantis 3.0.0 documentation" href="index.html"/> 
+    <link rel="top" title="Mantis 3.1.4 documentation" href="index.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -73,18 +73,23 @@
           
               <ul>
 <li class="toctree-l1"><a class="reference internal" href="ClientManual.html">Client Manual</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="ClientManual.html#purpose">Purpose</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ClientManual.html#usage">Usage</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="ClientManual.html#examples">Examples</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="ClientManual.html#full-option-list">Full option list</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="ClientManual.html#client-options">Client options</a></li>
-<li class="toctree-l3"><a class="reference internal" href="ClientManual.html#command-and-target">Command and Target</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="ClientManual.html#command">Command</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ClientManual.html#lockout-key">Lockout Key</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ClientManual.html#message-type-and-target">Message Type and Target</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ClientManual.html#message-type">Message Type</a></li>
 <li class="toctree-l4"><a class="reference internal" href="ClientManual.html#target">Target</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="ClientManual.html#instruction-options">Instruction Options</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ClientManual.html#server-options">Server Options</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ClientManual.html#special-features">Special Features</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -100,17 +105,45 @@
 <li class="toctree-l2"><a class="reference internal" href="Reminders.html#developing-mantis">Developing Mantis</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="wiki/wiki.html">Wiki</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="wiki/Mantis-DAQ-in-Windows.html">Mantis DAQ in WIndows</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="wiki/Mantis-DAQ-in-Windows.html#specifications">Specifications</a></li>
-<li class="toctree-l3"><a class="reference internal" href="wiki/Mantis-DAQ-in-Windows.html#required-software">Required Software</a></li>
-<li class="toctree-l3"><a class="reference internal" href="wiki/Mantis-DAQ-in-Windows.html#useful-documentation">Useful documentation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="wiki/Mantis-DAQ-in-Windows.html#install-protobuf">Install Protobuf</a></li>
-<li class="toctree-l3"><a class="reference internal" href="wiki/Mantis-DAQ-in-Windows.html#install-mantis">Install Mantis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ServerAPI.html">Server API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="ServerAPI.html#lockout">Lockout</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ServerAPI.html#message-types">Message Types</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="ServerAPI.html#op-run">OP_RUN</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ServerAPI.html#op-get">OP_GET</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ServerAPI.html#routing-key-specifiers">Routing Key Specifiers</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ServerAPI.html#acq-config"><code class="docutils literal"><span class="pre">acq-config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ServerAPI.html#server-config"><code class="docutils literal"><span class="pre">server-config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ServerAPI.html#acq-status"><code class="docutils literal"><span class="pre">acq-status</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ServerAPI.html#server-status"><code class="docutils literal"><span class="pre">server-status</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ServerAPI.html#queue"><code class="docutils literal"><span class="pre">queue</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ServerAPI.html#queue-size"><code class="docutils literal"><span class="pre">queue-size</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ServerAPI.html#is-locked"><code class="docutils literal"><span class="pre">is-locked</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="wiki/Mantis-logging-facilities.html">Mantis Logging Facilities</a></li>
-<li class="toctree-l2"><a class="reference internal" href="wiki/Usage.html">Usage</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ServerAPI.html#op-set">OP_SET</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ServerAPI.html#id1">Routing Key Specifiers</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="ServerAPI.html#op-cmd">OP_CMD</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ServerAPI.html#global-payload-options">Global Payload Options</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ServerAPI.html#command-instructions">Command Instructions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ServerAPI.html#add-device"><code class="docutils literal"><span class="pre">add.device</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ServerAPI.html#remove-device-device-name"><code class="docutils literal"><span class="pre">remove.device.[device</span> <span class="pre">name]</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ServerAPI.html#replace-config"><code class="docutils literal"><span class="pre">replace-config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ServerAPI.html#lock"><code class="docutils literal"><span class="pre">lock</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ServerAPI.html#unlock"><code class="docutils literal"><span class="pre">unlock</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ServerAPI.html#ping"><code class="docutils literal"><span class="pre">ping</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ServerAPI.html#cancel-acq"><code class="docutils literal"><span class="pre">cancel-acq</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ServerAPI.html#clear-queue"><code class="docutils literal"><span class="pre">clear-queue</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ServerAPI.html#start-queue"><code class="docutils literal"><span class="pre">start-queue</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ServerAPI.html#stop-queue"><code class="docutils literal"><span class="pre">stop-queue</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ServerAPI.html#stop-acq"><code class="docutils literal"><span class="pre">stop-acq</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ServerAPI.html#stop-all"><code class="docutils literal"><span class="pre">stop-all</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ServerAPI.html#quit-mantis"><code class="docutils literal"><span class="pre">quit-mantis</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="from_doxygen.html">Full Doxygen Reference</a></li>
@@ -190,7 +223,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'3.0.0',
+            VERSION:'3.1.4',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

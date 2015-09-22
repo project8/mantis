@@ -11,6 +11,9 @@ var searchData=
   ['block_5fcleanup_5ftest16',['block_cleanup_test16',['../classmantis_1_1block__cleanup__test16.html',1,'mantis']]],
   ['block_5fcleanup_5fu1084a',['block_cleanup_u1084a',['../classmantis_1_1block__cleanup__u1084a.html',1,'mantis']]],
   ['block_5fview',['block_view',['../classmantis_1_1block__view.html',1,'mantis']]],
+  ['bof_5fstate',['bof_state',['../structbof__state.html',1,'']]],
+  ['bofhdr',['bofhdr',['../structbofhdr.html',1,'']]],
+  ['bofioreg',['bofioreg',['../structbofioreg.html',1,'']]],
   ['broker',['broker',['../classmantis_1_1broker.html',1,'mantis']]],
   ['buffer',['buffer',['../classmantis_1_1buffer.html',1,'mantis']]]
 ];

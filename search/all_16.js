@@ -1,8 +1,29 @@
 var searchData=
 [
+  ['v_5fbuild',['v_build',['../structkatcp__version.html#a95bb313c9a593a9b910513c285db3530',1,'katcp_version']]],
+  ['v_5fcall',['v_call',['../structkatcp__invoke.html#a7eff61fccae850ad8fd0e17f553cf517',1,'katcp_invoke']]],
+  ['v_5fclient',['v_client',['../structkatcp__invoke.html#a3a9f2da612f9795d707ac88be2802ede',1,'katcp_invoke']]],
+  ['v_5fdata',['v_data',['../structkatcp__invoke.html#a605403bed261594dd80da1bb7714828f',1,'katcp_invoke']]],
+  ['v_5flabel',['v_label',['../structkatcp__version.html#a09dfacaafca7e651f6b63fc5c7e6a1da',1,'katcp_version']]],
+  ['v_5fmode',['v_mode',['../structkatcp__version.html#aab6a6d15950611f219fce98a31560c05',1,'katcp_version']]],
+  ['v_5ftrigger',['v_trigger',['../structkatcp__invoke.html#ac99e5f4ac457484f1974240f250aea50',1,'katcp_invoke']]],
+  ['v_5fvalue',['v_value',['../structkatcp__version.html#a38f8e300dd8b5e944a65e4a9d9e6a011',1,'katcp_version']]],
   ['va_5fnum_5fargs',['va_num_args',['../mt__logger_8hh.html#acc15e1933751b1bf4eba041e4d70a3e6',1,'mt_logger.hh']]],
   ['va_5fnum_5fargs_5fimpl',['va_num_args_impl',['../mt__logger_8hh.html#ac89d9f2ef1127b8c405291591a952ea0',1,'mt_logger.hh']]],
+  ['value',['VALUE',['../parser_8c.html#aa0b03826c8f7cc324ac2db0ada2dce0a',1,'VALUE():&#160;parser.c'],['../mod__conf__parser_8c.html#aa0b03826c8f7cc324ac2db0ada2dce0a',1,'VALUE():&#160;mod_conf_parser.c']]],
   ['value_5fat',['value_at',['../classmantis_1_1param__array.html#ad15cd20847b0c39ee34b37db75ef7ce5',1,'mantis::param_array::value_at(unsigned a_index) const '],['../classmantis_1_1param__array.html#ad23d54fea54a67fa7560dbde86d46011',1,'mantis::param_array::value_at(unsigned a_index)'],['../classmantis_1_1param__node.html#af16cd02100a696b4a36c81c9e46b65e3',1,'mantis::param_node::value_at(const std::string &amp;a_name) const '],['../classmantis_1_1param__node.html#aa4dcff8ae36abb63edcd29e6caca457e',1,'mantis::param_node::value_at(const std::string &amp;a_name)']]],
   ['values',['Values',['../unionmantis_1_1param__value_1_1_values.html',1,'mantis::param_value']]],
-  ['valuetypes',['ValueTypes',['../classmantis_1_1param__value.html#af431b9922c0595b2e33e5494d703e595',1,'mantis::param_value']]]
+  ['values',['values',['../structp__setting.html#ae5b45b4a19e6aa5e414b5a63a134641f',1,'p_setting']]],
+  ['valuetypes',['ValueTypes',['../classmantis_1_1param__value.html#af431b9922c0595b2e33e5494d703e595',1,'mantis::param_value']]],
+  ['vcount',['vcount',['../structp__setting.html#ab93669361220adbe7f13b20b1a9a010a',1,'p_setting']]],
+  ['version_2ec',['version.c',['../version_8c.html',1,'']]],
+  ['version_5fcmd_5fkatcp',['version_cmd_katcp',['../katcp_8h.html#aabb94b1b16f693b37ef8d272b9acaffe',1,'version_cmd_katcp(struct katcp_dispatch *d, int argc):&#160;version.c'],['../version_8c.html#aabb94b1b16f693b37ef8d272b9acaffe',1,'version_cmd_katcp(struct katcp_dispatch *d, int argc):&#160;version.c']]],
+  ['version_5fkatcp',['version_katcp',['../dispatch_8c.html#a67ef565b5a4ff442d251f1a9521095cf',1,'version_katcp(struct katcp_dispatch *d, char *subsystem, int major, int minor):&#160;dispatch.c'],['../katcp_8h.html#a67ef565b5a4ff442d251f1a9521095cf',1,'version_katcp(struct katcp_dispatch *d, char *subsystem, int major, int minor):&#160;dispatch.c']]],
+  ['version_5flist_5fcmd_5fkatcp',['version_list_cmd_katcp',['../katcp_8h.html#a2741481634bf47e9eab73b314878edc1',1,'version_list_cmd_katcp(struct katcp_dispatch *d, int argc):&#160;version.c'],['../version_8c.html#a2741481634bf47e9eab73b314878edc1',1,'version_list_cmd_katcp(struct katcp_dispatch *d, int argc):&#160;version.c']]],
+  ['vextra_5fresponse_5fkatcl',['vextra_response_katcl',['../katcl_8h.html#ad5399e199972a811344ea732a30d7364',1,'vextra_response_katcl(struct katcl_line *cl, int code, char *fmt, va_list args):&#160;log.c'],['../katcp_2log_8c.html#ad5399e199972a811344ea732a30d7364',1,'vextra_response_katcl(struct katcl_line *cl, int code, char *fmt, va_list args):&#160;log.c']]],
+  ['via_5fnotice_5fjob_5fkatcp',['via_notice_job_katcp',['../katcp_8h.html#a2e19610d637b199670b65f6b13a775bd',1,'katcp.h']]],
+  ['vlog_5fmessage_5fkatcl',['vlog_message_katcl',['../katcl_8h.html#ac8cc108f39ab7643abbb38668b01de11',1,'vlog_message_katcl(struct katcl_line *cl, int level, char *name, char *fmt, va_list args):&#160;log.c'],['../katcp_2log_8c.html#ac8cc108f39ab7643abbb38668b01de11',1,'vlog_message_katcl(struct katcl_line *cl, int level, char *name, char *fmt, va_list args):&#160;log.c']]],
+  ['vsend_5fkatcl',['vsend_katcl',['../katcl_8h.html#a1a6e6fb231a070bfdd2e2d2c164fb877',1,'vsend_katcl(struct katcl_line *l, va_list ap):&#160;line.c'],['../line_8c.html#ac7b1a670e41607734361859a55d5b5ee',1,'vsend_katcl(struct katcl_line *l, va_list args):&#160;line.c']]],
+  ['vsend_5fkatcp',['vsend_katcp',['../dispatch_8c.html#ae64447c0b7d2f4ed8c6cc9dc67024747',1,'vsend_katcp(struct katcp_dispatch *d, va_list args):&#160;dispatch.c'],['../katcp_8h.html#a7ece0268cd26916af9682c036e1a19d3',1,'vsend_katcp(struct katcp_dispatch *d, va_list ap):&#160;dispatch.c']]],
+  ['vturnaround_5fextra_5fparse_5fkatcl',['vturnaround_extra_parse_katcl',['../katpriv_8h.html#ac8ff305743cb2d09a7b044bc207ef060',1,'vturnaround_extra_parse_katcl(struct katcl_parse *p, int code, char *fmt, va_list args):&#160;parse.c'],['../parse_8c.html#ac8ff305743cb2d09a7b044bc207ef060',1,'vturnaround_extra_parse_katcl(struct katcl_parse *p, int code, char *fmt, va_list args):&#160;parse.c']]]
 ];
