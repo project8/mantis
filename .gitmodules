@@ -1,6 +1,6 @@
 [submodule "Monarch"]
 	path = Monarch
-	url = git://github.com/project8/monarch
+	url = https://github.com/project8/monarch
 [submodule "Scarab"]
 	path = Scarab
 	url = https://github.com/project8/scarab.git
