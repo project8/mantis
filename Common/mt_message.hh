@@ -11,8 +11,7 @@
 #include "mt_amqp.hh"
 #include "mt_constants.hh"
 #include "mt_param.hh"
-
-#include <boost/uuid/random_generator.hpp>
+#include "mt_uuid.hh"
 
 #include <string>
 
@@ -32,20 +31,7 @@ namespace mantis
                 k_msgpack
             };
 
-            struct sender_info
-            {
-                std::string f_package;
-                std::string f_exe;
-                std::string f_version;
-                std::string f_commit;
-                std::string f_hostname;
-                std::string f_username;
-            };
-
-        protected:
-            static boost::uuids::random_generator f_uuid_gen;
-
-        public:
+       public:
             message();
             virtual ~message();
 
@@ -55,6 +41,10 @@ namespace mantis
             virtual bool is_info() const = 0;
 
         public:
+            /// from AMQP to message object
+            static message* process_envelope( amqp_envelope_ptr a_envelope, const std::string& a_queue_name );
+
+            /// from message object to AMQP
             virtual bool do_publish( amqp_channel_ptr a_channel, const std::string& a_exchange, std::string& a_reply_consumer_tag ) = 0;
 
         protected:
@@ -67,8 +57,14 @@ namespace mantis
             std::string interpret_encoding() const;
 
         public:
+            // sets routing key and mantis routing key; the latter by removing the queue name from the beginning of the routing key
+            bool set_routing_keys( const std::string& a_rk, const std::string& a_queue_name);
+
             void set_routing_key( const std::string& a_rk );
             const std::string& get_routing_key() const;
+
+            void set_mantis_routing_key( const std::string& a_mrk );
+            const std::string& get_mantis_routing_key() const;
 
             void set_correlation_id( const std::string& a_id );
             const std::string& get_correlation_id() const;
@@ -80,6 +76,10 @@ namespace mantis
 
             void set_timestamp( const std::string& a_ts );
             const std::string& get_timestamp() const;
+
+            void set_sender_info( param_node* a_payload );
+            const param_node& get_sender_info() const;
+            param_node& get_sender_info();
 
             void set_sender_package( const std::string& a_pkg );
             const std::string& get_sender_package() const;
@@ -105,17 +105,21 @@ namespace mantis
 
         protected:
             std::string f_routing_key;
+            std::string f_mantis_routing_key;
             std::string f_correlation_id;
             encoding f_encoding;
 
             std::string f_timestamp;
-            sender_info f_sender_info;
+
+            param_node* f_sender_info;
+            std::string f_sender_package;
+            std::string f_sender_exe;
+            std::string f_sender_version;
+            std::string f_sender_commit;
+            std::string f_sender_hostname;
+            std::string f_sender_username;
+
             param_node* f_payload;
-
-            std::string f_exe_name;
-            std::string f_hostname;
-            std::string f_username;
-
     };
 
 
@@ -131,7 +135,7 @@ namespace mantis
             msg_request();
             virtual ~msg_request();
 
-            static msg_request* create( param_node* a_payload, unsigned a_msg_op, const std::string& a_routing_key, message::encoding a_encoding );
+            static msg_request* create( param_node* a_payload, unsigned a_msg_op, const std::string& a_routing_key, const std::string& a_queue_name, message::encoding a_encoding );
 
             bool is_request() const;
             bool is_reply() const;
@@ -154,11 +158,19 @@ namespace mantis
             void set_reply_to( const std::string& a_rt );
             const std::string& get_reply_to() const;
 
+            void set_lockout_key( const uuid_t& a_key );
+            const uuid_t& get_lockout_key() const;
+
+            void set_lockout_key_valid( bool a_flag );
+            bool get_lockout_key_valid() const;
+
             void set_message_op( unsigned a_op );
             unsigned get_message_op() const;
 
         private:
             std::string f_reply_to;
+            uuid_t f_lockout_key;
+            bool f_lockout_key_valid;
 
             static unsigned f_message_type;
 
@@ -176,7 +188,7 @@ namespace mantis
             msg_reply();
             virtual ~msg_reply();
 
-            static msg_reply* create( unsigned a_retcode, const std::string& a_ret_msg, param_node* a_payload, const std::string& a_routing_key, message::encoding a_encoding );
+            static msg_reply* create( unsigned a_retcode, const std::string& a_ret_msg, param_node* a_payload, const std::string& a_routing_key, const std::string& a_queue_name, message::encoding a_encoding );
 
             bool is_request() const;
             bool is_reply() const;
@@ -204,6 +216,7 @@ namespace mantis
             static unsigned f_message_type;
 
             unsigned f_return_code;
+            std::string f_return_msg;
 
             mutable std::string f_return_buffer;
     };
@@ -218,7 +231,7 @@ namespace mantis
             msg_alert();
             virtual ~msg_alert();
 
-            static msg_alert* create( param_node* a_payload, const std::string& a_routing_key, message::encoding a_encoding );
+            static msg_alert* create( param_node* a_payload, const std::string& a_routing_key, const std::string& a_queue_name, message::encoding a_encoding );
 
             bool is_request() const;
             bool is_reply() const;
@@ -277,6 +290,15 @@ namespace mantis
     // Message
     //***********
 
+    inline bool message::set_routing_keys( const std::string& a_rk, const std::string& a_queue_name )
+    {
+        if( a_rk.find( a_queue_name ) != 0 ) return false;
+        f_routing_key = a_rk;
+        f_mantis_routing_key = a_rk;
+        f_mantis_routing_key.erase( 0, a_queue_name.size() + 1 ); // 1 added to remove the '.' that separates nodes
+        return true;
+    }
+
     inline void message::set_routing_key( const std::string& a_rk )
     {
         f_routing_key = a_rk;
@@ -286,6 +308,17 @@ namespace mantis
     inline const std::string& message::get_routing_key() const
     {
         return f_routing_key;
+    }
+
+    inline void message::set_mantis_routing_key( const std::string& a_mrk )
+    {
+        f_mantis_routing_key = a_mrk;
+        return;
+    }
+
+    inline const std::string& message::get_mantis_routing_key() const
+    {
+        return f_mantis_routing_key;
     }
 
     inline void message::set_correlation_id( const std::string& a_id )
@@ -322,75 +355,109 @@ namespace mantis
     }
 
 
+    inline void message::set_sender_info( param_node* a_sender_info )
+    {
+        delete f_sender_info;
+        f_sender_info = a_sender_info;
+        if( ! f_sender_info->has( "package" ) ) f_sender_info->add( "package", new param_value( "N/A" ) );
+        f_sender_package = f_sender_info->get_value( "package" );
+        if( ! f_sender_info->has( "exe" ) ) f_sender_info->add( "exe", new param_value( "N/A" ) );
+        f_sender_exe = f_sender_info->get_value( "exe" );
+        if( ! f_sender_info->has( "version" ) ) f_sender_info->add( "version", new param_value( "N/A" ) );
+        f_sender_version = f_sender_info->get_value( "version" );
+        if( ! f_sender_info->has( "commit" ) ) f_sender_info->add( "commit", new param_value( "N/A" ) );
+        f_sender_commit = f_sender_info->get_value( "commit" );
+        if( ! f_sender_info->has( "hostname" ) ) f_sender_info->add( "hostname", new param_value( "N/A" ) );
+        f_sender_hostname = f_sender_info->get_value( "hostname" );
+        if( ! f_sender_info->has( "username" ) ) f_sender_info->add( "username", new param_value( "N/A" ) );
+        f_sender_username = f_sender_info->get_value( "username" );
+    }
+
+    inline const param_node& message::get_sender_info() const
+    {
+        return *f_sender_info;
+    }
+
+    inline param_node& message::get_sender_info()
+    {
+        return *f_sender_info;
+    }
+
     inline void message::set_sender_package( const std::string& a_pkg )
     {
-        f_sender_info.f_package = a_pkg;
+        f_sender_info->value_at( "package" )->set( a_pkg );
+        f_sender_package = a_pkg;
         return;
     }
 
     inline const std::string& message::get_sender_package() const
     {
-        return f_sender_info.f_package;
+        return f_sender_package;
     }
 
 
     inline void message::set_sender_exe( const std::string& a_exe )
     {
-        f_sender_info.f_exe = a_exe;
+        f_sender_info->value_at( "exe" )->set( a_exe );
+        f_sender_exe = a_exe;
         return;
     }
 
     inline const std::string& message::get_sender_exe() const
     {
-        return f_sender_info.f_exe;
+        return f_sender_exe;
     }
 
 
     inline void message::set_sender_version( const std::string& a_vsn )
     {
-        f_sender_info.f_version = a_vsn;
+        f_sender_info->value_at( "version" )->set( a_vsn );
+        f_sender_version = a_vsn;
         return;
     }
 
     inline const std::string& message::get_sender_version() const
     {
-        return f_sender_info.f_version;
+        return f_sender_version;
     }
 
 
     inline void message::set_sender_commit( const std::string& a_cmt )
     {
-        f_sender_info.f_commit = a_cmt;
+        f_sender_info->value_at( "commit" )->set( a_cmt );
+        f_sender_commit = a_cmt;
         return;
     }
 
     inline const std::string& message::get_sender_commit() const
     {
-        return f_sender_info.f_commit;
+        return f_sender_commit;
     }
 
 
     inline void message::set_sender_hostname( const std::string& a_host )
     {
-        f_sender_info.f_hostname = a_host;
+        f_sender_info->value_at( "hostname" )->set( a_host );
+        f_sender_hostname = a_host;
         return;
     }
 
     inline const std::string& message::get_sender_hostname() const
     {
-        return f_sender_info.f_hostname;
+        return f_sender_hostname;
     }
 
 
     inline void message::set_sender_username( const std::string& a_user )
     {
-        f_sender_info.f_username = a_user;
+        f_sender_info->value_at( "username" )->set( a_user );
+        f_sender_username = a_user;
         return;
     }
 
     inline const std::string& message::get_sender_username() const
     {
-        return f_sender_info.f_username;
+        return f_sender_username;
     }
 
 
@@ -441,6 +508,7 @@ namespace mantis
     inline bool msg_request::derived_modify_message_body( param_node& a_node ) const
     {
         a_node.add( "msgop", new param_value( f_message_op ) );
+        a_node.add( "lockout_key", new param_value( string_from_uuid( get_lockout_key() ) ) );
         return true;
     }
 
@@ -463,6 +531,28 @@ namespace mantis
     inline const std::string& msg_request::get_reply_to() const
     {
         return f_reply_to;
+    }
+
+    inline void msg_request::set_lockout_key( const uuid_t& a_key )
+    {
+        f_lockout_key = a_key;
+        return;
+    }
+
+    inline const uuid_t& msg_request::get_lockout_key() const
+    {
+        return f_lockout_key;
+    }
+
+    inline void msg_request::set_lockout_key_valid( bool a_flag )
+    {
+        f_lockout_key_valid = a_flag;
+        return;
+    }
+
+    inline bool msg_request::get_lockout_key_valid() const
+    {
+        return f_lockout_key_valid;
     }
 
     inline void msg_request::set_message_op( unsigned a_op )
@@ -523,15 +613,13 @@ namespace mantis
 
     inline void msg_reply::set_return_message( const std::string& a_ret_msg )
     {
-        if( f_payload == NULL ) f_payload = new param_node();
-        f_payload->replace( "return-msg", new param_value( a_ret_msg ) );
+        f_return_msg = a_ret_msg;
         return;
     }
 
     inline const std::string& msg_reply::get_return_message() const
     {
-        f_return_buffer = f_payload->get_value( "return-msg" );
-        return f_return_buffer;
+        return f_return_msg;
     }
 
 

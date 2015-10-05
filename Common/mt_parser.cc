@@ -65,7 +65,8 @@ namespace mantis
                 double t_double;
                 std::stringstream t_conv_double( a_value );
                 if( a_value.find( '.' ) == a_value.rfind( '.' ) &&
-                    ! (t_conv_double >> t_double).fail() )
+                        a_value.find( '-' ) == a_value.rfind( '-' ) &&
+                        ! (t_conv_double >> t_double).fail() )
                 {
                     // now we know the value is numeric
                     if( a_value.find( '.' ) != std::string::npos ||

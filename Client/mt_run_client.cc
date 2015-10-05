@@ -45,11 +45,24 @@ namespace mantis
     {
         MTINFO( mtlog, "Creating request" );
 
+        // pull the special CL arguments out of the configuration
+
         std::string t_request_type( f_config.get_value( "do", "" ) );
         f_config.erase( "do" );
 
         std::string t_routing_key( f_config.get_value( "dest", "mantis" ) );
         f_config.erase( "dest" );
+
+        std::string t_lockout_key_str( f_config.get_value( "key", "" ) );
+        f_config.erase( "key" );
+        bool t_lk_valid = true;
+        uuid_t t_lockout_key = uuid_from_string( t_lockout_key_str, t_lk_valid );
+        if( ! t_lk_valid )
+        {
+            MTERROR( mtlog, "Invalid lockout key provided: <" << t_lockout_key_str << ">" );
+            f_return = RETURN_ERROR;
+            return;
+        }
 
         param_node t_save_node;
         if( f_config.has( "save" ) )
@@ -91,12 +104,15 @@ namespace mantis
             return;
         }
 
+        t_request->set_lockout_key( t_lockout_key );
+
         MTDEBUG( mtlog, "Sending message w/ msgop = " << t_request->get_message_op() );
 
-        std::string t_consumer_tag;
+        std::string t_consumer_tag; // for the reply queue
+        // do_publish will declare the reply queue, start consuming on it, and then publish the request
         t_request->do_publish( f_channel, f_exchange, t_consumer_tag );
 
-        if( ! t_consumer_tag.empty() )  // then we should wait for a reply
+        if( ! t_consumer_tag.empty() )  // this indicates that the reply queue was created, and we've started consuming on it; we should wait for a reply
         {
             MTINFO( mtlog, "Waiting for a reply from the server; use ctrl-c to cancel" );
 
@@ -115,7 +131,10 @@ namespace mantis
                 MTERROR( mtlog, "Unable to parse message with content type <" << t_envelope->Message()->ContentEncoding() << ">" );
             }
 
-            MTINFO( mtlog, "Response from Mantis:\n" << *t_msg_node->node_at( "payload" ) );
+            MTINFO( mtlog, "Response from Mantis:\n" <<
+                    "Return code: " << t_msg_node->get_value< int >( "retcode", -1 ) << '\n' <<
+                    "Return message: " << t_msg_node->get_value( "return_msg", "" ) << '\n' <<
+                    *t_msg_node->node_at( "payload" ) );
 
             // optionally save "master-config" from the response
             if( t_save_node.size() != 0 )
@@ -123,10 +142,10 @@ namespace mantis
                 if( t_save_node.has( "json" ) )
                 {
                     string t_save_filename( t_save_node.get_value( "json" ) );
-                    const param_node* t_master_config_node = t_msg_node->node_at( "payload" )->node_at( "content" );
+                    const param_node* t_master_config_node = t_msg_node->node_at( "payload" );
                     if( t_master_config_node == NULL )
                     {
-                        MTERROR( mtlog, "Node \"master-config\" is not present to save" );
+                        MTERROR( mtlog, "Payload is not present" );
                     }
                     else
                     {
@@ -171,7 +190,7 @@ namespace mantis
         t_payload_node->add( "file", *f_config.at( "file ") ); // copy the file node
         if( f_config.has( "description" ) ) t_payload_node->add( "description", *f_config.at( "description" ) ); // (optional) copy the description node
 
-        return msg_request::create( t_payload_node, OP_RUN, a_routing_key, message::k_json );
+        return msg_request::create( t_payload_node, OP_RUN, a_routing_key, "", message::k_json );
     }
 
     msg_request* run_client::create_get_request( const std::string& a_routing_key )
@@ -185,7 +204,7 @@ namespace mantis
             t_payload_node->add( "values", t_values_array );
         }
 
-        return msg_request::create( t_payload_node, OP_GET, a_routing_key, message::k_json );
+        return msg_request::create( t_payload_node, OP_GET, a_routing_key, "", message::k_json );
     }
 
     msg_request* run_client::create_set_request( const std::string& a_routing_key )
@@ -202,7 +221,7 @@ namespace mantis
         param_node* t_payload_node = new param_node();
         t_payload_node->add( "values", t_values_array );
 
-        return msg_request::create( t_payload_node, OP_SET, a_routing_key, message::k_json );
+        return msg_request::create( t_payload_node, OP_SET, a_routing_key, "", message::k_json );
     }
 
     msg_request* run_client::create_cmd_request( const std::string& a_routing_key )
@@ -235,22 +254,7 @@ namespace mantis
         // at this point, all that remains in f_config should be other options that we want to add to the payload node
         t_payload_node->merge( f_config ); // copy f_config
 
-        return msg_request::create( t_payload_node, OP_CMD, a_routing_key, message::k_json );
+        return msg_request::create( t_payload_node, OP_CMD, a_routing_key, "", message::k_json );
     }
-
-/*
-    param_node* run_client::create_sender_info() const
-    {
-        param_node* t_sender_node = new param_node();
-        t_sender_node->add( "commit", param_value( f_version->commit() ) );
-        t_sender_node->add( "exe", param_value( f_version->exe_name() ) );
-        t_sender_node->add( "version", param_value( f_version->version_str() ) );
-        t_sender_node->add( "package", param_value( f_version->package() ) );
-        t_sender_node->add( "hostname", param_value( f_version->hostname() ) );
-        t_sender_node->add( "username", param_value( f_version->username() ) );
-        return t_sender_node;
-    }
-*/
-
 
 } /* namespace mantis */

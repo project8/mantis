@@ -25,6 +25,7 @@ set( MANTIS_COMMON_HEADERFILES
     mt_signal_handler.hh
     mt_singleton.hh
     mt_thread.hh
+    mt_uuid.hh
 )
 
 set( MANTIS_COMMON_SOURCEFILES
@@ -44,6 +45,7 @@ set( MANTIS_COMMON_SOURCEFILES
     mt_parser.cc
     mt_signal_handler.cc
     mt_thread.cc
+    mt_uuid.cc
     mt_version.cc
 )
 
