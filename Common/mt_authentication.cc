@@ -108,10 +108,17 @@ namespace mantis
         if( t_auth_file_present )
         {
             param_node* t_read_file = param_input_json::read_file( t_auth_file_path.string() );
-            this->param_node::operator=( *t_read_file );
-            delete t_read_file;
-            MTDEBUG( mtlog, "Authentications:\n" << *this );
-            f_is_loaded = true;
+            if( t_read_file == NULL )
+            {
+                MTWARN( mtlog, "Unable to parse authentication file" );
+            }
+            else
+            {
+                this->param_node::operator=( *t_read_file );
+                delete t_read_file;
+                MTDEBUG( mtlog, "Authentications:\n" << *this );
+                f_is_loaded = true;
+            }
         }
         else
         {
