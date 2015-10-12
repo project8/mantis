@@ -238,16 +238,12 @@ namespace mantis
                 if( (*t_list_it)->get_status() == acq_request::waiting )
                 {
                     (*t_list_it)->set_status( acq_request::canceled );
-                    t_list_it = f_acq_request_queue.erase( t_list_it );
                 }
-                else
-                {
-                    ++t_list_it;
-                }
-                f_acq_request_queue.pop_front();
+                f_acq_request_queue.erase( t_list_it );
+                t_list_it = f_acq_request_queue.begin();
             }
         }
-        f_queue_mutex.lock();
+        f_queue_mutex.unlock();
         f_db_mutex.unlock();
         return;
     }
