@@ -162,7 +162,13 @@ namespace mantis
 #elif __linux
         const size_t t_exe_bufsize = 2048;
         char t_exe_buf[ t_exe_bufsize ];
-        if( readlink( "/proc/self/exe", t_exe_buf, t_exe_bufsize ) < 0 )
+        size_t t_exe_name_len = readlink( "/proc/self/exe", t_exe_buf, t_exe_bufsize );
+        if( t_exe_name_len >= 0 )
+        {
+            t_exe_buf[t_exe_name_len] = '\0';
+        }
+        else
+        //if( readlink( "/proc/self/exe", t_exe_buf, t_exe_bufsize ) < 0 )
 #endif
         {
             MTWARN( mtlog, "Could not retrieve executable file name" );
