@@ -300,15 +300,8 @@ namespace mantis
     {
         MTDEBUG( mtlog, "Cmd request received" );
 
-        //MTWARN( mtlog, "uuid string: " << a_request->get_payload().get_value( "key", "") << ", uuid: " << uuid_from_string( a_request->get_payload().get_value( "key", "") ) );
-        if( ! authenticate( a_request->get_lockout_key() ) )
-        {
-            string t_key_used( a_request->get_payload().get_value( "key", "" ) );
-            MTINFO( mtlog, "Request denied due to lockout (key used: " << t_key_used << ")" );
-            a_pkg.send_reply( R_MESSAGE_ERROR_ACCESS_DENIED, "Request denied due to lockout (key used: " + t_key_used + ")" );
-            return false;
-        }
-
+        // get the instruction before checking the lockout key authentication because we need to have the exception for
+        // the unlock instruction that allows us to force the unlock.
         std::string t_instruction;
         if( ! a_request->get_mantis_routing_key().empty() )
         {
@@ -332,6 +325,17 @@ namespace mantis
                 return false;
             }
             t_instruction = a_request->get_payload().array_at( "values" )->get_value( 0 );
+        }
+
+        //MTWARN( mtlog, "uuid string: " << a_request->get_payload().get_value( "key", "") << ", uuid: " << uuid_from_string( a_request->get_payload().get_value( "key", "") ) );
+        // this condition includes the exception for the unlock instruction that allows us to force the unlock regardless of the key.
+        // disable_key() checks the lockout key if it's not forced, so it's okay that we bypass this call to authenticate() for the unlock instruction.
+        if( ! authenticate( a_request->get_lockout_key() ) && t_instruction != "unlock" )
+        {
+            string t_key_used( a_request->get_payload().get_value( "key", "" ) );
+            MTINFO( mtlog, "Request denied due to lockout (key used: " << t_key_used << ")" );
+            a_pkg.send_reply( R_MESSAGE_ERROR_ACCESS_DENIED, "Request denied due to lockout (key used: " + t_key_used + ")" );
+            return false;
         }
 
         if( t_instruction == "replace-config" )
