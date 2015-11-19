@@ -61,7 +61,7 @@ namespace mantis
             f_cancel_condition()
     {
         f_params = new dig_calib_params[ 1 ];
-        get_calib_params( 14, s_data_type_size, -0.25, 0.5, &params( 0 ) );
+        get_calib_params( 14, s_data_type_size, -0.25, 0.5, false, &params( 0 ) );
         /*
         errno = 0;
         f_semaphore = sem_open( "/digitizer_test16", O_CREAT | O_EXCL );

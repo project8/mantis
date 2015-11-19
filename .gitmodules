@@ -7,3 +7,6 @@
 [submodule "SimpleAmqpClient"]
 	path = SimpleAmqpClient
 	url = https://github.com/project8/SimpleAmqpClient.git
+[submodule "libthorax"]
+	path = libthorax
+	url = https://github.com/project8/libthorax

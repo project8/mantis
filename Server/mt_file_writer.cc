@@ -117,14 +117,18 @@ namespace mantis
                     f_header->AddStream( std::string( "mantis - " ) + t_dev_name,
                         t_rate, f_buffer->block_size() / t_n_channels, t_sample_size,
                         f_dev_mgr->device()->params(0).data_type_size, t_data_mode,
-                        f_dev_mgr->device()->params(0).bit_depth, &t_chan_vec );
+                        f_dev_mgr->device()->params(0).bit_depth,
+                        f_dev_mgr->device()->params(0).bits_right_aligned ? monarch3::sBitsAlignedRight : monarch3::sBitsAlignedLeft,
+                        &t_chan_vec );
                 }
                 else
                 {
                     f_header->AddStream( std::string( "mantis - " ) + t_dev_name, t_n_channels, t_chan_mode,
                         t_rate, f_buffer->block_size() / t_n_channels, t_sample_size,
                         f_dev_mgr->device()->params(0).data_type_size, t_data_mode,
-                        f_dev_mgr->device()->params(0).bit_depth, &t_chan_vec );
+                        f_dev_mgr->device()->params(0).bit_depth,
+                        f_dev_mgr->device()->params(0).bits_right_aligned ? monarch3::sBitsAlignedRight : monarch3::sBitsAlignedLeft,
+                        &t_chan_vec );
                 }
 
                 unsigned i_chan_mantis = 0; // this is the channel number in mantis, as opposed to the channel number in the monarch file
