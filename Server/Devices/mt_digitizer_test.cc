@@ -77,8 +77,8 @@ namespace mantis
     {
         f_params = new dig_calib_params[ s_n_channels ];
 
-        get_calib_params( 8, s_data_type_size, -0.25, 0.5, &( params( 0 ) ) );
-        get_calib_params( 8, s_data_type_size, -0.5, 0.5, &( params( 1 ) ) );
+        get_calib_params( 8, s_data_type_size, -0.25, 0.5, false, &( params( 0 ) ) );
+        get_calib_params( 8, s_data_type_size, -0.5, 0.5, false, &( params( 1 ) ) );
 
         f_master_record = new data_type* [ s_n_channels ];
         f_master_record[ 0 ] = NULL;
@@ -285,7 +285,7 @@ namespace mantis
             // call to niScope_ConfigureVertical
             double t_voltage_range = t_chan_config[ i_chan ]->get_value< double >( "voltage-range", 0.5 );
             double t_voltage_offset = t_chan_config[ i_chan ]->get_value< double >( "voltage-offset", 0. );
-            get_calib_params( s_bit_depth, s_data_type_size, t_voltage_offset, t_voltage_range, &( f_params[i_chan] ) );
+            get_calib_params( s_bit_depth, s_data_type_size, t_voltage_offset, t_voltage_range, false, &( f_params[i_chan] ) );
             t_chan_config[ i_chan ]->replace( "dac-gain", param_value( f_params[ i_chan ].dac_gain ) );
         }
 

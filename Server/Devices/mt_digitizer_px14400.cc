@@ -40,7 +40,7 @@ namespace mantis
             f_canceled( false ),
             f_cancel_condition()
     {
-        get_calib_params( px14400_bits, s_data_type_size, px14400_min_val, px14400_range, &f_params );
+        get_calib_params( px14400_bits, s_data_type_size, px14400_min_val, px14400_range, false, &f_params );
         /*
         errno = 0;
         f_semaphore = sem_open( "/digitizer_px14400", O_CREAT | O_EXCL );

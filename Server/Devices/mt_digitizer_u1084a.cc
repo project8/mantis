@@ -68,7 +68,7 @@ namespace mantis
                     //f_number_samples( 0 ),
                     //f_block( NULL )
     {
-        get_calib_params( u1084a_bits, s_data_type_size, u1084a_min_val, u1084a_range, &f_params );
+        get_calib_params( u1084a_bits, s_data_type_size, u1084a_min_val, u1084a_range, false, &f_params );
         /*
         errno = 0;
         f_semaphore = sem_open( "/digitizer_u1084a", O_CREAT | O_EXCL );

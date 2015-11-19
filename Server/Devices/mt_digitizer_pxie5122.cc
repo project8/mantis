@@ -263,6 +263,9 @@ namespace mantis
 
         MTDEBUG( mtlog, "Configuring the 5122" );
 
+        // bits for the 5122 are left-aligned
+        bool t_bits_right_aligned = false;
+
         // call to niScope_ConfigureHorizontalTiming
         // Note that the record size request is passed as the 3rd parameter; this is correct regardless of the number of channels in use;
         // This parameter in the NI function is the minimum number of samples in the record for each channel according to the NI-SCOPE documentation.
@@ -363,7 +366,7 @@ namespace mantis
             {
                 return false;
             }
-            get_calib_params2( s_bit_depth, s_data_type_size, t_voltage_offset, t_voltage_range, t_coeff_info_array[0].gain, &( f_params[i_chan] ) );
+            get_calib_params2( s_bit_depth, s_data_type_size, t_voltage_offset, t_voltage_range, t_coeff_info_array[0].gain, t_bits_right_aligned, &( f_params[i_chan] ) );
             t_chan_config[ i_chan ]->replace( "voltage-offset", param_value( f_params[ i_chan ].v_offset ) );
             t_chan_config[ i_chan ]->replace( "voltage-range", param_value( f_params[ i_chan ].v_range ) );
             t_chan_config[ i_chan ]->replace( "dac-gain", param_value( f_params[ i_chan ].dac_gain ) );
@@ -778,7 +781,7 @@ namespace mantis
         {
             return false;
         }
-        get_calib_params2( 14 /*bit depth*/, s_data_type_size, t_voltage_offset, t_voltage_range, t_coeff_info_array[ 0 ].gain, &(f_params[t_chan]) );
+        get_calib_params2( 14 /*bit depth*/, s_data_type_size, t_voltage_offset, t_voltage_range, t_coeff_info_array[ 0 ].gain, false, &(f_params[t_chan]) );
 
         // configure the clock to use the PXIe crate's timing, which is syncronized to the lab atomic clock
         if( ! HANDLE_ERROR( niScope_ConfigureClock( f_handle, NISCOPE_VAL_NO_SOURCE, NISCOPE_VAL_NO_SOURCE, NISCOPE_VAL_NO_SOURCE, VI_FALSE ) ) )
