@@ -6,7 +6,7 @@ cmake_minimum_required (VERSION 3.0)
 #########
 
 cmake_policy( SET CMP0048 NEW ) # version in project()
-project( Mantis VERSION 3.1.4 )
+project( Mantis VERSION 3.3.0 )
 
 list( APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/Scarab/cmake )
 
@@ -106,12 +106,26 @@ include_directories( BEFORE ${PROJECT_SOURCE_DIR}/msgpack-c/include )
 add_subdirectory( Monarch )
 pbuilder_add_submodule_libraries( ${Monarch_LIBRARIES} )
 include_directories( ${Monarch_DEP_INCLUDE_DIRS} )
-message(STATUS "from monarch, libthorax dep include dirs: ${Monarch_DEP_INCLUDE_DIRS}")
 # add to the RPATH to be used when installing, but only if it's not a system directory
 #list( FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${Monarch_LIBRARY_DIR}" isSystemDir )
 #if( "${isSystemDir}" STREQUAL "-1" )
 #   list( APPEND CMAKE_INSTALL_RPATH ${Monarch_LIBRARY_DIR} )
 #endif( "${isSystemDir}" STREQUAL "-1" )
+
+
+###########
+# libthorax
+###########
+
+add_subdirectory( libthorax )
+pbuilder_add_submodule_libraries( ${libthorax_LIBRARIES} )
+include_directories( ${libthorax_DEP_INCLUDE_DIRS} )
+# add to the RPATH to be used when installing, but only if it's not a system directory
+list( FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${libthorax_LIBRARY_DIR}" isSystemDir )
+if ( "${isSystemDir}" STREQUAL "-1" )
+   list( APPEND CMAKE_INSTALL_RPATH ${libthorax_LIBRARY_DIR} )
+endif( "${isSystemDir}" STREQUAL "-1" )
+
 
 
 ###################
