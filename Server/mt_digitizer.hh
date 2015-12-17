@@ -87,7 +87,7 @@ namespace mantis
         return f_status;
     }
 
-    inline const std::string& writer::get_status_message() const {
+    inline const std::string& digitizer::get_status_message() const {
         return f_status_message;
     }
 
