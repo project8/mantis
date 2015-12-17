@@ -85,11 +85,13 @@ namespace mantis
             virtual bool write( block* a_block ) = 0;
     };
 
-    inline writer::status writer::get_status() const {
+    inline writer::status writer::get_status() const
+    {
         return f_status;
     }
 
-    inline const std::string& writer::get_status_message() const {
+    inline const std::string& writer::get_status_message() const
+    {
         return f_status_message;
     }
 
