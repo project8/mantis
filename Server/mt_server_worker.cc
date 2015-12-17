@@ -133,6 +133,19 @@ namespace mantis
                 f_writer_state = k_inactive;
             }
 
+            if( f_digitizer->get_status() != digitizer::k_ok )
+            {
+                MTWARN( mtlog, "Digitizer finished in non-ok state: (" << f_digitizer->get_status() << ") " << f_digitizer->get_status_message() );
+                MTWARN( mtlog, "Processing of requests has been stopped to allow the problem to be fixed" );
+                f_acq_request_db->stop_queue();
+            }
+            if( f_writer->get_status() != writer::k_ok )
+            {
+                MTWARN( mtlog, "Writer finished in non-ok state: (" << f_writer->get_status() << ") " << f_writer->get_status_message() );
+                MTWARN( mtlog, "Processing of requests has been stopped to allow the problem to be fixed" );
+                f_acq_request_db->stop_queue();
+            }
+
             f_component_mutex.lock();
             f_digitizer = NULL;
             f_writer = NULL;
