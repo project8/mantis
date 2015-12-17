@@ -80,6 +80,11 @@ namespace mantis
                 MTERROR( mtlog, "error opening file: " << e.what() );
                 return false;
             }
+            catch( std::exception& e )
+            {
+                MTERROR( mtlog, "Non-Monarch error opening file: " << e.what() );
+                return false;
+            }
             f_header = f_monarch->GetHeader();
 
             // run header information
