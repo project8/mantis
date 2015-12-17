@@ -39,6 +39,15 @@ namespace mantis
             buffer* get_buffer();
             condition* get_buffer_condition();
 
+            enum status {
+                k_ok = 0,
+                k_warning = 1,
+                k_error = 2
+            };
+            status get_status() const;
+            const std::string& get_status_message() const;
+            void set_status( status a_status, const std::string& a_message );
+
         public:
             virtual bool run_basic_test() = 0;
             bool run_insitu_test();
@@ -48,6 +57,9 @@ namespace mantis
 
             buffer* f_buffer;
             condition* f_buffer_condition;
+
+            status f_status;
+            std::string f_status_message;
     };
 
     inline const dig_calib_params& digitizer::params( unsigned i_chan ) const
@@ -70,6 +82,21 @@ namespace mantis
         return f_buffer_condition;
     }
 
+
+    inline digitizer::status digitizer::get_status() const {
+        return f_status;
+    }
+
+    inline const std::string& writer::get_status_message() const {
+        return f_status_message;
+    }
+
+    inline void digitizer::set_status( digitizer::status a_status, const std::string& a_message )
+    {
+        f_status = a_status;
+        f_status_message = a_message;
+        return;
+    }
 
 #define MT_REGISTER_DIGITIZER(dig_class, dig_name) \
         static registrar< digitizer, dig_class > s_##dig_class##_digitizer_registrar( dig_name ); \

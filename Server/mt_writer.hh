@@ -59,6 +59,15 @@ namespace mantis
             // thread-safe setter
             void set_canceled( bool a_flag );
 
+            enum status {
+                k_ok = 0,
+                k_warning = 1,
+                k_error = 2
+            };
+            status get_status() const;
+            const std::string& get_status_message() const;
+            void set_status( status a_status, const std::string& a_message );
+
         protected:
             buffer* f_buffer;
             condition* f_condition;
@@ -70,8 +79,26 @@ namespace mantis
             acquisition_id_type f_acquisition_count;
             time_nsec_type f_live_time;
 
+            status f_status;
+            std::string f_status_message;
+
             virtual bool write( block* a_block ) = 0;
     };
+
+    inline writer::status writer::get_status() const {
+        return f_status;
+    }
+
+    inline const std::string& writer::get_status_message() const {
+        return f_status_message;
+    }
+
+    inline void writer::set_status( writer::status a_status, const std::string& a_message )
+    {
+        f_status = a_status;
+        f_status_message = a_message;
+        return;
+    }
 
 #define MT_REGISTER_WRITER(writer_class, writer_name) \
         static registrar< writer, writer_class > s_##writer_class##_writer_registrar( writer_name );

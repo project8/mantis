@@ -20,7 +20,9 @@ namespace mantis
             f_cancel_condition(),
             f_record_count( 0 ),
             f_acquisition_count( 0 ),
-            f_live_time( 0 )
+            f_live_time( 0 ),
+            f_status( k_ok ),
+            f_status_message()
     {
     }
     writer::~writer()
