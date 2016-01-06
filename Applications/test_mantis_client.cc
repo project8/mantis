@@ -1,5 +1,5 @@
 #include "mt_configurator.hh"
-#include "mt_logger.hh"
+#include "logger.hh"
 #include "mt_client_tcp.hh"
 #include "mt_client_config.hh"
 #include "mt_run_context_dist.hh"
@@ -12,7 +12,7 @@ using std::string;
 #include <sstream>
 using std::stringstream;
 
-MTLOGGER( mtlog, "test_mantis_client" );
+LOGGER( mtlog, "test_mantis_client" );
 
 int analyze_status( run_context_dist* t_run_context )
 {
@@ -21,39 +21,39 @@ int analyze_status( run_context_dist* t_run_context )
     switch( t_state )
     {
         case status_state_t_created :
-            MTINFO( mtlog, "created..." << '\r');
+            INFO( mtlog, "created..." << '\r');
             return 0;
 
         case status_state_t_acknowledged :
-            MTINFO( mtlog, "acknowledged..." << '\r' );
+            INFO( mtlog, "acknowledged..." << '\r' );
             return 0;
 
         case status_state_t_waiting :
-            MTINFO( mtlog, "waiting..." << '\r' );
+            INFO( mtlog, "waiting..." << '\r' );
             return 0;
 
         case status_state_t_started :
-            MTINFO( mtlog, "started..." << '\r' );
+            INFO( mtlog, "started..." << '\r' );
             return 0;
 
         case status_state_t_running :
-            MTINFO( mtlog, "running..." << '\r' );
+            INFO( mtlog, "running..." << '\r' );
             return 0;
 
         case status_state_t_stopped :
-            MTINFO( mtlog, "stopped..." << '\r' );
+            INFO( mtlog, "stopped..." << '\r' );
             return 1;
 
         case status_state_t_error :
-            MTINFO( mtlog, "error..." << '\r' );
+            INFO( mtlog, "error..." << '\r' );
             return -1;
 
         case status_state_t_canceled :
-            MTINFO( mtlog, "canceled..." << '\r' );
+            INFO( mtlog, "canceled..." << '\r' );
             return -1;
 
         case status_state_t_revoked :
-            MTINFO( mtlog, "revoked..." << '\r' );
+            INFO( mtlog, "revoked..." << '\r' );
             return -1;
     }
 }
@@ -66,9 +66,9 @@ int main( int argc, char** argv )
         configurator t_configurator( argc, argv, &t_cc );
 
         string t_host = t_configurator.get< string >( "host" );
-        MTINFO( mtlog, "attempting to reach host at: " << t_host );
+        INFO( mtlog, "attempting to reach host at: " << t_host );
         int t_port = t_configurator.get< int >( "port" );
-        MTINFO( mtlog, "host port: " << t_port );
+        INFO( mtlog, "host port: " << t_port );
         client_tcp* t_client = new client_tcp( t_host, t_port );
         run_context_dist* t_run_context = new run_context_dist();
         t_run_context->set_connection( t_client );
@@ -84,7 +84,7 @@ int main( int argc, char** argv )
         t_request->set_duration( 2000.0 );
         t_request->set_file_write_mode( request_file_write_mode_t_local );
 
-        MTINFO( mtlog, "sending request...\n" << t_request->DebugString() );
+        INFO( mtlog, "sending request...\n" << t_request->DebugString() );
 
         t_run_context->push_request_no_mutex();
 
@@ -99,7 +99,7 @@ int main( int argc, char** argv )
     //    }
     //    while( analyze_status( t_run_context ) == 0 );
 
-        MTINFO( mtlog, "done" );
+        INFO( mtlog, "done" );
 
         delete t_run_context;
         delete t_client;
@@ -108,7 +108,7 @@ int main( int argc, char** argv )
     }
     catch( exception& e )
     {
-        MTERROR( "exception caught: " << e.what() );
+        ERROR( "exception caught: " << e.what() );
     }
     return -1;
 }

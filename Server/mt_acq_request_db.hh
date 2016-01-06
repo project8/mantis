@@ -10,12 +10,16 @@
 #include <map>
 #include <string>
 
+namespace scarab
+{
+    class param_node;
+}
+
 namespace mantis
 {
     class acq_request;
     class config_manager;
     class msg_request;
-    class param_node;
 
     struct request_reply_package;
 

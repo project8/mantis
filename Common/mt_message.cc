@@ -11,17 +11,23 @@
 
 #include "mt_broker.hh"
 #include "mt_constants.hh"
-#include "mt_logger.hh"
-#include "mt_param_json.hh"
-#include "mt_param_msgpack.hh"
 #include "mt_version.hh"
 #include "thorax.hh"
+
+#include "logger.hh"
+#include "param_json.hh"
+#include "param_msgpack.hh"
+
+using scarab::param_input_json;
+using scarab::param_output_json;
+using scarab::param_input_msgpack;
+using scarab::param_output_msgpack;
 
 using std::string;
 
 namespace mantis
 {
-    MTLOGGER( mtlog, "message" );
+    LOGGER( mtlog, "message" );
 
     //***********
     // Message
@@ -80,19 +86,19 @@ namespace mantis
         }
         else
         {
-            MTERROR( mtlog, "Unable to parse message with content type <" << a_envelope->Message()->ContentEncoding() << ">" );
+            ERROR( mtlog, "Unable to parse message with content type <" << a_envelope->Message()->ContentEncoding() << ">" );
             return NULL;
         }
 
         if( t_msg_node == NULL )
         {
-            MTERROR( mtlog, "Message body could not be parsed; skipping request" );
+            ERROR( mtlog, "Message body could not be parsed; skipping request" );
             return NULL;
         }
 
         string t_routing_key = a_envelope->RoutingKey();
 
-        MTDEBUG( mtlog, "Processing message:\n" <<
+        DEBUG( mtlog, "Processing message:\n" <<
                  "Routing key: " << t_routing_key <<
                  *t_msg_node );
 
@@ -118,7 +124,7 @@ namespace mantis
             }
             default:
             {
-                MTWARN( mtlog, "Message received with unhandled type: " << t_msg_node->get_value< unsigned >( "msgtype" ) );
+                WARN( mtlog, "Message received with unhandled type: " << t_msg_node->get_value< unsigned >( "msgtype" ) );
                 return NULL;
                 break;
             }
@@ -138,7 +144,7 @@ namespace mantis
             }
             else
             {
-                MTWARN( mtlog, "Non-node payload is present; it will be ignored" );
+                WARN( mtlog, "Non-node payload is present; it will be ignored" );
                 t_message->set_payload( new param_node() );
             }
         }
@@ -155,7 +161,7 @@ namespace mantis
         string t_body;
         if( ! encode_message_body( t_body ) )
         {
-            MTERROR( mtlog, "Unable to encode message body" );
+            ERROR( mtlog, "Unable to encode message body" );
             return amqp_message_ptr();
         }
 
@@ -177,7 +183,7 @@ namespace mantis
 
         if( ! this->derived_modify_message_body( t_body_node ) )
         {
-            MTERROR( mtlog, "Something went wrong in the derived-class modify_body_message function" );
+            ERROR( mtlog, "Something went wrong in the derived-class modify_body_message function" );
             return false;
         }
 
@@ -186,13 +192,13 @@ namespace mantis
             case k_json:
                 if( ! param_output_json::write_string( t_body_node, a_body, param_output_json::k_compact ) )
                 {
-                    MTERROR( mtlog, "Could not convert message body to string" );
+                    ERROR( mtlog, "Could not convert message body to string" );
                     return false;
                 }
                 return true;
                 break;
             default:
-                MTERROR( mtlog, "Cannot encode using <" << interpret_encoding() << "> (" << f_encoding << ")" );
+                ERROR( mtlog, "Cannot encode using <" << interpret_encoding() << "> (" << f_encoding << ")" );
                 return false;
                 break;
         }
@@ -262,14 +268,14 @@ namespace mantis
         string t_reply_to = a_channel->DeclareQueue( "" );
         a_channel->BindQueue( t_reply_to, a_exchange, t_reply_to );
         set_reply_to( t_reply_to );
-        MTDEBUG( mtlog, "Reply-to for request: " << t_reply_to );
+        DEBUG( mtlog, "Reply-to for request: " << t_reply_to );
 
         // begin consuming on the reply-to queue
         // TODO: is this where this should be done?
         a_reply_consumer_tag = a_channel->BasicConsume( t_reply_to );
-        MTDEBUG( mtlog, "Consumer tag for reply: " << a_reply_consumer_tag );
+        DEBUG( mtlog, "Consumer tag for reply: " << a_reply_consumer_tag );
 
-        MTINFO( mtlog, "Sending request with routing key <" << get_routing_key() << ">" );
+        INFO( mtlog, "Sending request with routing key <" << get_routing_key() << ">" );
 
         amqp_message_ptr t_message = create_amqp_message();
 
@@ -279,12 +285,12 @@ namespace mantis
         }
         catch( AmqpClient::MessageReturnedException& e )
         {
-            MTERROR( mtlog, "Request message could not be sent: " << e.what() );
+            ERROR( mtlog, "Request message could not be sent: " << e.what() );
             return false;
         }
         catch( std::exception& e )
         {
-            MTERROR( mtlog, "Error publishing request to queue: " << e.what() );
+            ERROR( mtlog, "Error publishing request to queue: " << e.what() );
             return false;
         }
         return true;
@@ -331,7 +337,7 @@ namespace mantis
 
     bool msg_reply::do_publish( amqp_channel_ptr a_channel, const std::string& a_exchange, std::string& a_reply_consumer_tag )
     {
-        MTINFO( mtlog, "Sending reply with routing key <" << get_routing_key() << ">" );
+        INFO( mtlog, "Sending reply with routing key <" << get_routing_key() << ">" );
 
         a_reply_consumer_tag.clear(); // no reply expected
 
@@ -343,12 +349,12 @@ namespace mantis
         }
         catch( AmqpClient::MessageReturnedException& e )
         {
-            MTERROR( mtlog, "Request message could not be sent: " << e.what() );
+            ERROR( mtlog, "Request message could not be sent: " << e.what() );
             return false;
         }
         catch( std::exception& e )
         {
-            MTERROR( mtlog, "Error publishing request to queue: " << e.what() );
+            ERROR( mtlog, "Error publishing request to queue: " << e.what() );
             return false;
         }
         return true;
@@ -391,7 +397,7 @@ namespace mantis
 
     bool msg_alert::do_publish( amqp_channel_ptr a_channel, const std::string& a_exchange, std::string& a_reply_consumer_tag )
     {
-        MTINFO( mtlog, "Sending alert with routing key <" << get_routing_key() << ">" );
+        INFO( mtlog, "Sending alert with routing key <" << get_routing_key() << ">" );
 
         a_reply_consumer_tag.clear(); // no reply expected
 
@@ -403,12 +409,12 @@ namespace mantis
         }
         catch( AmqpClient::MessageReturnedException& e )
         {
-            MTERROR( mtlog, "Alert message could not be sent: " << e.what() );
+            ERROR( mtlog, "Alert message could not be sent: " << e.what() );
             return false;
         }
         catch( std::exception& e )
         {
-            MTERROR( mtlog, "Error publishing alert to queue: " << e.what() );
+            ERROR( mtlog, "Error publishing alert to queue: " << e.what() );
             return false;
         }
         return true;
@@ -442,7 +448,7 @@ namespace mantis
 
     bool msg_info::do_publish( amqp_channel_ptr a_channel, const std::string& a_exchange, std::string& a_reply_consumer_tag )
     {
-        MTINFO( mtlog, "Sending info with routing key <" << get_routing_key() << ">" );
+        INFO( mtlog, "Sending info with routing key <" << get_routing_key() << ">" );
 
         a_reply_consumer_tag.clear(); // no reply expected
 
@@ -454,12 +460,12 @@ namespace mantis
         }
         catch( AmqpClient::MessageReturnedException& e )
         {
-            MTERROR( mtlog, "Request message could not be sent: " << e.what() );
+            ERROR( mtlog, "Request message could not be sent: " << e.what() );
             return false;
         }
         catch( std::exception& e )
         {
-            MTERROR( mtlog, "Error publishing request to queue: " << e.what() );
+            ERROR( mtlog, "Error publishing request to queue: " << e.what() );
             return false;
         }
         return true;

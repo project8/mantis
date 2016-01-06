@@ -4,6 +4,10 @@
 
 if( Mantis_BUILD_CLIENT )
 
+    set( MANTIS_LIB_DEPS
+        MantisCommon
+    )
+
     set( MANTIS_CLIENT_HEADERFILES
         mt_client_config.hh
         #mt_client_file_writing.hh
@@ -18,10 +22,7 @@ if( Mantis_BUILD_CLIENT )
         mt_run_client.cc
     )
     
-    add_library( MantisClient ${MANTIS_CLIENT_SOURCEFILES} )
-    target_link_libraries( MantisClient MantisCommon ${EXTERNAL_LIBRARIES} )
-    
+    pbuilder_library( MantisClient MANTIS_CLIENT_SOURCEFILES MANTIS_LIB_DEPS )
     pbuilder_install_headers( ${MANTIS_CLIENT_HEADERFILES} )
-    pbuilder_install_libraries( MantisClient )
 
 endif( Mantis_BUILD_CLIENT )

@@ -3,13 +3,13 @@
 
 #include "mt_modifier.hh"
 
-#include "mt_logger.hh"
+#include "logger.hh"
 
 #include <string>
 
 namespace mantis
 {
-    MTLOGGER( mtlog_bsm, "bit_shift_modifier" );
+    LOGGER( mtlog_bsm, "bit_shift_modifier" );
 
     /*!
      @class bit_shift_modifier
@@ -82,7 +82,7 @@ namespace mantis
         for( unsigned index = 0; index < t_data_size; ++index )
         {
             //unsigned temp = f_view.data_view()[index] >> f_bit_shift;
-            //if( index < 100 ) MTDEBUG( mtlog_bsm, "shifting at [" << index << "]: " << f_view.data_view()[index] << " to " << temp );
+            //if( index < 100 ) DEBUG( mtlog_bsm, "shifting at [" << index << "]: " << f_view.data_view()[index] << " to " << temp );
             f_view.data_view()[index] = f_view.data_view()[index] >> f_bit_shift;
         }
         return true;

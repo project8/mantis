@@ -28,7 +28,7 @@
 
 #include "mt_configurator.hh"
 #include "mt_constants.hh"
-#include "mt_logger.hh"
+#include "logger.hh"
 #include "mt_run_server.hh"
 #include "mt_server_config.hh"
 #include "mt_version.hh"
@@ -37,11 +37,11 @@ using namespace mantis;
 
 using std::string;
 
-MTLOGGER( mtlog, "mantis_server" );
+LOGGER( mtlog, "mantis_server" );
 
 int main( int argc, char** argv )
 {
-    MTINFO( mtlog, "Welcome to Mantis\n\n" <<
+    INFO( mtlog, "Welcome to Mantis\n\n" <<
             "\t\t _______  _______  _       __________________ _______ \n" <<
             "\t\t(       )(  ___  )( \\    /|\\__   __/\\__   __/(  ____ \\\n" <<
             "\t\t| () () || (   ) ||  \\  ( |   ) (      ) (   | (    \\/\n" <<
@@ -66,19 +66,19 @@ int main( int argc, char** argv )
 
         return the_server.get_return();
     }
-    catch( param_exception& e )
+    catch( scarab::error& e )
     {
-        MTERROR( mtlog, "configuration error: " << e.what() );
+        ERROR( mtlog, "configuration error: " << e.what() );
         return RETURN_ERROR;
     }
     catch( exception& e )
     {
-        MTERROR( mtlog, "mantis error: " << e.what() );
+        ERROR( mtlog, "mantis error: " << e.what() );
         return RETURN_ERROR;
     }
     catch( std::exception& e )
     {
-        MTERROR( mtlog, "std::exception caught: " << e.what() );
+        ERROR( mtlog, "std::exception caught: " << e.what() );
         return RETURN_ERROR;
     }
 

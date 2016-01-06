@@ -7,13 +7,13 @@
 #include "mt_buffer.hh"
 #include "mt_config_manager.hh"
 #include "mt_constants.hh"
-#include "mt_logger.hh"
+#include "mt_exception.hh"
 #include "mt_message.hh"
-#include "mt_param_json.hh"
-#include "mt_param_msgpack.hh"
 #include "mt_parser.hh"
 #include "mt_run_server.hh"
 #include "mt_server_worker.hh"
+
+#include "logger.hh"
 
 #include <cstddef>
 #include <sstream>
@@ -24,14 +24,14 @@ using std::string;
 
 namespace mantis
 {
-    MTLOGGER( mtlog, "request_receiver" );
+    LOGGER( mtlog, "request_receiver" );
 
     bool request_reply_package::send_reply( unsigned a_return_code, const std::string& a_return_msg )
     {
         msg_reply* t_reply = msg_reply::create( a_return_code, a_return_msg, new param_node( f_payload ), f_request->get_reply_to(), "", message::k_json );
         t_reply->set_correlation_id( f_request->get_correlation_id() );
 
-        MTDEBUG( mtlog, "Sending reply message:\n" <<
+        DEBUG( mtlog, "Sending reply message:\n" <<
                  "Return code: " << t_reply->get_return_code() << '\n' <<
                  "Return message: " << t_reply->get_return_message() <<
                  f_payload );
@@ -39,7 +39,7 @@ namespace mantis
         string t_consumer_tag;
         if( ! t_reply->do_publish( f_channel, f_exchange, t_consumer_tag ) )
         {
-            MTWARN( mtlog, "Unable to send reply" );
+            WARN( mtlog, "Unable to send reply" );
             return false;
         }
 
@@ -69,13 +69,13 @@ namespace mantis
         {
             if( ! f_consumer_tag.empty() )
             {
-                MTDEBUG( mtlog, "Canceling consume of tag <" << f_consumer_tag << ">" );
+                DEBUG( mtlog, "Canceling consume of tag <" << f_consumer_tag << ">" );
                 f_broker->get_connection().amqp()->BasicCancel( f_consumer_tag );
                 f_consumer_tag.clear();
             }
             if( ! f_queue_name.empty() )
             {
-                MTDEBUG( mtlog, "Deleting queue <" << f_queue_name << ">" );
+                DEBUG( mtlog, "Deleting queue <" << f_queue_name << ">" );
                 f_broker->get_connection().amqp()->DeleteQueue( f_queue_name, false );
                 f_queue_name.clear();
             }
@@ -106,14 +106,14 @@ namespace mantis
         }
         catch( AmqpClient::AmqpException& e )
         {
-            MTERROR( mtlog, "AMQP exception caught: " << e.what() );
+            ERROR( mtlog, "AMQP exception caught: " << e.what() );
             //cancel();
             f_run_server->quit_server();
             return;
         }
         catch( std::exception& e )
         {
-            MTERROR( mtlog, "Standard exception caught: " << e.what() );
+            ERROR( mtlog, "Standard exception caught: " << e.what() );
             //cancel();
             f_run_server->quit_server();
             return;
@@ -125,11 +125,11 @@ namespace mantis
 
             // blocking call to wait for incoming message
             f_status.store( k_listening );
-            MTINFO( mtlog, "Waiting for incoming message" );
+            INFO( mtlog, "Waiting for incoming message" );
             AmqpClient::Envelope::ptr_t t_envelope = f_channel->BasicConsumeMessage( f_consumer_tag );
 
             f_channel->BasicAck( t_envelope );
-            MTINFO( mtlog, "Message received" );
+            INFO( mtlog, "Message received" );
 
             if (f_canceled.load()) return;
 
@@ -146,7 +146,7 @@ namespace mantis
                 if( ! t_request->get_lockout_key_valid() )
                 {
                     t_reply_pkg.send_reply( R_MESSAGE_ERROR_INVALID_KEY, "Lockout key could not be parsed" );
-                    MTWARN( mtlog, "Message had an invalid lockout key" );
+                    WARN( mtlog, "Message had an invalid lockout key" );
                 }
                 else
                 {
@@ -176,7 +176,7 @@ namespace mantis
                             std::stringstream t_error_stream;
                             t_error_stream << "Unrecognized message operation: <" << t_request->get_message_type() << ">";
                             string t_error_msg( t_error_stream.str() );
-                            MTERROR( mtlog, t_error_msg );
+                            ERROR( mtlog, t_error_msg );
                             t_reply_pkg.send_reply( R_MESSAGE_ERROR_INVALID_METHOD, t_error_msg );
                             break;
                     } // end switch on message type
@@ -184,22 +184,22 @@ namespace mantis
             }
             else
             {
-                MTWARN( mtlog, "Non-request message received by the request_receiver, and will be ignored" );
+                WARN( mtlog, "Non-request message received by the request_receiver, and will be ignored" );
             }
 
             delete t_message;
 
-            MTINFO( mtlog, "Message handled" );
+            INFO( mtlog, "Message handled" );
         } // end while (true)
 
         f_status.store( k_done );
-        MTDEBUG( mtlog, "Request receiver is done" );
+        DEBUG( mtlog, "Request receiver is done" );
 
-        MTDEBUG( mtlog, "Canceling consume of tag <" << f_consumer_tag << ">" );
+        DEBUG( mtlog, "Canceling consume of tag <" << f_consumer_tag << ">" );
         f_channel->BasicCancel( f_consumer_tag );
         f_consumer_tag.clear();
 
-        MTDEBUG( mtlog, "Deleting queue <" << f_queue_name << ">" );
+        DEBUG( mtlog, "Deleting queue <" << f_queue_name << ">" );
         f_channel->DeleteQueue( f_queue_name, false );
         f_queue_name.clear();
 
@@ -208,12 +208,12 @@ namespace mantis
 
     bool request_receiver::do_run_request( const msg_request* a_request, request_reply_package& a_pkg )
     {
-        MTDEBUG( mtlog, "Run operation request received" );
+        DEBUG( mtlog, "Run operation request received" );
 
         if( ! authenticate( a_request->get_lockout_key() ) )
         {
             string t_key_used( a_request->get_payload().get_value( "key", "" ) );
-            MTINFO( mtlog, "Request denied due to lockout (key used: " << t_key_used << ")" );
+            INFO( mtlog, "Request denied due to lockout (key used: " << t_key_used << ")" );
             a_pkg.send_reply( R_MESSAGE_ERROR_ACCESS_DENIED, "Request denied due to lockout (key used: " + t_key_used + ")" );
             return false;
         }
@@ -223,12 +223,12 @@ namespace mantis
 
     bool request_receiver::do_get_request( const msg_request* a_request, request_reply_package& a_pkg )
     {
-        MTDEBUG( mtlog, "Get request received" );
+        DEBUG( mtlog, "Get request received" );
 
         // require that there is a reply-to
         if( a_request->get_reply_to().empty() )
         {
-            MTWARN( mtlog, "Get request has no reply-to" );
+            WARN( mtlog, "Get request has no reply-to" );
             return false;
         }
 
@@ -237,7 +237,7 @@ namespace mantis
         {
             parsable t_routing_key_node( a_request->get_mantis_routing_key() );
             t_query_type = t_routing_key_node.begin()->first;
-            MTDEBUG( mtlog, "Query type: " << t_query_type );
+            DEBUG( mtlog, "Query type: " << t_query_type );
         }
         catch( exception& e )
         {
@@ -283,12 +283,12 @@ namespace mantis
 
     bool request_receiver::do_set_request( const msg_request* a_request, request_reply_package& a_pkg )
     {
-        MTDEBUG( mtlog, "Set request received" );
+        DEBUG( mtlog, "Set request received" );
 
         if( ! authenticate( a_request->get_lockout_key() ) )
         {
             string t_key_used( a_request->get_payload().get_value( "key", "" ) );
-            MTINFO( mtlog, "Request denied due to lockout (key used: " << t_key_used << ")" );
+            INFO( mtlog, "Request denied due to lockout (key used: " << t_key_used << ")" );
             a_pkg.send_reply( R_MESSAGE_ERROR_ACCESS_DENIED, "Request denied due to lockout (key used: " + t_key_used + ")" );
             return false;
         }
@@ -298,7 +298,7 @@ namespace mantis
 
     bool request_receiver::do_cmd_request( const msg_request* a_request, request_reply_package& a_pkg )
     {
-        MTDEBUG( mtlog, "Cmd request received" );
+        DEBUG( mtlog, "Cmd request received" );
 
         // get the instruction before checking the lockout key authentication because we need to have the exception for
         // the unlock instruction that allows us to force the unlock.
@@ -309,7 +309,7 @@ namespace mantis
             {
                 parsable t_routing_key_node( a_request->get_mantis_routing_key() );
                 t_instruction = t_routing_key_node.begin()->first;
-                MTDEBUG( mtlog, "Instruction: " << t_instruction );
+                DEBUG( mtlog, "Instruction: " << t_instruction );
             }
             catch( exception& e )
             {
@@ -327,13 +327,13 @@ namespace mantis
             t_instruction = a_request->get_payload().array_at( "values" )->get_value( 0 );
         }
 
-        //MTWARN( mtlog, "uuid string: " << a_request->get_payload().get_value( "key", "") << ", uuid: " << uuid_from_string( a_request->get_payload().get_value( "key", "") ) );
+        //WARN( mtlog, "uuid string: " << a_request->get_payload().get_value( "key", "") << ", uuid: " << uuid_from_string( a_request->get_payload().get_value( "key", "") ) );
         // this condition includes the exception for the unlock instruction that allows us to force the unlock regardless of the key.
         // disable_key() checks the lockout key if it's not forced, so it's okay that we bypass this call to authenticate() for the unlock instruction.
         if( ! authenticate( a_request->get_lockout_key() ) && t_instruction != "unlock" )
         {
             string t_key_used( a_request->get_payload().get_value( "key", "" ) );
-            MTINFO( mtlog, "Request denied due to lockout (key used: " << t_key_used << ")" );
+            INFO( mtlog, "Request denied due to lockout (key used: " << t_key_used << ")" );
             a_pkg.send_reply( R_MESSAGE_ERROR_ACCESS_DENIED, "Request denied due to lockout (key used: " + t_key_used + ")" );
             return false;
         }
@@ -392,7 +392,7 @@ namespace mantis
         }
         else
         {
-            MTWARN( mtlog, "Instruction <" << t_instruction << "> not understood" );
+            WARN( mtlog, "Instruction <" << t_instruction << "> not understood" );
             a_pkg.send_reply( R_MESSAGE_ERROR_BAD_PAYLOAD, "Instruction <" + t_instruction + "> not understood" );
             return false;
         }
@@ -446,7 +446,7 @@ namespace mantis
 
     void request_receiver::cancel()
     {
-        MTDEBUG( mtlog, "Canceling request receiver" );
+        DEBUG( mtlog, "Canceling request receiver" );
         if( ! f_canceled.load() )
         {
             f_canceled.store( true );
@@ -496,7 +496,7 @@ namespace mantis
 
     bool request_receiver::authenticate( const uuid_t& a_key ) const
     {
-        MTDEBUG( mtlog, "Authenticating with key <" << a_key << ">" );
+        DEBUG( mtlog, "Authenticating with key <" << a_key << ">" );
         if( is_locked() ) return check_key( a_key );
         return true;
     }

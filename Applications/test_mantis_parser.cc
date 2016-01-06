@@ -11,7 +11,7 @@
 
 using namespace mantis;
 
-MTLOGGER( mtlog, "test_mantis_parser" );
+LOGGER( mtlog, "test_mantis_parser" );
 
 int main()
 {

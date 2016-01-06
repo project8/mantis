@@ -11,14 +11,16 @@
 
 #include "mt_buffer.hh"
 #include "mt_condition.hh"
+#include "mt_exception.hh"
 #include "mt_factory.hh"
-#include "mt_logger.hh"
-#include "mt_param.hh"
 #include "mt_acq_request.hh"
+
+#include "logger.hh"
+#include "param.hh"
 
 namespace mantis
 {
-    MTLOGGER( mtlog, "device_manager" );
+    LOGGER( mtlog, "device_manager" );
 
     device_manager::device_manager() :
             f_device_name(),
@@ -32,10 +34,10 @@ namespace mantis
             digitizer_config_template* t_dev_ct = t_dev_ct_factory->create( it );
             if( t_dev_ct == NULL )
             {
-                MTWARN( mtlog, "Unable to add device config template for device type <" << it->first << ">" );
+                WARN( mtlog, "Unable to add device config template for device type <" << it->first << ">" );
                 continue;
             }
-            MTDEBUG( mtlog, "Adding device config template for <" << it->first << ">" );
+            DEBUG( mtlog, "Adding device config template for <" << it->first << ">" );
             t_dev_ct->add( &f_device_config_templates, it->first );
             delete t_dev_ct;
         }
@@ -53,14 +55,14 @@ namespace mantis
             param_node* t_acq_config = a_acq_request.node_at( "acquisition" );
             if( t_acq_config == NULL )
             {
-                MTERROR( mtlog, "Acquisition configuration is missing" );
+                ERROR( mtlog, "Acquisition configuration is missing" );
                 return false;
             }
 
             param_node* t_device_config = t_acq_config->node_at( "devices" );
             if( t_device_config == NULL )
             {
-                MTERROR( mtlog, "Device configuration is missing" );
+                ERROR( mtlog, "Device configuration is missing" );
                 return false;
             }
 
@@ -80,30 +82,30 @@ namespace mantis
                 }
                 catch( exception& e )
                 {
-                    MTWARN( mtlog, "Found non-node param object in \"devices\"" );
+                    WARN( mtlog, "Found non-node param object in \"devices\"" );
                 }
             }
             if( t_enabled_dev_config == NULL )
             {
-                MTERROR( mtlog, "Did not find an enabled device" );
+                ERROR( mtlog, "Did not find an enabled device" );
                 return false;
             }
 
             if( ! set_device( t_node_it->second->as_node().get_value( "type" ) ) )
             {
-                MTERROR( mtlog, "Unable to set device" );
+                ERROR( mtlog, "Unable to set device" );
                 return false;
             }
 
             if( ! f_device->initialize( t_acq_config, t_enabled_dev_config ) )
             {
-                MTERROR( mtlog, "Unable to configure device" );
+                ERROR( mtlog, "Unable to configure device" );
                 return false;
             }
         }
         catch( exception& e )
         {
-            MTERROR( mtlog, "An exception was thrown while configuring the device manager:\n\t" << e.what() );
+            ERROR( mtlog, "An exception was thrown while configuring the device manager:\n\t" << e.what() );
         }
 
         return true;
@@ -122,13 +124,13 @@ namespace mantis
                 f_device = t_dig_factory->create( a_dev );
                 if( f_device == NULL )
                 {
-                    MTERROR( mtlog, "Could not create digitizer <" << a_dev << ">; aborting" );
+                    ERROR( mtlog, "Could not create digitizer <" << a_dev << ">; aborting" );
                     return false;
                 }
             }
             catch( exception& e )
             {
-                MTERROR( mtlog, "Exception caught while creating device <" << a_dev << ">: " << e.what() );
+                ERROR( mtlog, "Exception caught while creating device <" << a_dev << ">: " << e.what() );
                 return false;
             }
 

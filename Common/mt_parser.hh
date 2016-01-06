@@ -1,10 +1,14 @@
 #ifndef MT_PARSER_HH_
 #define MT_PARSER_HH_
 
-#include "mt_param.hh"
-#include "mt_param_json.hh"
+#include "mt_constants.hh"
+
+#include "param.hh"
 
 #include <string>
+
+using scarab::param;
+using scarab::param_node;
 
 namespace mantis
 {

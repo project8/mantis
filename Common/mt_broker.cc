@@ -10,13 +10,17 @@
 #include "mt_broker.hh"
 
 #include "mt_authentication.hh"
-#include "mt_logger.hh"
+
+#include "logger.hh"
+#include "param.hh"
 
 #include "SimpleAmqpClient/AmqpLibraryException.h"
 
+using scarab::param_node;
+
 namespace mantis
 {
-    MTLOGGER( mtlog, "broker" );
+    LOGGER( mtlog, "broker" );
 
     broker::broker( const std::string& a_address, unsigned a_port ) :
             f_address( a_address ),
@@ -35,25 +39,25 @@ namespace mantis
             authentication* t_auth = authentication::get_instance();
             if( ! t_auth->is_loaded() )
             {
-                MTERROR( mtlog, "Authentications were not loaded; create AMQP connection" );
+                ERROR( mtlog, "Authentications were not loaded; create AMQP connection" );
                 return AmqpClient::Channel::ptr_t();
             }
             const param_node* t_amqp_auth = t_auth->node_at( "amqp" );
             if( t_amqp_auth == NULL || ! t_amqp_auth->has( "username" ) || ! t_amqp_auth->has( "password" ) )
             {
-                MTERROR( mtlog, "AMQP authentication is not available or is not complete" );
+                ERROR( mtlog, "AMQP authentication is not available or is not complete" );
                 return AmqpClient::Channel::ptr_t();
             }
             return AmqpClient::Channel::Create( f_address, f_port, t_amqp_auth->get_value( "username" ), t_amqp_auth->get_value( "password" ) );
         }
         catch( AmqpClient::AmqpLibraryException& e )
         {
-            MTERROR( mtlog, "AMQP Library Exception caught: " << e.what() );
+            ERROR( mtlog, "AMQP Library Exception caught: " << e.what() );
             return AmqpClient::Channel::ptr_t();
         }
         catch( std::exception& e )
         {
-            MTERROR( mtlog, "Standard exception caught: " << e.what() );
+            ERROR( mtlog, "Standard exception caught: " << e.what() );
             return AmqpClient::Channel::ptr_t();
         }
     }

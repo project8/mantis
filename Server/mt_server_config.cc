@@ -15,6 +15,9 @@
 #include<string>
 using std::string;
 
+using scarab::param_node;
+using scarab::param_value;
+
 namespace mantis
 {
 

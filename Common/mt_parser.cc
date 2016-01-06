@@ -3,13 +3,16 @@
 #include "mt_parser.hh"
 
 #include "mt_exception.hh"
-#include "mt_logger.hh"
+#include "logger.hh"
 
 #include <sstream>
 
+using scarab::param_value;
+
+
 namespace mantis
 {
-    MTLOGGER( mtlog, "parser" );
+    LOGGER( mtlog, "parser" );
 
     parsable::parsable( const std::string& a_addr_with_value ) :
             param_node()
@@ -44,18 +47,18 @@ namespace mantis
             if( a_value.empty() )
             {
                 a_parent->add( a_addr, new param() );
-                MTDEBUG( mtlog, "Parsed value as NULL" << *this );
+                DEBUG( mtlog, "Parsed value as NULL" << *this );
             }
             // if "true" or "false", then bool
             else if( a_value == "true" )
             {
                 a_parent->add( a_addr, new param_value( true ) );
-                MTDEBUG( mtlog, "Parsed value (" << a_value << ") as bool(true)" << *this );
+                DEBUG( mtlog, "Parsed value (" << a_value << ") as bool(true)" << *this );
             }
             else if( a_value == "false" )
             {
                 a_parent->add( a_addr, new param_value( false ) );
-                MTDEBUG( mtlog, "Parsed value (" << a_value << ") as bool(false):" << *this );
+                DEBUG( mtlog, "Parsed value (" << a_value << ") as bool(false):" << *this );
             }
             else
             {
@@ -75,26 +78,26 @@ namespace mantis
                     {
                         // value is a floating-point number, since it has a decimal point
                         a_parent->add( a_addr, new param_value( t_double ) );
-                        MTDEBUG( mtlog, "Parsed value (" << a_value << ") as double(" << t_double << "):" << *this );
+                        DEBUG( mtlog, "Parsed value (" << a_value << ") as double(" << t_double << "):" << *this );
                     }
                     else if( a_value[ 0 ] == '-' )
                     {
                         // value is a signed integer if it's negative
                         a_parent->add( a_addr, new param_value( (int64_t)t_double ) );
-                        MTDEBUG( mtlog, "Parsed value (" << a_value << ") as int(" << (int64_t)t_double << "):" << *this );
+                        DEBUG( mtlog, "Parsed value (" << a_value << ") as int(" << (int64_t)t_double << "):" << *this );
                     }
                     else
                     {
                         // value is assumed to be unsigned if it's positive
                         a_parent->add( a_addr, new param_value( (uint64_t)t_double ) );
-                        MTDEBUG( mtlog, "Parsed value (" << a_value << ") as uint(" << (uint64_t)t_double << ");" << *this );
+                        DEBUG( mtlog, "Parsed value (" << a_value << ") as uint(" << (uint64_t)t_double << ");" << *this );
                     }
                 }
                 else
                 {
                     // value is not numeric; treat as a string
                     a_parent->add( a_addr, new param_value( a_value ) );
-                    MTDEBUG( mtlog, "Parsed value (" << a_value << ") as a string:" << *this );
+                    DEBUG( mtlog, "Parsed value (" << a_value << ") as a string:" << *this );
                 }
             }
             return;

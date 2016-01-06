@@ -8,15 +8,21 @@
 
 #include <string>
 
+namespace scarab
+{
+    class param_node;
+}
+
 namespace mantis
 {
+    using scarab::param_node;
+
     class amqp_relayer;
     class buffer;
     class condition;
     class device_manager;
     class digitizer;
     class msg_request;
-    class param_node;
     class run_context_dist;
     class acq_request_db;
     class run_queue;

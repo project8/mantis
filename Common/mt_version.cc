@@ -9,7 +9,7 @@
 
 #include "mt_version.hh"
 
-#include "mt_logger.hh"
+#include "logger.hh"
 
 #include <sstream>
 
@@ -26,7 +26,7 @@ using std::string;
 
 namespace mantis
 {
-    MTLOGGER( mtlog, "version" );
+    LOGGER( mtlog, "version" );
 
     char version::s_delimeter = '.';
 
@@ -77,7 +77,7 @@ namespace mantis
         size_t t_delim_pos_1 = a_ver.find( s_delimeter, 0 );
         if( t_delim_pos_1 == std::string::npos )
         {
-            MTERROR( mtlog, "version string <" << a_ver << "> is not in the right format (did not find first delimeter)" );
+            ERROR( mtlog, "version string <" << a_ver << "> is not in the right format (did not find first delimeter)" );
             return false;
         }
         std::stringstream t_maj_ver_str;
@@ -86,7 +86,7 @@ namespace mantis
         size_t t_delim_pos_2 = a_ver.find( s_delimeter, t_delim_pos_1 + 1 );
         if( t_delim_pos_2 == std::string::npos )
         {
-            MTERROR( mtlog, "version string <" << a_ver << "> is not in the right format (did not find second delimeter)" );
+            ERROR( mtlog, "version string <" << a_ver << "> is not in the right format (did not find second delimeter)" );
             return false;
         }
         std::stringstream t_min_ver_str;
@@ -128,7 +128,7 @@ namespace mantis
         }
         else
         {
-            MTWARN( mtlog, "Unable to get the username" );
+            WARN( mtlog, "Unable to get the username" );
         }
 
         // Hostname
@@ -144,7 +144,7 @@ namespace mantis
         }
         else
         {
-            MTWARN( mtlog, "Unable to get the hostname" );
+            WARN( mtlog, "Unable to get the hostname" );
         }
 #ifdef _WIN32
         WSACleanup();
@@ -171,9 +171,9 @@ namespace mantis
         //if( readlink( "/proc/self/exe", t_exe_buf, t_exe_bufsize ) < 0 )
 #endif
         {
-            MTWARN( mtlog, "Could not retrieve executable file name" );
+            WARN( mtlog, "Could not retrieve executable file name" );
 #ifdef __APPLE__
-            MTWARN( mtlog, "Executable name buffer is too small; needs size %u\n" << t_bufsize );
+            WARN( mtlog, "Executable name buffer is too small; needs size %u\n" << t_bufsize );
 #endif
         }
         f_exe_name = string( t_exe_buf );

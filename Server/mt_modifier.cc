@@ -3,15 +3,15 @@
 #include "mt_modifier.hh"
 
 #include "mt_iterator.hh"
-#include "mt_logger.hh"
-#include "mt_param.hh"
+#include "logger.hh"
+#include "param.hh"
 
 #include <cstring> // for memcpy()
 using std::stringstream;
 
 namespace mantis
 {
-    MTLOGGER( mtlog, "modifier" );
+    LOGGER( mtlog, "modifier" );
 
     modifier::modifier() :
             f_buffer( NULL ),
@@ -31,7 +31,7 @@ namespace mantis
     {
         f_canceled = false;
 
-        //MTINFO( mtlog, "resetting counters..." );
+        //INFO( mtlog, "resetting counters..." );
 
         f_record_count = 0;
         f_acquisition_count = 0;
@@ -51,7 +51,7 @@ namespace mantis
         while( +t_it == true )
             ;
         IT_TIMER_UNSET_IGNORE_INCR( t_it )
-        MTDEBUG( mtlog, "iterator <" << t_it.name() << "> beginning loop at " << t_it.index() );
+        DEBUG( mtlog, "iterator <" << t_it.name() << "> beginning loop at " << t_it.index() );
 
         //start live timing
         get_time_monotonic( &t_start_time );
@@ -68,7 +68,7 @@ namespace mantis
                 // if other threads are waiting on the buffer, we should do that too
                 if( f_condition->is_waiting() == true )
                 {
-                    MTINFO( mtlog, "waiting for buffer readiness" );
+                    INFO( mtlog, "waiting for buffer readiness" );
                     f_condition->wait();
                 }
                 ++t_it;
@@ -94,12 +94,12 @@ namespace mantis
                 // to make sure we don't deadlock anything
                 if( f_cancel_condition.is_waiting() )
                 {
-                    MTINFO( mtlog, "was canceled mid-run" );
+                    INFO( mtlog, "was canceled mid-run" );
                     f_cancel_condition.release();
                 }
                 else
                 {
-                    MTINFO( mtlog, "finished normally" );
+                    INFO( mtlog, "finished normally" );
                 }
                 return;
             }
@@ -107,7 +107,7 @@ namespace mantis
             //process the block
             t_it->set_processing();
 
-            //MTDEBUG( mtlog, "modifier:" );
+            //DEBUG( mtlog, "modifier:" );
             //f_buffer->print_states();
 
             if( modify( t_it.object() ) == false )
@@ -119,7 +119,7 @@ namespace mantis
                 }
 
                 //GET OUT
-                MTINFO( mtlog, "finished abnormally because writing failed" );
+                INFO( mtlog, "finished abnormally because writing failed" );
                 return;
             }
 
@@ -129,7 +129,7 @@ namespace mantis
             }
             f_record_count++;
 
-            //MTINFO( mtlog, "records written: " << f_record_count );
+            //INFO( mtlog, "records written: " << f_record_count );
 
         }
 
@@ -148,7 +148,7 @@ namespace mantis
     }
     void modifier::finalize( param_node* /*a_response*/ )
     {
-        //MTINFO( mtlog, "calculating statistics..." );
+        //INFO( mtlog, "calculating statistics..." );
         /*
         double t_livetime = (double) (f_live_time) * SEC_PER_NSEC;
         double t_mb_modified = (double) (4 * f_record_count);

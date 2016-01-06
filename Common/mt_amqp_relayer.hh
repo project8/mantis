@@ -14,10 +14,14 @@
 
 #include <string>
 
+namespace scarab
+{
+    class param_node;
+}
+
 namespace mantis
 {
     class broker;
-    class param_node;
 
     struct request_reply_package;
 
@@ -40,7 +44,7 @@ namespace mantis
             amqp_relayer( const broker* a_broker );
             virtual ~amqp_relayer();
 
-            bool initialize( const param_node* a_amqp_config );
+            bool initialize( const scarab::param_node* a_amqp_config );
 
             void execute();
 

@@ -4,7 +4,7 @@
 #include "mt_condition.hh"
 #include "mt_exception.hh"
 #include "mt_factory.hh"
-#include "mt_logger.hh"
+#include "logger.hh"
 #include "mt_iterator.hh"
 
 #include <cmath> // for ceil()
@@ -15,7 +15,7 @@
 
 namespace mantis
 {
-    MTLOGGER( mtlog, "digitizer_px1500" );
+    LOGGER( mtlog, "digitizer_px1500" );
 
     MT_REGISTER_DIGITIZER( digitizer_px1500, "px1500" );
 
@@ -77,7 +77,7 @@ namespace mantis
 
         int t_result;
 
-        MTINFO( mtlog, "connecting to digitizer card..." );
+        INFO( mtlog, "connecting to digitizer card..." );
 
         t_result = ConnectToDevicePX4( &f_handle, 1 );
         if( t_result != SIG_SUCCESS )
@@ -86,7 +86,7 @@ namespace mantis
             return false;
         }
 
-        //MTINFO( mtlog, "setting power up defaults..." );
+        //INFO( mtlog, "setting power up defaults..." );
 
         t_result = SetPowerupDefaultsPX4( f_handle );
         if( t_result != SIG_SUCCESS )
@@ -95,7 +95,7 @@ namespace mantis
             return false;
         }
 
-        MTINFO( mtlog, "allocating dma buffer..." );
+        INFO( mtlog, "allocating dma buffer..." );
 
         try
         {
@@ -117,7 +117,7 @@ namespace mantis
         }
         catch( exception& e )
         {
-            MTERROR( mtlog, "unable to allocate buffer: " << e.what() );
+            ERROR( mtlog, "unable to allocate buffer: " << e.what() );
             return false;
         }
 
@@ -131,7 +131,7 @@ namespace mantis
         {
             int t_result;
 
-            MTINFO( mtlog, "deallocating dma buffer..." );
+            INFO( mtlog, "deallocating dma buffer..." );
 
             iterator t_it( f_buffer );
             for( size_t index = 0; index < f_buffer->size(); index++ )
@@ -141,7 +141,7 @@ namespace mantis
             f_allocated = false;
             f_buffer = NULL;
 
-            MTINFO( mtlog, "disconnecting from digitizer card..." );
+            INFO( mtlog, "disconnecting from digitizer card..." );
 
             t_result = DisconnectFromDevicePX4( f_handle );
             if( t_result != SIG_SUCCESS )
@@ -151,7 +151,7 @@ namespace mantis
             }
             return true;
         }
-        MTERROR( mtlog, "Cannot deallocate buffer that was not allocated by this digitizer" );
+        ERROR( mtlog, "Cannot deallocate buffer that was not allocated by this digitizer" );
         return false;
     }
 
@@ -159,7 +159,7 @@ namespace mantis
     {
         int t_result;
 
-        //MTINFO( mtlog, "resetting counters..." );
+        //INFO( mtlog, "resetting counters..." );
 
         f_record_last = (record_id_type) (ceil( (double) (a_request->rate() * a_request->duration() * 1.e3) / (double) (f_buffer->block_size()) ));
         f_record_count = 0;
@@ -167,7 +167,7 @@ namespace mantis
         f_live_time = 0;
         f_dead_time = 0;
 
-        //MTINFO( mtlog, "setting run mode..." );
+        //INFO( mtlog, "setting run mode..." );
 
         if( a_request->mode() == request_mode_t_single )
         {
@@ -189,7 +189,7 @@ namespace mantis
             }
         }
 
-        //MTINFO( mtlog, "setting clock rate..." );
+        //INFO( mtlog, "setting clock rate..." );
 
         t_result = SetInternalAdcClockRatePX4( f_handle, a_request->rate() );
         if( t_result != SIG_SUCCESS )
@@ -210,16 +210,16 @@ namespace mantis
         timespec t_dead_stop_time;
         timespec t_stamp_time;
 
-        //MTINFO( mtlog, "waiting" );
+        //INFO( mtlog, "waiting" );
 
         f_condition->wait();
 
-        MTINFO( mtlog, "loose at <" << t_it.index() << ">" );
+        INFO( mtlog, "loose at <" << t_it.index() << ">" );
 
         //start acquisition
         if( start() == false )
         {
-            MTERROR( mtlog, "unable to start acquisition" );
+            ERROR( mtlog, "unable to start acquisition" );
             return;
         }
 
@@ -247,12 +247,12 @@ namespace mantis
                 //GET OUT
                 if( f_canceled.load() )
                 {
-                    MTINFO( mtlog, "was canceled mid-run" );
+                    INFO( mtlog, "was canceled mid-run" );
                     f_cancel_condition.release();
                 }
                 else
                 {
-                    MTINFO( mtlog, "finished normally" );
+                    INFO( mtlog, "finished normally" );
                 }
                 return;
             }
@@ -271,7 +271,7 @@ namespace mantis
                 stop();
 
                 //GET OUT
-                MTINFO( mtlog, "finished abnormally because acquisition failed" );
+                INFO( mtlog, "finished abnormally because acquisition failed" );
                 return;
             }
 
@@ -279,7 +279,7 @@ namespace mantis
 
             if( +t_it == false )
             {
-                MTINFO( mtlog, "blocked at <" << t_it.index() << ">" );
+                INFO( mtlog, "blocked at <" << t_it.index() << ">" );
 
                 //stop live timer
                 get_time_monotonic( &t_live_stop_time );
@@ -291,7 +291,7 @@ namespace mantis
                 if( stop() == false )
                 {
                     //GET OUT
-                    MTINFO( mtlog, "finished abnormally because halting streaming failed" );
+                    INFO( mtlog, "finished abnormally because halting streaming failed" );
                     return;
                 }
 
@@ -311,7 +311,7 @@ namespace mantis
                 if( start() == false )
                 {
                     //GET OUT
-                    MTINFO( mtlog, "finished abnormally because starting streaming failed" );
+                    INFO( mtlog, "finished abnormally because starting streaming failed" );
                     return;
                 }
 
@@ -321,7 +321,7 @@ namespace mantis
                 //start live timer
                 get_time_monotonic( &t_live_start_time );;
 
-                MTINFO( mtlog, "loose at <" << t_it.index() << ">" );
+                INFO( mtlog, "loose at <" << t_it.index() << ">" );
             }
         }
 
@@ -338,7 +338,7 @@ namespace mantis
     }
     void digitizer_px1500::finalize( param_node* a_response )
     {
-        //MTINFO( mtlog, "calculating statistics..." );
+        //INFO( mtlog, "calculating statistics..." );
         double t_livetime = (double) (f_live_time) * SEC_PER_NSEC;
         double t_deadtime = (double) f_dead_time * SEC_PER_NSEC;
         double t_mb_recorded = (double) (4 * f_record_count);
@@ -454,9 +454,9 @@ namespace mantis
         int t_result;
         HPX4 f_handle;
 
-        MTINFO( mtlog, "beginning allocation phase" );
+        INFO( mtlog, "beginning allocation phase" );
 
-        MTDEBUG( mtlog, "connecting to digitizer card..." );
+        DEBUG( mtlog, "connecting to digitizer card..." );
 
         t_result = ConnectToDevicePX4( &f_handle, 1 );
         if( t_result != SIG_SUCCESS )
@@ -465,7 +465,7 @@ namespace mantis
             return false;
         }
 
-        MTDEBUG( mtlog, "setting power up defaults..." );
+        DEBUG( mtlog, "setting power up defaults..." );
 
         t_result = SetPowerupDefaultsPX4( f_handle );
         if( t_result != SIG_SUCCESS )
@@ -474,7 +474,7 @@ namespace mantis
             return false;
         }
 
-        MTDEBUG( mtlog, "allocating dma buffer..." );
+        DEBUG( mtlog, "allocating dma buffer..." );
 
         block* t_block = NULL;
         // this is the minimum record size for the px1500
@@ -494,17 +494,17 @@ namespace mantis
         }
         catch( exception& e )
         {
-            MTERROR( mtlog, "unable to allocate buffer: " << e.what() );
+            ERROR( mtlog, "unable to allocate buffer: " << e.what() );
             return false;
         }
 
-        MTINFO( mtlog, "allocation complete!\n" );
+        INFO( mtlog, "allocation complete!\n" );
 
 
 
-        MTINFO( mtlog, "beginning initialization phase" );
+        INFO( mtlog, "beginning initialization phase" );
 
-        MTDEBUG( mtlog, "setting run mode..." );
+        DEBUG( mtlog, "setting run mode..." );
 
         t_result = SetActiveChannelsPX4( f_handle, PX4CHANSEL_SINGLE_CH1 );
         if( t_result != SIG_SUCCESS )
@@ -513,7 +513,7 @@ namespace mantis
             return false;
         }
 
-        MTDEBUG( mtlog, "setting clock rate..." );
+        DEBUG( mtlog, "setting clock rate..." );
 
         t_result = SetInternalAdcClockRatePX4( f_handle, 200. );
         if( t_result != SIG_SUCCESS )
@@ -522,12 +522,12 @@ namespace mantis
             return false;
         }
 
-        MTINFO( mtlog, "initialization complete!\n" );
+        INFO( mtlog, "initialization complete!\n" );
 
 
-        MTINFO( mtlog, "beginning run phase" );
+        INFO( mtlog, "beginning run phase" );
 
-        MTDEBUG( mtlog, "beginning acquisition" );
+        DEBUG( mtlog, "beginning acquisition" );
 
         t_result = BeginBufferedPciAcquisitionPX4( f_handle, PX4_FREE_RUN );
         if( t_result != SIG_SUCCESS )
@@ -536,7 +536,7 @@ namespace mantis
             return false;
         }
 
-        MTDEBUG( mtlog, "acquiring a record" );
+        DEBUG( mtlog, "acquiring a record" );
 
         t_result = GetPciAcquisitionDataFastPX4( f_handle, t_rec_size, t_block->data_bytes(), 0 );
         if( t_result != SIG_SUCCESS )
@@ -546,7 +546,7 @@ namespace mantis
             return false;
         }
 
-        MTDEBUG( mtlog, "ending acquisition..." );
+        DEBUG( mtlog, "ending acquisition..." );
 
         t_result = EndBufferedPciAcquisitionPX4( f_handle );
         if( t_result != SIG_SUCCESS )
@@ -561,18 +561,18 @@ namespace mantis
             t_str_buff << t_block->data_bytes()[ i ] << ", ";
         }
         t_str_buff << t_block->data_bytes()[ 99 ];
-        MTDEBUG( mtlog, "the first 100 samples taken:\n" << t_str_buff.str() );
+        DEBUG( mtlog, "the first 100 samples taken:\n" << t_str_buff.str() );
 
-        MTINFO( mtlog, "run complete!\n" );
+        INFO( mtlog, "run complete!\n" );
 
 
-        MTINFO( mtlog, "beginning finalization phase" );
+        INFO( mtlog, "beginning finalization phase" );
 
-        MTDEBUG( mtlog, "deallocating dma buffer" );
+        DEBUG( mtlog, "deallocating dma buffer" );
 
         delete t_block;
 
-        MTINFO( mtlog, "finalization complete!\n" );
+        INFO( mtlog, "finalization complete!\n" );
 
 
         return true;

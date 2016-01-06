@@ -10,10 +10,14 @@
 
 #include "mt_amqp.hh"
 #include "mt_constants.hh"
-#include "mt_param.hh"
 #include "mt_uuid.hh"
 
+#include "param.hh"
+
 #include <string>
+
+using scarab::param_node;
+using scarab::param_value;
 
 namespace mantis
 {

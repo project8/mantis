@@ -19,6 +19,10 @@ add_digitizer( U1084A )
 
 if( Mantis_BUILD_SERVER )
 
+    set( MANTIS_SERVER_LIB_DEPS
+        MantisCommon
+    )
+
     set( MANTIS_SERVER_HEADERFILES
         mt_acq_request_db.hh
         mt_acq_request.hh
@@ -62,10 +66,7 @@ if( Mantis_BUILD_SERVER )
         ${DIGITIZER_SOURCEFILES}
     )
     
-    add_library( MantisServer ${MANTIS_SERVER_SOURCEFILES} )
-    target_link_libraries( MantisServer MantisCommon ${EXTERNAL_LIBRARIES} )
-    
+    pbuilder_library( MantisServer MANTIS_SERVER_SOURCEFILES MANTIS_SERVER_LIB_DEPS )
     pbuilder_install_headers( ${MANTIS_SERVER_HEADERFILES} )
-    pbuilder_install_libraries( MantisServer )
     
 endif( Mantis_BUILD_SERVER )

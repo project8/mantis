@@ -9,7 +9,10 @@
 #define SERVER_MT_CONFIG_MANAGER_HH_
 
 #include "mt_mutex.hh"
-#include "mt_param.hh"
+
+#include "param.hh"
+
+using scarab::param_node;
 
 namespace mantis
 {

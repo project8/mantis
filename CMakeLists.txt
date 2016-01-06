@@ -41,7 +41,6 @@ else( Mantis_ENABLE_ITERATOR_TIMING )
 endif( Mantis_ENABLE_ITERATOR_TIMING )
 
 # add an option to build the validation tests
-option (Mantis_ENABLE_TESTING "Build the validation tests and enable CMake testing" OFF)
 if (Mantis_ENABLE_TESTING)
     enable_testing ()
 endif (Mantis_ENABLE_TESTING)
@@ -78,26 +77,13 @@ include_directories( ${Boost_INCLUDE_DIRS} )
 pbuilder_add_ext_libraries( ${Boost_LIBRARIES} )
 
 
-
-############
-# RapidJSON (as included with Mantis)
-############
-
-include_directories( BEFORE ${PROJECT_SOURCE_DIR}/RapidJSON )
-
-
-############
-# msgpack-c (as included with Mantis)
-############
-
-include_directories( BEFORE ${PROJECT_SOURCE_DIR}/msgpack-c )
-include_directories( BEFORE ${PROJECT_SOURCE_DIR}/msgpack-c/include )
-
 ########
 # Scarab
 ########
 
 pbuilder_add_submodule( Scarab Scarab/library )
+set( Scarab_BUILD_CODEC_JSON TRUE CACHE BOOL "" FORCE )
+set( Scarab_BUILD_CODEC_MSGPACK TRUE CACHE BOOL "" FORCE )
 
 
 ##########
@@ -145,9 +131,11 @@ endif( WIN32 )
 add_subdirectory( Common )
 add_subdirectory( Client )
 add_subdirectory( Server )
-add_subdirectory( Applications )
-if(Mantis_BUILD_DOCS)
+if( Mantis_ENABLE_EXECUTABLES )
+    add_subdirectory( Applications )
+endif( Mantis_ENABLE_EXECUTABLES )
+if( Mantis_BUILD_DOCS )
     add_subdirectory( Documentation )
-endif(Mantis_BUILD_DOCS)
+endif( Mantis_BUILD_DOCS )
 
 pbuilder_variables_for_parent()

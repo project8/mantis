@@ -5,20 +5,26 @@
 
 #include "mt_acq_request.hh"
 #include "mt_config_manager.hh"
-#include "mt_logger.hh"
+#include "mt_exception.hh"
 #include "mt_message.hh"
-#include "mt_param.hh"
 #include "mt_request_receiver.hh"
 #include "mt_version.hh"
 
 #include "M3Version.hh"
 
+#include "logger.hh"
+#include "param.hh"
 
 using std::string;
 
+using scarab::param;
+using scarab::param_array;
+using scarab::param_node;
+using scarab::param_value;
+
 namespace mantis
 {
-    MTLOGGER( mtlog, "acq_request_db" );
+    LOGGER( mtlog, "acq_request_db" );
 
     acq_request_db::acq_request_db( config_manager* a_conf_mgr, const std::string& a_exe_name ) :
             f_db_mutex(),
@@ -179,7 +185,7 @@ namespace mantis
             // if the queue condition is waiting, release it
             if( f_request_in_queue_condition.is_waiting() )
             {
-                //MTINFO( mtlog, "releasing queue condition" );
+                //INFO( mtlog, "releasing queue condition" );
                 f_request_in_queue_condition.release();
             }
         }
@@ -275,14 +281,14 @@ namespace mantis
         if( f_queue_is_active.load() ) return;
         f_queue_is_active.store( true );
         f_queue_active_condition.release();
-        MTINFO( mtlog, "Queue processing started" );
+        INFO( mtlog, "Queue processing started" );
         return;
     }
 
     void acq_request_db::stop_queue()
     {
         f_queue_is_active.store( false );
-        MTINFO( mtlog, "Queue processing stopped" );
+        INFO( mtlog, "Queue processing stopped" );
         return;
     }
 
@@ -298,7 +304,7 @@ namespace mantis
         const param_value* t_file_node = a_request->get_payload().value_at( "file" );
         if( t_file_node == NULL )
         {
-            MTWARN( mtlog, "No or invalid file configuration present; aborting run request" );
+            WARN( mtlog, "No or invalid file configuration present; aborting run request" );
             a_pkg.send_reply( R_MESSAGE_ERROR_BAD_PAYLOAD, "No file configuration present; aborting request" );
             return false;
         }
@@ -332,7 +338,7 @@ namespace mantis
             }
             catch( exception& )
             {
-                MTWARN( mtlog, "Found non-node param object in \"devices\"" );
+                WARN( mtlog, "Found non-node param object in \"devices\"" );
             }
         }
         for( std::vector< std::string >::const_iterator it = t_devs_to_remove.begin(); it != t_devs_to_remove.end(); ++it )
@@ -347,14 +353,14 @@ namespace mantis
 
         t_acq_req->set_status( acq_request::acknowledged );
 
-        MTINFO( mtlog, "Queuing request" );
+        INFO( mtlog, "Queuing request" );
         enqueue( t_acq_req );
 
         a_pkg.f_payload.merge( *t_acq_req );
         a_pkg.f_payload.add( "status-meaning", new param_value( acq_request::interpret_status( t_acq_req->get_status() ) ) );
         if( ! a_pkg.send_reply( R_SUCCESS, "Run request succeeded" ) )
         {
-            MTWARN( mtlog, "Failed to send reply regarding the run request" );
+            WARN( mtlog, "Failed to send reply regarding the run request" );
         }
 
         return true;
@@ -376,7 +382,7 @@ namespace mantis
         }
 
         uuid_t t_id = uuid_from_string(t_acq_id_str );
-        MTDEBUG( mtlog, "Requesting status of acquisition <" << t_id << ">" );
+        DEBUG( mtlog, "Requesting status of acquisition <" << t_id << ">" );
 
         const acq_request* t_request = get_acq_request( t_id );
         if( t_request == NULL )
@@ -431,7 +437,7 @@ namespace mantis
         }
 
         uuid_t t_id = uuid_from_string( t_acq_id_str );
-        MTINFO( mtlog, "Canceling acquisition <" << t_id << ">" );
+        INFO( mtlog, "Canceling acquisition <" << t_id << ">" );
 
         if( ! cancel( t_id ) )
         {

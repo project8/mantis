@@ -6,10 +6,13 @@
 #include "mt_amqp.hh"
 #include "mt_atomic.hh"
 #include "mt_mutex.hh"
-#include "mt_param.hh"
 #include "mt_uuid.hh"
 
+#include "param.hh"
+
 #include "SimpleAmqpClient/Envelope.h"
+
+using scarab::param_node;
 
 namespace mantis
 {

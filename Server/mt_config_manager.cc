@@ -9,17 +9,19 @@
 
 #include "mt_config_manager.hh"
 
+#include "mt_exception.hh"
 #include "mt_device_manager.hh"
-#include "mt_logger.hh"
 #include "mt_message.hh"
 #include "mt_parser.hh"
 #include "mt_request_receiver.hh"
+
+#include "logger.hh"
 
 using std::string;
 
 namespace mantis
 {
-    MTLOGGER( mtlog, "config_manager" );
+    LOGGER( mtlog, "config_manager" );
 
     config_manager::config_manager( const param_node& a_config, device_manager* a_dev_mgr ) :
             f_master_server_config( a_config ),
@@ -66,7 +68,7 @@ namespace mantis
             return false;
         }
 
-        MTDEBUG( mtlog, "Applying a setting" );
+        DEBUG( mtlog, "Applying a setting" );
         // apply a configuration setting
         // the destination node should specify the configuration to set
         try
@@ -74,7 +76,7 @@ namespace mantis
             f_msc_mutex.lock();
             t_routing_key += string( "=" ) + a_request->get_payload().array_at( "values" )->get_value( 0 );
             parsable t_routing_key_node_with_value( t_routing_key );
-            MTDEBUG( mtlog, "Parsed routing key and added value:\n" << t_routing_key_node_with_value );
+            DEBUG( mtlog, "Parsed routing key and added value:\n" << t_routing_key_node_with_value );
             if( ! f_master_server_config.node_at( "acq" )->has_subset( t_routing_key_node_with_value ) )
             {
                 f_msc_mutex.unlock();
@@ -112,7 +114,7 @@ namespace mantis
         }
         if( t_dest_node.node_at( "add" )->has( "device" ) )
         {
-            MTDEBUG( mtlog, "Attempting to add a device" );
+            DEBUG( mtlog, "Attempting to add a device" );
             // it's expected that any values in the payload are digitizers to be added
             try
             {
@@ -123,7 +125,7 @@ namespace mantis
                     string t_device_type = t_dev_it->first;
                     if( ! t_dev_it->second->is_value() )
                     {
-                        MTDEBUG( mtlog, "Skipping <" << t_device_type << "> because it's not a value" );
+                        DEBUG( mtlog, "Skipping <" << t_device_type << "> because it's not a value" );
                         continue;
                     }
                     string t_device_name = t_dev_it->second->as_value().as_string();
@@ -181,7 +183,7 @@ namespace mantis
         }
         if( t_dest_node.node_at( "remove" )->has( "device" ) )
         {
-            MTDEBUG( mtlog, "Attempting to remove a device" );
+            DEBUG( mtlog, "Attempting to remove a device" );
             try
              {
                  string t_device_name = t_dest_node.node_at( "remove" )->node_at( "device" )->begin()->first;
@@ -219,7 +221,7 @@ namespace mantis
     bool config_manager::handle_replace_acq_config( const msg_request* a_request, request_reply_package& a_pkg )
     {
         // payload contents should replace the acquisition config
-        MTDEBUG( mtlog, "Loading a full configuration" );
+        DEBUG( mtlog, "Loading a full configuration" );
         f_msc_mutex.lock();
         (*f_master_server_config.node_at( "acq" )) = a_request->get_payload();
 

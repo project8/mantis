@@ -7,8 +7,9 @@
 #include "mt_exception.hh"
 #include "mt_factory.hh"
 #include "mt_iterator.hh"
-#include "mt_logger.hh"
-#include "mt_param.hh"
+
+#include "logger.hh"
+#include "param.hh"
 
 #include "M3Constants.hh"
 
@@ -18,9 +19,12 @@
 #include <errno.h>
 //#include <fcntl.h> // for O_CREAT and O_EXCL
 
+using scarab::param_node;
+using scarab::param_value;
+
 namespace mantis
 {
-    MTLOGGER( mtlog, "digitizer_test" );
+    LOGGER( mtlog, "digitizer_test" );
 
     MT_REGISTER_DIGITIZER( digitizer_test, "test" );
 
@@ -121,7 +125,7 @@ namespace mantis
 
     bool digitizer_test::allocate()
     {
-        MTINFO( mtlog, "Allocating buffer" );
+        INFO( mtlog, "Allocating buffer" );
 
         try
         {
@@ -134,7 +138,7 @@ namespace mantis
         }
         catch( exception& e )
         {
-            MTERROR( mtlog, "Unable to allocate buffer: " << e.what() );
+            ERROR( mtlog, "Unable to allocate buffer: " << e.what() );
             return false;
         }
 
@@ -144,7 +148,7 @@ namespace mantis
 
     bool digitizer_test::deallocate()
     {
-        MTINFO( mtlog, "Deallocating buffer" );
+        INFO( mtlog, "Deallocating buffer" );
 
         for( unsigned int index = 0; index < f_buffer->size(); index++ )
         {
@@ -156,7 +160,7 @@ namespace mantis
 
     void digitizer_test::allocate_master_records( size_t a_rec_size, bool a_allocate_chan_0, bool a_allocate_chan_1 )
     {
-        MTINFO( mtlog, "Creating master records..." );
+        INFO( mtlog, "Creating master records..." );
 
         f_record_size = a_rec_size;
 
@@ -193,20 +197,20 @@ namespace mantis
 
     bool digitizer_test::initialize( param_node* a_global_config, param_node* a_dev_config )
     {
-        //MTINFO( mtlog, "resetting counters..." );
+        //INFO( mtlog, "resetting counters..." );
 
 
         param_node* t_channels_config = a_dev_config->node_at( "channels" );
         if( t_channels_config == NULL )
         {
-            MTERROR( mtlog, "Did not find a \"channels\" node" );
+            ERROR( mtlog, "Did not find a \"channels\" node" );
             return false;
         }
 
         param_node* t_chan_config[ 2 ] = {t_channels_config->node_at( "0" ), t_channels_config->node_at( "1" )};
         if( t_chan_config[ 0 ] == NULL || t_chan_config[ 1 ] == NULL )
         {
-            MTERROR( mtlog, "Invalid device config: unable to find configuration for either channel 0 (" << t_chan_config[ 0 ] << ") or channel 1 (" << t_chan_config[ 1 ] << ")" );
+            ERROR( mtlog, "Invalid device config: unable to find configuration for either channel 0 (" << t_chan_config[ 0 ] << ") or channel 1 (" << t_chan_config[ 1 ] << ")" );
             return false;
         }
 
@@ -229,23 +233,23 @@ namespace mantis
 
         if( n_chan_enabled == 0 )
         {
-            MTERROR( mtlog, "No channels were enabled" );
+            ERROR( mtlog, "No channels were enabled" );
             return false;
         }
         a_dev_config->replace( "n-channels", new param_value( n_chan_enabled ) );
 
-        MTDEBUG( mtlog, "Recording from " << n_chan_enabled << " channel(s): " << f_chan0_enabled << ", " << f_chan1_enabled );
+        DEBUG( mtlog, "Recording from " << n_chan_enabled << " channel(s): " << f_chan0_enabled << ", " << f_chan1_enabled );
 
         // Check data mode and channel mode
         uint32_t t_data_mode = a_dev_config->get_value< uint32_t >( "data-mode" );
         if( t_data_mode != monarch3::sDigitizedUS )
         {
-            MTERROR( mtlog, "Data can only be taken in <digitized-unsigned> mode" );
+            ERROR( mtlog, "Data can only be taken in <digitized-unsigned> mode" );
             return false;
         }
         if( a_dev_config->get_value< uint32_t >( "channel-mode" ) != monarch3::sSeparate )
         {
-            MTERROR( mtlog, "Multi-channel data can only be recorded in <separate> mode" );
+            ERROR( mtlog, "Multi-channel data can only be recorded in <separate> mode" );
             return false;
         }
 
@@ -308,7 +312,7 @@ namespace mantis
     {
         if( f_status != k_ok )
         {
-            MTERROR( mtlog, "Digitizer status is not \"ok\"" );
+            ERROR( mtlog, "Digitizer status is not \"ok\"" );
             return;
         }
 
@@ -320,11 +324,11 @@ namespace mantis
         timespec t_dead_stop_time;
         timespec t_stamp_time;
 
-        //MTINFO( mtlog, "waiting" );
+        //INFO( mtlog, "waiting" );
 
         f_buffer_condition->wait();
 
-        MTINFO( mtlog, "Digitizer loose at <" << t_it.index() << ">" );
+        INFO( mtlog, "Digitizer loose at <" << t_it.index() << ">" );
 
         // nsoblath, 1/30/15: why did i have this here before?
         //int t_old_cancel_state;
@@ -337,7 +341,7 @@ namespace mantis
             return;
         }
 
-        MTINFO( mtlog, "Planning on " << f_record_last << " records" );
+        INFO( mtlog, "Planning on " << f_record_last << " records" );
 
         //start timing
         get_time_monotonic( &t_live_start_time );
@@ -363,14 +367,14 @@ namespace mantis
                 //GET OUT
                 if( f_canceled.load() )
                 {
-                    MTINFO( mtlog, "Digitizer was canceled mid-run" );
+                    INFO( mtlog, "Digitizer was canceled mid-run" );
                     set_status( k_error, "Digitizer was canceled mid-run" );
                     f_cancel_condition.release();
                 }
                 else
                 {
                     set_status( k_ok, "Finished normally" );
-                    MTINFO( mtlog, "Finished normally" );
+                    INFO( mtlog, "Finished normally" );
                 }
                 return;
             }
@@ -396,19 +400,19 @@ namespace mantis
 
                 //GET OUT
                 set_status( k_error, "Finished abnormally because acquisition failed" );
-                MTINFO( mtlog, "Finished abnormally because acquisition failed" );
+                INFO( mtlog, "Finished abnormally because acquisition failed" );
 
                 return;
             }
 
-            //MTDEBUG( mtlog, "digitizer_test:" );
+            //DEBUG( mtlog, "digitizer_test:" );
             //f_buffer->print_states();
 
             t_it->set_acquired();
 
             if( +t_it == false )
             {
-                MTINFO( mtlog, "blocked at <" << t_it.index() << ">" );
+                INFO( mtlog, "blocked at <" << t_it.index() << ">" );
 
                 //stop live timer
                 get_time_monotonic( &t_live_stop_time );
@@ -421,7 +425,7 @@ namespace mantis
                 {
                     //GET OUT
                     set_status( k_error, "Finished abnormally because halting streaming failed" );
-                    MTINFO( mtlog, "Finished abnormally because halting streaming failed" );
+                    INFO( mtlog, "Finished abnormally because halting streaming failed" );
                     return;
                 }
 
@@ -448,7 +452,7 @@ namespace mantis
 
                     //GET OUT
                     set_status( k_error, "Finished abnormally because starting streaming failed" );
-                    MTINFO( mtlog, "Finished abnormally because starting streaming failed" );
+                    INFO( mtlog, "Finished abnormally because starting streaming failed" );
                     return;
                 }
 
@@ -458,9 +462,9 @@ namespace mantis
                 //start live timer
                 get_time_monotonic( &t_live_start_time );;
 
-                MTINFO( mtlog, "Loose at <" << t_it.index() << ">" );
+                INFO( mtlog, "Loose at <" << t_it.index() << ">" );
             }
-            //MTINFO( mtlog, "record count: " << f_record_count );
+            //INFO( mtlog, "record count: " << f_record_count );
 
             // slow things down a bit, since this is for testing purposes, after all
 #ifndef _WIN32
@@ -479,7 +483,7 @@ namespace mantis
      */
     void digitizer_test::cancel()
     {
-        MTDEBUG(mtlog, "Canceling digitizer test");
+        DEBUG(mtlog, "Canceling digitizer test");
         //cout << "CANCELLING DIGITIZER TEST" );
         if( ! f_canceled.load() )
         {
@@ -492,7 +496,7 @@ namespace mantis
 
     void digitizer_test::finalize( param_node* a_response )
     {
-        //MTINFO( mtlog, "calculating statistics..." );
+        //INFO( mtlog, "calculating statistics..." );
         double t_livetime = (double) (f_live_time) * SEC_PER_NSEC;
         double t_deadtime = (double) f_dead_time * SEC_PER_NSEC;
         double t_mb_recorded = (double) (4 * f_record_count);
@@ -569,7 +573,7 @@ namespace mantis
 
     bool digitizer_test::run_basic_test()
     {
-        MTWARN( mtlog, "Basic test for digitizer_test has not been implemented" );
+        WARN( mtlog, "Basic test for digitizer_test has not been implemented" );
         return false;
     }
 

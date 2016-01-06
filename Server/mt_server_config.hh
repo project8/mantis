@@ -8,12 +8,14 @@
 #ifndef MT_SERVER_CONFIG_HH_
 #define MT_SERVER_CONFIG_HH_
 
-#include "mt_param.hh"
+#include "mt_constants.hh"
+
+#include "param.hh"
 
 namespace mantis
 {
 
-    class MANTIS_API server_config : public param_node
+    class MANTIS_API server_config : public scarab::param_node
     {
         public:
             server_config();

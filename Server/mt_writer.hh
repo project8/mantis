@@ -8,10 +8,16 @@
 #include "mt_condition.hh"
 #include "thorax.hh"
 
-namespace mantis
+namespace scarab
 {
     class param_node;
+}
+
+namespace mantis
+{
     class acq_request;
+
+    using scarab::param_node;
 
     /*!
      @class writer
