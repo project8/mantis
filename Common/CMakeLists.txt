@@ -38,7 +38,6 @@ set( MANTIS_COMMON_SOURCEFILES
     mt_exception.cc
     mt_logger.cc
     mt_message.cc
-    mt_mutex.cc
     mt_param.cc
     mt_param_json.cc
     mt_param_msgpack.cc

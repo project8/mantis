@@ -93,6 +93,12 @@ include_directories( BEFORE ${PROJECT_SOURCE_DIR}/RapidJSON )
 include_directories( BEFORE ${PROJECT_SOURCE_DIR}/msgpack-c )
 include_directories( BEFORE ${PROJECT_SOURCE_DIR}/msgpack-c/include )
 
+########
+# Scarab
+########
+
+pbuilder_add_submodule( Scarab Scarab/library )
+
 
 ##########
 # Monarch
@@ -106,15 +112,6 @@ pbuilder_add_submodule( Monarch Monarch )
 ###########
 
 pbuilder_add_submodule( libthorax libthorax )
-#add_subdirectory( libthorax )
-#pbuilder_add_submodule_libraries( ${libthorax_LIBRARIES} )
-#include_directories( ${libthorax_DEP_INCLUDE_DIRS} )
-# add to the RPATH to be used when installing, but only if it's not a system directory
-#list( FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${libthorax_LIBRARY_DIR}" isSystemDir )
-#if ( "${isSystemDir}" STREQUAL "-1" )
-#   list( APPEND CMAKE_INSTALL_RPATH ${libthorax_LIBRARY_DIR} )
-#endif( "${isSystemDir}" STREQUAL "-1" )
-
 
 
 ###################
@@ -122,16 +119,6 @@ pbuilder_add_submodule( libthorax libthorax )
 ###################
 
 pbuilder_add_submodule( SimpleAmqpClient SimpleAmqpClient )
-#add_subdirectory( SimpleAmqpClient )
-#pbuilder_add_submodule_libraries( SimpleAmqpClient )
-# add to the RPATH to be used when installing, but only if it's not a system directory
-#list( FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${Monarch_LIBRARY_DIR}" isSystemDir )
-#if( "${isSystemDir}" STREQUAL "-1" )
-#   list( APPEND CMAKE_INSTALL_RPATH ${Monarch_LIBRARY_DIR} )
-#endif( "${isSystemDir}" STREQUAL "-1" )
-#include_directories( BEFORE 
-#    ${PROJECT_SOURCE_DIR}/SimpleAmqpClient/src
-#)
 
 
 ##########
