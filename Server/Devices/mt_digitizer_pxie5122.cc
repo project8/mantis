@@ -420,6 +420,12 @@ namespace mantis
 
     void digitizer_pxie5122::execute()
     {
+        if( f_status != k_ok )
+        {
+            MTERROR( mtlog, "Digitizer status is not \"ok\"" );
+            return;
+        }
+
         iterator t_it( f_buffer, "dig_pxie5122" );
 
         timespec t_live_start_time;
@@ -441,6 +447,7 @@ namespace mantis
         //start acquisition
         if( start() == false )
         {
+            set_status( k_error, "Unable to start acquisition" );
             return;
         }
 
@@ -471,11 +478,13 @@ namespace mantis
                 if( f_canceled.load() )
                 {
                     MTINFO( mtlog, "Digitizer was canceled mid-run" );
+                    set_status( k_warning, "Digitizer was canceled mid-run" );
                     f_cancel_condition.release();
                 }
                 else
                 {
                     MTINFO( mtlog, "Finished normally" );
+                    set_status( k_ok, "Finished normally" );
                 }
                 return;
             }
@@ -503,6 +512,7 @@ namespace mantis
 
                 //GET OUT
                 MTINFO( mtlog, "Finished abnormally because acquisition failed" );
+                set_status( k_error, "Finished abnormally because acquisition failed" );
 
                 return;
             }
@@ -527,6 +537,7 @@ namespace mantis
                 {
                     //GET OUT
                     MTINFO( mtlog, "Finished abnormally because halting streaming failed" );
+                    set_status( k_error, "Finished abnormally because halting streaming failed" );
                     return;
                 }
 
@@ -553,6 +564,7 @@ namespace mantis
 
                     //GET OUT
                     MTINFO( mtlog, "Finished abnormally because starting streaming failed" );
+                    set_status( k_error, "Finished abnormally because starting streaming failed" );
                     return;
                 }
 
@@ -568,6 +580,8 @@ namespace mantis
 
         }
 
+        MTERROR( mtlog, "This section of code should not have been reached" );
+        set_status( k_error, "This section of code should not have been reached" );
         return;
     }
 
