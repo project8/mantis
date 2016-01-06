@@ -175,6 +175,12 @@ namespace mantis
 
     void digitizer_test16::execute()
     {
+        if( f_status != k_ok )
+        {
+            MTERROR( mtlog, "Digitizer status is not \"ok\"" );
+            return;
+        }
+
         iterator t_it( f_buffer, "dig_test16" );
 
         timespec t_live_start_time;
@@ -206,6 +212,7 @@ namespace mantis
         //start acquisition
         if( start() == false )
         {
+            set_status( k_error, "Unable to start acquisition" );
             return;
         }
 
@@ -238,6 +245,7 @@ namespace mantis
                 //GET OUT
                 if( f_canceled.load() )
                 {
+                    set_status( k_error, "Digitizer was canceled mid-run" );
                     MTINFO( mtlog, "Was canceled mid-run" );
                     f_cancel_condition.release();
                     MTDEBUG( mtlog, "Canceling bs_mod thread" );
@@ -245,6 +253,7 @@ namespace mantis
                 }
                 else
                 {
+                    set_status( k_error, "Finished normally" );
                     MTINFO( mtlog, "Finished normally" );
                     //MTDEBUG( mtlog, "Waiting for bs_mod thread to finish" );
                     //t_bs_mod_thread.join();
@@ -276,6 +285,7 @@ namespace mantis
                 }
 
                 //GET OUT
+                set_status( k_error, "Finished abnormally because acquisition failed" );
                 MTINFO( mtlog, "Finished abnormally because acquisition failed" );
 
                 //MTDEBUG( mtlog, "canceling bs_mod thread" );
@@ -300,6 +310,7 @@ namespace mantis
                 if( stop() == false )
                 {
                     //GET OUT
+                    set_status( k_error, "Finished abnormally because halting streaming failed" );
                     MTINFO( mtlog, "Finished abnormally because halting streaming failed" );
                     //MTDEBUG( mtlog, "Canceling bs_mod thread" );
                     //t_bs_mod_thread.cancel();
@@ -328,6 +339,7 @@ namespace mantis
                     }
 
                     //GET OUT
+                    set_status( k_error, "Finished abnormally because starting streaming failed" );
                     MTINFO( mtlog, "Finished abnormally because starting streaming failed" );
 
                     //MTDEBUG( mtlog, "Canceling bs_mod thread" );
@@ -354,6 +366,7 @@ namespace mantis
 #endif
         }
 
+        set_status( k_error, "This section of code should not be reached" );
         return;
     }
 

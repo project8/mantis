@@ -19,7 +19,9 @@ namespace mantis
     digitizer::digitizer() :
             f_params( NULL ),
             f_buffer( NULL ),
-            f_buffer_condition( new condition() )
+            f_buffer_condition( new condition() ),
+            f_status( k_ok ),
+            f_status_message()
     {
     }
 

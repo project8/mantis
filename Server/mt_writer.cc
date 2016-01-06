@@ -20,7 +20,9 @@ namespace mantis
             f_cancel_condition(),
             f_record_count( 0 ),
             f_acquisition_count( 0 ),
-            f_live_time( 0 )
+            f_live_time( 0 ),
+            f_status( k_ok ),
+            f_status_message()
     {
     }
     writer::~writer()
@@ -41,6 +43,12 @@ namespace mantis
     }
     void writer::execute()
     {
+        if( f_status != k_ok )
+        {
+            MTERROR( mtlog, "Writer status is not \"ok\"" );
+            return;
+        }
+
         iterator t_it( f_buffer, "writer" );
 
         timespec t_start_time;
@@ -80,6 +88,7 @@ namespace mantis
                 }
 
                 //GET OUT
+                set_status( k_error, "Finished abnormally because writer thread was canceled" );
                 MTINFO(mtlog, "Finished abnormally because writer thread was canceled");
                 return;
             }
@@ -103,11 +112,13 @@ namespace mantis
                 // to make sure we don't deadlock anything
                 if( f_cancel_condition.is_waiting() )
                 {
-                    MTINFO( mtlog, "Writer as canceled mid-run" );
+                    set_status( k_error, "Writer was canceled mid-run" );
+                    MTINFO( mtlog, "Writer was canceled mid-run" );
                     f_cancel_condition.release();
                 }
                 else
                 {
+                    set_status( k_ok, "Finished normally" );
                     MTINFO( mtlog, "Finished normally" );
                 }
                 return;
@@ -128,6 +139,7 @@ namespace mantis
                 }
 
                 //GET OUT
+                set_status( k_error, "Finished abnormally because writing failed" );
                 MTINFO( mtlog, "Finished abnormally because writing failed" );
                 return;
             }
@@ -144,6 +156,7 @@ namespace mantis
 
         }
 
+        set_status( k_error, "This section of code should not be reached" );
         return;
     }
 
