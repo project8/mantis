@@ -21,11 +21,6 @@ include_directories( BEFORE
     ${PROJECT_BINARY_DIR}/Common
 )
 
-set( CMAKE_MACOSX_RPATH TRUE )
-
-message( STATUS "system name: ${CMAKE_SYSTEM_NAME}")
-set (BUILD_SHARED_LIBS ON)
-
 
 ##################
 # mantis options #
@@ -103,28 +98,22 @@ include_directories( BEFORE ${PROJECT_SOURCE_DIR}/msgpack-c/include )
 # Monarch
 ##########
 
-add_subdirectory( Monarch )
-pbuilder_add_submodule_libraries( ${Monarch_LIBRARIES} )
-include_directories( ${Monarch_DEP_INCLUDE_DIRS} )
-# add to the RPATH to be used when installing, but only if it's not a system directory
-#list( FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${Monarch_LIBRARY_DIR}" isSystemDir )
-#if( "${isSystemDir}" STREQUAL "-1" )
-#   list( APPEND CMAKE_INSTALL_RPATH ${Monarch_LIBRARY_DIR} )
-#endif( "${isSystemDir}" STREQUAL "-1" )
+pbuilder_add_submodule( Monarch Monarch )
 
 
 ###########
 # libthorax
 ###########
 
-add_subdirectory( libthorax )
-pbuilder_add_submodule_libraries( ${libthorax_LIBRARIES} )
-include_directories( ${libthorax_DEP_INCLUDE_DIRS} )
+pbuilder_add_submodule( libthorax libthorax )
+#add_subdirectory( libthorax )
+#pbuilder_add_submodule_libraries( ${libthorax_LIBRARIES} )
+#include_directories( ${libthorax_DEP_INCLUDE_DIRS} )
 # add to the RPATH to be used when installing, but only if it's not a system directory
-list( FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${libthorax_LIBRARY_DIR}" isSystemDir )
-if ( "${isSystemDir}" STREQUAL "-1" )
-   list( APPEND CMAKE_INSTALL_RPATH ${libthorax_LIBRARY_DIR} )
-endif( "${isSystemDir}" STREQUAL "-1" )
+#list( FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${libthorax_LIBRARY_DIR}" isSystemDir )
+#if ( "${isSystemDir}" STREQUAL "-1" )
+#   list( APPEND CMAKE_INSTALL_RPATH ${libthorax_LIBRARY_DIR} )
+#endif( "${isSystemDir}" STREQUAL "-1" )
 
 
 
@@ -132,16 +121,17 @@ endif( "${isSystemDir}" STREQUAL "-1" )
 # SimpleAmqpClient
 ###################
 
-add_subdirectory( SimpleAmqpClient )
-pbuilder_add_submodule_libraries( SimpleAmqpClient )
+pbuilder_add_submodule( SimpleAmqpClient SimpleAmqpClient )
+#add_subdirectory( SimpleAmqpClient )
+#pbuilder_add_submodule_libraries( SimpleAmqpClient )
 # add to the RPATH to be used when installing, but only if it's not a system directory
 #list( FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${Monarch_LIBRARY_DIR}" isSystemDir )
 #if( "${isSystemDir}" STREQUAL "-1" )
 #   list( APPEND CMAKE_INSTALL_RPATH ${Monarch_LIBRARY_DIR} )
 #endif( "${isSystemDir}" STREQUAL "-1" )
-include_directories( BEFORE 
-    ${PROJECT_SOURCE_DIR}/SimpleAmqpClient/src
-)
+#include_directories( BEFORE 
+#    ${PROJECT_SOURCE_DIR}/SimpleAmqpClient/src
+#)
 
 
 ##########
@@ -172,3 +162,5 @@ add_subdirectory( Applications )
 if(Mantis_BUILD_DOCS)
     add_subdirectory( Documentation )
 endif(Mantis_BUILD_DOCS)
+
+pbuilder_variables_for_parent()
