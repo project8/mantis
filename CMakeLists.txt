@@ -77,15 +77,6 @@ include_directories( ${Boost_INCLUDE_DIRS} )
 pbuilder_add_ext_libraries( ${Boost_LIBRARIES} )
 
 
-########
-# Scarab
-########
-
-pbuilder_add_submodule( Scarab dripline/cpp/scarab/library )
-set( Scarab_BUILD_CODEC_JSON TRUE CACHE BOOL "" FORCE )
-set( Scarab_BUILD_CODEC_MSGPACK TRUE CACHE BOOL "" FORCE )
-
-
 ##########
 # Monarch
 ##########
@@ -98,13 +89,6 @@ pbuilder_add_submodule( Monarch Monarch )
 ###########
 
 pbuilder_add_submodule( libthorax libthorax )
-
-
-###################
-# SimpleAmqpClient
-###################
-
-pbuilder_add_submodule( SimpleAmqpClient dripline/cpp/SimpleAmqpClient )
 
 
 ##########
