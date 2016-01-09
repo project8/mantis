@@ -5,7 +5,7 @@
  *      Author: nsoblath
  */
 
-#include "mt_authentication.hh"
+#include "authentication.hh"
 
 #include "logger.hh"
 #include "param_json.hh"
