@@ -21,11 +21,6 @@ include_directories( BEFORE
     ${PROJECT_BINARY_DIR}/Common
 )
 
-set( CMAKE_MACOSX_RPATH TRUE )
-
-message( STATUS "system name: ${CMAKE_SYSTEM_NAME}")
-set (BUILD_SHARED_LIBS ON)
-
 
 ##################
 # mantis options #
@@ -46,7 +41,6 @@ else( Mantis_ENABLE_ITERATOR_TIMING )
 endif( Mantis_ENABLE_ITERATOR_TIMING )
 
 # add an option to build the validation tests
-option (Mantis_ENABLE_TESTING "Build the validation tests and enable CMake testing" OFF)
 if (Mantis_ENABLE_TESTING)
     enable_testing ()
 endif (Mantis_ENABLE_TESTING)
@@ -83,65 +77,34 @@ include_directories( ${Boost_INCLUDE_DIRS} )
 pbuilder_add_ext_libraries( ${Boost_LIBRARIES} )
 
 
+########
+# Scarab
+########
 
-############
-# RapidJSON (as included with Mantis)
-############
-
-include_directories( BEFORE ${PROJECT_SOURCE_DIR}/RapidJSON )
-
-
-############
-# msgpack-c (as included with Mantis)
-############
-
-include_directories( BEFORE ${PROJECT_SOURCE_DIR}/msgpack-c )
-include_directories( BEFORE ${PROJECT_SOURCE_DIR}/msgpack-c/include )
+pbuilder_add_submodule( Scarab Scarab/library )
+set( Scarab_BUILD_CODEC_JSON TRUE CACHE BOOL "" FORCE )
+set( Scarab_BUILD_CODEC_MSGPACK TRUE CACHE BOOL "" FORCE )
 
 
 ##########
 # Monarch
 ##########
 
-add_subdirectory( Monarch )
-pbuilder_add_submodule_libraries( ${Monarch_LIBRARIES} )
-include_directories( ${Monarch_DEP_INCLUDE_DIRS} )
-# add to the RPATH to be used when installing, but only if it's not a system directory
-#list( FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${Monarch_LIBRARY_DIR}" isSystemDir )
-#if( "${isSystemDir}" STREQUAL "-1" )
-#   list( APPEND CMAKE_INSTALL_RPATH ${Monarch_LIBRARY_DIR} )
-#endif( "${isSystemDir}" STREQUAL "-1" )
+pbuilder_add_submodule( Monarch Monarch )
 
 
 ###########
 # libthorax
 ###########
 
-add_subdirectory( libthorax )
-pbuilder_add_submodule_libraries( ${libthorax_LIBRARIES} )
-include_directories( ${libthorax_DEP_INCLUDE_DIRS} )
-# add to the RPATH to be used when installing, but only if it's not a system directory
-list( FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${libthorax_LIBRARY_DIR}" isSystemDir )
-if ( "${isSystemDir}" STREQUAL "-1" )
-   list( APPEND CMAKE_INSTALL_RPATH ${libthorax_LIBRARY_DIR} )
-endif( "${isSystemDir}" STREQUAL "-1" )
-
+pbuilder_add_submodule( libthorax libthorax )
 
 
 ###################
 # SimpleAmqpClient
 ###################
 
-add_subdirectory( SimpleAmqpClient )
-pbuilder_add_submodule_libraries( SimpleAmqpClient )
-# add to the RPATH to be used when installing, but only if it's not a system directory
-#list( FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${Monarch_LIBRARY_DIR}" isSystemDir )
-#if( "${isSystemDir}" STREQUAL "-1" )
-#   list( APPEND CMAKE_INSTALL_RPATH ${Monarch_LIBRARY_DIR} )
-#endif( "${isSystemDir}" STREQUAL "-1" )
-include_directories( BEFORE 
-    ${PROJECT_SOURCE_DIR}/SimpleAmqpClient/src
-)
+pbuilder_add_submodule( SimpleAmqpClient SimpleAmqpClient )
 
 
 ##########
@@ -168,7 +131,11 @@ endif( WIN32 )
 add_subdirectory( Common )
 add_subdirectory( Client )
 add_subdirectory( Server )
-add_subdirectory( Applications )
-if(Mantis_BUILD_DOCS)
+if( Mantis_ENABLE_EXECUTABLES )
+    add_subdirectory( Applications )
+endif( Mantis_ENABLE_EXECUTABLES )
+if( Mantis_BUILD_DOCS )
     add_subdirectory( Documentation )
-endif(Mantis_BUILD_DOCS)
+endif( Mantis_BUILD_DOCS )
+
+pbuilder_variables_for_parent()

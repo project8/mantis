@@ -21,7 +21,7 @@
 
 #include "mt_broker.hh"
 #include "mt_constants.hh"
-#include "mt_logger.hh"
+#include "logger.hh"
 #include "mt_client_config.hh"
 #include "mt_configurator.hh"
 #include "mt_run_client.hh"
@@ -29,7 +29,7 @@
 using namespace mantis;
 
 
-MTLOGGER( mtlog, "mantis_client" );
+LOGGER( mtlog, "mantis_client" );
 
 
 int main( int argc, char** argv )
@@ -39,7 +39,7 @@ int main( int argc, char** argv )
         client_config t_cc;
         configurator t_configurator( argc, argv, &t_cc );
 
-        MTINFO( mtlog, "Connecting to AMQP broker" );
+        INFO( mtlog, "Connecting to AMQP broker" );
 
         param_node* t_broker_node = &t_configurator.config().remove( "amqp" )->as_node();
 
@@ -47,7 +47,7 @@ int main( int argc, char** argv )
         amqp_channel_ptr t_channel = t_broker.open_channel();
         if( ! t_channel )
         {
-            MTERROR( mtlog, "AMQP channel did not open: " << t_broker.get_address() << ":" << t_broker.get_port());
+            ERROR( mtlog, "AMQP channel did not open: " << t_broker.get_address() << ":" << t_broker.get_port());
             return RETURN_ERROR;
         }
 
@@ -59,7 +59,7 @@ int main( int argc, char** argv )
         }
         catch( std::exception& e )
         {
-            MTERROR( mtlog, "Unable to declare exchange <" << t_exchange << ">; aborting.\n(" << e.what() << ")" );
+            ERROR( mtlog, "Unable to declare exchange <" << t_exchange << ">; aborting.\n(" << e.what() << ")" );
             return RETURN_ERROR;
         }
 
@@ -73,19 +73,19 @@ int main( int argc, char** argv )
 
         return the_client.get_return();
     }
-    catch( param_exception& e )
+    catch( scarab::error& e )
     {
-        MTERROR( mtlog, "configuration error: " << e.what() );
+        ERROR( mtlog, "configuration error: " << e.what() );
         return RETURN_ERROR;
     }
     catch( exception& e )
     {
-        MTERROR( mtlog, "mantis error: " << e.what() );
+        ERROR( mtlog, "mantis error: " << e.what() );
         return RETURN_ERROR;
     }
     catch( std::exception& e )
     {
-        MTERROR( mtlog, "std::exception caught: " << e.what() );
+        ERROR( mtlog, "std::exception caught: " << e.what() );
         return RETURN_ERROR;
     }
 

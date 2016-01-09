@@ -2,14 +2,14 @@
 
 #include "mt_buffer.hh"
 
-#include "mt_logger.hh"
+#include "logger.hh"
 
 #include <sstream>
 using std::stringstream;
 
 namespace mantis
 {
-    MTLOGGER( mtlog, "buffer" );
+    LOGGER( mtlog, "buffer" );
 
     buffer::buffer( const unsigned int& a_size, const unsigned int& a_block_size ) :
             f_blocks( NULL ),
@@ -29,7 +29,7 @@ namespace mantis
     {
         for( unsigned t_index = 0; t_index < f_size; ++t_index )
         {
-            //MTWARN( mtlog, "deleting block " << t_index );
+            //WARN( mtlog, "deleting block " << t_index );
             delete_block( t_index );
         }
         delete [] f_blocks;
@@ -68,7 +68,7 @@ namespace mantis
         {
             pbuff << f_blocks[ t_index ]->get_state() << " ";
         }
-        MTDEBUG( mtlog, pbuff.str() );
+        DEBUG( mtlog, pbuff.str() );
         return;
     }
 

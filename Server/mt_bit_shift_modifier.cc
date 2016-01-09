@@ -5,7 +5,7 @@
 #include "mt_configurator.hh"
 #include "mt_exception.hh"
 #include "mt_factory.hh"
-#include "mt_logger.hh"
+#include "logger.hh"
 #include "mt_acq_request.hh"
 
 #include <cstring> // for memcpy()
@@ -13,7 +13,7 @@ using std::stringstream;
 
 namespace mantis
 {
-    MTLOGGER( mtlog, "bit_shift_modifier" );
+    LOGGER( mtlog, "bit_shift_modifier" );
 
     MT_REGISTER_MODIFIER( bit_shift_modifier, "bit-shift" );
 

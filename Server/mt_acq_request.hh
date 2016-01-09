@@ -8,14 +8,16 @@
 #ifndef MT_ACQ_REQUEST_HH_
 #define MT_ACQ_REQUEST_HH_
 
-#include "mt_param.hh"
+#include "mt_uuid.hh"
 
-#include <boost/uuid/uuid.hpp>
+#include "param.hh"
+
+using scarab::param_value;
 
 namespace mantis
 {
 
-    class MANTIS_API acq_request : public param_node
+    class MANTIS_API acq_request : public scarab::param_node
     {
         public:
             enum status
@@ -34,14 +36,14 @@ namespace mantis
             static std::string interpret_status( status a_status );
 
         public:
-            acq_request( boost::uuids::uuid an_id );
+            acq_request( uuid_t an_id );
             acq_request( const acq_request& orig );
             virtual ~acq_request();
 
             acq_request& operator=( const acq_request& rhs );
 
-            void set_id( const boost::uuids::uuid id );
-            boost::uuids::uuid get_id() const;
+            void set_id( const uuid_t id );
+            uuid_t get_id() const;
             std::string get_id_string() const;
 
             void set_status( status a_status );
@@ -67,7 +69,7 @@ namespace mantis
             void set_response( const param_node& a_response );
 
         private:
-            boost::uuids::uuid f_id;
+            uuid_t f_id;
     };
 
 } /* namespace mantis */

@@ -8,9 +8,13 @@
 #ifndef MT_CONFIGURATOR_HH_
 #define MT_CONFIGURATOR_HH_
 
-#include "mt_param.hh"
+#include "param.hh"
 
 #include "mt_exception.hh"
+
+using scarab::param;
+using scarab::param_node;
+using scarab::param_value;
 
 namespace mantis
 {

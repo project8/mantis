@@ -8,7 +8,7 @@
 #ifndef MT_AUTHENTICATION_HH_
 #define MT_AUTHENTICATION_HH_
 
-#include "mt_param.hh"
+#include "param.hh"
 #include "mt_singleton.hh"
 
 #include "mt_constants.hh"
@@ -16,7 +16,7 @@
 namespace mantis
 {
 
-    class MANTIS_API authentication : public singleton< authentication >, public param_node
+    class MANTIS_API authentication : public singleton< authentication >, public scarab::param_node
     {
         public:
             const std::string& get_auth_filename() const;

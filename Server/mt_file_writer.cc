@@ -7,8 +7,10 @@
 #include "mt_device_manager.hh"
 #include "mt_exception.hh"
 #include "mt_factory.hh"
-#include "mt_logger.hh"
 #include "mt_acq_request.hh"
+
+#include "logger.hh"
+#include "param.hh"
 
 #include "M3Exception.hh"
 #include "M3Types.hh"
@@ -21,9 +23,12 @@ using std::stringstream;
 // for using numeric_limits<>::max in windows
 #define NOMINMAX
 
+using scarab::param_node;
+using scarab::param_value;
+
 namespace mantis
 {
-    MTLOGGER( mtlog, "file_writer" );
+    LOGGER( mtlog, "file_writer" );
 
     MT_REGISTER_WRITER( file_writer, "file" );
 
@@ -51,20 +56,20 @@ namespace mantis
 
     bool file_writer::initialize_derived( acq_request* a_acq_request )
     {
-        MTINFO( mtlog, "opening file..." );
+        INFO( mtlog, "opening file..." );
 
         const param_value* t_file_config = a_acq_request->value_at( "file" );
         const param_value* t_desc_config = a_acq_request->value_at( "description" );
         const param_node* t_acq_config = a_acq_request->node_at( "acquisition" );
         if( t_file_config == NULL || t_acq_config == NULL )
         {
-            MTERROR( mtlog, "Either the file configuration (" << t_file_config << ") or mantis config (" << t_acq_config << ") is missing" );
+            ERROR( mtlog, "Either the file configuration (" << t_file_config << ") or mantis config (" << t_acq_config << ") is missing" );
             return false;
         }
         const param_node* t_all_devs_config = t_acq_config->node_at( "devices" );
         if( t_all_devs_config == NULL )
         {
-            MTERROR( mtlog, "The device configuration is missing" );
+            ERROR( mtlog, "The device configuration is missing" );
             return false;
         }
 
@@ -77,12 +82,12 @@ namespace mantis
             }
             catch( monarch3::M3Exception& e )
             {
-                MTERROR( mtlog, "error opening file: " << e.what() );
+                ERROR( mtlog, "error opening file: " << e.what() );
                 return false;
             }
             catch( std::exception& e )
             {
-                MTERROR( mtlog, "Non-Monarch error opening file: " << e.what() );
+                ERROR( mtlog, "Non-Monarch error opening file: " << e.what() );
                 return false;
             }
             f_header = f_monarch->GetHeader();
@@ -106,7 +111,7 @@ namespace mantis
                 }
                 catch( exception& e )
                 {
-                    MTWARN( mtlog, "Ignoring non-param_node object in \"devices\": <" << t_dev_name << ">" );
+                    WARN( mtlog, "Ignoring non-param_node object in \"devices\": <" << t_dev_name << ">" );
                     continue;
                 }
 
@@ -147,22 +152,22 @@ namespace mantis
             }
 
         }
-        catch( param_exception& e )
+        catch( scarab::error& e )
         {
-            MTERROR( mtlog, "Configuration error: " << e.what() );
+            ERROR( mtlog, "Configuration error: " << e.what() );
             return false;
         }
         catch( exception& e )
         {
-            MTERROR( mtlog, "Mantis error: " << e.what() );
+            ERROR( mtlog, "Mantis error: " << e.what() );
             return false;
         }
         catch( std::exception& e )
         {
-            MTERROR( mtlog, "std::exception caught: " << e.what() );
+            ERROR( mtlog, "std::exception caught: " << e.what() );
             return false;
         }
-        MTINFO( mtlog, "writing header..." );
+        INFO( mtlog, "writing header..." );
 
         try
         {
@@ -170,7 +175,7 @@ namespace mantis
         }
         catch( monarch3::M3Exception& e )
         {
-            MTERROR( mtlog, "error while writing header: " << e.what() );
+            ERROR( mtlog, "error while writing header: " << e.what() );
             return false;
         }
 
@@ -194,7 +199,7 @@ namespace mantis
 
     void file_writer::finalize_derived( param_node* /*a_response*/ )
     {
-        MTDEBUG( mtlog, "File writer finalizing" );
+        DEBUG( mtlog, "File writer finalizing" );
         f_monarch->FinishWriting();
         delete f_monarch;
         f_monarch = NULL;

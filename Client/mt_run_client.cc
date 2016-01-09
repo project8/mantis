@@ -11,21 +11,25 @@
 
 #include "mt_constants.hh"
 #include "mt_exception.hh"
-#include "mt_logger.hh"
 #include "mt_message.hh"
-#include "mt_param_json.hh"
 #include "mt_version.hh"
 #include "thorax.hh"
+
+#include "logger.hh"
+#include "param_json.hh"
 
 #include <algorithm> // for min
 #include <string>
 
 using std::string;
 
+using scarab::param_array;
+using scarab::param_input_json;
+using scarab::param_output_json;
 
 namespace mantis
 {
-    MTLOGGER( mtlog, "run_client" );
+    LOGGER( mtlog, "run_client" );
 
     run_client::run_client( const param_node& a_node, const string& a_exchange, amqp_channel_ptr a_channel ) :
             //callable(),
@@ -43,7 +47,7 @@ namespace mantis
 
     void run_client::execute()
     {
-        MTINFO( mtlog, "Creating request" );
+        INFO( mtlog, "Creating request" );
 
         // pull the special CL arguments out of the configuration
 
@@ -59,7 +63,7 @@ namespace mantis
         uuid_t t_lockout_key = uuid_from_string( t_lockout_key_str, t_lk_valid );
         if( ! t_lk_valid )
         {
-            MTERROR( mtlog, "Invalid lockout key provided: <" << t_lockout_key_str << ">" );
+            ERROR( mtlog, "Invalid lockout key provided: <" << t_lockout_key_str << ">" );
             f_return = RETURN_ERROR;
             return;
         }
@@ -92,21 +96,21 @@ namespace mantis
         }
         else
         {
-            MTERROR( mtlog, "Unknown or missing request type: " << t_request_type );
+            ERROR( mtlog, "Unknown or missing request type: " << t_request_type );
             f_return = RETURN_ERROR;
             return;
         }
 
         if( t_request == NULL )
         {
-            MTERROR( mtlog, "Unable to create request" );
+            ERROR( mtlog, "Unable to create request" );
             f_return = RETURN_ERROR;
             return;
         }
 
         t_request->set_lockout_key( t_lockout_key );
 
-        MTDEBUG( mtlog, "Sending message w/ msgop = " << t_request->get_message_op() );
+        DEBUG( mtlog, "Sending message w/ msgop = " << t_request->get_message_op() );
 
         std::string t_consumer_tag; // for the reply queue
         // do_publish will declare the reply queue, start consuming on it, and then publish the request
@@ -114,12 +118,12 @@ namespace mantis
 
         if( ! t_consumer_tag.empty() )  // this indicates that the reply queue was created, and we've started consuming on it; we should wait for a reply
         {
-            MTINFO( mtlog, "Waiting for a reply from the server; use ctrl-c to cancel" );
+            INFO( mtlog, "Waiting for a reply from the server; use ctrl-c to cancel" );
 
             // blocking call to wait for incoming message
             AmqpClient::Envelope::ptr_t t_envelope = f_channel->BasicConsumeMessage( t_consumer_tag );
 
-            MTINFO( mtlog, "Response received" );
+            INFO( mtlog, "Response received" );
 
             param_node* t_msg_node = NULL;
             if( t_envelope->Message()->ContentEncoding() == "application/json" )
@@ -128,10 +132,10 @@ namespace mantis
             }
             else
             {
-                MTERROR( mtlog, "Unable to parse message with content type <" << t_envelope->Message()->ContentEncoding() << ">" );
+                ERROR( mtlog, "Unable to parse message with content type <" << t_envelope->Message()->ContentEncoding() << ">" );
             }
 
-            MTINFO( mtlog, "Response from Mantis:\n" <<
+            INFO( mtlog, "Response from Mantis:\n" <<
                     "Return code: " << t_msg_node->get_value< int >( "retcode", -1 ) << '\n' <<
                     "Return message: " << t_msg_node->get_value( "return_msg", "" ) << '\n' <<
                     *t_msg_node->node_at( "payload" ) );
@@ -145,7 +149,7 @@ namespace mantis
                     const param_node* t_master_config_node = t_msg_node->node_at( "payload" );
                     if( t_master_config_node == NULL )
                     {
-                        MTERROR( mtlog, "Payload is not present" );
+                        ERROR( mtlog, "Payload is not present" );
                     }
                     else
                     {
@@ -154,7 +158,7 @@ namespace mantis
                 }
                 else
                 {
-                    MTERROR( mtlog, "Save instruction did not contain a valid file type");
+                    ERROR( mtlog, "Save instruction did not contain a valid file type");
                 }
 
             }
@@ -182,7 +186,7 @@ namespace mantis
     {
         if( ! f_config.has( "file" ) )
         {
-            MTERROR( mtlog, "The filename to be saved must be specified with the \"file\" option" );
+            ERROR( mtlog, "The filename to be saved must be specified with the \"file\" option" );
             return NULL;
         }
 
@@ -211,7 +215,7 @@ namespace mantis
     {
         if( ! f_config.has( "value" ) )
         {
-            MTERROR( mtlog, "No \"value\" option given" );
+            ERROR( mtlog, "No \"value\" option given" );
             return NULL;
         }
 
@@ -233,7 +237,7 @@ namespace mantis
         {
             if( ! f_config.node_at( "load" )->has( "json" ) )
             {
-                MTERROR( mtlog, "Load instruction did not contain a valid file type");
+                ERROR( mtlog, "Load instruction did not contain a valid file type");
                 delete t_payload_node;
                 return NULL;
             }
@@ -242,7 +246,7 @@ namespace mantis
             param_node* t_node_from_file = param_input_json::read_file( t_load_filename );
             if( t_node_from_file == NULL )
             {
-                MTERROR( mtlog, "Unable to read JSON file <" << t_load_filename << ">" );
+                ERROR( mtlog, "Unable to read JSON file <" << t_load_filename << ">" );
                 delete t_payload_node;
                 return NULL;
             }

@@ -17,7 +17,7 @@
 #include "mt_configurator.hh"
 #include "mt_device_manager.hh"
 #include "mt_exception.hh"
-#include "mt_logger.hh"
+#include "logger.hh"
 #include "mt_message.hh"
 #include "mt_request_receiver.hh"
 #include "mt_acq_request_db.hh"
@@ -30,7 +30,7 @@
 
 namespace mantis
 {
-    MTLOGGER( mtlog, "run_server" );
+    LOGGER( mtlog, "run_server" );
 
     run_server::run_server( const param_node& a_node, const version* a_version ) :
             f_config( a_node ),
@@ -50,7 +50,7 @@ namespace mantis
 
     void run_server::execute()
     {
-        MTINFO( mtlog, "Creating server objects" );
+        INFO( mtlog, "Creating server objects" );
 
         set_status( k_starting );
 
@@ -59,7 +59,7 @@ namespace mantis
         amqp_channel_ptr t_channel = t_broker.open_channel();
         if( ! t_channel )
         {
-            MTERROR( mtlog, "AMQP channel did not open: " << t_broker.get_address() << ":" << t_broker.get_port());
+            ERROR( mtlog, "AMQP channel did not open: " << t_broker.get_address() << ":" << t_broker.get_port());
             f_return = RETURN_ERROR;
             return;
         }
@@ -82,7 +82,7 @@ namespace mantis
         amqp_relayer t_amqp_relayer( &t_broker );
         if( ! t_amqp_relayer.initialize( t_broker_node ) )
         {
-            MTERROR( mtlog, "Unable to start the AMQP relayer" );
+            ERROR( mtlog, "Unable to start the AMQP relayer" );
             f_return = R_AMQP_ERROR;
             return;
         }
@@ -101,7 +101,7 @@ namespace mantis
 
         f_component_mutex.unlock();
 
-        MTINFO( mtlog, "Starting threads" );
+        INFO( mtlog, "Starting threads" );
 
         thread t_receiver_thread( &t_receiver );
         thread t_worker_thread( &t_worker );
@@ -113,7 +113,7 @@ namespace mantis
         t_worker_thread.start();
 
         set_status( k_running );
-        MTINFO( mtlog, "running..." );
+        INFO( mtlog, "running..." );
 
         t_receiver_thread.join();
         t_worker_thread.join();
@@ -134,7 +134,7 @@ namespace mantis
             t_amqp_relayer.cancel();
         }
 
-        MTINFO( mtlog, "Threads stopped" );
+        INFO( mtlog, "Threads stopped" );
 
         f_return = RETURN_SUCCESS;
 
@@ -143,7 +143,7 @@ namespace mantis
 
     void run_server::quit_server()
     {
-        MTINFO( mtlog, "Shutting down the server" );
+        INFO( mtlog, "Shutting down the server" );
         raise( SIGINT );
         return;
     }

@@ -3,15 +3,18 @@
 #include "mt_writer.hh"
 
 #include "mt_iterator.hh"
-#include "mt_logger.hh"
-#include "mt_param.hh"
+
+#include "logger.hh"
+#include "param.hh"
 
 #include <cstring> // for memcpy()
 using std::stringstream;
 
+using scarab::param_value;
+
 namespace mantis
 {
-    MTLOGGER( mtlog, "writer" );
+    LOGGER( mtlog, "writer" );
 
     writer::writer() :
             f_buffer( NULL ),
@@ -33,7 +36,7 @@ namespace mantis
     {
         f_canceled.store( false );
 
-        //MTINFO( mtlog, "resetting counters..." );
+        //INFO( mtlog, "resetting counters..." );
 
         f_record_count = 0;
         f_acquisition_count = 0;
@@ -45,7 +48,7 @@ namespace mantis
     {
         if( f_status != k_ok )
         {
-            MTERROR( mtlog, "Writer status is not \"ok\"" );
+            ERROR( mtlog, "Writer status is not \"ok\"" );
             return;
         }
 
@@ -71,7 +74,7 @@ namespace mantis
                 // if attempt fails, see if we're waiting on the buffer condition, and release if so
                 if( f_condition->is_waiting() == true )
                 {
-                    MTDEBUG( mtlog, "Releasing buffer" );
+                    DEBUG( mtlog, "Releasing buffer" );
                     f_condition->release();
                 }
                 // advance; will wait for mutex lock on the next block
@@ -89,7 +92,7 @@ namespace mantis
 
                 //GET OUT
                 set_status( k_error, "Finished abnormally because writer thread was canceled" );
-                MTINFO(mtlog, "Finished abnormally because writer thread was canceled");
+                INFO(mtlog, "Finished abnormally because writer thread was canceled");
                 return;
             }
 
@@ -113,13 +116,13 @@ namespace mantis
                 if( f_cancel_condition.is_waiting() )
                 {
                     set_status( k_error, "Writer was canceled mid-run" );
-                    MTINFO( mtlog, "Writer was canceled mid-run" );
+                    INFO( mtlog, "Writer was canceled mid-run" );
                     f_cancel_condition.release();
                 }
                 else
                 {
                     set_status( k_ok, "Finished normally" );
-                    MTINFO( mtlog, "Finished normally" );
+                    INFO( mtlog, "Finished normally" );
                 }
                 return;
             }
@@ -127,7 +130,7 @@ namespace mantis
             //write the block
             t_it->set_writing();
 
-            //MTDEBUG( mtlog, "writer:" );
+            //DEBUG( mtlog, "writer:" );
             //f_buffer->print_states();
 
             if( write( t_it.object() ) == false )
@@ -140,7 +143,7 @@ namespace mantis
 
                 //GET OUT
                 set_status( k_error, "Finished abnormally because writing failed" );
-                MTINFO( mtlog, "Finished abnormally because writing failed" );
+                INFO( mtlog, "Finished abnormally because writing failed" );
                 return;
             }
 
@@ -152,7 +155,7 @@ namespace mantis
 
             t_it->set_written();
 
-            //MTINFO( mtlog, "records written: " << f_record_count );
+            //INFO( mtlog, "records written: " << f_record_count );
 
         }
 
@@ -179,7 +182,7 @@ namespace mantis
 
     void writer::finalize( param_node* a_response )
     {
-        //MTINFO( mtlog, "calculating statistics..." );
+        //INFO( mtlog, "calculating statistics..." );
         double t_livetime = (double) (f_live_time) * SEC_PER_NSEC;
         double t_mb_written = (double) (4 * f_record_count);
 

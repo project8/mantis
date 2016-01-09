@@ -12,7 +12,11 @@
 
 //#include "mt_atomic.hh"
 #include "mt_amqp.hh"
-#include "mt_param.hh"
+#include "mt_constants.hh"
+
+#include "param.hh"
+
+using scarab::param_node;
 
 namespace mantis
 {

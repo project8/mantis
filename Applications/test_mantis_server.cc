@@ -1,5 +1,5 @@
 #include "mt_configurator.hh"
-#include "mt_logger.hh"
+#include "logger.hh"
 #include "mt_server_tcp.hh"
 #include "mt_server_config.hh"
 #include "mt_run_context_dist.hh"
@@ -12,7 +12,7 @@ using std::string;
 #include <sstream>
 using std::stringstream;
 
-MTLOGGER( mtlog, "test_mantis_server" );
+LOGGER( mtlog, "test_mantis_server" );
 
 int main( int argc, char** argv )
 {
@@ -21,7 +21,7 @@ int main( int argc, char** argv )
         server_config t_sc;
         configurator t_configurator( argc, argv, &t_sc );
 
-        MTINFO( mtlog, " starting server..." );
+        INFO( mtlog, " starting server..." );
 
         server_tcp* t_server = new server_tcp( t_configurator.get< int >( "port" ) );
         run_context_dist* t_run_context = new run_context_dist();
@@ -29,13 +29,13 @@ int main( int argc, char** argv )
         while( true )
         {
 
-            MTINFO( mtlog, " waiting for connection..." );
+            INFO( mtlog, " waiting for connection..." );
 
             t_run_context->set_connection( t_server->get_connection() );
 
             t_run_context->pull_request();
 
-            MTINFO( mtlog, " received request:\n" << t_run_context->lock_request_in()->DebugString() );
+            INFO( mtlog, " received request:\n" << t_run_context->lock_request_in()->DebugString() );
 
             status* t_status = t_run_context->lock_status_out();
             t_status->set_state( status_state_t_acknowledged );
@@ -48,7 +48,7 @@ int main( int argc, char** argv )
             t_run_context->push_status();
             t_run_context->unlock_outbound();
 
-            MTINFO( mtlog, " done" );
+            INFO( mtlog, " done" );
 
         }
 
@@ -60,7 +60,7 @@ int main( int argc, char** argv )
     }
     catch( exception& e )
     {
-        MTERROR( mtlog, "exception caught: " << e.what() );
+        ERROR( mtlog, "exception caught: " << e.what() );
     }
     return -1;
 }

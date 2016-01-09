@@ -8,9 +8,10 @@
 #include "mt_exception.hh"
 #include "mt_factory.hh"
 #include "mt_iterator.hh"
-#include "mt_logger.hh"
-#include "mt_param.hh"
 #include "mt_thread.hh"
+
+#include "logger.hh"
+#include "param.hh"
 
 #include "M3Constants.hh"
 
@@ -20,9 +21,12 @@
 #include <errno.h>
 //#include <fcntl.h> // for O_CREAT and O_EXCL
 
+using scarab::param_node;
+using scarab::param_value;
+
 namespace mantis
 {
-    MTLOGGER( mtlog, "digitizer_test16" );
+    LOGGER( mtlog, "digitizer_test16" );
 
     MT_REGISTER_DIGITIZER( digitizer_test16, "test16" );
 
@@ -92,7 +96,7 @@ namespace mantis
 
     bool digitizer_test16::allocate()
     {
-        MTINFO( mtlog, "Allocating buffer" );
+        INFO( mtlog, "Allocating buffer" );
 
         try
         {
@@ -105,19 +109,19 @@ namespace mantis
         }
         catch( exception& e )
         {
-            MTERROR( mtlog, "Unable to allocate buffer: " << e.what() );
+            ERROR( mtlog, "Unable to allocate buffer: " << e.what() );
             return false;
         }
 
-        MTINFO( mtlog, "Creating master record" );
+        INFO( mtlog, "Creating master record" );
 
-        MTDEBUG( mtlog, "n levels: " << params( 0 ).levels );
+        DEBUG( mtlog, "n levels: " << params( 0 ).levels );
         if( f_master_record != NULL ) delete [] f_master_record;
         f_master_record = new data_type [f_buffer->block_size()];
         for( unsigned index = 0; index < f_buffer->block_size(); ++index )
         {
             f_master_record[ index ] = (index % params( 0 ).levels) << 2;
-            //if( index < 100 ) MTDEBUG( mtlog, "setting master record [" << index << "]: " << f_master_record[index] );
+            //if( index < 100 ) DEBUG( mtlog, "setting master record [" << index << "]: " << f_master_record[index] );
         }
 
         f_allocated = true;
@@ -128,7 +132,7 @@ namespace mantis
     {
         delete [] f_master_record;
 
-        MTINFO( mtlog, "Deallocating buffer" );
+        INFO( mtlog, "Deallocating buffer" );
 
         for( unsigned int index = 0; index < f_buffer->size(); index++ )
         {
@@ -141,7 +145,7 @@ namespace mantis
 
     bool digitizer_test16::initialize( param_node* a_global_config, param_node* a_dev_config )
     {
-        //MTINFO( mtlog, "resetting counters..." );
+        //INFO( mtlog, "resetting counters..." );
 
         a_dev_config->replace( "voltage-offset", param_value( params( 0 ).v_offset ) );
         a_dev_config->replace( "voltage-range", param_value( params( 0 ).v_range ) );
@@ -177,7 +181,7 @@ namespace mantis
     {
         if( f_status != k_ok )
         {
-            MTERROR( mtlog, "Digitizer status is not \"ok\"" );
+            ERROR( mtlog, "Digitizer status is not \"ok\"" );
             return;
         }
 
@@ -200,10 +204,10 @@ namespace mantis
 */
 
 
-        MTINFO( mtlog, "Waiting for buffer readiness" );
+        INFO( mtlog, "Waiting for buffer readiness" );
         f_buffer_condition->wait();
 
-        MTINFO( mtlog, "Loose at <" << t_it.index() << ">" );
+        INFO( mtlog, "Loose at <" << t_it.index() << ">" );
 
         // why was cancel disabled? -- Noah, 3/27/14
         //int t_old_cancel_state;
@@ -216,7 +220,7 @@ namespace mantis
             return;
         }
 
-        MTINFO( mtlog, "Planning on " << f_record_last << " records" );
+        INFO( mtlog, "Planning on " << f_record_last << " records" );
 
         //start timing
         get_time_monotonic( &t_live_start_time );
@@ -246,18 +250,18 @@ namespace mantis
                 if( f_canceled.load() )
                 {
                     set_status( k_error, "Digitizer was canceled mid-run" );
-                    MTINFO( mtlog, "Was canceled mid-run" );
+                    INFO( mtlog, "Was canceled mid-run" );
                     f_cancel_condition.release();
-                    MTDEBUG( mtlog, "Canceling bs_mod thread" );
+                    DEBUG( mtlog, "Canceling bs_mod thread" );
                     //t_bs_mod_thread.cancel();
                 }
                 else
                 {
                     set_status( k_error, "Finished normally" );
-                    MTINFO( mtlog, "Finished normally" );
-                    //MTDEBUG( mtlog, "Waiting for bs_mod thread to finish" );
+                    INFO( mtlog, "Finished normally" );
+                    //DEBUG( mtlog, "Waiting for bs_mod thread to finish" );
                     //t_bs_mod_thread.join();
-                    //MTDEBUG( mtlog, "bs_mod thread done" );
+                    //DEBUG( mtlog, "bs_mod thread done" );
                 }
                 return;
             }
@@ -286,9 +290,9 @@ namespace mantis
 
                 //GET OUT
                 set_status( k_error, "Finished abnormally because acquisition failed" );
-                MTINFO( mtlog, "Finished abnormally because acquisition failed" );
+                INFO( mtlog, "Finished abnormally because acquisition failed" );
 
-                //MTDEBUG( mtlog, "canceling bs_mod thread" );
+                //DEBUG( mtlog, "canceling bs_mod thread" );
                 //t_bs_mod_thread.cancel();
 
                 return;
@@ -298,7 +302,7 @@ namespace mantis
 
             if( +t_it == false )
             {
-                MTINFO( mtlog, "Blocked at <" << t_it.index() << ">" );
+                INFO( mtlog, "Blocked at <" << t_it.index() << ">" );
 
                 //stop live timer
                 get_time_monotonic( &t_live_stop_time );
@@ -311,8 +315,8 @@ namespace mantis
                 {
                     //GET OUT
                     set_status( k_error, "Finished abnormally because halting streaming failed" );
-                    MTINFO( mtlog, "Finished abnormally because halting streaming failed" );
-                    //MTDEBUG( mtlog, "Canceling bs_mod thread" );
+                    INFO( mtlog, "Finished abnormally because halting streaming failed" );
+                    //DEBUG( mtlog, "Canceling bs_mod thread" );
                     //t_bs_mod_thread.cancel();
                     return;
                 }
@@ -340,9 +344,9 @@ namespace mantis
 
                     //GET OUT
                     set_status( k_error, "Finished abnormally because starting streaming failed" );
-                    MTINFO( mtlog, "Finished abnormally because starting streaming failed" );
+                    INFO( mtlog, "Finished abnormally because starting streaming failed" );
 
-                    //MTDEBUG( mtlog, "Canceling bs_mod thread" );
+                    //DEBUG( mtlog, "Canceling bs_mod thread" );
                     //t_bs_mod_thread.cancel();
 
                     return;
@@ -354,9 +358,9 @@ namespace mantis
                 //start live timer
                 get_time_monotonic( &t_live_start_time );;
 
-                MTINFO( mtlog, "loose at <" << t_it.index() << ">" );
+                INFO( mtlog, "loose at <" << t_it.index() << ">" );
             }
-            //MTINFO( mtlog, "record count: " << f_record_count );
+            //INFO( mtlog, "record count: " << f_record_count );
 
             // slow things down a bit, since this is for testing purposes, after all
 #ifndef _WIN32
@@ -387,7 +391,7 @@ namespace mantis
 
     void digitizer_test16::finalize( param_node* a_response )
     {
-        //MTINFO( mtlog, "calculating statistics..." );
+        //INFO( mtlog, "calculating statistics..." );
         double t_livetime = (double) (f_live_time) * SEC_PER_NSEC;
         double t_deadtime = (double) f_dead_time * SEC_PER_NSEC;
         double t_mb_recorded = (double) (4 * f_record_count);
@@ -415,11 +419,11 @@ namespace mantis
         a_block->set_record_id( f_record_count );
         a_block->set_acquisition_id( f_acquisition_count );
 
-        MTWARN( mtlog, "acquiring to: " << a_block->data_bytes() );
+        WARN( mtlog, "acquiring to: " << a_block->data_bytes() );
         ::memcpy( a_block->data_bytes(), (byte_type*)f_master_record, a_block->get_data_nbytes() );
         //for(unsigned index = 1000; index < 1050; ++index)
         //{
-        //    MTERROR( mtlog, ((data_type*)(a_block->data_bytes()))[index]);
+        //    ERROR( mtlog, ((data_type*)(a_block->data_bytes()))[index]);
         //}
 
         // the timestamp is acquired after the data is transferred to avoid the problem on the px1500 where
@@ -457,7 +461,7 @@ namespace mantis
 
     bool digitizer_test16::run_basic_test()
     {
-        MTWARN( mtlog, "Basic test for digitizer_test16 has not been implemented" );
+        WARN( mtlog, "Basic test for digitizer_test16 has not been implemented" );
         return false;
     }
 

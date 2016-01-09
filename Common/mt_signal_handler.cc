@@ -10,7 +10,7 @@
 #include "mt_signal_handler.hh"
 
 #include "mt_exception.hh"
-#include "mt_logger.hh"
+#include "logger.hh"
 
 #include <signal.h>
 #ifndef _WIN32
@@ -19,7 +19,7 @@
 
 namespace mantis
 {
-    MTLOGGER( mtlog, "signal_handler" );
+    LOGGER( mtlog, "signal_handler" );
 
     bool signal_handler::f_got_exit_signal = false;
 
@@ -122,7 +122,7 @@ namespace mantis
 
     void signal_handler::print_message()
     {
-        MTINFO( mtlog, "\n\nHello!  Your signal is being handled by signal_handler.\n"
+        INFO( mtlog, "\n\nHello!  Your signal is being handled by signal_handler.\n"
              << "Have a nice day!\n" );
         return;
     }

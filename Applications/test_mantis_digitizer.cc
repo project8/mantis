@@ -24,14 +24,14 @@
 #include "mt_device_manager.hh"
 #include "mt_digitizer.hh"
 #include "mt_factory.hh"
-#include "mt_logger.hh"
+#include "logger.hh"
 
 #include <string>
 using std::string;
 
 using namespace mantis;
 
-MTLOGGER( mtlog, "test_mantis_digitizer" );
+LOGGER( mtlog, "test_mantis_digitizer" );
 
 enum test_type
 {
@@ -49,7 +49,7 @@ int main( int argc, char** argv )
     }
     catch( exception& e )
     {
-        MTERROR( mtlog, "unable to configure test_mantis_digitizer: " << e.what() );
+        ERROR( mtlog, "unable to configure test_mantis_digitizer: " << e.what() );
         return -1;
     }
 
@@ -60,7 +60,7 @@ int main( int argc, char** argv )
     }
     catch( exception& e )
     {
-        MTERROR( mtlog, "please provide the digitizer you want to test with configuration value <digitizer>" );
+        ERROR( mtlog, "please provide the digitizer you want to test with configuration value <digitizer>" );
         return -1;
     }
 
@@ -76,11 +76,11 @@ int main( int argc, char** argv )
     }
     else
     {
-        MTERROR( mtlog, "invalid test type: " << t_str_test_type );
+        ERROR( mtlog, "invalid test type: " << t_str_test_type );
         return -1;
     }
 
-    MTINFO( mtlog, "testing digitizer <" << t_dig_name << ">" );
+    INFO( mtlog, "testing digitizer <" << t_dig_name << ">" );
 
     device_manager t_dev_mgr;
     t_dev_mgr.set_device( t_dig_name );
@@ -98,11 +98,11 @@ int main( int argc, char** argv )
 
     if ( ! t_status )
     {
-        MTWARN( mtlog, "test failed" );
+        WARN( mtlog, "test failed" );
         return -1;
     }
 
 
-    MTINFO( mtlog, "congratulations, digitizer <" << t_dig_name << "> passed the test!" );
+    INFO( mtlog, "congratulations, digitizer <" << t_dig_name << "> passed the test!" );
     return 0;
 }

@@ -15,7 +15,7 @@
 #ifndef MT_CONCURRENT_QUEUE_HH_
 #define MT_CONCURRENT_QUEUE_HH_
 
-#include "mt_logger.hh"
+#include "logger.hh"
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/thread.hpp>
@@ -24,7 +24,7 @@
 
 namespace mantis
 {
-    MTLOGGER( mtlog_cq, "concurrent_queue" );
+    LOGGER( mtlog_cq, "concurrent_queue" );
 
     template< class XDataType >
     class concurrent_queue
@@ -73,9 +73,9 @@ namespace mantis
         public:
             void push( XDataType const& a_data )
             {
-                MTDEBUG( mtlog_cq, "Attempting to push to queue" );
+                DEBUG( mtlog_cq, "Attempting to push to queue" );
                 scoped_lock lock( f_mutex );
-                MTDEBUG( mtlog_cq, "Pushing to concurrent queue; size: " << f_queue.size() );
+                DEBUG( mtlog_cq, "Pushing to concurrent queue; size: " << f_queue.size() );
                 f_queue.push_back( a_data );
                 lock.unlock();
                 f_condition_var.notify_one();
@@ -121,7 +121,7 @@ namespace mantis
 
                 a_popped_value = f_queue.front();
                 f_queue.pop_front();
-                MTDEBUG( mtlog_cq, "Popping from concurrent queue; size: " << f_queue.size() );
+                DEBUG( mtlog_cq, "Popping from concurrent queue; size: " << f_queue.size() );
                 return true;
             }
 
@@ -132,7 +132,7 @@ namespace mantis
                 boost::system_time const waitUntil = boost::get_system_time() + f_timeout;
                 if( ! f_condition_var.timed_wait( lock, waitUntil, queue_not_empty( f_queue ) ) )
                 {
-                    //MTDEBUG( mtlog_cq, "Queue wait has timed out" );
+                    //DEBUG( mtlog_cq, "Queue wait has timed out" );
                     return false;
                 }
                 if( f_interrupt )
@@ -143,7 +143,7 @@ namespace mantis
 
                 a_popped_value = f_queue.front();
                 f_queue.pop_front();
-                MTDEBUG( mtlog_cq, "Popping from concurrent queue; size: " << f_queue.size() );
+                DEBUG( mtlog_cq, "Popping from concurrent queue; size: " << f_queue.size() );
                 return true;
             }
 

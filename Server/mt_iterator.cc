@@ -2,11 +2,11 @@
 
 #include "mt_iterator.hh"
 
-#include "mt_logger.hh"
+#include "logger.hh"
 
 namespace mantis
 {
-    MTLOGGER( mtlog, "iterator" );
+    LOGGER( mtlog, "iterator" );
 
     iterator::iterator( buffer* a_buffer, const std::string& a_name ) :
             f_name( a_name ),
@@ -28,7 +28,7 @@ namespace mantis
             decrement();
         }
         IT_TIMER_UNSET_IGNORE_DECR( (*this) );
-        MTDEBUG( mtlog, "iterator " << f_name << " starting at index " << f_current_index );
+        DEBUG( mtlog, "iterator " << f_name << " starting at index " << f_current_index );
     }
     iterator::iterator( const iterator& a_copy )
     {

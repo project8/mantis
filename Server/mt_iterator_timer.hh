@@ -11,7 +11,7 @@
 //#include "mt_singleton.hh"
 
 #include "mt_constants.hh"
-#include "mt_logger.hh"
+#include "logger.hh"
 
 #include "thorax.hh"
 
@@ -25,7 +25,7 @@
 
 namespace mantis
 {
-    MTLOGGER( mtlog_it, "iterator_timer" );
+    LOGGER( mtlog_it, "iterator_timer" );
 
     struct iterator_event
     {
@@ -199,7 +199,7 @@ namespace mantis
 #ifdef ENABLE_ITERATOR_TIMING
 #define IT_TIMER_INITIALIZE \
 { \
-    MTWARN( mtlog_it, "iterator timer initialized: " << name() ) \
+    WARN( mtlog_it, "iterator timer initialized: " << name() ) \
     f_timer.set_name( name() ); \
 }
 #else

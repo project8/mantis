@@ -10,7 +10,9 @@
 #include "mt_configurator.hh"
 
 #include "mt_parser.hh"
-#include "mt_logger.hh"
+
+#include "logger.hh"
+#include "param_json.hh"
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -20,11 +22,13 @@
 #include <unistd.h> // for readlink
 #endif
 
+using scarab::param_input_json;
+
 using std::string;
 
 namespace mantis
 {
-    MTLOGGER( mtlog, "configurator" );
+    LOGGER( mtlog, "configurator" );
 
     configurator::configurator( int an_argc, char** an_argv, param_node* a_default ) :
             f_exe_name( "unknown" ),
@@ -65,9 +69,9 @@ namespace mantis
         if( readlink( "/proc/self/exe", t_exe_buf, t_bufsize ) < 0 )
 #endif
         {
-            MTWARN( mtlog, "Could not retrieve executable file name" );
+            WARN( mtlog, "Could not retrieve executable file name" );
 #ifdef __APPLE__
-            MTWARN( mtlog, "Executable name buffer is too small; needs size %u\n" << t_bufsize );
+            WARN( mtlog, "Executable name buffer is too small; needs size %u\n" << t_bufsize );
 #endif
         }
         f_exe_name = string( t_exe_buf );
@@ -115,11 +119,11 @@ namespace mantis
 
         //std::cout << "removed config and json from parsed options" << std::endl;
         //cout << t_parser );
-        //MTDEBUG( mtlog, "adding command-line parser:\n" << t_parser << *f_master_config );
+        //DEBUG( mtlog, "adding command-line parser:\n" << t_parser << *f_master_config );
         f_master_config->merge( t_parser );
 
         //std::cout << "fourth configuration complete" << std::endl;
-        MTINFO( mtlog, "final configuration:\n" << *f_master_config );
+        INFO( mtlog, "final configuration:\n" << *f_master_config );
     }
 
     configurator::~configurator()

@@ -7,11 +7,17 @@
 
 #include <cstddef>
 
+namespace scarab
+{
+    class param_node;
+}
+
 namespace mantis
 {
     class buffer;
     class condition;
-    class param_node;
+
+    using scarab::param_node;
 
     struct MANTIS_API digitizer_config_template
     {

@@ -12,7 +12,7 @@
 #include "mt_device_manager.hh"
 #include "mt_digitizer.hh"
 #include "mt_file_writer.hh"
-#include "mt_logger.hh"
+#include "logger.hh"
 #include "mt_message.hh"
 #include "mt_request_receiver.hh"
 #include "mt_signal_handler.hh"
@@ -28,7 +28,7 @@ using std::string;
 
 namespace mantis
 {
-    MTLOGGER( mtlog, "server_worker" );
+    LOGGER( mtlog, "server_worker" );
 
     server_worker::server_worker( device_manager* a_dev_mgr, acq_request_db* a_run_db, amqp_relayer* a_amqp_relayer, const param_node* a_amqp_node ) :
             f_dev_mgr( a_dev_mgr ),
@@ -65,25 +65,25 @@ namespace mantis
 
             f_status.store( k_starting );
 
-            MTINFO( mtlog, "Processing run request from queue" );
+            INFO( mtlog, "Processing run request from queue" );
 
-            MTDEBUG( mtlog, "Setting run status <started>" );
+            DEBUG( mtlog, "Setting run status <started>" );
 
             acq_request* t_acq_req = f_acq_request_db->pop();
             t_acq_req->set_status( acq_request::started );
 
-            MTINFO( mtlog, "Initializing" );
+            INFO( mtlog, "Initializing" );
 
-            MTDEBUG( mtlog, "Retrieved request from the queue:\n" << *t_acq_req );
+            DEBUG( mtlog, "Retrieved request from the queue:\n" << *t_acq_req );
 
             if( ! f_dev_mgr->configure( *t_acq_req ) )
             {
-                MTERROR( mtlog, "Unable to configure device manager" );
+                ERROR( mtlog, "Unable to configure device manager" );
                 t_acq_req->set_status( acq_request::error );
                 continue;
             }
 
-            MTINFO( mtlog, "Creating writer" );
+            INFO( mtlog, "Creating writer" );
 
             file_writer t_writer;
             t_writer.set_device_manager( f_dev_mgr );
@@ -91,12 +91,12 @@ namespace mantis
 
             if( ! t_writer.initialize( t_acq_req ) )
             {
-                MTERROR( mtlog, "Unable to initialize writer" );
+                ERROR( mtlog, "Unable to initialize writer" );
                 t_acq_req->set_status( acq_request::error );
                 continue;
             }
 
-            MTINFO( mtlog, "Setting run status <running>" );
+            INFO( mtlog, "Setting run status <running>" );
             t_acq_req->set_status( acq_request::running );
 
             f_component_mutex.lock();
@@ -135,14 +135,14 @@ namespace mantis
 
             if( f_digitizer->get_status() != digitizer::k_ok )
             {
-                MTWARN( mtlog, "Digitizer finished in non-ok state: (" << f_digitizer->get_status() << ") " << f_digitizer->get_status_message() );
-                MTWARN( mtlog, "Processing of requests has been stopped to allow the problem to be fixed" );
+                WARN( mtlog, "Digitizer finished in non-ok state: (" << f_digitizer->get_status() << ") " << f_digitizer->get_status_message() );
+                WARN( mtlog, "Processing of requests has been stopped to allow the problem to be fixed" );
                 f_acq_request_db->stop_queue();
             }
             if( f_writer->get_status() != writer::k_ok )
             {
-                MTWARN( mtlog, "Writer finished in non-ok state: (" << f_writer->get_status() << ") " << f_writer->get_status_message() );
-                MTWARN( mtlog, "Processing of requests has been stopped to allow the problem to be fixed" );
+                WARN( mtlog, "Writer finished in non-ok state: (" << f_writer->get_status() << ") " << f_writer->get_status_message() );
+                WARN( mtlog, "Processing of requests has been stopped to allow the problem to be fixed" );
                 f_acq_request_db->stop_queue();
             }
 
@@ -158,23 +158,23 @@ namespace mantis
             {
                 f_status.store( k_acquired );
 
-                MTINFO( mtlog, "Setting run status <stopped>" );
+                INFO( mtlog, "Setting run status <stopped>" );
                 t_acq_req->set_status( acq_request::stopped );
             }
             else
             {
-                MTINFO( mtlog, "Setting run status <canceled>" );
+                INFO( mtlog, "Setting run status <canceled>" );
                 t_acq_req->set_status( acq_request::canceled );
             }
 
-            MTINFO( mtlog, "Finalizing..." );
+            INFO( mtlog, "Finalizing..." );
 
             param_node t_response;
             f_dev_mgr->device()->finalize( &t_response );
             t_writer.finalize( &t_response );
             t_acq_req->set_response( t_response );
             t_acq_req->set_status( acq_request::stopped );
-            MTINFO( mtlog, "Run response:\n" << t_response );
+            INFO( mtlog, "Run response:\n" << t_response );
             if( ! f_completed_file_key.empty() )
             {
                 f_amqp_relayer->send_message( msg_alert::create( new param_node( *t_acq_req ), f_completed_file_key, "", message::k_json ) );
@@ -192,7 +192,7 @@ namespace mantis
     */
     void server_worker::stop_acquisition()
     {
-        MTDEBUG( mtlog, "Stopping acquisition" );
+        DEBUG( mtlog, "Stopping acquisition" );
         f_component_mutex.lock();
         if( f_digitizer_state == k_running && f_digitizer != NULL )
         {
@@ -217,7 +217,7 @@ namespace mantis
     */
     void server_worker::cancel()
     {
-        MTDEBUG( mtlog, "Canceling server_worker" );
+        DEBUG( mtlog, "Canceling server_worker" );
         f_canceled.store( true );
         f_status.store( k_canceled );
 

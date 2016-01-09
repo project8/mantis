@@ -10,8 +10,11 @@
 
 #include "mt_atomic.hh"
 #include "mt_mutex.hh"
-#include "mt_param.hh"
 #include "mt_version.hh"
+
+#include "param.hh"
+
+using scarab::param_node;
 
 namespace mantis
 {

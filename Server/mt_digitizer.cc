@@ -4,17 +4,19 @@
 
 #include "mt_buffer.hh"
 #include "mt_condition.hh"
-#include "mt_logger.hh"
-#include "mt_param.hh"
+#include "logger.hh"
+#include "param.hh"
 #include "mt_thread.hh"
 
 #ifndef _WIN32
 #include <unistd.h>
 #endif
 
+using scarab::param_value;
+
 namespace mantis
 {
-    MTLOGGER( mtlog, "digitizer" );
+    LOGGER( mtlog, "digitizer" );
 
     digitizer::digitizer() :
             f_params( NULL ),
@@ -34,46 +36,46 @@ namespace mantis
 
     bool digitizer::run_insitu_test()
     {
-        MTDEBUG( mtlog, "calling allocate" );
+        DEBUG( mtlog, "calling allocate" );
         if( ! this->allocate() )
         {
-            MTERROR( mtlog, "failure during allocation" );
+            ERROR( mtlog, "failure during allocation" );
             return false;
         }
 
-        MTDEBUG( mtlog, "calling initialize" );
+        DEBUG( mtlog, "calling initialize" );
         param_node t_global_config, t_dev_config;
         t_dev_config.add( "rate", param_value( 250.0 ) ); // MHz
         t_dev_config.add( "record-size", param_value( 8192 ) );
         t_global_config.add( "duration", param_value( 100.0 ) ); // ms
         if( !initialize( &t_global_config, &t_dev_config ) )
         {
-            MTERROR( mtlog, "failure during initialize" );
+            ERROR( mtlog, "failure during initialize" );
             return false;
         }
 
         thread t_digitizer_thread( this );
 
-        MTDEBUG( mtlog, "calling execute");
+        DEBUG( mtlog, "calling execute");
         t_digitizer_thread.start();
 
-        MTDEBUG( mtlog, "releasing" );
+        DEBUG( mtlog, "releasing" );
         f_buffer_condition->release();
 
-        MTDEBUG( mtlog, "waiting" );
+        DEBUG( mtlog, "waiting" );
 #ifndef _WIN32
         sleep(1);
 #else
         Sleep(1000);
 #endif
 
-        MTDEBUG( mtlog, "canceling" );
+        DEBUG( mtlog, "canceling" );
         t_digitizer_thread.cancel();
 
-        MTDEBUG( mtlog, "calling finalize");
+        DEBUG( mtlog, "calling finalize");
         param_node t_response;
         finalize( &t_response );
-        MTINFO( mtlog, "In-situ digitizer test result:\n" << t_response );
+        INFO( mtlog, "In-situ digitizer test result:\n" << t_response );
 
         return true;
     }

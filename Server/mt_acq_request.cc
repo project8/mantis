@@ -10,16 +10,14 @@
 #include "mt_acq_request.hh"
 #include "mt_version.hh"
 
-#include <boost/uuid/uuid_io.hpp>
-
 #include<string>
 using std::string;
 
-#include "mt_logger.hh"
+#include "logger.hh"
 
 namespace mantis
 {
-    MTLOGGER(mtlog, "acq_request");
+    LOGGER(mtlog, "acq_request");
 
     std::string acq_request::interpret_status( status a_status )
     {
@@ -57,7 +55,7 @@ namespace mantis
         }
     }
 
-    acq_request::acq_request( boost::uuids::uuid a_id ) :
+    acq_request::acq_request( uuid_t a_id ) :
             param_node(),
             f_id( a_id )
     {
@@ -90,14 +88,14 @@ namespace mantis
         return *this;
     }
 
-    void acq_request::set_id( boost::uuids::uuid a_id )
+    void acq_request::set_id( uuid_t a_id )
     {
         f_id = a_id;
         this->replace( "id", param_value( boost::uuids::to_string( f_id ) ) );
         return;
     }
 
-    boost::uuids::uuid acq_request::get_id() const
+    uuid_t acq_request::get_id() const
     {
         return f_id;
     }

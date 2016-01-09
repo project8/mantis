@@ -4,16 +4,19 @@
 
 #include "mt_broker.hh"
 #include "mt_exception.hh"
-#include "mt_logger.hh"
-#include "mt_param_json.hh"
+
+#include "logger.hh"
+#include "param.hh"
 
 //#include <boost/uuid/uuid_io.hpp>
 
 using std::string;
 
+using scarab::param_node;
+
 namespace mantis
 {
-    MTLOGGER( mtlog, "amqp_relayer" );
+    LOGGER( mtlog, "amqp_relayer" );
 
     amqp_relayer::amqp_relayer( const broker* a_broker ) :
             f_channel( a_broker->open_channel() ),
@@ -33,7 +36,7 @@ namespace mantis
     {
         if( ! f_channel )
         {
-            MTERROR( mtlog, "AMQP channel is not open" );
+            ERROR( mtlog, "AMQP channel is not open" );
             return false;
         }
 
@@ -44,7 +47,7 @@ namespace mantis
         }
         catch( std::exception& e )
         {
-            MTERROR( mtlog, "Unable to declare exchange <" << f_request_exchange << ">; aborting.\n(" << e.what() << ")" );
+            ERROR( mtlog, "Unable to declare exchange <" << f_request_exchange << ">; aborting.\n(" << e.what() << ")" );
             return false;
         }
 
@@ -55,7 +58,7 @@ namespace mantis
         }
         catch( std::exception& e )
         {
-            MTERROR( mtlog, "Unable to declare exchange <" << f_alert_exchange << ">; aborting.\n(" << e.what() << ")" );
+            ERROR( mtlog, "Unable to declare exchange <" << f_alert_exchange << ">; aborting.\n(" << e.what() << ")" );
             return false;
         }
 
@@ -64,7 +67,7 @@ namespace mantis
 
     void amqp_relayer::execute()
     {
-        MTDEBUG( mtlog, "AMQP relayer starting" );
+        DEBUG( mtlog, "AMQP relayer starting" );
         while( ! f_canceled.load() )
         {
             message* t_message = NULL;
@@ -81,13 +84,13 @@ namespace mantis
             }
             else
             {
-                MTWARN( mtlog, "Cannot currently handle message type <" << t_message->get_message_type() << ">; will be ignored");
+                WARN( mtlog, "Cannot currently handle message type <" << t_message->get_message_type() << ">; will be ignored");
             }
 
             delete t_message;
         }
 
-        MTDEBUG( mtlog, "Exiting the AMQP relayer" );
+        DEBUG( mtlog, "Exiting the AMQP relayer" );
 
         return;
     }
@@ -98,7 +101,7 @@ namespace mantis
     */
     void amqp_relayer::cancel()
     {
-        MTDEBUG( mtlog, "Canceling amqp_relayer" );
+        DEBUG( mtlog, "Canceling amqp_relayer" );
         f_canceled.store( true );
         f_queue.interrupt();
 
@@ -109,7 +112,7 @@ namespace mantis
 
     bool amqp_relayer::relay_request( message* a_message )
     {
-        MTDEBUG( mtlog, "Relaying message to the requests exchange" );
+        DEBUG( mtlog, "Relaying message to the requests exchange" );
 
         string t_consumer_tag;
         return a_message->do_publish( f_channel, f_request_exchange, t_consumer_tag );
@@ -117,7 +120,7 @@ namespace mantis
 
     bool amqp_relayer::relay_alert( message* a_message )
     {
-        MTDEBUG( mtlog, "Relaying message to the requests exchange" );
+        DEBUG( mtlog, "Relaying message to the requests exchange" );
 
         string t_consumer_tag;
         return a_message->do_publish( f_channel, f_alert_exchange, t_consumer_tag );
@@ -131,13 +134,13 @@ namespace mantis
             case k_json:
                 if( ! param_output_json::write_string( *(a_data->f_message), a_message, param_output_json::k_compact ) )
                 {
-                    MTERROR( mtlog, "Could not convert message to string" );
+                    ERROR( mtlog, "Could not convert message to string" );
                     return false;
                 }
                 return true;
                 break;
             default:
-                MTERROR( mtlog, "Invalid encoding: " << a_data->f_encoding );
+                ERROR( mtlog, "Invalid encoding: " << a_data->f_encoding );
                 return false;
                 break;
         }
@@ -148,7 +151,7 @@ namespace mantis
 
     bool amqp_relayer::send_message( message* a_message )
     {
-        MTDEBUG( mtlog, "Received send-message request addressed to <" << a_message->get_routing_key() << ">" );
+        DEBUG( mtlog, "Received send-message request addressed to <" << a_message->get_routing_key() << ">" );
         f_queue.push( a_message );
         return true;
     }
@@ -161,7 +164,7 @@ namespace mantis
         t_data->f_message_type = k_alert;
         t_data->f_routing_key = a_routing_key;
         t_data->f_encoding = a_encoding;
-        MTDEBUG( mtlog, "Received send-alert request addressed to <" << a_routing_key << ">" );
+        DEBUG( mtlog, "Received send-alert request addressed to <" << a_routing_key << ">" );
         f_queue.push( t_data );
         return true;
     }
