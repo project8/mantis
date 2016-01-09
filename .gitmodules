@@ -1,12 +1,9 @@
 [submodule "Monarch"]
 	path = Monarch
 	url = https://github.com/project8/monarch
-[submodule "Scarab"]
-	path = Scarab
-	url = https://github.com/project8/scarab.git
-[submodule "SimpleAmqpClient"]
-	path = SimpleAmqpClient
-	url = https://github.com/project8/SimpleAmqpClient.git
 [submodule "libthorax"]
 	path = libthorax
 	url = https://github.com/project8/libthorax
+[submodule "dripline"]
+	path = dripline
+	url = https://github.com/project8/dripline
