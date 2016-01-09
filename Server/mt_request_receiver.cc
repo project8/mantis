@@ -14,16 +14,20 @@
 #include "mt_server_worker.hh"
 
 #include "logger.hh"
+#include "parsable.hh"
 
 #include <cstddef>
 #include <sstream>
 
 
-using std::string;
 
 
 namespace mantis
 {
+    using std::string;
+
+    using scarab::parsable;
+
     LOGGER( mtlog, "request_receiver" );
 
     bool request_reply_package::send_reply( unsigned a_return_code, const std::string& a_return_msg )

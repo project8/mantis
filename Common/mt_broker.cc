@@ -9,17 +9,17 @@
 
 #include "mt_broker.hh"
 
-#include "mt_authentication.hh"
-
+#include "authentication.hh"
 #include "logger.hh"
 #include "param.hh"
 
 #include "SimpleAmqpClient/AmqpLibraryException.h"
 
-using scarab::param_node;
-
 namespace mantis
 {
+    using scarab::authentication;
+    using scarab::param_node;
+
     LOGGER( mtlog, "broker" );
 
     broker::broker( const std::string& a_address, unsigned a_port ) :
@@ -36,13 +36,13 @@ namespace mantis
     {
         try
         {
-            authentication* t_auth = authentication::get_instance();
-            if( ! t_auth->is_loaded() )
+            authentication t_auth( ".project8_authentications.json" );
+            if( ! t_auth.get_is_loaded() )
             {
                 ERROR( mtlog, "Authentications were not loaded; create AMQP connection" );
                 return AmqpClient::Channel::ptr_t();
             }
-            const param_node* t_amqp_auth = t_auth->node_at( "amqp" );
+            const param_node* t_amqp_auth = t_auth.node_at( "amqp" );
             if( t_amqp_auth == NULL || ! t_amqp_auth->has( "username" ) || ! t_amqp_auth->has( "password" ) )
             {
                 ERROR( mtlog, "AMQP authentication is not available or is not complete" );

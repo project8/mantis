@@ -7,28 +7,10 @@
 
 #include <string>
 
-using scarab::param;
-using scarab::param_node;
-
 namespace mantis
 {
-    class MANTIS_API parsable : public param_node
-    {
-        public:
-            parsable( const std::string& a_addr_with_value );
-            parsable( const std::string& a_addr, const std::string& a_value );
-            ~parsable();
-
-        private:
-            void add_next( param_node* a_parent, const std::string& a_addr, const std::string& a_value );
-
-        public:
-            static const char f_value_separator = '=';
-            static const char f_node_separator = '.';
-
-
-    };
-
+    using scarab::param;
+    using scarab::param_node;
 
     class MANTIS_API parser : public param_node
     {

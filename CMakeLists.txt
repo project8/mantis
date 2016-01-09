@@ -8,7 +8,7 @@ cmake_minimum_required (VERSION 3.0)
 cmake_policy( SET CMP0048 NEW ) # version in project()
 project( Mantis VERSION 3.3.1 )
 
-list( APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/Scarab/cmake )
+list( APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/dripline/cpp/scarab/cmake )
 
 include( PackageBuilder )
 
@@ -81,7 +81,7 @@ pbuilder_add_ext_libraries( ${Boost_LIBRARIES} )
 # Scarab
 ########
 
-pbuilder_add_submodule( Scarab Scarab/library )
+pbuilder_add_submodule( Scarab dripline/cpp/scarab/library )
 set( Scarab_BUILD_CODEC_JSON TRUE CACHE BOOL "" FORCE )
 set( Scarab_BUILD_CODEC_MSGPACK TRUE CACHE BOOL "" FORCE )
 
@@ -104,7 +104,7 @@ pbuilder_add_submodule( libthorax libthorax )
 # SimpleAmqpClient
 ###################
 
-pbuilder_add_submodule( SimpleAmqpClient SimpleAmqpClient )
+pbuilder_add_submodule( SimpleAmqpClient dripline/cpp/SimpleAmqpClient )
 
 
 ##########

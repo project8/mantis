@@ -16,11 +16,14 @@
 #include "mt_request_receiver.hh"
 
 #include "logger.hh"
-
-using std::string;
+#include "parsable.hh"
 
 namespace mantis
 {
+    using std::string;
+
+    using scarab::parsable;
+
     LOGGER( mtlog, "config_manager" );
 
     config_manager::config_manager( const param_node& a_config, device_manager* a_dev_mgr ) :

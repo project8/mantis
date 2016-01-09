@@ -6,7 +6,6 @@ set( MANTIS_COMMON_HEADERFILES
     mt_amqp.hh
     mt_amqp_relayer.hh
     mt_atomic.hh
-    mt_authentication.hh
     mt_broker.hh
     mt_callable.hh
     mt_concurrent_queue.hh
@@ -26,7 +25,6 @@ set( MANTIS_COMMON_HEADERFILES
 
 set( MANTIS_COMMON_SOURCEFILES
     mt_amqp_relayer.cc
-    mt_authentication.cc
     mt_broker.cc
     mt_callable.cc
     mt_condition.cc
