@@ -30,6 +30,8 @@
 
 namespace mantis
 {
+    using dripline::retcode_t;
+
     LOGGER( mtlog, "run_server" );
 
     run_server::run_server( const param_node& a_node, const version* a_version ) :
@@ -96,7 +98,7 @@ namespace mantis
         f_server_worker = &t_worker;
 
         // request receiver
-        request_receiver t_receiver( this, &t_config_mgr, &t_acq_request_db, &t_worker, t_channel );
+        request_receiver t_receiver( this, &t_config_mgr, &t_acq_request_db, &t_worker );
         f_request_receiver = &t_receiver;
 
         f_component_mutex.unlock();
@@ -149,7 +151,7 @@ namespace mantis
     }
 
 
-    bool run_server::handle_get_server_status_request( const msg_request* /*a_request*/, request_reply_package& a_pkg )
+    bool run_server::handle_get_server_status_request( const request_ptr_t, hub::reply_package& a_reply_pkg )
     {
         param_node* t_server_node = new param_node();
         t_server_node->add( "status", new param_value( run_server::interpret_status( get_status() ) ) );
@@ -178,12 +180,12 @@ namespace mantis
         }
         f_component_mutex.unlock();
 
-        a_pkg.f_payload.add( "server", t_server_node );
+        a_reply_pkg.f_payload.add( "server", t_server_node );
 
-        return a_pkg.send_reply( R_SUCCESS, "Server status request succeeded" );
+        return a_reply_pkg.send_reply( retcode_t::success, "Server status request succeeded" );
     }
 
-    bool run_server::handle_stop_all_request( const msg_request* /*a_request*/, request_reply_package& a_pkg )
+    bool run_server::handle_stop_all_request( const request_ptr_t, hub::reply_package& a_reply_pkg )
     {
         param_node* t_server_node = new param_node();
         t_server_node->add( "status", new param_value( run_server::interpret_status( get_status() ) ) );
@@ -212,14 +214,14 @@ namespace mantis
         }
         f_component_mutex.unlock();
 
-        a_pkg.f_payload.add( "server", t_server_node );
+        a_reply_pkg.f_payload.add( "server", t_server_node );
 
-        return a_pkg.send_reply( R_SUCCESS, "Server status request succeeded" );
+        return a_reply_pkg.send_reply( retcode_t::success, "Server status request succeeded" );
     }
 
-    bool run_server::handle_quit_server_request( const msg_request* /*a_request*/, request_reply_package& a_pkg )
+    bool run_server::handle_quit_server_request( const request_ptr_t, hub::reply_package& a_reply_pkg )
     {
-        bool t_return = a_pkg.send_reply( R_SUCCESS, "Server-quit command processed" );
+        bool t_return = a_reply_pkg.send_reply( retcode_t::success, "Server-quit command processed" );
         quit_server();
         return t_return;
     }

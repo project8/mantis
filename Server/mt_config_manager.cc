@@ -22,7 +22,7 @@ namespace mantis
 {
     using std::string;
 
-    using scarab::parsable;
+    using dripline::retcode_t;
 
     LOGGER( mtlog, "config_manager" );
 
@@ -46,28 +46,28 @@ namespace mantis
         return t_copy;
     }
 
-    bool config_manager::handle_get_acq_config_request( const msg_request* /*a_request*/, request_reply_package& a_pkg )
+    bool config_manager::handle_get_acq_config_request( const request_ptr_t, hub::reply_package& a_reply_pkg )
     {
         f_msc_mutex.lock();
-        a_pkg.f_payload.merge( *f_master_server_config.node_at( "acq" ) );
+        a_reply_pkg.f_payload.merge( *f_master_server_config.node_at( "acq" ) );
         f_msc_mutex.unlock();
-        return a_pkg.send_reply( R_SUCCESS, "Get request succeeded" );
+        return a_reply_pkg.send_reply( retcode_t::success, "Get request succeeded" );
     }
 
-    bool config_manager::handle_get_server_config_request( const msg_request* /*a_request*/, request_reply_package& a_pkg )
+    bool config_manager::handle_get_server_config_request( const request_ptr_t, hub::reply_package& a_reply_pkg )
     {
         f_msc_mutex.lock();
-        a_pkg.f_payload.merge( f_master_server_config );
+        a_reply_pkg.f_payload.merge( f_master_server_config );
         f_msc_mutex.unlock();
-        return a_pkg.send_reply( R_SUCCESS, "Get request succeeded" );
+        return a_reply_pkg.send_reply( retcode_t::success, "Get request succeeded" );
     }
 
-    bool config_manager::handle_set_request( const msg_request* a_request, request_reply_package& a_pkg)
+    bool config_manager::handle_set_request( const request_ptr_t a_request, hub::reply_package& a_reply_pkg )
     {
-        string t_routing_key = a_request->get_mantis_routing_key();
+        string t_routing_key = a_request->routing_key_specifier();
         if( t_routing_key.empty() )
         {
-            a_pkg.send_reply( R_AMQP_ERROR_ROUTINGKEY_NOTFOUND, "No routing key was provided" );
+            a_reply_pkg.send_reply( retcode_t::amqp_error_routingkey_notfound, "No routing key was provided" );
             return false;
         }
 
@@ -78,12 +78,12 @@ namespace mantis
         {
             f_msc_mutex.lock();
             t_routing_key += string( "=" ) + a_request->get_payload().array_at( "values" )->get_value( 0 );
-            parsable t_routing_key_node_with_value( t_routing_key );
+            scarab::parsable t_routing_key_node_with_value( t_routing_key );
             DEBUG( mtlog, "Parsed routing key and added value:\n" << t_routing_key_node_with_value );
             if( ! f_master_server_config.node_at( "acq" )->has_subset( t_routing_key_node_with_value ) )
             {
                 f_msc_mutex.unlock();
-                a_pkg.send_reply( R_DEVICE_ERROR, "Value not found: " + t_routing_key );
+                a_reply_pkg.send_reply( retcode_t::device_error, "Value not found: " + t_routing_key );
                 return false;
             }
             f_master_server_config.node_at( "acq" )->merge( t_routing_key_node_with_value );
@@ -92,27 +92,27 @@ namespace mantis
         catch( exception& e )
         {
             f_msc_mutex.unlock();
-            a_pkg.send_reply( R_MESSAGE_ERROR_BAD_PAYLOAD, string( "Invalid payload: " ) + e.what() );
+            a_reply_pkg.send_reply( retcode_t::message_error_bad_payload, string( "Invalid payload: " ) + e.what() );
             return false;
         }
 
         f_msc_mutex.lock();
-        a_pkg.f_payload.add( "master-config", *f_master_server_config.node_at( "acq" ) );
+        a_reply_pkg.f_payload.add( "master-config", *f_master_server_config.node_at( "acq" ) );
         f_msc_mutex.unlock();
 
-        return a_pkg.send_reply( R_SUCCESS, "Request succeeded" );
+        return a_reply_pkg.send_reply( retcode_t::success, "Request succeeded" );
     }
 
 
-    bool config_manager::handle_add_request( const msg_request* a_request, request_reply_package& a_pkg )
+    bool config_manager::handle_add_request( const request_ptr_t a_request, hub::reply_package& a_reply_pkg )
     {
         // add something to the master config
 
-        parsable t_dest_node( a_request->get_mantis_routing_key() );
+        param_node t_dest_node( *a_request->get_parsed_rks() );
 
         if( ! t_dest_node[ "add" ].is_node() )
         {
-            a_pkg.send_reply( R_DEVICE_ERROR, "<add> instruction was not properly formatted" );
+            a_reply_pkg.send_reply( retcode_t::device_error, "<add> instruction was not properly formatted" );
             return false;
         }
         if( t_dest_node.node_at( "add" )->has( "device" ) )
@@ -136,7 +136,7 @@ namespace mantis
                     // check if we have a device of this name
                     if( t_devices_node->has( t_device_name ) )
                     {
-                        a_pkg.send_reply( R_DEVICE_ERROR, "The master config already has device <" + t_device_name + ">" );
+                        a_reply_pkg.send_reply( retcode_t::device_error, "The master config already has device <" + t_device_name + ">" );
                         return false;
                     }
 
@@ -144,7 +144,7 @@ namespace mantis
                     param_node* t_device_config = f_dev_mgr->get_device_config( t_device_type );
                     if( t_device_config == NULL )
                     {
-                        a_pkg.send_reply( R_DEVICE_ERROR, "Did not find device of type <" + t_device_type + ">" );
+                        a_reply_pkg.send_reply( retcode_t::device_error, "Did not find device of type <" + t_device_type + ">" );
                         return false;
                     }
                     t_device_config->add( "type", param_value( t_device_type ) );
@@ -156,32 +156,32 @@ namespace mantis
             }
             catch( exception& e )
             {
-                a_pkg.send_reply( R_AMQP_ERROR_ROUTINGKEY_NOTFOUND, string( "add.device instruction was not formatted properly: " ) + e.what() );
+                a_reply_pkg.send_reply( retcode_t::amqp_error_routingkey_notfound, string( "add.device instruction was not formatted properly: " ) + e.what() );
                 return false;
             }
         }
         else
         {
-            a_pkg.send_reply( R_AMQP_ERROR_ROUTINGKEY_NOTFOUND, "Invalid add instruction" );
+            a_reply_pkg.send_reply( retcode_t::amqp_error_routingkey_notfound, "Invalid add instruction" );
             return false;
         }
 
         f_msc_mutex.lock();
-        a_pkg.f_payload.add( "master-config", f_master_server_config );
+        a_reply_pkg.f_payload.add( "master-config", f_master_server_config );
         f_msc_mutex.unlock();
 
-        return a_pkg.send_reply( R_SUCCESS, "Add request succeeded" );
+        return a_reply_pkg.send_reply( retcode_t::success, "Add request succeeded" );
     }
 
-    bool config_manager::handle_remove_request( const msg_request* a_request, request_reply_package& a_pkg )
+    bool config_manager::handle_remove_request( const request_ptr_t a_request, hub::reply_package& a_reply_pkg )
     {
         // remove something from the master config
 
-        parsable t_dest_node( a_request->get_mantis_routing_key() );
+        param_node t_dest_node( *a_request->get_parsed_rks() );
 
         if( ! t_dest_node[ "remove" ].is_node() )
         {
-            a_pkg.send_reply( R_DEVICE_ERROR, "<remove> instruction was not properly formatted" );
+            a_reply_pkg.send_reply( retcode_t::device_error, "<remove> instruction was not properly formatted" );
             return false;
         }
         if( t_dest_node.node_at( "remove" )->has( "device" ) )
@@ -194,7 +194,7 @@ namespace mantis
                  // check if we have a device of this name
                  if( ! f_master_server_config.node_at( "acq" )->node_at( "devices" )->has( t_device_name ) )
                  {
-                     a_pkg.send_reply( R_DEVICE_ERROR, "The master config does not have device <" + t_device_name + ">" );
+                     a_reply_pkg.send_reply( retcode_t::device_error, "The master config does not have device <" + t_device_name + ">" );
                      return false;
                  }
 
@@ -203,35 +203,35 @@ namespace mantis
              }
              catch( exception& e )
              {
-                a_pkg.send_reply( R_MESSAGE_ERROR_INVALID_VALUE, string( "remove.device instruction was not formatted properly: " ) + e.what() );
+                a_reply_pkg.send_reply( retcode_t::message_error_invalid_value, string( "remove.device instruction was not formatted properly: " ) + e.what() );
                 return false;
              }
         }
         else
         {
-            a_pkg.send_reply( R_SUCCESS, "Invalid remove instruction" );
+            a_reply_pkg.send_reply( retcode_t::success, "Invalid remove instruction" );
             return false;
         }
 
         f_msc_mutex.lock();
-        a_pkg.f_payload.add( "master-config", f_master_server_config );
+        a_reply_pkg.f_payload.add( "master-config", f_master_server_config );
         f_msc_mutex.unlock();
 
-        return a_pkg.send_reply( R_AMQP_ERROR_ROUTINGKEY_NOTFOUND, "Remove instruction succeeded" );
+        return a_reply_pkg.send_reply( retcode_t::amqp_error_routingkey_notfound, "Remove instruction succeeded" );
     }
 
 
-    bool config_manager::handle_replace_acq_config( const msg_request* a_request, request_reply_package& a_pkg )
+    bool config_manager::handle_replace_acq_config( const request_ptr_t a_request, hub::reply_package& a_reply_pkg )
     {
         // payload contents should replace the acquisition config
         DEBUG( mtlog, "Loading a full configuration" );
         f_msc_mutex.lock();
         (*f_master_server_config.node_at( "acq" )) = a_request->get_payload();
 
-        a_pkg.f_payload.add( "master-config", f_master_server_config );
+        a_reply_pkg.f_payload.add( "master-config", f_master_server_config );
         f_msc_mutex.unlock();
 
-        return a_pkg.send_reply( R_SUCCESS, "Request_succeeded" );
+        return a_reply_pkg.send_reply( retcode_t::success, "Request_succeeded" );
     }
 
 

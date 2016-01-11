@@ -26,6 +26,9 @@ include_directories( BEFORE
 # mantis options #
 ##################
 
+# require C++11
+set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11" )
+
 # Option to build the client library and executables
 set( Mantis_BUILD_CLIENT TRUE CACHE BOOL "Flag to enable building of the client library and applications" )
 
@@ -89,6 +92,13 @@ pbuilder_add_submodule( Monarch Monarch )
 ###########
 
 pbuilder_add_submodule( libthorax libthorax )
+
+
+##########
+# dripline
+##########
+
+pbuilder_add_submodule( dripline dripline/cpp )
 
 
 ##########

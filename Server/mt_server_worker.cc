@@ -28,6 +28,8 @@ using std::string;
 
 namespace mantis
 {
+    using dripline::retcode_t;
+
     LOGGER( mtlog, "server_worker" );
 
     server_worker::server_worker( device_manager* a_dev_mgr, acq_request_db* a_run_db, amqp_relayer* a_amqp_relayer, const param_node* a_amqp_node ) :
@@ -226,10 +228,10 @@ namespace mantis
         return;
     }
 
-    bool server_worker::handle_stop_acq_request( const msg_request* /*a_request*/, request_reply_package& a_pkg )
+    bool server_worker::handle_stop_acq_request( const request_ptr_t, hub::reply_package& a_reply_pkg )
     {
         stop_acquisition();
-        return a_pkg.send_reply( R_SUCCESS, "Stop-acquisition request succeeded" );
+        return a_reply_pkg.send_reply( retcode_t::success, "Stop-acquisition request succeeded" );
     }
 
 

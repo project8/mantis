@@ -10,12 +10,17 @@
 
 #include "mt_mutex.hh"
 
-#include "param.hh"
+#include "hub.hh"
 
-using scarab::param_node;
+#include "param.hh"
 
 namespace mantis
 {
+    using scarab::param_node;
+
+    using dripline::hub;
+    using dripline::request_ptr_t;
+
     class device_manager;
     class msg_request;
     struct request_reply_package;
@@ -28,15 +33,15 @@ namespace mantis
 
             param_node* copy_master_server_config( const std::string& a_node_name = "" ) const;
 
-            bool handle_get_acq_config_request( const msg_request* a_request, request_reply_package& a_pkg );
-            bool handle_get_server_config_request( const msg_request* a_request, request_reply_package& a_pkg );
+            bool handle_get_acq_config_request( const request_ptr_t a_request, hub::reply_package& a_reply_pkg );
+            bool handle_get_server_config_request( const request_ptr_t a_request, hub::reply_package& a_reply_pkg );
 
-            bool handle_set_request( const msg_request* a_request, request_reply_package& a_pkg );
+            bool handle_set_request( const request_ptr_t a_request, hub::reply_package& a_reply_pkg );
 
-            bool handle_replace_acq_config( const msg_request* a_request, request_reply_package& a_pkg );
+            bool handle_replace_acq_config( const request_ptr_t a_request, hub::reply_package& a_reply_pkg );
 
-            bool handle_add_request( const msg_request* a_request, request_reply_package& a_pkg );
-            bool handle_remove_request( const msg_request* a_request, request_reply_package& a_pkg );
+            bool handle_add_request( const request_ptr_t a_request, hub::reply_package& a_reply_pkg );
+            bool handle_remove_request( const request_ptr_t a_request, hub::reply_package& a_reply_pkg );
 
         private:
             mutable mutex f_msc_mutex;

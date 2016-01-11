@@ -3,19 +3,21 @@
 
 #include "mt_digitizer.hh"
 
-#include "mt_atomic.hh"
 #include "mt_block.hh"
 #include "mt_condition.hh"
 #include "mt_mutex.hh"
 
 #include "niScope.h"
 
+#include <atomic>
 #include <stdint.h>
 
 //#include <semaphore.h>
 
 namespace mantis
 {
+    using std::atomic_bool;
+
     class block_cleanup_pxie5122;
 
     /* Available configuration values

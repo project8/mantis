@@ -3,14 +3,17 @@
 
 #include "mt_callable.hh"
 
-#include "mt_atomic.hh"
 #include "mt_buffer.hh"
 #include "mt_condition.hh"
 #include "thorax.hh"
 
+#include <atomic>
+
 namespace mantis
 {
     class param_node;
+
+    using std::atomic_bool;
 
     /*!
      @class modifier

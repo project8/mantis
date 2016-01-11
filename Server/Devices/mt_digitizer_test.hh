@@ -3,17 +3,19 @@
 
 #include "mt_digitizer.hh"
 
-#include "mt_atomic.hh"
 #include "mt_block.hh"
 #include "mt_condition.hh"
 #include "mt_mutex.hh"
 
+#include <atomic>
 #include <stdint.h>
 
 //#include <semaphore.h>
 
 namespace mantis
 {
+    using std::atomic_bool;
+
     class block_cleanup_test;
 
     struct MANTIS_API digitizer_test_config_template : digitizer_config_template

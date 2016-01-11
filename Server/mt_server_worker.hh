@@ -3,9 +3,11 @@
 
 #include "mt_callable.hh"
 
-#include "mt_atomic.hh"
 #include "mt_mutex.hh"
 
+#include "hub.hh"
+
+#include <atomic>
 #include <string>
 
 namespace scarab
@@ -16,6 +18,11 @@ namespace scarab
 namespace mantis
 {
     using scarab::param_node;
+
+    using dripline::hub;
+    using dripline::request_ptr_t;
+
+    using std::atomic_bool;
 
     class amqp_relayer;
     class buffer;
@@ -43,7 +50,7 @@ namespace mantis
 
             void cancel(); /// cancels the server worker entirely
 
-            bool handle_stop_acq_request( const msg_request* a_request, request_reply_package& a_pkg );
+            bool handle_stop_acq_request( const request_ptr_t a_request, hub::reply_package& a_reply_pkg );
 
         private:
             device_manager* f_dev_mgr;
@@ -76,7 +83,7 @@ namespace mantis
             void set_writer_state( thread_state a_thread_state );
 
         private:
-            boost::atomic< thread_state > f_digitizer_state, f_writer_state;
+            std::atomic< thread_state > f_digitizer_state, f_writer_state;
 
         public:
             enum status
@@ -96,7 +103,7 @@ namespace mantis
             void set_status( status a_status );
 
         private:
-            boost::atomic< status > f_status;
+            std::atomic< status > f_status;
     };
 
     inline server_worker::thread_state server_worker::get_digitizer_state() const

@@ -15,15 +15,17 @@
 #include "logger.hh"
 #include "param.hh"
 
-using std::string;
-
-using scarab::param;
-using scarab::param_array;
-using scarab::param_node;
-using scarab::param_value;
-
 namespace mantis
 {
+    using std::string;
+
+    using scarab::param;
+    using scarab::param_array;
+    using scarab::param_node;
+    using scarab::param_value;
+
+    using dripline::retcode_t;
+
     LOGGER( mtlog, "acq_request_db" );
 
     acq_request_db::acq_request_db( config_manager* a_conf_mgr, const std::string& a_exe_name ) :
@@ -298,14 +300,14 @@ namespace mantis
     // Request handlers
     //********************
 
-    bool acq_request_db::handle_new_acq_request( const msg_request* a_request, request_reply_package& a_pkg )
+    bool acq_request_db::handle_new_acq_request( const request_ptr_t a_request, hub::reply_package& a_reply_pkg )
     {
         // required
         const param_value* t_file_node = a_request->get_payload().value_at( "file" );
         if( t_file_node == NULL )
         {
             WARN( mtlog, "No or invalid file configuration present; aborting run request" );
-            a_pkg.send_reply( R_MESSAGE_ERROR_BAD_PAYLOAD, "No file configuration present; aborting request" );
+            a_reply_pkg.send_reply( retcode_t::message_error_bad_payload, "No file configuration present; aborting request" );
             return false;
         }
 
@@ -346,19 +348,19 @@ namespace mantis
             t_dev_node->remove( *it );
         }
 
-        t_acq_req->set_client_commit( a_request->get_sender_commit() );
-        t_acq_req->set_client_exe( a_request->get_sender_exe() );
-        t_acq_req->set_client_version( a_request->get_sender_version() );
-        t_acq_req->set_client_package( a_request->get_sender_package() );
+        t_acq_req->set_client_commit( a_request->sender_commit() );
+        t_acq_req->set_client_exe( a_request->sender_exe() );
+        t_acq_req->set_client_version( a_request->sender_version() );
+        t_acq_req->set_client_package( a_request->sender_package() );
 
         t_acq_req->set_status( acq_request::acknowledged );
 
         INFO( mtlog, "Queuing request" );
         enqueue( t_acq_req );
 
-        a_pkg.f_payload.merge( *t_acq_req );
-        a_pkg.f_payload.add( "status-meaning", new param_value( acq_request::interpret_status( t_acq_req->get_status() ) ) );
-        if( ! a_pkg.send_reply( R_SUCCESS, "Run request succeeded" ) )
+        a_reply_pkg.f_payload.merge( *t_acq_req );
+        a_reply_pkg.f_payload.add( "status-meaning", new param_value( acq_request::interpret_status( t_acq_req->get_status() ) ) );
+        if( ! a_reply_pkg.send_reply( retcode_t::success, "Run request succeeded" ) )
         {
             WARN( mtlog, "Failed to send reply regarding the run request" );
         }
@@ -366,18 +368,18 @@ namespace mantis
         return true;
     }
 
-    bool acq_request_db::handle_get_acq_status_request( const msg_request* a_request, request_reply_package& a_pkg )
+    bool acq_request_db::handle_get_acq_status_request( const request_ptr_t a_request, hub::reply_package& a_reply_pkg )
     {
         if( ! a_request->get_payload().has( "values" ) || ! a_request->get_payload()[ "values" ].is_array() )
         {
-            a_pkg.send_reply( R_MESSAGE_ERROR_BAD_PAYLOAD, "Invalid payload: no <values> array present" );
+            a_reply_pkg.send_reply( retcode_t::message_error_bad_payload, "Invalid payload: no <values> array present" );
             return false;
         }
         string t_acq_id_str = a_request->get_payload().array_at( "values" )->get_value( 0 );
 
         if( t_acq_id_str.empty() )
         {
-            a_pkg.send_reply( R_MESSAGE_ERROR_BAD_PAYLOAD, "Invalid/no acquisition id" );
+            a_reply_pkg.send_reply( retcode_t::message_error_bad_payload, "Invalid/no acquisition id" );
             return false;
         }
 
@@ -387,19 +389,19 @@ namespace mantis
         const acq_request* t_request = get_acq_request( t_id );
         if( t_request == NULL )
         {
-            a_pkg.send_reply( R_MESSAGE_ERROR_BAD_PAYLOAD, "Did not find acquisition <" + to_string( t_id ) + ">" );
+            a_reply_pkg.send_reply( retcode_t::message_error_bad_payload, "Did not find acquisition <" + to_string( t_id ) + ">" );
             return false;
         }
 
         f_db_mutex.lock();
-        a_pkg.f_payload.merge( *t_request );
-        a_pkg.f_payload.add( "status-meaning", new param_value( acq_request::interpret_status( t_request->get_status() ) ) );
+        a_reply_pkg.f_payload.merge( *t_request );
+        a_reply_pkg.f_payload.add( "status-meaning", new param_value( acq_request::interpret_status( t_request->get_status() ) ) );
         f_db_mutex.unlock();
 
-        return a_pkg.send_reply( R_SUCCESS, "Acquisition status request succeeded" );
+        return a_reply_pkg.send_reply( retcode_t::success, "Acquisition status request succeeded" );
     }
 
-    bool acq_request_db::handle_queue_request( const msg_request* /*a_request*/, request_reply_package& a_pkg )
+    bool acq_request_db::handle_queue_request( const request_ptr_t, hub::reply_package& a_reply_pkg )
     {
         param_array* t_queue_array = new param_array();
         f_queue_mutex.lock();
@@ -411,28 +413,28 @@ namespace mantis
             t_queue_array->push_back( t_acq_node );
         }
         f_queue_mutex.unlock();
-        a_pkg.f_payload.add( "queue", t_queue_array );
-        return a_pkg.send_reply( R_SUCCESS, "Queue request succeeded" );
+        a_reply_pkg.f_payload.add( "queue", t_queue_array );
+        return a_reply_pkg.send_reply( retcode_t::success, "Queue request succeeded" );
     }
 
-    bool acq_request_db::handle_queue_size_request( const msg_request* /*a_request*/, request_reply_package& a_pkg )
+    bool acq_request_db::handle_queue_size_request( const request_ptr_t, hub::reply_package& a_reply_pkg )
     {
-        a_pkg.f_payload.add( "queue-size", new param_value( (uint32_t)queue_size() ) );
-        return a_pkg.send_reply( R_SUCCESS, "Queue size request succeeded" );
+        a_reply_pkg.f_payload.add( "queue-size", new param_value( (uint32_t)queue_size() ) );
+        return a_reply_pkg.send_reply( retcode_t::success, "Queue size request succeeded" );
     }
 
-    bool acq_request_db::handle_cancel_acq_request( const msg_request* a_request, request_reply_package& a_pkg  )
+    bool acq_request_db::handle_cancel_acq_request( const request_ptr_t a_request, hub::reply_package& a_reply_pkg )
     {
         if( ! a_request->get_payload().has( "values" ) || ! a_request->get_payload()[ "values" ].is_array() )
         {
-            a_pkg.send_reply( R_MESSAGE_ERROR_BAD_PAYLOAD, "Invalid payload: no <values> array present" );
+            a_reply_pkg.send_reply( retcode_t::message_error_bad_payload, "Invalid payload: no <values> array present" );
             return false;
         }
         string t_acq_id_str = a_request->get_payload().array_at( "values" )->get_value( 0 );
 
         if( t_acq_id_str.empty() )
         {
-            a_pkg.send_reply( R_MESSAGE_ERROR_BAD_PAYLOAD, "Invalid/no acquisition id" );
+            a_reply_pkg.send_reply( retcode_t::message_error_bad_payload, "Invalid/no acquisition id" );
             return false;
         }
 
@@ -441,34 +443,34 @@ namespace mantis
 
         if( ! cancel( t_id ) )
         {
-            a_pkg.send_reply( R_MESSAGE_ERROR_BAD_PAYLOAD, "Failed to cancel acquisition <" + string_from_uuid( t_id ) + ">; it may not exist" );
+            a_reply_pkg.send_reply( retcode_t::message_error_bad_payload, "Failed to cancel acquisition <" + string_from_uuid( t_id ) + ">; it may not exist" );
             return false;
         }
 
         const acq_request* t_request = get_acq_request( t_id );
         f_db_mutex.lock();
-        a_pkg.f_payload.merge( *t_request );
-        a_pkg.f_payload.add( "status-meaning", new param_value( acq_request::interpret_status( t_request->get_status() ) ) );
+        a_reply_pkg.f_payload.merge( *t_request );
+        a_reply_pkg.f_payload.add( "status-meaning", new param_value( acq_request::interpret_status( t_request->get_status() ) ) );
         f_db_mutex.unlock();
-        return a_pkg.send_reply( R_SUCCESS, "Cancellation succeeded" );
+        return a_reply_pkg.send_reply( retcode_t::success, "Cancellation succeeded" );
     }
 
-    bool acq_request_db::handle_clear_queue_request( const msg_request* /*a_request*/, request_reply_package& a_pkg )
+    bool acq_request_db::handle_clear_queue_request( const request_ptr_t, hub::reply_package& a_reply_pkg )
     {
         clear_queue();
-        return a_pkg.send_reply( R_SUCCESS, "Queue is clear (aside for runs in progress" );
+        return a_reply_pkg.send_reply( retcode_t::success, "Queue is clear (aside for runs in progress" );
     }
 
-    bool acq_request_db::handle_start_queue_request( const msg_request* /*a_request*/, request_reply_package& a_pkg )
+    bool acq_request_db::handle_start_queue_request( const request_ptr_t, hub::reply_package& a_reply_pkg )
     {
         start_queue();
-        return a_pkg.send_reply( R_SUCCESS, "Queue started" );
+        return a_reply_pkg.send_reply( retcode_t::success, "Queue started" );
     }
 
-    bool acq_request_db::handle_stop_queue_request( const msg_request* /*a_request*/, request_reply_package& a_pkg )
+    bool acq_request_db::handle_stop_queue_request( const request_ptr_t, hub::reply_package& a_reply_pkg )
     {
         stop_queue();
-        return a_pkg.send_reply( R_SUCCESS, "Queue stopped" );
+        return a_reply_pkg.send_reply( retcode_t::success, "Queue stopped" );
     }
 
 

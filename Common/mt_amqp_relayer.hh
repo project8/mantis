@@ -4,14 +4,12 @@
 #include "mt_callable.hh"
 
 #include "mt_amqp.hh"
-#include "mt_atomic.hh"
 #include "mt_concurrent_queue.hh"
 #include "mt_constants.hh"
 #include "mt_message.hh"
 #include "mt_mutex.hh"
 
-//#include <boost/uuid/random_generator.hpp>
-
+#include <atomic>
 #include <string>
 
 namespace scarab
@@ -21,6 +19,8 @@ namespace scarab
 
 namespace mantis
 {
+    using std::atomic_bool;
+
     class broker;
 
     struct request_reply_package;
@@ -105,7 +105,7 @@ namespace mantis
             void set_writer_state( thread_state a_thread_state );
 
         private:
-            boost::atomic< thread_state > f_digitizer_state, f_writer_state;
+            std::atomic< thread_state > f_digitizer_state, f_writer_state;
 
         public:
             enum status
@@ -125,7 +125,7 @@ namespace mantis
             void set_status( status a_status );
 
         private:
-            boost::atomic< status > f_status;
+            std::atomic< status > f_status;
             */
     };
 

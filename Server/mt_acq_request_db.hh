@@ -1,11 +1,13 @@
 #ifndef MT_ACQ_REQUEST_DB_HH_
 #define MT_ACQ_REQUEST_DB_HH_
 
-#include "mt_atomic.hh"
 #include "mt_condition.hh"
 #include "mt_mutex.hh"
 #include "mt_uuid.hh"
 
+#include "hub.hh"
+
+#include <atomic>
 #include <list>
 #include <map>
 #include <string>
@@ -21,13 +23,11 @@ namespace mantis
     class config_manager;
     class msg_request;
 
-    struct request_reply_package;
+    using std::atomic_bool;
 
-//#ifdef _WIN32
-//    MANTIS_EXPIMP_TEMPLATE template class MANTIS_API std::list< acq_request* >;
-//    MANTIS_EXPIMP_TEMPLATE template class MANTIS_API std::map< unsigned, acq_request* >;
-//#endif
-    
+    using dripline::hub;
+    using dripline::request_ptr_t;
+
     class MANTIS_API acq_request_db
     {
         public:
@@ -98,17 +98,17 @@ namespace mantis
             //********************
         public:
 
-            bool handle_new_acq_request( const msg_request* a_request, request_reply_package& a_pkg );
+            bool handle_new_acq_request( const request_ptr_t a_request, hub::reply_package& a_reply_pkg );
 
-            bool handle_get_acq_status_request( const msg_request* a_request, request_reply_package& a_pkg );
-            bool handle_queue_request( const msg_request* a_request, request_reply_package& a_pkg );
-            bool handle_queue_size_request( const msg_request* a_request, request_reply_package& a_pkg );
+            bool handle_get_acq_status_request( const request_ptr_t a_request, hub::reply_package& a_reply_pkg );
+            bool handle_queue_request( const request_ptr_t a_request, hub::reply_package& a_reply_pkg );
+            bool handle_queue_size_request( const request_ptr_t a_request, hub::reply_package& a_reply_pkg );
 
-            bool handle_cancel_acq_request( const msg_request* a_request, request_reply_package& a_pkg );
-            bool handle_clear_queue_request( const msg_request* a_request, request_reply_package& a_pkg );
+            bool handle_cancel_acq_request( const request_ptr_t a_request, hub::reply_package& a_reply_pkg );
+            bool handle_clear_queue_request( const request_ptr_t a_request, hub::reply_package& a_reply_pkg );
 
-            bool handle_start_queue_request( const msg_request* a_request, request_reply_package& a_pkg );
-            bool handle_stop_queue_request( const msg_request* a_request, request_reply_package& a_pkg );
+            bool handle_start_queue_request( const request_ptr_t a_request, hub::reply_package& a_reply_pkg );
+            bool handle_stop_queue_request( const request_ptr_t a_request, hub::reply_package& a_reply_pkg );
 
         private:
             config_manager* f_config_mgr;

@@ -10,7 +10,6 @@
 
 //#include "mt_callable.hh"
 
-//#include "mt_atomic.hh"
 #include "mt_amqp.hh"
 #include "mt_constants.hh"
 

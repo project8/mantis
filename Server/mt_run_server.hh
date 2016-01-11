@@ -8,22 +8,30 @@
 #ifndef SERVER_MT_RUN_SERVER_HH_
 #define SERVER_MT_RUN_SERVER_HH_
 
-#include "mt_atomic.hh"
 #include "mt_mutex.hh"
 #include "mt_version.hh"
 
+#include "hub.hh"
+
 #include "param.hh"
 
-using scarab::param_node;
+#include <atomic>
 
 namespace mantis
 {
+    using scarab::param_node;
+
+    using dripline::hub;
+    using dripline::request_ptr_t;
+
     class acq_request_db;
     class msg_request;
     class request_receiver;
     class server_worker;
 
     struct request_reply_package;
+
+    using std::atomic_bool;
 
     class MANTIS_API run_server
     {
@@ -37,10 +45,10 @@ namespace mantis
 
             int get_return() const;
 
-            bool handle_get_server_status_request( const msg_request* a_request, request_reply_package& a_pkg );
+            bool handle_get_server_status_request( const request_ptr_t a_request, hub::reply_package& a_reply_pkg );
 
-            bool handle_stop_all_request( const msg_request* a_request, request_reply_package& a_pkg );
-            bool handle_quit_server_request( const msg_request* a_request, request_reply_package& a_pkg );
+            bool handle_stop_all_request( const request_ptr_t a_request, hub::reply_package& a_reply_pkg );
+            bool handle_quit_server_request( const request_ptr_t a_request, hub::reply_package& a_reply_pkg );
 
         private:
             param_node f_config;
@@ -70,7 +78,7 @@ namespace mantis
             void set_status( status a_status );
 
         private:
-            boost::atomic< status > f_status;
+            std::atomic< status > f_status;
 
     };
 

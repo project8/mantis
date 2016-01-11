@@ -5,7 +5,6 @@
 set( MANTIS_COMMON_HEADERFILES
     mt_amqp.hh
     mt_amqp_relayer.hh
-    mt_atomic.hh
     mt_broker.hh
     mt_callable.hh
     mt_concurrent_queue.hh

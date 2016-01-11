@@ -3,10 +3,11 @@
 
 #include "mt_callable.hh"
 
-#include "mt_atomic.hh"
 #include "mt_buffer.hh"
 #include "mt_condition.hh"
 #include "thorax.hh"
+
+#include <atomic>
 
 namespace scarab
 {
@@ -18,6 +19,8 @@ namespace mantis
     class acq_request;
 
     using scarab::param_node;
+
+    using std::atomic_bool;
 
     /*!
      @class writer
