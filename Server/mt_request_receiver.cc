@@ -91,13 +91,10 @@ namespace mantis
 
         f_status.store( k_listening );
 
-        while( true )
+        while( ! f_canceled.load() )
         {
-            if( f_canceled.load() ) return;
-
             // blocking call to wait for incoming message
             listen( f_listen_timeout_ms );
-
         }
 
         INFO( mtlog, "No longer waiting for messages" );

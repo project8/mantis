@@ -123,10 +123,16 @@ namespace mantis
 
         DEBUG( mtlog, "Sending message w/ msgop = " << t_request->get_message_op() );
 
-        std::string t_consumer_tag; // for the reply queue
-        dripline::amqp_channel_ptr t_reply_chan = t_service.send( t_request, t_consumer_tag );
+        dripline::service::rr_pkg_ptr t_receive_reply = t_service.send( t_request );
 
-        if( ! t_consumer_tag.empty() )  // this indicates that the reply queue was created, and we've started consuming on it; we should wait for a reply
+        if( ! t_receive_reply->f_successful_send )
+        {
+            ERROR( mtlog, "Unable to send request" );
+            f_return = RETURN_ERROR;
+            return;
+        }
+
+        if( ! t_receive_reply->f_consumer_tag.empty() )  // this indicates that the reply queue was created, and we've started consuming on it; we should wait for a reply
         {
             INFO( mtlog, "Waiting for a reply from the server; use ctrl-c to cancel" );
 
