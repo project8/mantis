@@ -3,17 +3,12 @@
 # Created: Nov 13, 2014
 
 set( MANTIS_COMMON_HEADERFILES
-    mt_amqp.hh
-    mt_amqp_relayer.hh
-    mt_broker.hh
     mt_callable.hh
-    mt_concurrent_queue.hh
     mt_condition.hh
     mt_configurator.hh
     mt_constants.hh
     mt_destroyer.hh
     mt_exception.hh
-    mt_message.hh
     mt_mutex.hh
     mt_parser.hh
     mt_signal_handler.hh
@@ -23,13 +18,10 @@ set( MANTIS_COMMON_HEADERFILES
 )
 
 set( MANTIS_COMMON_SOURCEFILES
-    mt_amqp_relayer.cc
-    mt_broker.cc
     mt_callable.cc
     mt_condition.cc
     mt_configurator.cc    
     mt_exception.cc
-    mt_message.cc
     mt_parser.cc
     mt_signal_handler.cc
     mt_thread.cc

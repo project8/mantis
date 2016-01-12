@@ -26,6 +26,7 @@ if( Mantis_BUILD_SERVER )
     set( MANTIS_SERVER_HEADERFILES
         mt_acq_request_db.hh
         mt_acq_request.hh
+        mt_amqp_relayer.hh
         #mt_bit_shift_modifier.hh
         mt_block.hh
         mt_buffer.hh
@@ -48,6 +49,7 @@ if( Mantis_BUILD_SERVER )
     set( MANTIS_SERVER_SOURCEFILES
         mt_acq_request_db.cc
         mt_acq_request.cc
+        mt_amqp_relayer.cc
         #mt_bit_shift_modifier.cc
         mt_block.cc
         mt_buffer.cc
