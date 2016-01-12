@@ -9,11 +9,11 @@
 
 #include "mt_run_client.hh"
 
-#include "mt_constants.hh"
 #include "mt_exception.hh"
-#include "mt_message.hh"
 #include "mt_version.hh"
 #include "thorax.hh"
+
+#include "service.hh"
 
 #include "logger.hh"
 #include "param_json.hh"
@@ -21,21 +21,23 @@
 #include <algorithm> // for min
 #include <string>
 
-using std::string;
-
-using scarab::param_array;
-using scarab::param_input_json;
-using scarab::param_output_json;
-
 namespace mantis
 {
+    using std::string;
+
+    using scarab::param_array;
+    using scarab::param_input_json;
+    using scarab::param_output_json;
+
+    using dripline::op_t;
+    using dripline::message;
+    using dripline::msg_request;
+
     LOGGER( mtlog, "run_client" );
 
-    run_client::run_client( const param_node& a_node, const string& a_exchange, amqp_channel_ptr a_channel ) :
+    run_client::run_client( const param_node& a_node ) :
             //callable(),
             f_config( a_node ),
-            f_exchange( a_exchange ),
-            f_channel( a_channel ),
             //f_canceled( false ),
             f_return( 0 )
     {
@@ -60,7 +62,7 @@ namespace mantis
         std::string t_lockout_key_str( f_config.get_value( "key", "" ) );
         f_config.erase( "key" );
         bool t_lk_valid = true;
-        uuid_t t_lockout_key = uuid_from_string( t_lockout_key_str, t_lk_valid );
+        uuid_t t_lockout_key = dripline::uuid_from_string( t_lockout_key_str, t_lk_valid );
         if( ! t_lk_valid )
         {
             ERROR( mtlog, "Invalid lockout key provided: <" << t_lockout_key_str << ">" );
@@ -77,7 +79,7 @@ namespace mantis
 
         // now all that remains in f_config should be values to pass to the server as arguments to the request
 
-        msg_request* t_request = NULL;
+        request_ptr_t t_request;
         if( t_request_type == "run" )
         {
             t_request = create_run_request( t_routing_key );
@@ -108,62 +110,69 @@ namespace mantis
             return;
         }
 
-        t_request->set_lockout_key( t_lockout_key );
+        t_request->lockout_key() = t_lockout_key;
+
+        INFO( mtlog, "Connecting to AMQP broker" );
+
+        param_node& t_broker_node = f_config.remove( "amqp" )->as_node();
+
+        dripline::service t_service( t_broker_node.get_value( "broker" ),
+                                     t_broker_node.get_value< unsigned >( "broker-port" ),
+                                     t_broker_node.get_value( "exchange" ),
+                                     "", ".project8_authorizations.json" );
 
         DEBUG( mtlog, "Sending message w/ msgop = " << t_request->get_message_op() );
 
         std::string t_consumer_tag; // for the reply queue
-        // do_publish will declare the reply queue, start consuming on it, and then publish the request
-        t_request->do_publish( f_channel, f_exchange, t_consumer_tag );
+        dripline::amqp_channel_ptr t_reply_chan = t_service.send( t_request, t_consumer_tag );
 
         if( ! t_consumer_tag.empty() )  // this indicates that the reply queue was created, and we've started consuming on it; we should wait for a reply
         {
             INFO( mtlog, "Waiting for a reply from the server; use ctrl-c to cancel" );
 
-            // blocking call to wait for incoming message
-            AmqpClient::Envelope::ptr_t t_envelope = f_channel->BasicConsumeMessage( t_consumer_tag );
+            // timed blocking call to wait for incoming message
+            dripline::reply_ptr_t t_reply = t_service.wait_for_reply( t_reply_chan, t_consumer_tag, t_broker_node.get_value< int >( "reply-timeout-ms" ) );
 
-            INFO( mtlog, "Response received" );
-
-            param_node* t_msg_node = NULL;
-            if( t_envelope->Message()->ContentEncoding() == "application/json" )
+            if( t_reply )
             {
-                t_msg_node = param_input_json::read_string( t_envelope->Message()->Body() );
-            }
-            else
-            {
-                ERROR( mtlog, "Unable to parse message with content type <" << t_envelope->Message()->ContentEncoding() << ">" );
-            }
+                INFO( mtlog, "Response received" );
 
-            INFO( mtlog, "Response from Mantis:\n" <<
-                    "Return code: " << t_msg_node->get_value< int >( "retcode", -1 ) << '\n' <<
-                    "Return message: " << t_msg_node->get_value( "return_msg", "" ) << '\n' <<
-                    *t_msg_node->node_at( "payload" ) );
+                const param_node* t_msg_node = &( t_reply->get_payload() );
 
-            // optionally save "master-config" from the response
-            if( t_save_node.size() != 0 )
-            {
-                if( t_save_node.has( "json" ) )
+                INFO( mtlog, "Response from Mantis:\n" <<
+                        "Return code: " << t_msg_node->get_value< int >( "retcode", -1 ) << '\n' <<
+                        "Return message: " << t_msg_node->get_value( "return_msg", "" ) << '\n' <<
+                        *t_msg_node->node_at( "payload" ) );
+
+                // optionally save "master-config" from the response
+                if( t_save_node.size() != 0 )
                 {
-                    string t_save_filename( t_save_node.get_value( "json" ) );
-                    const param_node* t_master_config_node = t_msg_node->node_at( "payload" );
-                    if( t_master_config_node == NULL )
+                    if( t_save_node.has( "json" ) )
                     {
-                        ERROR( mtlog, "Payload is not present" );
+                        string t_save_filename( t_save_node.get_value( "json" ) );
+                        const param_node* t_master_config_node = t_msg_node->node_at( "payload" );
+                        if( t_master_config_node == NULL )
+                        {
+                            ERROR( mtlog, "Payload is not present" );
+                        }
+                        else
+                        {
+                            param_output_json::write_file( *t_master_config_node, t_save_filename, param_output_json::k_pretty );
+                        }
                     }
                     else
                     {
-                        param_output_json::write_file( *t_master_config_node, t_save_filename, param_output_json::k_pretty );
+                        ERROR( mtlog, "Save instruction did not contain a valid file type");
                     }
-                }
-                else
-                {
-                    ERROR( mtlog, "Save instruction did not contain a valid file type");
+
                 }
 
+                delete t_msg_node;
             }
-
-            delete t_msg_node;
+            else
+            {
+                WARN( mtlog, "Timed out waiting for reply" );
+            }
         }
 
         f_return = RETURN_SUCCESS;
@@ -182,7 +191,7 @@ namespace mantis
         return f_return;
     }
 
-    msg_request* run_client::create_run_request( const std::string& a_routing_key )
+    request_ptr_t run_client::create_run_request( const std::string& a_routing_key )
     {
         if( ! f_config.has( "file" ) )
         {
@@ -194,10 +203,10 @@ namespace mantis
         t_payload_node->add( "file", *f_config.at( "file ") ); // copy the file node
         if( f_config.has( "description" ) ) t_payload_node->add( "description", *f_config.at( "description" ) ); // (optional) copy the description node
 
-        return msg_request::create( t_payload_node, OP_RUN, a_routing_key, "", message::k_json );
+        return msg_request::create( t_payload_node, op_t::run, a_routing_key, "", message::encoding::json );
     }
 
-    msg_request* run_client::create_get_request( const std::string& a_routing_key )
+    request_ptr_t run_client::create_get_request( const std::string& a_routing_key )
     {
         param_node* t_payload_node = new param_node();
 
@@ -208,10 +217,10 @@ namespace mantis
             t_payload_node->add( "values", t_values_array );
         }
 
-        return msg_request::create( t_payload_node, OP_GET, a_routing_key, "", message::k_json );
+        return msg_request::create( t_payload_node, op_t::get, a_routing_key, "", message::encoding::json );
     }
 
-    msg_request* run_client::create_set_request( const std::string& a_routing_key )
+    request_ptr_t run_client::create_set_request( const std::string& a_routing_key )
     {
         if( ! f_config.has( "value" ) )
         {
@@ -225,10 +234,10 @@ namespace mantis
         param_node* t_payload_node = new param_node();
         t_payload_node->add( "values", t_values_array );
 
-        return msg_request::create( t_payload_node, OP_SET, a_routing_key, "", message::k_json );
+        return msg_request::create( t_payload_node, op_t::set, a_routing_key, "", message::encoding::json );
     }
 
-    msg_request* run_client::create_cmd_request( const std::string& a_routing_key )
+    request_ptr_t run_client::create_cmd_request( const std::string& a_routing_key )
     {
         param_node* t_payload_node = new param_node();
 
@@ -258,7 +267,7 @@ namespace mantis
         // at this point, all that remains in f_config should be other options that we want to add to the payload node
         t_payload_node->merge( f_config ); // copy f_config
 
-        return msg_request::create( t_payload_node, OP_CMD, a_routing_key, "", message::k_json );
+        return msg_request::create( t_payload_node, op_t::cmd, a_routing_key, "", message::encoding::json );
     }
 
 } /* namespace mantis */

@@ -25,6 +25,7 @@ namespace mantis
         t_amqp_node->add( "broker-port", new param_value( 5672 ) );
         t_amqp_node->add( "broker", new param_value( "localhost" ) );
         t_amqp_node->add( "exchange", new param_value( "requests" ) );
+        t_amqp_node->add( "reply-timeout-ms", new param_value( 10000 ) );
         add( "amqp", t_amqp_node );
     }
 

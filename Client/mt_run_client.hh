@@ -10,23 +10,23 @@
 
 //#include "mt_callable.hh"
 
-#include "mt_amqp.hh"
 #include "mt_constants.hh"
 
 #include "param.hh"
 
-using scarab::param_node;
+#include "message.hh"
 
 namespace mantis
 {
-    class msg_request;
+    using scarab::param_node;
+    using dripline::request_ptr_t;
 
     // run_client was formerly used in a separate thread, hence the previous use of the callable base class
 
     class MANTIS_API run_client// : public callable
     {
         public:
-            run_client( const param_node& a_node, const std::string& a_exchange, amqp_channel_ptr a_channel );
+            run_client( const param_node& a_node );
             ~run_client();
 
             void execute();
@@ -35,16 +35,14 @@ namespace mantis
             int get_return();
 
         private:
-            msg_request* create_run_request( const std::string& a_routing_key );
-            msg_request* create_get_request( const std::string& a_routing_key );
-            msg_request* create_set_request( const std::string& a_routing_key );
-            msg_request* create_cmd_request( const std::string& a_routing_key );
+            request_ptr_t create_run_request( const std::string& a_routing_key );
+            request_ptr_t create_get_request( const std::string& a_routing_key );
+            request_ptr_t create_set_request( const std::string& a_routing_key );
+            request_ptr_t create_cmd_request( const std::string& a_routing_key );
 
             //param_node* create_sender_info() const;
 
             param_node f_config;
-            std::string f_exchange;
-            amqp_channel_ptr f_channel;
             //atomic_bool f_canceled;
             int f_return;
     };
