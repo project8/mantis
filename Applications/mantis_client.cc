@@ -19,20 +19,30 @@
  *
  */
 
+#define MANTIS_API_EXPORTS
+#define DRIPLINE_API_EXPORTS
+#define SCARAB_API_EXPORTS
+
+#include "dripline_version.hh"
+
 #include "mt_constants.hh"
-#include "logger.hh"
 #include "mt_client_config.hh"
 #include "mt_configurator.hh"
 #include "mt_run_client.hh"
+#include "mt_version.hh"
+
+#include "logger.hh"
 
 using namespace mantis;
 
 
 LOGGER( mtlog, "mantis_client" );
 
+set_version( mantis, version );
 
 int main( int argc, char** argv )
 {
+    dripline::version_setter s_vsetter_mantis_version( new mantis::version() );
     try
     {
         client_config t_cc;

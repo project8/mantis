@@ -39,6 +39,8 @@ using std::string;
 
 LOGGER( mtlog, "mantis_server" );
 
+set_version( mantis, version );
+
 int main( int argc, char** argv )
 {
     INFO( mtlog, "Welcome to Mantis\n\n" <<

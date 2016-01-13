@@ -6,6 +6,8 @@
  */
 
 #define MANTIS_API_EXPORTS
+#define DRIPLINE_API_EXPORTS
+#define SCARAB_API_EXPORTS
 
 #include "mt_version.hh"
 
@@ -13,7 +15,8 @@
 
 namespace mantis
 {
-    version::version() 
+    version::version() :
+            scarab::version_semver()
     {
         f_major_ver = @Mantis_VERSION_MAJOR@;
         f_minor_ver = @Mantis_VERSION_MINOR@;

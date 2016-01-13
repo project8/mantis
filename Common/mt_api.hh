@@ -12,9 +12,18 @@
 
 namespace dripline
 {
-#define MANTIS_API_EXPORT SCARAB_API_EXPORT
-#define MANTIS_API SCARAB_API
-#define MANTIS_EXIMP_TEMPLATE SCARAB_EXIMP_TEMPLATE
+    // API export macros for windows
+#ifdef _WIN32
+#  ifdef MANTIS_API_EXPORTS
+#    define MANTIS_API __declspec(dllexport)
+#    define MANTIS_EXPIMP_TEMPLATE
+#  else
+#    define MANTIS_API __declspec(dllimport)
+#    define MANTIS_EXPIMP_TEMPLATE extern
+#  endif
+#else
+#  define MANTIS_API
+#endif
 }
 
 #endif /* MANTIS_API_HH_ */
