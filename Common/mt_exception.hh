@@ -1,7 +1,7 @@
 #ifndef MT_EXCEPTION_HH_
 #define MT_EXCEPTION_HH_
 
-#include "mt_constants.hh"
+#include "mt_api.hh"
 
 #include <sstream>
 #include <exception>

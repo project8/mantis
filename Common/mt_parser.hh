@@ -1,7 +1,7 @@
 #ifndef MT_PARSER_HH_
 #define MT_PARSER_HH_
 
-#include "mt_constants.hh"
+#include "mt_api.hh"
 
 #include "param.hh"
 

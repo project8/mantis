@@ -8,7 +8,7 @@
 #ifndef MT_SERVER_CONFIG_HH_
 #define MT_SERVER_CONFIG_HH_
 
-#include "mt_constants.hh"
+#include "mt_api.hh"
 
 #include "param.hh"
 
@@ -23,4 +23,4 @@ namespace mantis
     };
 
 } /* namespace mantis */
-#endif /* MT_CLIENT_CONFIG_HH_ */
+#endif /* MT_SERVER_CONFIG_HH_ */

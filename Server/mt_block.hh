@@ -1,7 +1,7 @@
 #ifndef MT_BLOCK_HH_
 #define MT_BLOCK_HH_
 
-#include "mt_constants.hh"
+#include "mt_api.hh"
 #include "logger.hh"
 
 #include "thorax.hh"

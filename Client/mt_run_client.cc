@@ -9,6 +9,7 @@
 
 #include "mt_run_client.hh"
 
+#include "mt_constants.hh"
 #include "mt_exception.hh"
 #include "mt_version.hh"
 #include "thorax.hh"

@@ -11,7 +11,7 @@
 //#include "mt_singleton.hh"
 //#include "mt_destroyer.hh"
 
-#include "mt_constants.hh"
+#include "mt_api.hh"
 
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp> // to allow streaming of uuid_t

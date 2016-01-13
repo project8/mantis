@@ -1,7 +1,7 @@
 #ifndef MT_CONDITION_HH_
 #define MT_CONDITION_HH_
 
-#include "mt_constants.hh"
+#include "mt_api.hh"
 
 #ifndef _WIN32
 #include <pthread.h>

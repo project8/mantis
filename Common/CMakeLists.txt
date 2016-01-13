@@ -3,6 +3,7 @@
 # Created: Nov 13, 2014
 
 set( MANTIS_COMMON_HEADERFILES
+    mt_api.hh
     mt_callable.hh
     mt_condition.hh
     mt_configurator.hh

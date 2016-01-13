@@ -74,7 +74,7 @@ namespace mantis
         if( ! t_amqp_relayer.initialize( t_broker_node ) )
         {
             ERROR( mtlog, "Unable to start the AMQP relayer" );
-            f_return = R_AMQP_ERROR;
+            f_return = RETURN_ERROR;
             return;
         }
 
