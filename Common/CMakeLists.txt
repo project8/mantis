@@ -16,6 +16,7 @@ set( MANTIS_COMMON_HEADERFILES
     mt_singleton.hh
     mt_thread.hh
     mt_uuid.hh
+    mt_version.hh
 )
 
 set( MANTIS_COMMON_SOURCEFILES
@@ -27,13 +28,12 @@ set( MANTIS_COMMON_SOURCEFILES
     mt_signal_handler.cc
     mt_thread.cc
     mt_uuid.cc
-    mt_version.cc
 )
 
-configure_file( mt_version.hh.in ${CMAKE_CURRENT_BINARY_DIR}/mt_version.hh )
-set( MANTIS_COMMON_HEADERFILES
-    ${MANTIS_COMMON_HEADERFILES}
-    ${CMAKE_CURRENT_BINARY_DIR}/mt_version.hh
+configure_file( mt_version.cc.in ${CMAKE_CURRENT_BINARY_DIR}/mt_version.cc )
+set( MANTIS_COMMON_SOURCEFILES
+    ${MANTIS_COMMON_SOURCEFILES}
+    ${CMAKE_CURRENT_BINARY_DIR}/mt_version.cc
 )
 
 pbuilder_library( MantisCommon MANTIS_COMMON_SOURCEFILES "" )

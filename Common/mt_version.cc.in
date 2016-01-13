@@ -1,0 +1,32 @@
+/*
+ * mt_version.cc
+ *
+ *  Created on: Mar 21, 2014
+ *      Author: nsoblath
+ */
+
+#define MANTIS_API_EXPORTS
+
+#include "mt_version.hh"
+
+#include "logger.hh"
+
+namespace mantis
+{
+    version::version() 
+    {
+        f_major_ver = @Mantis_VERSION_MAJOR@;
+        f_minor_ver = @Mantis_VERSION_MINOR@;
+        f_patch_ver = @Mantis_VERSION_PATCH@;
+        f_version = TOSTRING(@Mantis_VERSION@);
+        f_package = TOSTRING(@Mantis_PACKAGE_NAME@);
+        f_commit = TOSTRING(@Mantis_GIT_COMMIT@);
+    }
+
+    version::~version()
+    {
+    }
+
+} /* namespace mantis */
+
+
