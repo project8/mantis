@@ -13,7 +13,6 @@
 #include "mt_digitizer.hh"
 #include "mt_file_writer.hh"
 #include "logger.hh"
-#include "mt_message.hh"
 #include "mt_request_receiver.hh"
 #include "mt_signal_handler.hh"
 #include "mt_thread.hh"
@@ -179,7 +178,7 @@ namespace mantis
             INFO( mtlog, "Run response:\n" << t_response );
             if( ! f_completed_file_key.empty() )
             {
-                f_amqp_relayer->send_message( msg_alert::create( new param_node( *t_acq_req ), f_completed_file_key, "", message::k_json ) );
+                f_amqp_relayer->send( dripline::msg_alert::create( new param_node( *t_acq_req ), f_completed_file_key, dripline::message::encoding::json ) );
             }
         }
 

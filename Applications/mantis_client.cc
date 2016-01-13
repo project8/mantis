@@ -19,7 +19,6 @@
  *
  */
 
-#include "mt_broker.hh"
 #include "mt_constants.hh"
 #include "logger.hh"
 #include "mt_client_config.hh"

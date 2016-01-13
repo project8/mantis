@@ -10,7 +10,6 @@
 #include "mt_run_server.hh"
 
 #include "mt_amqp_relayer.hh"
-#include "mt_broker.hh"
 #include "mt_condition.hh"
 #include "mt_config_manager.hh"
 #include "mt_constants.hh"
@@ -18,7 +17,6 @@
 #include "mt_device_manager.hh"
 #include "mt_exception.hh"
 #include "logger.hh"
-#include "mt_message.hh"
 #include "mt_request_receiver.hh"
 #include "mt_acq_request_db.hh"
 #include "mt_server_worker.hh"
@@ -56,16 +54,6 @@ namespace mantis
 
         set_status( k_starting );
 
-        const param_node* t_broker_node = f_config.node_at( "amqp" );
-        broker t_broker( t_broker_node->get_value( "broker" ), t_broker_node->get_value< unsigned >( "broker-port" ) );
-        amqp_channel_ptr t_channel = t_broker.open_channel();
-        if( ! t_channel )
-        {
-            ERROR( mtlog, "AMQP channel did not open: " << t_broker.get_address() << ":" << t_broker.get_port());
-            f_return = RETURN_ERROR;
-            return;
-        }
-
         signal_handler t_sig_hand;
 
         // device manager
@@ -81,7 +69,8 @@ namespace mantis
         f_acq_request_db = &t_acq_request_db;
 
         // amqp relayer
-        amqp_relayer t_amqp_relayer( &t_broker );
+        const param_node* t_broker_node = f_config.node_at( "amqp" );
+        amqp_relayer t_amqp_relayer;
         if( ! t_amqp_relayer.initialize( t_broker_node ) )
         {
             ERROR( mtlog, "Unable to start the AMQP relayer" );

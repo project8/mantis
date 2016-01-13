@@ -11,7 +11,6 @@
 
 #include "mt_exception.hh"
 #include "mt_device_manager.hh"
-#include "mt_message.hh"
 #include "mt_parser.hh"
 #include "mt_request_receiver.hh"
 
@@ -23,6 +22,8 @@ namespace mantis
     using std::string;
 
     using dripline::retcode_t;
+
+    using scarab::param_value;
 
     LOGGER( mtlog, "config_manager" );
 

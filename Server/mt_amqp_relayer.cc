@@ -33,4 +33,10 @@ namespace mantis
         return;
     }
 
+    void amqp_relayer::cancel()
+    {
+        cancel_relayer();
+        return;
+    }
+
 }

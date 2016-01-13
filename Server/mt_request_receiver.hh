@@ -3,10 +3,6 @@
 
 #include "mt_callable.hh"
 
-#include "mt_amqp.hh"
-#include "mt_mutex.hh"
-#include "mt_uuid.hh"
-
 #include "hub.hh"
 
 #include "param.hh"

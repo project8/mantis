@@ -62,7 +62,7 @@ namespace mantis
         std::string t_lockout_key_str( f_config.get_value( "key", "" ) );
         f_config.erase( "key" );
         bool t_lk_valid = true;
-        uuid_t t_lockout_key = dripline::uuid_from_string( t_lockout_key_str, t_lk_valid );
+        dripline::uuid_t t_lockout_key = dripline::uuid_from_string( t_lockout_key_str, t_lk_valid );
         if( ! t_lk_valid )
         {
             ERROR( mtlog, "Invalid lockout key provided: <" << t_lockout_key_str << ">" );
@@ -137,7 +137,7 @@ namespace mantis
             INFO( mtlog, "Waiting for a reply from the server; use ctrl-c to cancel" );
 
             // timed blocking call to wait for incoming message
-            dripline::reply_ptr_t t_reply = t_service.wait_for_reply( t_reply_chan, t_consumer_tag, t_broker_node.get_value< int >( "reply-timeout-ms" ) );
+            dripline::reply_ptr_t t_reply = t_service.wait_for_reply( t_receive_reply, t_broker_node.get_value< int >( "reply-timeout-ms" ) );
 
             if( t_reply )
             {

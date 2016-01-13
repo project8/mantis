@@ -6,7 +6,6 @@
 #include "mt_acq_request.hh"
 #include "mt_config_manager.hh"
 #include "mt_exception.hh"
-#include "mt_message.hh"
 #include "mt_request_receiver.hh"
 #include "mt_version.hh"
 
