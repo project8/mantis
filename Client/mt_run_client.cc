@@ -120,7 +120,7 @@ namespace mantis
         dripline::service t_service( t_broker_node.get_value( "broker" ),
                                      t_broker_node.get_value< unsigned >( "broker-port" ),
                                      t_broker_node.get_value( "exchange" ),
-                                     "", ".project8_authorizations.json" );
+                                     "", ".project8_authentications.json" );
 
         DEBUG( mtlog, "Sending message w/ msgop = " << t_request->get_message_op() );
 
@@ -144,12 +144,12 @@ namespace mantis
             {
                 INFO( mtlog, "Response received" );
 
-                const param_node* t_msg_node = &( t_reply->get_payload() );
+                const param_node* t_payload = &( t_reply->get_payload() );
 
                 INFO( mtlog, "Response from Mantis:\n" <<
-                        "Return code: " << t_msg_node->get_value< int >( "retcode", -1 ) << '\n' <<
-                        "Return message: " << t_msg_node->get_value( "return_msg", "" ) << '\n' <<
-                        *t_msg_node->node_at( "payload" ) );
+                        "Return code: " << t_reply->get_return_code() << '\n' <<
+                        "Return message: " << t_reply->return_msg() << '\n' <<
+                        *t_payload );
 
                 // optionally save "master-config" from the response
                 if( t_save_node.size() != 0 )
@@ -157,7 +157,7 @@ namespace mantis
                     if( t_save_node.has( "json" ) )
                     {
                         string t_save_filename( t_save_node.get_value( "json" ) );
-                        const param_node* t_master_config_node = t_msg_node->node_at( "payload" );
+                        const param_node* t_master_config_node = t_payload;
                         if( t_master_config_node == NULL )
                         {
                             ERROR( mtlog, "Payload is not present" );
@@ -173,8 +173,6 @@ namespace mantis
                     }
 
                 }
-
-                delete t_msg_node;
             }
             else
             {
