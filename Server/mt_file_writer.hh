@@ -5,8 +5,6 @@
 
 #include "M3Monarch.hh"
 
-#include "thorax.hh"
-
 #include <string>
 
 namespace mantis

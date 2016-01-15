@@ -16,6 +16,8 @@ namespace mantis
 {
     LOGGER( mtlog, "writer" );
 
+    using scarab::time_to_nsec;
+
     writer::writer() :
             f_buffer( NULL ),
             f_condition( NULL ),

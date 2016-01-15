@@ -19,6 +19,11 @@ namespace mantis
 {
     LOGGER( mtlog, "iterator_timer" );
 
+    using namespace scarab;
+
+    bool iterator_event::operator==( const iterator_event& rhs ) const { return f_time == rhs.f_time && f_type == rhs.f_type; }
+    bool iterator_event::operator<( const iterator_event& rhs ) const { return f_time < rhs.f_time; }
+
     iterator_timer::iterator_timer() :
             f_it_name( "default " ),
             f_ignore_incr( false ),

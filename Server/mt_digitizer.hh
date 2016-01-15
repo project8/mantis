@@ -3,9 +3,10 @@
 
 #include "mt_callable.hh"
 
-#include "thorax.hh"
+#include "digital.hh"
 
 #include <cstddef>
+#include <string>
 
 namespace scarab
 {
@@ -18,6 +19,9 @@ namespace mantis
     class condition;
 
     using scarab::param_node;
+    using scarab::dig_calib_params;
+
+    using std::string;
 
     struct MANTIS_API digitizer_config_template
     {

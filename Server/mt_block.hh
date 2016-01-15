@@ -2,9 +2,10 @@
 #define MT_BLOCK_HH_
 
 #include "mt_api.hh"
+#include "mt_types.hh"
+
 #include "logger.hh"
 
-#include "thorax.hh"
 
 namespace mantis
 {

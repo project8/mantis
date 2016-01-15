@@ -12,7 +12,6 @@
 #include "mt_constants.hh"
 #include "mt_exception.hh"
 #include "mt_version.hh"
-#include "thorax.hh"
 
 #include "service.hh"
 

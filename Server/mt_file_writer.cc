@@ -97,7 +97,7 @@ namespace mantis
             if( t_desc_config != NULL ) f_header->SetDescription( t_desc_config->as_string() );
             f_header->SetRunDuration( t_acq_config->get_value< double >( "duration" ) );
             char t_timestamp[64];
-            get_time_absolute_str( t_timestamp );
+            scarab::get_time_absolute_str( t_timestamp );
             f_header->SetTimestamp( t_timestamp );
 
             // stream and channel information

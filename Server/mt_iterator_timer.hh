@@ -11,21 +11,21 @@
 //#include "mt_singleton.hh"
 
 #include "mt_api.hh"
-#include "logger.hh"
 
-#include "thorax.hh"
+#include "logger.hh"
+#include "time.hh"
 
 #include <iostream>
 #include <list>
 #include <string>
 
-//#ifdef _WIN32
-//MANTIS_EXPIMP_TEMPLATE template class MANTIS_API std::basic_string< char, std::char_traits< char >, std::allocator< char > >;
-//#endif
-
 namespace mantis
 {
     LOGGER( mtlog_it, "iterator_timer" );
+
+    using scarab::get_time_monotonic;
+    using scarab::time_diff;
+    using scarab::time_to_sec;
 
     struct iterator_event
     {
@@ -44,8 +44,8 @@ namespace mantis
         {
             f_type = a_type;
         }
-        bool operator==( const iterator_event& rhs ) const { return f_time==rhs.f_time && f_type==rhs.f_type; }
-        bool operator<( const iterator_event& rhs ) const { return f_time < rhs.f_time; }
+        bool operator==( const iterator_event& rhs ) const;// { return f_time == rhs.f_time && f_type == rhs.f_type; }
+        bool operator<( const iterator_event& rhs ) const;// { return f_time < rhs.f_time; }
     };
 
 #ifdef _WIN32

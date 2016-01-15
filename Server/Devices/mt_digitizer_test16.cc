@@ -28,6 +28,8 @@ namespace mantis
 {
     LOGGER( mtlog, "digitizer_test16" );
 
+    using scarab::time_to_nsec;
+
     MT_REGISTER_DIGITIZER( digitizer_test16, "test16" );
 
     void digitizer_test16_config_template::add( param_node* a_node, const std::string& a_type )

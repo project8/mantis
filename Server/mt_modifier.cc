@@ -3,8 +3,10 @@
 #include "mt_modifier.hh"
 
 #include "mt_iterator.hh"
+
 #include "logger.hh"
 #include "param.hh"
+#include "time.hh"
 
 #include <cstring> // for memcpy()
 using std::stringstream;
@@ -12,6 +14,8 @@ using std::stringstream;
 namespace mantis
 {
     LOGGER( mtlog, "modifier" );
+
+    using scarab::time_to_nsec;
 
     modifier::modifier() :
             f_buffer( NULL ),

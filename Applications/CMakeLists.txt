@@ -29,9 +29,11 @@ if( Mantis_BUILD_CLIENT )
         pbuilder_install_executables( test_mantis_config )
     endif( Mantis_ENABLE_TESTING )
     
-    add_executable( mantis_client mantis_client.cc )
-    target_link_libraries( mantis_client MantisClient MantisCommon ${EXTERNAL_LIBRARIES} )
-    pbuilder_install_executables( mantis_client )
+    if( Mantis_ENABLE_EXECUTABLES )
+        add_executable( mantis_client mantis_client.cc )
+        target_link_libraries( mantis_client MantisClient MantisCommon ${EXTERNAL_LIBRARIES} )
+        pbuilder_install_executables( mantis_client )
+    endif( Mantis_ENABLE_EXECUTABLES )
     
 endif( Mantis_BUILD_CLIENT )
 
@@ -52,8 +54,10 @@ if( Mantis_BUILD_SERVER )
         #pbuilder_install_executables( test_mantis_server )
     endif( Mantis_ENABLE_TESTING )
     
-    add_executable( mantis_server mantis_server.cc )
-    target_link_libraries( mantis_server MantisCommon MantisServer ${EXTERNAL_LIBRARIES} )
-    pbuilder_install_executables( mantis_server )
+    if( Mantis_ENABLE_EXECUTABLES )
+        add_executable( mantis_server mantis_server.cc )
+        target_link_libraries( mantis_server MantisCommon MantisServer ${EXTERNAL_LIBRARIES} )
+        pbuilder_install_executables( mantis_server )
+    endif( Mantis_ENABLE_EXECUTABLES )
 
 endif( Mantis_BUILD_SERVER )

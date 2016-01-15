@@ -29,14 +29,15 @@ include_directories( BEFORE
 # require C++11
 set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11" )
 
+
 # Option to build the client library and executables
-set( Mantis_BUILD_CLIENT TRUE CACHE BOOL "Flag to enable building of the client library and applications" )
+option( Mantis_BUILD_CLIENT "Enable building of the client library and applications" TRUE  )
 
 # Option to build the server library and executables, and options to build different servers
-set( Mantis_BUILD_SERVER TRUE CACHE BOOL "Flag to enable building of the server library and applications" )
+option( Mantis_BUILD_SERVER "Enable building of the server library and applications" TRUE )
 
 # add an option to perform iterator time profiling
-set( Mantis_ENABLE_ITERATOR_TIMING FALSE CACHE BOOL "Flag to enable iterator time profiling" )
+option( Mantis_ENABLE_ITERATOR_TIMING "Flag to enable iterator time profiling" FALSE )
 if( Mantis_ENABLE_ITERATOR_TIMING )
     add_definitions( -DENABLE_ITERATOR_TIMING )
 else( Mantis_ENABLE_ITERATOR_TIMING )
@@ -49,7 +50,7 @@ if (Mantis_ENABLE_TESTING)
 endif (Mantis_ENABLE_TESTING)
 
 # add an option to build docs
-set( Mantis_BUILD_DOCS FALSE CACHE BOOL "Enable make targets for both doxygen and sphinx (requires Doxygen, Sphinx, and Breathe)" )
+option( Mantis_BUILD_DOCS "Enable make targets for both doxygen and sphinx (requires Doxygen, Sphinx, and Breathe)" FALSE )
 
 
 #######################
@@ -91,7 +92,7 @@ pbuilder_add_submodule( Monarch Monarch )
 # libthorax
 ###########
 
-pbuilder_add_submodule( libthorax libthorax )
+#pbuilder_add_submodule( libthorax libthorax )
 
 
 ##########
