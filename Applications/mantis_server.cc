@@ -83,6 +83,11 @@ int main( int argc, char** argv )
         ERROR( mtlog, "std::exception caught: " << e.what() );
         return RETURN_ERROR;
     }
+    catch( ... )
+    {
+        ERROR( mtlog, "unknown excpetion caught" );
+        return RETURN_ERROR;
+    }
 
     return RETURN_ERROR;
 }

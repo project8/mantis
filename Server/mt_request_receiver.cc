@@ -103,14 +103,6 @@ namespace mantis
         f_status.store( k_done );
         DEBUG( mtlog, "Request receiver is done" );
 
-        DEBUG( mtlog, "Canceling consume of tag <" << f_consumer_tag << ">" );
-        f_channel->BasicCancel( f_consumer_tag );
-        f_consumer_tag.clear();
-
-        DEBUG( mtlog, "Deleting queue <" << f_queue_name << ">" );
-        f_channel->DeleteQueue( f_queue_name, false );
-        f_queue_name.clear();
-
         return;
     }
 
