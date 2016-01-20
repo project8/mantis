@@ -3,9 +3,19 @@
 
 #include "mt_api.hh"
 
-#ifndef _WIN32
+#ifndef USE_CPP11
 #include <pthread.h>
 #include <cstddef>
+#else
+#include <condition_variable>
+#include <mutex>
+#endif
+
+// Require C++11 to build in Windows
+#ifndef USE_CPP11
+#ifdef _WIN32
+#error Windows build requires C++11
+#endif
 #endif
 
 namespace mantis
@@ -24,14 +34,24 @@ namespace mantis
 
         private:
             bool f_state;
-#ifndef _WIN32
+#ifndef USE_CPP11
             pthread_mutex_t f_mutex;
             pthread_cond_t f_condition;
 #else
-            CRITICAL_SECTION f_critical_section;
-            CONDITION_VARIABLE f_condition;
+            std::mutex f_mutex;
+            std::condition_variable f_condition;
+
+            bool _continue_waiting();
 #endif
     };
+
+
+#ifdef USE_CPP11
+    inline bool condition::_continue_waiting()
+    {
+        return ! is_waiting();
+    }
+#endif
 
 }
 

@@ -4,7 +4,7 @@
 
 namespace mantis
 {
-#ifndef _WIN32
+#ifndef USE_CPP11
 
     condition::condition() :
         f_state( false ),
@@ -53,52 +53,46 @@ namespace mantis
         return;
     }
 
-#else /* _WIN32 */
+#else /* USE_CPP11 */
+
+    using std::unique_lock;
 
     condition::condition() :
-        f_state(false)
+        f_state(false),
+        f_mutex(),
+        f_condition()
     {
-        InitializeCriticalSection(&f_critical_section);
-        InitializeConditionVariable(&f_condition);
     }
 
     condition::~condition()
     {
-        // there doesn't seem to be a function for deleting a condition variable
-        DeleteCriticalSection(&f_critical_section);
     }
 
     bool condition::is_waiting()
     {
         bool t_state;
-        EnterCriticalSection(&f_critical_section);
+        f_mutex.lock();
         t_state = f_state;
-        LeaveCriticalSection(&f_critical_section);
+        f_mutex.unlock();
         return t_state;
     }
 
     void condition::wait()
     {
-        EnterCriticalSection(&f_critical_section);
+        unique_lock< std::mutex > t_lock( f_mutex );
         f_state = true;
-        while (f_state == true)
-        {
-            // unlocks the mutex and waits for signal (via condition::release) from a different thread
-            SleepConditionVariableCS(&f_condition, &f_critical_section, INFINITE);
-        }
-        LeaveCriticalSection(&f_critical_section);
+        f_condition.wait( t_lock, [this]{ return _continue_waiting(); } );
         return;
     }
 
     void condition::release()
     {
-        EnterCriticalSection(&f_critical_section);
+        unique_lock< std::mutex > t_lock( f_mutex );
         f_state = false;
-        WakeConditionVariable(&f_condition);
-        LeaveCriticalSection(&f_critical_section);
+        f_condition.notify_all();
         return;
     }
 
-#endif /* _WIN32 */
+#endif /* USE_CPP11 */
 
 }
