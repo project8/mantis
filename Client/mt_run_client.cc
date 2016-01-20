@@ -121,7 +121,7 @@ namespace mantis
                                      t_broker_node.get_value( "exchange" ),
                                      "", ".project8_authentications.json" );
 
-        DEBUG( mtlog, "Sending message w/ msgop = " << t_request->get_message_op() );
+        DEBUG( mtlog, "Sending message w/ msgop = " << t_request->get_message_op() << " to " << t_request->routing_key() );
 
         dripline::service::rr_pkg_ptr t_receive_reply = t_service.send( t_request );
 

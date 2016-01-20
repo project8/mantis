@@ -142,8 +142,7 @@ namespace mantis
         }
         else
         {
-            a_reply_pkg.send_reply( retcode_t::message_error_bad_payload, "Unrecognized query type or no query type provided" );
-            return false;
+            return a_reply_pkg.send_reply( retcode_t::message_error_bad_payload, "Unrecognized query type or no query type provided" );;
         }
     }
 
@@ -203,8 +202,7 @@ namespace mantis
         else
         {
             WARN( mtlog, "Instruction <" << t_instruction << "> not understood" );
-            a_reply_pkg.send_reply( retcode_t::message_error_bad_payload, "Instruction <" + t_instruction + "> not understood" );
-            return false;
+            return a_reply_pkg.send_reply( retcode_t::message_error_bad_payload, "Instruction <" + t_instruction + "> not understood" );;
         }
     }
 
