@@ -25,12 +25,12 @@ namespace mantis
     {
         if( get_state() == e_ready )
         {
-#ifndef _WIN32
+#ifndef USE_CPP11
             pthread_create(&f_thread, 0, &thread::thread_setup_and_execute, this);
 #else
-            f_thread = CreateThread(NULL, 0, thread::thread_setup_and_execute, this, 0, NULL);
+            f_thread = std::thread( [this]{ setup_and_execute(); } );
 #endif
-            set_state(e_running);
+            set_state( e_running );
         }
         return;
     }
@@ -39,10 +39,10 @@ namespace mantis
     {
         if( get_state() == e_running )
         {
-#ifndef _WIN32
+#ifndef USE_CPP11
             pthread_join(f_thread, 0);
 #else
-            WaitForSingleObject(f_thread, INFINITE);
+            f_thread.join();
 #endif
         }
         return;
@@ -53,7 +53,7 @@ namespace mantis
         if( get_state() == e_running )
         {
             f_object->cancel();
-#ifndef _WIN32
+#ifndef USE_CPP11
             pthread_cancel(f_thread);
 #endif
             set_state(e_cancelled);
@@ -88,7 +88,8 @@ namespace mantis
         return;
     }
 
-#ifndef _WIN32
+#ifndef USE_CPP11
+
     void* thread::thread_setup_and_execute(void* voidthread)
     {
         pthread_cleanup_push( &::mantis::thread::thread_cleanup, voidthread );
@@ -107,14 +108,12 @@ namespace mantis
 
 #else
 
-    DWORD WINAPI thread::thread_setup_and_execute(PVOID voidthread)
+    void thread::setup_and_execute()
     {
-        thread* t_thread = (::mantis::thread*) (voidthread);
-        callable* object = t_thread->f_object;
-        object->execute();
-        t_thread->set_state(e_complete);
-        return 0;
+        f_object->execute();
+        set_state( e_complete );
     }
+
 #endif
 
 }

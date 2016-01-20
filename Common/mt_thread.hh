@@ -4,8 +4,17 @@
 #include "mt_callable.hh"
 #include "mt_mutex.hh"
 
-#ifndef _WIN32
+#ifndef USE_CPP11
 #include <pthread.h>
+#else
+#include <thread>
+#endif
+
+// Require C++11 to build in Windows
+#ifndef USE_CPP11
+#ifdef _WIN32
+#error Windows build requires C++11
+#endif
 #endif
 
 namespace mantis
@@ -28,19 +37,18 @@ namespace mantis
             // thread-safe getter
             state get_state();
             // thread-safe setter
-            void set_state( thread::state a_state );
+            void set_state( state a_state );
 
         private:
-#ifndef _WIN32
+#ifndef USE_CPP11
             static void* thread_setup_and_execute(void* voidthread);
             static void thread_cleanup( void* voidthread );
 
             pthread_t f_thread;
 #else
-            static DWORD WINAPI thread_setup_and_execute(PVOID voidthread);
-            // windows does not have completely asyncronous cancellation
+            void setup_and_execute();
 
-            HANDLE f_thread;
+            std::thread f_thread;
 #endif
 
             mutex f_mutex;
