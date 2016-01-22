@@ -27,7 +27,7 @@ include_directories( BEFORE
 ##################
 
 # require C++11
-set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11" )
+set_option( USE_CPP11 TRUE )
 
 
 # Option to build the client library and executables
@@ -74,11 +74,11 @@ endif( GIT_FOUND )
 ########
 
 # Boost (1.46 required for filesystem version 3)
-find_package( Boost 1.46.0 REQUIRED COMPONENTS atomic filesystem thread date_time )
+#find_package( Boost 1.46.0 REQUIRED COMPONENTS atomic filesystem date_time )
 # make sure dynamic linking is assumed for all boost libraries
-add_definitions( -DBOOST_ALL_DYN_LINK )
-include_directories( ${Boost_INCLUDE_DIRS} )
-pbuilder_add_ext_libraries( ${Boost_LIBRARIES} )
+#add_definitions( -DBOOST_ALL_DYN_LINK )
+#include_directories( ${Boost_INCLUDE_DIRS} )
+#pbuilder_add_ext_libraries( ${Boost_LIBRARIES} )
 
 
 ##########
@@ -88,26 +88,11 @@ pbuilder_add_ext_libraries( ${Boost_LIBRARIES} )
 pbuilder_add_submodule( Monarch Monarch )
 
 
-###########
-# libthorax
-###########
-
-#pbuilder_add_submodule( libthorax libthorax )
-
-
 ##########
 # dripline
 ##########
 
 pbuilder_add_submodule( dripline dripline/cpp )
-
-
-##########
-# Threads
-##########
-
-find_package( Threads )
-pbuilder_add_ext_libraries( ${CMAKE_THREAD_LIBS_INIT} )
 
 
 #########################
