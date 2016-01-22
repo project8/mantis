@@ -25,11 +25,11 @@
 
 #include <signal.h> // for raise()
 
+using dripline::retcode_t;
+
 
 namespace mantis
 {
-    using dripline::retcode_t;
-
     LOGGER( mtlog, "run_server" );
 
     run_server::run_server( const param_node& a_node, const version* a_version ) :

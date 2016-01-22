@@ -17,22 +17,23 @@
 
 #include "logger.hh"
 #include "param_json.hh"
+#include "path.hh"
 
 #include <algorithm> // for min
 #include <string>
 
+using std::string;
+
+using scarab::param_array;
+using scarab::param_input_json;
+using scarab::param_output_json;
+
+using dripline::op_t;
+using dripline::message;
+using dripline::msg_request;
+
 namespace mantis
 {
-    using std::string;
-
-    using scarab::param_array;
-    using scarab::param_input_json;
-    using scarab::param_output_json;
-
-    using dripline::op_t;
-    using dripline::message;
-    using dripline::msg_request;
-
     LOGGER( mtlog, "run_client" );
 
     run_client::run_client( const param_node& a_node ) :
@@ -155,7 +156,7 @@ namespace mantis
                 {
                     if( t_save_node.has( "json" ) )
                     {
-                        string t_save_filename( t_save_node.get_value( "json" ) );
+                        scarab::path t_save_filename( scarab::expand_path( t_save_node.get_value( "json" ) ) );
                         const param_node* t_master_config_node = t_payload;
                         if( t_master_config_node == NULL )
                         {
@@ -163,7 +164,7 @@ namespace mantis
                         }
                         else
                         {
-                            param_output_json::write_file( *t_master_config_node, t_save_filename, param_output_json::k_pretty );
+                            param_output_json::write_file( *t_master_config_node, t_save_filename.native(), param_output_json::k_pretty );
                         }
                     }
                     else

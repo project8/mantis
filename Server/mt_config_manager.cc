@@ -17,14 +17,14 @@
 #include "logger.hh"
 #include "parsable.hh"
 
+using std::string;
+
+using dripline::retcode_t;
+
+using scarab::param_value;
+
 namespace mantis
 {
-    using std::string;
-
-    using dripline::retcode_t;
-
-    using scarab::param_value;
-
     LOGGER( mtlog, "config_manager" );
 
     config_manager::config_manager( const param_node& a_config, device_manager* a_dev_mgr ) :

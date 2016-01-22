@@ -11,6 +11,7 @@
 
 #include "logger.hh"
 #include "param.hh"
+#include "path.hh"
 
 #include "M3Exception.hh"
 #include "M3Types.hh"
@@ -18,6 +19,7 @@
 
 #include <limits> // for numeric_limits<>::max
 #include <cstring> // for memcpy()
+
 using std::stringstream;
 
 // for using numeric_limits<>::max in windows
@@ -25,9 +27,11 @@ using std::stringstream;
 
 using scarab::param_node;
 using scarab::param_value;
+using scarab::path;
 
 namespace mantis
 {
+
     LOGGER( mtlog, "file_writer" );
 
     MT_REGISTER_WRITER( file_writer, "file" );
@@ -75,10 +79,10 @@ namespace mantis
 
         try
         {
-            std::string t_filename( t_file_config->as_string() );
+            path t_filename( scarab::expand_path( t_file_config->as_string() ) );
             try
             {
-                f_monarch = monarch3::Monarch3::OpenForWriting( t_filename );
+                f_monarch = monarch3::Monarch3::OpenForWriting( t_filename.native() );
             }
             catch( monarch3::M3Exception& e )
             {
@@ -93,7 +97,7 @@ namespace mantis
             f_header = f_monarch->GetHeader();
 
             // run header information
-            f_header->SetFilename( t_filename );
+            f_header->SetFilename( t_filename.native() );
             if( t_desc_config != NULL ) f_header->SetDescription( t_desc_config->as_string() );
             f_header->SetRunDuration( t_acq_config->get_value< double >( "duration" ) );
             char t_timestamp[64];

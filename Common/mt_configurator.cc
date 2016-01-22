@@ -13,6 +13,7 @@
 
 #include "logger.hh"
 #include "param_json.hh"
+#include "path.hh"
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -23,6 +24,7 @@
 #endif
 
 using scarab::param_input_json;
+using scarab::path;
 
 using std::string;
 
@@ -79,10 +81,10 @@ namespace mantis
         // second configuration: config file
         if( t_parser.has( t_name_config ) )
         {
-            string t_config_filename = t_parser.get_value( t_name_config );
+            path t_config_filename = scarab::expand_path( t_parser.get_value( t_name_config ) );
             if( ! t_config_filename.empty() )
             {
-                param_node* t_config_from_file = param_input_json::read_file( t_config_filename );
+                param_node* t_config_from_file = param_input_json::read_file( t_config_filename.native() );
                 if( t_config_from_file == NULL )
                 {
                     throw exception() << "[configurator] error parsing config file";
