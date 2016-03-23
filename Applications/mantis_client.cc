@@ -58,17 +58,17 @@ int main( int argc, char** argv )
     }
     catch( scarab::error& e )
     {
-        ERROR( mtlog, "configuration error: " << e.what() );
+        LERROR( mtlog, "configuration error: " << e.what() );
         return RETURN_ERROR;
     }
     catch( exception& e )
     {
-        ERROR( mtlog, "mantis error: " << e.what() );
+        LERROR( mtlog, "mantis error: " << e.what() );
         return RETURN_ERROR;
     }
     catch( std::exception& e )
     {
-        ERROR( mtlog, "std::exception caught: " << e.what() );
+        LERROR( mtlog, "std::exception caught: " << e.what() );
         return RETURN_ERROR;
     }
 

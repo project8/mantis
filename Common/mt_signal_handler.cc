@@ -122,7 +122,7 @@ namespace mantis
 
     void signal_handler::print_message()
     {
-        INFO( mtlog, "\n\nHello!  Your signal is being handled by signal_handler.\n"
+        LINFO( mtlog, "\n\nHello!  Your signal is being handled by signal_handler.\n"
              << "Have a nice day!\n" );
         return;
     }

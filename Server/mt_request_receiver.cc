@@ -50,13 +50,13 @@ namespace mantis
         {
             if( ! f_consumer_tag.empty() )
             {
-                DEBUG( mtlog, "Canceling consume of tag <" << f_consumer_tag << ">" );
+                LDEBUG( mtlog, "Canceling consume of tag <" << f_consumer_tag << ">" );
                 f_broker->get_connection().amqp()->BasicCancel( f_consumer_tag );
                 f_consumer_tag.clear();
             }
             if( ! f_queue_name.empty() )
             {
-                DEBUG( mtlog, "Deleting queue <" << f_queue_name << ">" );
+                LDEBUG( mtlog, "Deleting queue <" << f_queue_name << ">" );
                 f_broker->get_connection().amqp()->DeleteQueue( f_queue_name, false );
                 f_queue_name.clear();
             }
@@ -77,7 +77,7 @@ namespace mantis
                               t_broker_node->get_value( "queue" ),
                               ".project8_authentications.json" ) )
         {
-            ERROR( mtlog, "Unable to complete dripline setup" );
+            LERROR( mtlog, "Unable to complete dripline setup" );
             f_run_server->quit_server();
             return;
         }
@@ -86,7 +86,7 @@ namespace mantis
 
         start();
 
-        INFO( mtlog, "Waiting for incoming messages" );
+        LINFO( mtlog, "Waiting for incoming messages" );
 
         f_status.store( k_listening );
 
@@ -96,12 +96,12 @@ namespace mantis
             listen( f_listen_timeout_ms );
         }
 
-        INFO( mtlog, "No longer waiting for messages" );
+        LINFO( mtlog, "No longer waiting for messages" );
 
         stop();
 
         f_status.store( k_done );
-        DEBUG( mtlog, "Request receiver is done" );
+        LDEBUG( mtlog, "Request receiver is done" );
 
         return;
     }
@@ -153,7 +153,7 @@ namespace mantis
 
     bool request_receiver::do_cmd_request( const request_ptr_t a_request, reply_package& a_reply_pkg )
     {
-        DEBUG( mtlog, "Cmd request received" );
+        LDEBUG( mtlog, "Cmd request received" );
 
         // get the instruction before checking the lockout key authentication because we need to have the exception for
         // the unlock instruction that allows us to force the unlock.
@@ -201,7 +201,7 @@ namespace mantis
         }
         else
         {
-            WARN( mtlog, "Instruction <" << t_instruction << "> not understood" );
+            LWARN( mtlog, "Instruction <" << t_instruction << "> not understood" );
             return a_reply_pkg.send_reply( retcode_t::message_error_bad_payload, "Instruction <" + t_instruction + "> not understood" );;
         }
     }
@@ -210,7 +210,7 @@ namespace mantis
 
     void request_receiver::cancel()
     {
-        DEBUG( mtlog, "Canceling request receiver" );
+        LDEBUG( mtlog, "Canceling request receiver" );
         if( ! f_canceled.load() )
         {
             f_canceled.store( true );

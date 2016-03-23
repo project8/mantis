@@ -199,7 +199,7 @@ namespace mantis
 #ifdef ENABLE_ITERATOR_TIMING
 #define IT_TIMER_INITIALIZE \
 { \
-    WARN( mtlog_it, "iterator timer initialized: " << name() ) \
+    LWARN( mtlog_it, "iterator timer initialized: " << name() ) \
     f_timer.set_name( name() ); \
 }
 #else

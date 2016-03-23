@@ -28,7 +28,7 @@ namespace mantis
             decrement();
         }
         IT_TIMER_UNSET_IGNORE_DECR( (*this) );
-        DEBUG( mtlog, "iterator " << f_name << " starting at index " << f_current_index );
+        LDEBUG( mtlog, "iterator " << f_name << " starting at index " << f_current_index );
     }
     iterator::iterator( const iterator& a_copy )
     {

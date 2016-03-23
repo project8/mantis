@@ -129,17 +129,17 @@ namespace mantis
     {
         if( f_allocated )
         {
-            ERROR( mtlog, "Buffer is already allocated" );
+            LERROR( mtlog, "Buffer is already allocated" );
             return false;
         }
 
         if( f_buffer == NULL )
         {
-            ERROR( mtlog, "Buffer must be created before allocation" );
+            LERROR( mtlog, "Buffer must be created before allocation" );
             return false;
         }
 
-        INFO( mtlog, "Allocating buffer" );
+        LINFO( mtlog, "Allocating buffer" );
 
         try
         {
@@ -152,7 +152,7 @@ namespace mantis
         }
         catch( exception& e )
         {
-            ERROR( mtlog, "Unable to allocate buffer: " << e.what() );
+            LERROR( mtlog, "Unable to allocate buffer: " << e.what() );
             return false;
         }
 
@@ -164,11 +164,11 @@ namespace mantis
     {
         if( !f_allocated )
         {
-            WARN( mtlog, "Buffer is not allcoated" );
+            LWARN( mtlog, "Buffer is not allcoated" );
             return true;
         }
 
-        INFO( mtlog, "Deallocating buffer" );
+        LINFO( mtlog, "Deallocating buffer" );
 
         for( unsigned int index = 0; index < f_buffer->size(); index++ )
         {
@@ -180,21 +180,21 @@ namespace mantis
 
     bool digitizer_pxie5122::initialize( param_node* a_global_config, param_node* a_dev_config )
     {
-        //INFO( mtlog, "resetting counters..." );
+        //LINFO( mtlog, "resetting counters..." );
 
-        //INFO( mtlog, "initializing the digitizer" );
+        //LINFO( mtlog, "initializing the digitizer" );
 
         param_node* t_channels_config = a_dev_config->node_at( "channels" );
         if( t_channels_config == NULL )
         {
-            ERROR( mtlog, "Did not find \"channels\" node" );
+            LERROR( mtlog, "Did not find \"channels\" node" );
             return false;
         }
 
         param_node* t_chan_config[ 2 ] = {t_channels_config->node_at( "0" ), t_channels_config->node_at( "1" )};
         if( t_chan_config[ 0 ] == NULL || t_chan_config[ 1 ] == NULL )
         {
-            ERROR( mtlog, "Invalid device config: unable to find configuration for either channel 0 (" << t_chan_config[ 0 ] << ") or channel 1 (" << t_chan_config[ 1 ] << ")" );
+            LERROR( mtlog, "Invalid device config: unable to find configuration for either channel 0 (" << t_chan_config[ 0 ] << ") or channel 1 (" << t_chan_config[ 1 ] << ")" );
             return false;
         }
 
@@ -217,43 +217,43 @@ namespace mantis
         }
         if( n_chan_enabled == 0 )
         {
-            ERROR( mtlog, "No channels were enabled" );
+            LERROR( mtlog, "No channels were enabled" );
             return false;
         }
         a_dev_config->replace( "n-channels", new param_value( n_chan_enabled ) );
 
-        DEBUG( mtlog, "Recording from channel(s) " << f_chan_string );
+        LDEBUG( mtlog, "Recording from channel(s) " << f_chan_string );
 
         // Check data mode and channel mode
         uint32_t t_data_mode = a_dev_config->get_value< uint32_t >( "data-mode" );
         if( t_data_mode != monarch3::sDigitizedS )
         {
-            ERROR( mtlog, "Data can only be taken in <digitized> mode" );
+            LERROR( mtlog, "Data can only be taken in <digitized> mode" );
             return false;
         }
         if( a_dev_config->get_value< uint32_t >( "channel-mode" ) != monarch3::sSeparate )
         {
-            ERROR( mtlog, "Multi-channel data can only be recorded in <separate> mode" );
+            LERROR( mtlog, "Multi-channel data can only be recorded in <separate> mode" );
             return false;
         }
 
         std::string resourceNameStr = a_dev_config->get_value( "resource-name", "" );
-        DEBUG( mtlog, "Resource name from config: <" << resourceNameStr << ">" );
+        LDEBUG( mtlog, "Resource name from config: <" << resourceNameStr << ">" );
         if( resourceNameStr.empty() )
         {
-            ERROR( mtlog, "No resource name was provided" );
+            LERROR( mtlog, "No resource name was provided" );
             return false;
         }
         if( ! f_resource_name.empty() && resourceNameStr != f_resource_name )
         {
-            ERROR( mtlog, "Resource name must match previously used name: " << f_resource_name );
+            LERROR( mtlog, "Resource name must match previously used name: " << f_resource_name );
             return false;
         }
 
         if( ! f_handle )
         {
             f_resource_name = resourceNameStr;
-            DEBUG( mtlog, "Connecting to the 5122 using resource name <" << f_resource_name << ">" );
+            LDEBUG( mtlog, "Connecting to the 5122 using resource name <" << f_resource_name << ">" );
 
             //ViChar* resourceName = new ViChar[ f_resource_name.size() ];
             //strcpy( resourceName, f_resource_name.c_str() );
@@ -265,7 +265,7 @@ namespace mantis
             //delete[] resourceName;
         }
 
-        DEBUG( mtlog, "Configuring the 5122" );
+        LDEBUG( mtlog, "Configuring the 5122" );
 
         // bits for the 5122 are left-aligned
         bool t_bits_right_aligned = false;
@@ -293,7 +293,7 @@ namespace mantis
             return false;
         }
         a_dev_config->replace( "record-size", param_value( t_actual_rec_size ) );
-        INFO( mtlog, "Actual rate: " << t_actual_rate << " MHz; Actual record size: " << t_actual_rec_size );
+        LINFO( mtlog, "Actual rate: " << t_actual_rate << " MHz; Actual record size: " << t_actual_rec_size );
 
         // check buffer allocation
         bool t_must_allocate = false; // will be done later, assuming the initialization succeeds
@@ -330,7 +330,7 @@ namespace mantis
             unsigned t_impedance = t_chan_config[ i_chan ]->get_value< unsigned >( "input-impedance", 50 );
             if( t_impedance != 50 && t_impedance != 1000000 )
             {
-                ERROR( mtlog, "Input impedance must be either 50 Ohms or 1000000 Ohms; value provided for channel " << i_chan << ": " << t_impedance );
+                LERROR( mtlog, "Input impedance must be either 50 Ohms or 1000000 Ohms; value provided for channel " << i_chan << ": " << t_impedance );
                 return false;
             }
             // for now just use -1 for max input frequency
@@ -345,13 +345,13 @@ namespace mantis
             ViInt32 t_coupling = t_chan_config[ i_chan ]->get_value< ViInt32 >( "input-coupling", NISCOPE_VAL_AC );
             if( t_coupling != NISCOPE_VAL_AC && t_coupling != NISCOPE_VAL_DC && t_coupling != NISCOPE_VAL_GND )
             {
-                ERROR( mtlog, "Invalid input coupling for channel " << i_chan << ": " << t_coupling );
+                LERROR( mtlog, "Invalid input coupling for channel " << i_chan << ": " << t_coupling );
                 return false;
             }
             ViReal64 t_probe_attenuation = t_chan_config[ i_chan ]->get_value< ViReal64 >( "probe-attenuation", 1. );
             if( t_probe_attenuation < 0 )
             {
-                ERROR( mtlog, "Probe attenuation must be a real, positive number (channel " << i_chan << ")" );
+                LERROR( mtlog, "Probe attenuation must be a real, positive number (channel " << i_chan << ")" );
                 return false;
             }
             if( ! HANDLE_ERROR( niScope_ConfigureVertical( f_handle, t_this_chan_string.c_str(), t_voltage_range, t_voltage_offset, t_coupling, t_probe_attenuation, t_chan_enabled[ i_chan ] ) ) )
@@ -415,7 +415,7 @@ namespace mantis
         {
             return false;
         }
-        WARN( mtlog, "Actual number of waveforms: " << t_num_waveforms << '\n' <<
+        LWARN( mtlog, "Actual number of waveforms: " << t_num_waveforms << '\n' <<
                  "Actual record size: " << t_actual_rec_size << '\n' <<
                  "Buffer block size: " << f_buffer->block_size() );
 
@@ -426,7 +426,7 @@ namespace mantis
     {
         if( f_status != k_ok )
         {
-            ERROR( mtlog, "Digitizer status is not \"ok\"" );
+            LERROR( mtlog, "Digitizer status is not \"ok\"" );
             return;
         }
 
@@ -438,11 +438,11 @@ namespace mantis
         timespec t_dead_stop_time;
         timespec t_stamp_time;
 
-        //INFO( mtlog, "waiting" );
+        //LINFO( mtlog, "waiting" );
 
         f_buffer_condition->wait();
 
-        INFO( mtlog, "Digitizer loose at <" << t_it.index() << ">" );
+        LINFO( mtlog, "Digitizer loose at <" << t_it.index() << ">" );
 
         // nsoblath, 1/30/15: why did i have this here before?
         //int t_old_cancel_state;
@@ -455,7 +455,7 @@ namespace mantis
             return;
         }
 
-        INFO( mtlog, "Planning on " << f_record_last << " records" );
+        LINFO( mtlog, "Planning on " << f_record_last << " records" );
 
         //start timing
         get_time_monotonic( &t_live_start_time );
@@ -481,13 +481,13 @@ namespace mantis
                 //GET OUT
                 if( f_canceled.load() )
                 {
-                    INFO( mtlog, "Digitizer was canceled mid-run" );
+                    LINFO( mtlog, "Digitizer was canceled mid-run" );
                     set_status( k_warning, "Digitizer was canceled mid-run" );
                     f_cancel_condition.release();
                 }
                 else
                 {
-                    INFO( mtlog, "Finished normally" );
+                    LINFO( mtlog, "Finished normally" );
                     set_status( k_ok, "Finished normally" );
                 }
                 return;
@@ -515,20 +515,20 @@ namespace mantis
                 }
 
                 //GET OUT
-                INFO( mtlog, "Finished abnormally because acquisition failed" );
+                LINFO( mtlog, "Finished abnormally because acquisition failed" );
                 set_status( k_error, "Finished abnormally because acquisition failed" );
 
                 return;
             }
 
-            //DEBUG( mtlog, "digitizer_pxie5122:" );
+            //LDEBUG( mtlog, "digitizer_pxie5122:" );
             //f_buffer->print_states();
 
             t_it->set_acquired();
 
             if( +t_it == false )
             {
-                INFO( mtlog, "Blocked at <" << t_it.index() << ">" );
+                LINFO( mtlog, "Blocked at <" << t_it.index() << ">" );
 
                 //stop live timer
                 get_time_monotonic( &t_live_stop_time );
@@ -540,7 +540,7 @@ namespace mantis
                 if( stop() == false )
                 {
                     //GET OUT
-                    INFO( mtlog, "Finished abnormally because halting streaming failed" );
+                    LINFO( mtlog, "Finished abnormally because halting streaming failed" );
                     set_status( k_error, "Finished abnormally because halting streaming failed" );
                     return;
                 }
@@ -567,7 +567,7 @@ namespace mantis
                     }
 
                     //GET OUT
-                    INFO( mtlog, "Finished abnormally because starting streaming failed" );
+                    LINFO( mtlog, "Finished abnormally because starting streaming failed" );
                     set_status( k_error, "Finished abnormally because starting streaming failed" );
                     return;
                 }
@@ -578,13 +578,13 @@ namespace mantis
                 //start live timer
                 get_time_monotonic( &t_live_start_time );;
 
-                INFO( mtlog, "Loose at <" << t_it.index() << ">" );
+                LINFO( mtlog, "Loose at <" << t_it.index() << ">" );
             }
-            //INFO( mtlog, "record count: " << f_record_count );
+            //LINFO( mtlog, "record count: " << f_record_count );
 
         }
 
-        ERROR( mtlog, "This section of code should not have been reached" );
+        LERROR( mtlog, "This section of code should not have been reached" );
         set_status( k_error, "This section of code should not have been reached" );
         return;
     }
@@ -594,7 +594,7 @@ namespace mantis
     */
     void digitizer_pxie5122::cancel()
     {
-        DEBUG(mtlog, "Canceling digitizer test");
+        LDEBUG(mtlog, "Canceling digitizer test");
         //cout << "CANCELLING DIGITIZER TEST" );
         if( ! f_canceled.load() )
         {
@@ -607,7 +607,7 @@ namespace mantis
 
     void digitizer_pxie5122::finalize( param_node* a_response )
     {
-        //INFO( mtlog, "calculating statistics..." );
+        //LINFO( mtlog, "calculating statistics..." );
         double t_livetime = (double) (f_live_time) * SEC_PER_NSEC;
         double t_deadtime = (double) f_dead_time * SEC_PER_NSEC;
         double t_mb_recorded = (double) (4 * f_record_count);
@@ -635,7 +635,7 @@ namespace mantis
         a_block->set_record_id( f_record_count );
         a_block->set_acquisition_id( f_acquisition_count );
 
-        DEBUG( mtlog, "block data size: " << a_block->get_data_size() );
+        LDEBUG( mtlog, "block data size: " << a_block->get_data_size() );
         if( ! HANDLE_ERROR( niScope_FetchBinary16( f_handle, f_chan_string.c_str(), f_acq_timeout, a_block->get_data_size(), (ViInt16*)a_block->data_bytes(), &f_waveform_info) ) )
         {
             return false;
@@ -671,30 +671,30 @@ namespace mantis
 
     bool digitizer_pxie5122::run_basic_test()
     {
-        INFO( mtlog, "Beginning basic test of the PXIe5122" );
+        LINFO( mtlog, "Beginning basic test of the PXIe5122" );
 
-        INFO( mtlog, "Connecting to the digitizer" );
+        LINFO( mtlog, "Connecting to the digitizer" );
 
         // Resource name options:
         // - Real digitizer: PXI1Slot2
         // - Dummy (software) digitizer: Dev1
         std::string resourceNameStr( "PXI1Slot2" );
-        DEBUG( mtlog, "Resource name from config: <" << resourceNameStr << ">" );
+        LDEBUG( mtlog, "Resource name from config: <" << resourceNameStr << ">" );
         if( resourceNameStr.empty() )
         {
-            ERROR( mtlog, "No resource name was provided" );
+            LERROR( mtlog, "No resource name was provided" );
             return false;
         }
         if( ! f_resource_name.empty() && resourceNameStr != f_resource_name )
         {
-            ERROR( mtlog, "Resource name must match previously used name: " << f_resource_name );
+            LERROR( mtlog, "Resource name must match previously used name: " << f_resource_name );
             return false;
         }
 
         if( ! f_handle )
         {
             f_resource_name = resourceNameStr;
-            DEBUG( mtlog, "Connecting to the 5122 using resource name <" << f_resource_name << ">" );
+            LDEBUG( mtlog, "Connecting to the 5122 using resource name <" << f_resource_name << ">" );
 
             //ViChar* resourceName = new ViChar[ f_resource_name.size() ];
             //strcpy( resourceName, f_resource_name.c_str() );
@@ -706,9 +706,9 @@ namespace mantis
             //delete[] resourceName;
         }
 
-        INFO( mtlog, "Connection successful" );
+        LINFO( mtlog, "Connection successful" );
 
-        INFO( mtlog, "Configuring the 5122" );
+        LINFO( mtlog, "Configuring the 5122" );
         f_chan_string = "0";
         unsigned t_chan = 0;
 
@@ -717,7 +717,7 @@ namespace mantis
         unsigned t_impedance = 50;
         if( t_impedance != 50 && t_impedance != 1000000 )
         {
-            ERROR( mtlog, "Input impedance must be either 50 Ohms or 1000000 Ohms; value provided: " << t_impedance );
+            LERROR( mtlog, "Input impedance must be either 50 Ohms or 1000000 Ohms; value provided: " << t_impedance );
             return false;
         }
         // for now just use -1 for max input frequency
@@ -748,7 +748,7 @@ namespace mantis
         {
             return false;
         }
-        INFO( mtlog, "Actual rate: " << t_actual_rate << " MHz; Actual record size: " << t_actual_rec_size );
+        LINFO( mtlog, "Actual rate: " << t_actual_rate << " MHz; Actual record size: " << t_actual_rec_size );
 
         // check buffer allocation
         // this section assumes 1 channel, in not multiplying t_actual_rec_size by the number of channels when converting to block size
@@ -774,13 +774,13 @@ namespace mantis
         if( t_impedance == 50 ) t_coupling = NISCOPE_VAL_DC; // 50-Ohm impedance requires DC coupling according to an error message from testing (3/16/17)
         if( t_coupling != NISCOPE_VAL_AC && t_coupling != NISCOPE_VAL_DC && t_coupling != NISCOPE_VAL_GND )
         {
-            ERROR( mtlog, "Invalid input coupling: " << t_coupling );
+            LERROR( mtlog, "Invalid input coupling: " << t_coupling );
             return false;
         }
         ViReal64 t_probe_attenuation = 1.;
         if( t_probe_attenuation < 0 )
         {
-            ERROR( mtlog, "Probe attenuation must be a real, positive number" );
+            LERROR( mtlog, "Probe attenuation must be a real, positive number" );
             return false;
         }
         if( ! HANDLE_ERROR( niScope_ConfigureVertical( f_handle, f_chan_string.c_str(), t_voltage_range, t_voltage_offset, t_coupling, t_probe_attenuation, true ) ) )
@@ -821,9 +821,9 @@ namespace mantis
         // get the acquisition timeout
         f_acq_timeout = 10.;
 
-        INFO( mtlog, "Configuration complete" );
+        LINFO( mtlog, "Configuration complete" );
 
-        INFO( mtlog, "Allocating the buffer" );
+        LINFO( mtlog, "Allocating the buffer" );
 
         block* t_block = NULL;
 
@@ -837,29 +837,29 @@ namespace mantis
         }
         catch( exception& e )
         {
-            ERROR( mtlog, "Unable to allocate buffer: " << e.what() );
+            LERROR( mtlog, "Unable to allocate buffer: " << e.what() );
             return false;
         }
 
-        INFO( mtlog, "Allocation complete" );
+        LINFO( mtlog, "Allocation complete" );
 
-        INFO( mtlog, "Beginning the run phase" );
+        LINFO( mtlog, "Beginning the run phase" );
 
-        DEBUG( mtlog, "Starting acquisition" );
+        LDEBUG( mtlog, "Starting acquisition" );
 
         if( ! HANDLE_ERROR( niScope_InitiateAcquisition( f_handle ) ) )
         {
             return false;
         }
 
-        DEBUG( mtlog, "Acquiring a record (" << f_acq_timeout << ", " << t_block->get_data_size() << /* ", " << t_block->data_bytes() << */ ")" );
+        LDEBUG( mtlog, "Acquiring a record (" << f_acq_timeout << ", " << t_block->get_data_size() << /* ", " << t_block->data_bytes() << */ ")" );
 
         if( ! HANDLE_ERROR( niScope_FetchBinary16( f_handle, f_chan_string.c_str(), f_acq_timeout, t_block->get_data_size(), ( ViInt16* )t_block->data_bytes(), &f_waveform_info ) ) )
         {
             return false;
         }
 
-        DEBUG( mtlog, "Stopping acquisition..." );
+        LDEBUG( mtlog, "Stopping acquisition..." );
 
         if( ! HANDLE_ERROR( niScope_Abort( f_handle ) ) )
         {
@@ -873,16 +873,16 @@ namespace mantis
             t_str_buff << t_block_view.data_view()[ i ] << ", ";
         }
         t_str_buff << t_block->data_bytes()[ 99 ];
-        DEBUG( mtlog, "The first 100 samples taken:\n" << t_str_buff.str() );
+        LDEBUG( mtlog, "The first 100 samples taken:\n" << t_str_buff.str() );
 
-        INFO( mtlog, "Run phase complete!\n" );
+        LINFO( mtlog, "Run phase complete!\n" );
 
 
-        INFO( mtlog, "Deallocating buffer" );
+        LINFO( mtlog, "Deallocating buffer" );
 
         delete t_block;
 
-        INFO( mtlog, "Deallocation complete!\n" );
+        LINFO( mtlog, "Deallocation complete!\n" );
 
         return true;
     }
@@ -895,13 +895,13 @@ namespace mantis
         niScope_GetErrorMessage( f_handle, a_status, t_buffer_size, t_msg_buffer );
         if( a_status > 0 )
         {
-            WARN( mtlog, std::string( "NIScope warning (" ) << a_status << "): " << t_msg_buffer <<
+            LWARN( mtlog, std::string( "NIScope warning (" ) << a_status << "): " << t_msg_buffer <<
                     "\n\tWarning origin: line " << a_origin_line << " of " << a_origin_file );
             return false;
         }
         else // a_status < 0, since VI_SUCCESS == 0
         {
-            ERROR( mtlog, std::string( "NIScope error (" ) << a_status << "): " << t_msg_buffer <<
+            LERROR( mtlog, std::string( "NIScope error (" ) << a_status << "): " << t_msg_buffer <<
                     "\n\tError origin: line " << a_origin_line << " of " << a_origin_file );
             return false;
         }

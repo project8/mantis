@@ -186,7 +186,7 @@ namespace mantis
             // if the queue condition is waiting, release it
             if( f_request_in_queue_condition.is_waiting() )
             {
-                //INFO( mtlog, "releasing queue condition" );
+                //LINFO( mtlog, "releasing queue condition" );
                 f_request_in_queue_condition.release();
             }
         }
@@ -282,14 +282,14 @@ namespace mantis
         if( f_queue_is_active.load() ) return;
         f_queue_is_active.store( true );
         f_queue_active_condition.release();
-        INFO( mtlog, "Queue processing started" );
+        LINFO( mtlog, "Queue processing started" );
         return;
     }
 
     void acq_request_db::stop_queue()
     {
         f_queue_is_active.store( false );
-        INFO( mtlog, "Queue processing stopped" );
+        LINFO( mtlog, "Queue processing stopped" );
         return;
     }
 
@@ -305,7 +305,7 @@ namespace mantis
         const param_value* t_file_node = a_request->get_payload().value_at( "file" );
         if( t_file_node == NULL )
         {
-            WARN( mtlog, "No or invalid file configuration present; aborting run request" );
+            LWARN( mtlog, "No or invalid file configuration present; aborting run request" );
             a_reply_pkg.send_reply( retcode_t::message_error_bad_payload, "No file configuration present; aborting request" );
             return false;
         }
@@ -339,7 +339,7 @@ namespace mantis
             }
             catch( exception& )
             {
-                WARN( mtlog, "Found non-node param object in \"devices\"" );
+                LWARN( mtlog, "Found non-node param object in \"devices\"" );
             }
         }
         for( std::vector< std::string >::const_iterator it = t_devs_to_remove.begin(); it != t_devs_to_remove.end(); ++it )
@@ -354,14 +354,14 @@ namespace mantis
 
         t_acq_req->set_status( acq_request::acknowledged );
 
-        INFO( mtlog, "Queuing request" );
+        LINFO( mtlog, "Queuing request" );
         enqueue( t_acq_req );
 
         a_reply_pkg.f_payload.merge( *t_acq_req );
         a_reply_pkg.f_payload.add( "status-meaning", new param_value( acq_request::interpret_status( t_acq_req->get_status() ) ) );
         if( ! a_reply_pkg.send_reply( retcode_t::success, "Run request succeeded" ) )
         {
-            WARN( mtlog, "Failed to send reply regarding the run request" );
+            LWARN( mtlog, "Failed to send reply regarding the run request" );
         }
 
         return true;
@@ -383,7 +383,7 @@ namespace mantis
         }
 
         uuid_t t_id = uuid_from_string(t_acq_id_str );
-        DEBUG( mtlog, "Requesting status of acquisition <" << t_id << ">" );
+        LDEBUG( mtlog, "Requesting status of acquisition <" << t_id << ">" );
 
         const acq_request* t_request = get_acq_request( t_id );
         if( t_request == NULL )
@@ -438,7 +438,7 @@ namespace mantis
         }
 
         uuid_t t_id = uuid_from_string( t_acq_id_str );
-        INFO( mtlog, "Canceling acquisition <" << t_id << ">" );
+        LINFO( mtlog, "Canceling acquisition <" << t_id << ">" );
 
         if( ! cancel( t_id ) )
         {

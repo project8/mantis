@@ -98,7 +98,7 @@ namespace mantis
 
     bool digitizer_test16::allocate()
     {
-        INFO( mtlog, "Allocating buffer" );
+        LINFO( mtlog, "Allocating buffer" );
 
         try
         {
@@ -111,19 +111,19 @@ namespace mantis
         }
         catch( exception& e )
         {
-            ERROR( mtlog, "Unable to allocate buffer: " << e.what() );
+            LERROR( mtlog, "Unable to allocate buffer: " << e.what() );
             return false;
         }
 
-        INFO( mtlog, "Creating master record" );
+        LINFO( mtlog, "Creating master record" );
 
-        DEBUG( mtlog, "n levels: " << params( 0 ).levels );
+        LDEBUG( mtlog, "n levels: " << params( 0 ).levels );
         if( f_master_record != NULL ) delete [] f_master_record;
         f_master_record = new data_type [f_buffer->block_size()];
         for( unsigned index = 0; index < f_buffer->block_size(); ++index )
         {
             f_master_record[ index ] = (index % params( 0 ).levels) << 2;
-            //if( index < 100 ) DEBUG( mtlog, "setting master record [" << index << "]: " << f_master_record[index] );
+            //if( index < 100 ) LDEBUG( mtlog, "setting master record [" << index << "]: " << f_master_record[index] );
         }
 
         f_allocated = true;
@@ -134,7 +134,7 @@ namespace mantis
     {
         delete [] f_master_record;
 
-        INFO( mtlog, "Deallocating buffer" );
+        LINFO( mtlog, "Deallocating buffer" );
 
         for( unsigned int index = 0; index < f_buffer->size(); index++ )
         {
@@ -147,7 +147,7 @@ namespace mantis
 
     bool digitizer_test16::initialize( param_node* a_global_config, param_node* a_dev_config )
     {
-        //INFO( mtlog, "resetting counters..." );
+        //LINFO( mtlog, "resetting counters..." );
 
         a_dev_config->replace( "voltage-offset", param_value( params( 0 ).v_offset ) );
         a_dev_config->replace( "voltage-range", param_value( params( 0 ).v_range ) );
@@ -183,7 +183,7 @@ namespace mantis
     {
         if( f_status != k_ok )
         {
-            ERROR( mtlog, "Digitizer status is not \"ok\"" );
+            LERROR( mtlog, "Digitizer status is not \"ok\"" );
             return;
         }
 
@@ -206,10 +206,10 @@ namespace mantis
 */
 
 
-        INFO( mtlog, "Waiting for buffer readiness" );
+        LINFO( mtlog, "Waiting for buffer readiness" );
         f_buffer_condition->wait();
 
-        INFO( mtlog, "Loose at <" << t_it.index() << ">" );
+        LINFO( mtlog, "Loose at <" << t_it.index() << ">" );
 
         // why was cancel disabled? -- Noah, 3/27/14
         //int t_old_cancel_state;
@@ -222,7 +222,7 @@ namespace mantis
             return;
         }
 
-        INFO( mtlog, "Planning on " << f_record_last << " records" );
+        LINFO( mtlog, "Planning on " << f_record_last << " records" );
 
         //start timing
         get_time_monotonic( &t_live_start_time );
@@ -252,18 +252,18 @@ namespace mantis
                 if( f_canceled.load() )
                 {
                     set_status( k_error, "Digitizer was canceled mid-run" );
-                    INFO( mtlog, "Was canceled mid-run" );
+                    LINFO( mtlog, "Was canceled mid-run" );
                     f_cancel_condition.release();
-                    DEBUG( mtlog, "Canceling bs_mod thread" );
+                    LDEBUG( mtlog, "Canceling bs_mod thread" );
                     //t_bs_mod_thread.cancel();
                 }
                 else
                 {
                     set_status( k_error, "Finished normally" );
-                    INFO( mtlog, "Finished normally" );
-                    //DEBUG( mtlog, "Waiting for bs_mod thread to finish" );
+                    LINFO( mtlog, "Finished normally" );
+                    //LDEBUG( mtlog, "Waiting for bs_mod thread to finish" );
                     //t_bs_mod_thread.join();
-                    //DEBUG( mtlog, "bs_mod thread done" );
+                    //LDEBUG( mtlog, "bs_mod thread done" );
                 }
                 return;
             }
@@ -292,9 +292,9 @@ namespace mantis
 
                 //GET OUT
                 set_status( k_error, "Finished abnormally because acquisition failed" );
-                INFO( mtlog, "Finished abnormally because acquisition failed" );
+                LINFO( mtlog, "Finished abnormally because acquisition failed" );
 
-                //DEBUG( mtlog, "canceling bs_mod thread" );
+                //LDEBUG( mtlog, "canceling bs_mod thread" );
                 //t_bs_mod_thread.cancel();
 
                 return;
@@ -304,7 +304,7 @@ namespace mantis
 
             if( +t_it == false )
             {
-                INFO( mtlog, "Blocked at <" << t_it.index() << ">" );
+                LINFO( mtlog, "Blocked at <" << t_it.index() << ">" );
 
                 //stop live timer
                 get_time_monotonic( &t_live_stop_time );
@@ -317,8 +317,8 @@ namespace mantis
                 {
                     //GET OUT
                     set_status( k_error, "Finished abnormally because halting streaming failed" );
-                    INFO( mtlog, "Finished abnormally because halting streaming failed" );
-                    //DEBUG( mtlog, "Canceling bs_mod thread" );
+                    LINFO( mtlog, "Finished abnormally because halting streaming failed" );
+                    //LDEBUG( mtlog, "Canceling bs_mod thread" );
                     //t_bs_mod_thread.cancel();
                     return;
                 }
@@ -346,9 +346,9 @@ namespace mantis
 
                     //GET OUT
                     set_status( k_error, "Finished abnormally because starting streaming failed" );
-                    INFO( mtlog, "Finished abnormally because starting streaming failed" );
+                    LINFO( mtlog, "Finished abnormally because starting streaming failed" );
 
-                    //DEBUG( mtlog, "Canceling bs_mod thread" );
+                    //LDEBUG( mtlog, "Canceling bs_mod thread" );
                     //t_bs_mod_thread.cancel();
 
                     return;
@@ -360,9 +360,9 @@ namespace mantis
                 //start live timer
                 get_time_monotonic( &t_live_start_time );;
 
-                INFO( mtlog, "loose at <" << t_it.index() << ">" );
+                LINFO( mtlog, "loose at <" << t_it.index() << ">" );
             }
-            //INFO( mtlog, "record count: " << f_record_count );
+            //LINFO( mtlog, "record count: " << f_record_count );
 
             // slow things down a bit, since this is for testing purposes, after all
 #ifndef _WIN32
@@ -393,7 +393,7 @@ namespace mantis
 
     void digitizer_test16::finalize( param_node* a_response )
     {
-        //INFO( mtlog, "calculating statistics..." );
+        //LINFO( mtlog, "calculating statistics..." );
         double t_livetime = (double) (f_live_time) * SEC_PER_NSEC;
         double t_deadtime = (double) f_dead_time * SEC_PER_NSEC;
         double t_mb_recorded = (double) (4 * f_record_count);
@@ -421,11 +421,11 @@ namespace mantis
         a_block->set_record_id( f_record_count );
         a_block->set_acquisition_id( f_acquisition_count );
 
-        WARN( mtlog, "acquiring to: " << a_block->data_bytes() );
+        LWARN( mtlog, "acquiring to: " << a_block->data_bytes() );
         ::memcpy( a_block->data_bytes(), (byte_type*)f_master_record, a_block->get_data_nbytes() );
         //for(unsigned index = 1000; index < 1050; ++index)
         //{
-        //    ERROR( mtlog, ((data_type*)(a_block->data_bytes()))[index]);
+        //    LERROR( mtlog, ((data_type*)(a_block->data_bytes()))[index]);
         //}
 
         // the timestamp is acquired after the data is transferred to avoid the problem on the px1500 where
@@ -463,7 +463,7 @@ namespace mantis
 
     bool digitizer_test16::run_basic_test()
     {
-        WARN( mtlog, "Basic test for digitizer_test16 has not been implemented" );
+        LWARN( mtlog, "Basic test for digitizer_test16 has not been implemented" );
         return false;
     }
 

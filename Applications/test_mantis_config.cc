@@ -20,7 +20,7 @@ int main( int argc, char** argv )
     client_config cc;
     configurator configurator( argc, argv, &cc );
 
-    INFO( mtlog, "configuration:\n" << configurator.config() );
+    LINFO( mtlog, "configuration:\n" << configurator.config() );
 
     return 0;
 }

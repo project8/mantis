@@ -35,7 +35,7 @@ namespace mantis
     {
         f_canceled = false;
 
-        //INFO( mtlog, "resetting counters..." );
+        //LINFO( mtlog, "resetting counters..." );
 
         f_record_count = 0;
         f_acquisition_count = 0;
@@ -55,7 +55,7 @@ namespace mantis
         while( +t_it == true )
             ;
         IT_TIMER_UNSET_IGNORE_INCR( t_it )
-        DEBUG( mtlog, "iterator <" << t_it.name() << "> beginning loop at " << t_it.index() );
+        LDEBUG( mtlog, "iterator <" << t_it.name() << "> beginning loop at " << t_it.index() );
 
         //start live timing
         get_time_monotonic( &t_start_time );
@@ -72,7 +72,7 @@ namespace mantis
                 // if other threads are waiting on the buffer, we should do that too
                 if( f_condition->is_waiting() == true )
                 {
-                    INFO( mtlog, "waiting for buffer readiness" );
+                    LINFO( mtlog, "waiting for buffer readiness" );
                     f_condition->wait();
                 }
                 ++t_it;
@@ -98,12 +98,12 @@ namespace mantis
                 // to make sure we don't deadlock anything
                 if( f_cancel_condition.is_waiting() )
                 {
-                    INFO( mtlog, "was canceled mid-run" );
+                    LINFO( mtlog, "was canceled mid-run" );
                     f_cancel_condition.release();
                 }
                 else
                 {
-                    INFO( mtlog, "finished normally" );
+                    LINFO( mtlog, "finished normally" );
                 }
                 return;
             }
@@ -111,7 +111,7 @@ namespace mantis
             //process the block
             t_it->set_processing();
 
-            //DEBUG( mtlog, "modifier:" );
+            //LDEBUG( mtlog, "modifier:" );
             //f_buffer->print_states();
 
             if( modify( t_it.object() ) == false )
@@ -123,7 +123,7 @@ namespace mantis
                 }
 
                 //GET OUT
-                INFO( mtlog, "finished abnormally because writing failed" );
+                LINFO( mtlog, "finished abnormally because writing failed" );
                 return;
             }
 
@@ -133,7 +133,7 @@ namespace mantis
             }
             f_record_count++;
 
-            //INFO( mtlog, "records written: " << f_record_count );
+            //LINFO( mtlog, "records written: " << f_record_count );
 
         }
 
@@ -152,7 +152,7 @@ namespace mantis
     }
     void modifier::finalize( param_node* /*a_response*/ )
     {
-        //INFO( mtlog, "calculating statistics..." );
+        //LINFO( mtlog, "calculating statistics..." );
         /*
         double t_livetime = (double) (f_live_time) * SEC_PER_NSEC;
         double t_mb_modified = (double) (4 * f_record_count);

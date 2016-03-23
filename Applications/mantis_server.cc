@@ -43,7 +43,7 @@ set_version( mantis, version );
 
 int main( int argc, char** argv )
 {
-    INFO( mtlog, "Welcome to Mantis\n\n" <<
+    LINFO( mtlog, "Welcome to Mantis\n\n" <<
             "\t\t _______  _______  _       __________________ _______ \n" <<
             "\t\t(       )(  ___  )( \\    /|\\__   __/\\__   __/(  ____ \\\n" <<
             "\t\t| () () || (   ) ||  \\  ( |   ) (      ) (   | (    \\/\n" <<
@@ -70,22 +70,22 @@ int main( int argc, char** argv )
     }
     catch( scarab::error& e )
     {
-        ERROR( mtlog, "configuration error: " << e.what() );
+        LERROR( mtlog, "configuration error: " << e.what() );
         return RETURN_ERROR;
     }
     catch( exception& e )
     {
-        ERROR( mtlog, "mantis error: " << e.what() );
+        LERROR( mtlog, "mantis error: " << e.what() );
         return RETURN_ERROR;
     }
     catch( std::exception& e )
     {
-        ERROR( mtlog, "std::exception caught: " << e.what() );
+        LERROR( mtlog, "std::exception caught: " << e.what() );
         return RETURN_ERROR;
     }
     catch( ... )
     {
-        ERROR( mtlog, "unknown excpetion caught" );
+        LERROR( mtlog, "unknown excpetion caught" );
         return RETURN_ERROR;
     }
 

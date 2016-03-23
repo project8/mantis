@@ -29,7 +29,7 @@ namespace mantis
     {
         for( unsigned t_index = 0; t_index < f_size; ++t_index )
         {
-            //WARN( mtlog, "deleting block " << t_index );
+            //LWARN( mtlog, "deleting block " << t_index );
             delete_block( t_index );
         }
         delete [] f_blocks;
@@ -68,7 +68,7 @@ namespace mantis
         {
             pbuff << f_blocks[ t_index ]->get_state() << " ";
         }
-        DEBUG( mtlog, pbuff.str() );
+        LDEBUG( mtlog, pbuff.str() );
         return;
     }
 

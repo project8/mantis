@@ -49,7 +49,7 @@ int main( int argc, char** argv )
     }
     catch( exception& e )
     {
-        ERROR( mtlog, "unable to configure test_mantis_digitizer: " << e.what() );
+        LERROR( mtlog, "unable to configure test_mantis_digitizer: " << e.what() );
         return -1;
     }
 
@@ -60,7 +60,7 @@ int main( int argc, char** argv )
     }
     catch( exception& e )
     {
-        ERROR( mtlog, "please provide the digitizer you want to test with configuration value <digitizer>" );
+        LERROR( mtlog, "please provide the digitizer you want to test with configuration value <digitizer>" );
         return -1;
     }
 
@@ -76,11 +76,11 @@ int main( int argc, char** argv )
     }
     else
     {
-        ERROR( mtlog, "invalid test type: " << t_str_test_type );
+        LERROR( mtlog, "invalid test type: " << t_str_test_type );
         return -1;
     }
 
-    INFO( mtlog, "testing digitizer <" << t_dig_name << ">" );
+    LINFO( mtlog, "testing digitizer <" << t_dig_name << ">" );
 
     device_manager t_dev_mgr;
     t_dev_mgr.set_device( t_dig_name );
@@ -98,11 +98,11 @@ int main( int argc, char** argv )
 
     if ( ! t_status )
     {
-        WARN( mtlog, "test failed" );
+        LWARN( mtlog, "test failed" );
         return -1;
     }
 
 
-    INFO( mtlog, "congratulations, digitizer <" << t_dig_name << "> passed the test!" );
+    LINFO( mtlog, "congratulations, digitizer <" << t_dig_name << "> passed the test!" );
     return 0;
 }

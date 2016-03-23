@@ -50,7 +50,7 @@ namespace mantis
 
     void run_server::execute()
     {
-        INFO( mtlog, "Creating server objects" );
+        LINFO( mtlog, "Creating server objects" );
 
         set_status( k_starting );
 
@@ -73,7 +73,7 @@ namespace mantis
         amqp_relayer t_amqp_relayer;
         if( ! t_amqp_relayer.initialize( t_broker_node ) )
         {
-            ERROR( mtlog, "Unable to start the AMQP relayer" );
+            LERROR( mtlog, "Unable to start the AMQP relayer" );
             f_return = RETURN_ERROR;
             return;
         }
@@ -92,7 +92,7 @@ namespace mantis
 
         f_component_mutex.unlock();
 
-        INFO( mtlog, "Starting threads" );
+        LINFO( mtlog, "Starting threads" );
 
         thread t_receiver_thread( &t_receiver );
         thread t_worker_thread( &t_worker );
@@ -104,7 +104,7 @@ namespace mantis
         t_worker_thread.start();
 
         set_status( k_running );
-        INFO( mtlog, "running..." );
+        LINFO( mtlog, "running..." );
 
         t_receiver_thread.join();
         t_worker_thread.join();
@@ -125,7 +125,7 @@ namespace mantis
             t_amqp_relayer.cancel();
         }
 
-        INFO( mtlog, "Threads stopped" );
+        LINFO( mtlog, "Threads stopped" );
 
         f_return = RETURN_SUCCESS;
 
@@ -134,7 +134,7 @@ namespace mantis
 
     void run_server::quit_server()
     {
-        INFO( mtlog, "Shutting down the server" );
+        LINFO( mtlog, "Shutting down the server" );
         raise( SIGINT );
         return;
     }

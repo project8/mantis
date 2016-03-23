@@ -50,7 +50,7 @@ namespace mantis
 
     void run_client::execute()
     {
-        INFO( mtlog, "Creating request" );
+        LINFO( mtlog, "Creating request" );
 
         // pull the special CL arguments out of the configuration
 
@@ -66,7 +66,7 @@ namespace mantis
         dripline::uuid_t t_lockout_key = dripline::uuid_from_string( t_lockout_key_str, t_lk_valid );
         if( ! t_lk_valid )
         {
-            ERROR( mtlog, "Invalid lockout key provided: <" << t_lockout_key_str << ">" );
+            LERROR( mtlog, "Invalid lockout key provided: <" << t_lockout_key_str << ">" );
             f_return = RETURN_ERROR;
             return;
         }
@@ -99,21 +99,21 @@ namespace mantis
         }
         else
         {
-            ERROR( mtlog, "Unknown or missing request type: " << t_request_type );
+            LERROR( mtlog, "Unknown or missing request type: " << t_request_type );
             f_return = RETURN_ERROR;
             return;
         }
 
         if( t_request == NULL )
         {
-            ERROR( mtlog, "Unable to create request" );
+            LERROR( mtlog, "Unable to create request" );
             f_return = RETURN_ERROR;
             return;
         }
 
         t_request->lockout_key() = t_lockout_key;
 
-        INFO( mtlog, "Connecting to AMQP broker" );
+        LINFO( mtlog, "Connecting to AMQP broker" );
 
         param_node& t_broker_node = f_config.remove( "amqp" )->as_node();
 
@@ -122,31 +122,31 @@ namespace mantis
                                      t_broker_node.get_value( "exchange" ),
                                      "", ".project8_authentications.json" );
 
-        DEBUG( mtlog, "Sending message w/ msgop = " << t_request->get_message_op() << " to " << t_request->routing_key() );
+        LDEBUG( mtlog, "Sending message w/ msgop = " << t_request->get_message_op() << " to " << t_request->routing_key() );
 
         dripline::service::rr_pkg_ptr t_receive_reply = t_service.send( t_request );
 
         if( ! t_receive_reply->f_successful_send )
         {
-            ERROR( mtlog, "Unable to send request" );
+            LERROR( mtlog, "Unable to send request" );
             f_return = RETURN_ERROR;
             return;
         }
 
         if( ! t_receive_reply->f_consumer_tag.empty() )  // this indicates that the reply queue was created, and we've started consuming on it; we should wait for a reply
         {
-            INFO( mtlog, "Waiting for a reply from the server; use ctrl-c to cancel" );
+            LINFO( mtlog, "Waiting for a reply from the server; use ctrl-c to cancel" );
 
             // timed blocking call to wait for incoming message
             dripline::reply_ptr_t t_reply = t_service.wait_for_reply( t_receive_reply, t_broker_node.get_value< int >( "reply-timeout-ms" ) );
 
             if( t_reply )
             {
-                INFO( mtlog, "Response received" );
+                LINFO( mtlog, "Response received" );
 
                 const param_node* t_payload = &( t_reply->get_payload() );
 
-                INFO( mtlog, "Response from Mantis:\n" <<
+                LINFO( mtlog, "Response from Mantis:\n" <<
                         "Return code: " << t_reply->get_return_code() << '\n' <<
                         "Return message: " << t_reply->return_msg() << '\n' <<
                         *t_payload );
@@ -160,7 +160,7 @@ namespace mantis
                         const param_node* t_master_config_node = t_payload;
                         if( t_master_config_node == NULL )
                         {
-                            ERROR( mtlog, "Payload is not present" );
+                            LERROR( mtlog, "Payload is not present" );
                         }
                         else
                         {
@@ -169,14 +169,14 @@ namespace mantis
                     }
                     else
                     {
-                        ERROR( mtlog, "Save instruction did not contain a valid file type");
+                        LERROR( mtlog, "Save instruction did not contain a valid file type");
                     }
 
                 }
             }
             else
             {
-                WARN( mtlog, "Timed out waiting for reply" );
+                LWARN( mtlog, "Timed out waiting for reply" );
             }
         }
 
@@ -200,7 +200,7 @@ namespace mantis
     {
         if( ! f_config.has( "file" ) )
         {
-            ERROR( mtlog, "The filename to be saved must be specified with the \"file\" option" );
+            LERROR( mtlog, "The filename to be saved must be specified with the \"file\" option" );
             return NULL;
         }
 
@@ -229,7 +229,7 @@ namespace mantis
     {
         if( ! f_config.has( "value" ) )
         {
-            ERROR( mtlog, "No \"value\" option given" );
+            LERROR( mtlog, "No \"value\" option given" );
             return NULL;
         }
 
@@ -251,7 +251,7 @@ namespace mantis
         {
             if( ! f_config.node_at( "load" )->has( "json" ) )
             {
-                ERROR( mtlog, "Load instruction did not contain a valid file type");
+                LERROR( mtlog, "Load instruction did not contain a valid file type");
                 delete t_payload_node;
                 return NULL;
             }
@@ -260,7 +260,7 @@ namespace mantis
             param_node* t_node_from_file = param_input_json::read_file( t_load_filename );
             if( t_node_from_file == NULL )
             {
-                ERROR( mtlog, "Unable to read JSON file <" << t_load_filename << ">" );
+                LERROR( mtlog, "Unable to read JSON file <" << t_load_filename << ">" );
                 delete t_payload_node;
                 return NULL;
             }

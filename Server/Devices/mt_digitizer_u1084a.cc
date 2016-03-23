@@ -41,11 +41,11 @@ namespace mantis
         Acqrs_errorMessage( a_handle, a_status, t_buff, t_buff_size );
         if( a_status > 0 )
         {
-            WARN( mtlog, a_prepend_msg << t_buff << " (status code: " << a_status << ")" );
+            LWARN( mtlog, a_prepend_msg << t_buff << " (status code: " << a_status << ")" );
         }
         else
         {
-            ERROR( mtlog, a_prepend_msg << t_buff << " (status code: " << a_status << ")" );
+            LERROR( mtlog, a_prepend_msg << t_buff << " (status code: " << a_status << ")" );
         }
         return;
     }
@@ -113,7 +113,7 @@ namespace mantis
         PrintU1084AError( f_handle, t_result, "autoDef failed");
         if (numInstr < 1)
         {
-            ERROR( mtlog, "found no instruments!" );
+            LERROR( mtlog, "found no instruments!" );
             return false;
         }
 
@@ -127,7 +127,7 @@ namespace mantis
         t_result = AcqrsD1_configMode( f_handle, 0, 0, 10); // 10 -> SAR
         PrintU1084AError( f_handle, t_result, "Config as SAR:");
 
-        DEBUG( mtlog, "configuring memory" );
+        LDEBUG( mtlog, "configuring memory" );
         ViInt32 t_number_segments = 1;
         ViInt32 t_number_banks = 2;
         t_result = AcqrsD1_configMemoryEx( f_handle, 0, f_buffer->block_size(), t_number_segments, t_number_banks, 0);
@@ -150,13 +150,13 @@ namespace mantis
         }
         catch( exception &e )
         {
-            ERROR( mtlog, "unable to allocate buffer: " << e.what() );
+            LERROR( mtlog, "unable to allocate buffer: " << e.what() );
             return false;
         }
 
 
         /*
-        INFO( mtlog, "connecting to digitizer card..." );
+        LINFO( mtlog, "connecting to digitizer card..." );
 
         t_result = ConnectToDevicePX4( &f_handle, 1 );
         if( t_result != VI_SUCCESS )
@@ -165,7 +165,7 @@ namespace mantis
             return false;
         }
 
-        //INFO( mtlog, "setting power up defaults..." );
+        //LINFO( mtlog, "setting power up defaults..." );
 
         t_result = SetPowerupDefaultsPX4( f_handle );
         if( t_result != VI_SUCCESS )
@@ -174,7 +174,7 @@ namespace mantis
             return false;
         }
 
-        INFO( mtlog, "allocating dma buffer..." );
+        LINFO( mtlog, "allocating dma buffer..." );
 
         try
         {
@@ -196,7 +196,7 @@ namespace mantis
         }
         catch( exception& e )
         {
-            ERROR( mtlog, "unable to allocate buffer: " << e.what() );
+            LERROR( mtlog, "unable to allocate buffer: " << e.what() );
             return false;
         }
          */
@@ -210,7 +210,7 @@ namespace mantis
         {
             ViStatus t_result;
             /*
-            INFO( mtlog, "deallocating dma buffer..." );
+            LINFO( mtlog, "deallocating dma buffer..." );
 
             iterator t_it( f_buffer );
             for( size_t index = 0; index < f_buffer->size(); index++ )
@@ -220,7 +220,7 @@ namespace mantis
             f_allocated = false;
             f_buffer = NULL;
 
-            INFO( mtlog, "disconnecting from digitizer card..." );
+            LINFO( mtlog, "disconnecting from digitizer card..." );
 
             t_result = DisconnectFromDevicePX4( f_handle );
             if( t_result != VI_SUCCESS )
@@ -231,7 +231,7 @@ namespace mantis
             return true;
              */
         }
-        ERROR( mtlog, "Cannot deallocate buffer that was not allocated by this digitizer" );
+        LERROR( mtlog, "Cannot deallocate buffer that was not allocated by this digitizer" );
         return false;
     }
 
@@ -245,24 +245,24 @@ namespace mantis
         //interval must be 0.5 ns or larger in "binary" steps (N*min?)
         //it may be good to add something here that checks for that and
         //returns an error suggesting a better value, for now we just take it
-        DEBUG( mtlog, "configuring timebase" );
+        LDEBUG( mtlog, "configuring timebase" );
         double t_clock_rate = a_request->rate(); //MHz
         ViReal64 t_sample_interval = 1. / (t_clock_rate * 1.e6);//seconds
         t_result = AcqrsD1_configHorizontal( f_handle, t_sample_interval, 0.0 );
         PrintU1084AError( f_handle, t_result, "Config timebase:");
-        DEBUG( mtlog, "interval: "<<t_sample_interval );
+        LDEBUG( mtlog, "interval: "<<t_sample_interval );
 
         //also config memory
         // it would be ideal if number_samples came from the record size and number_segments from duration... SAR isn't working that well yet though.
         // this is all moved into allocate()
-        /*DEBUG( mtlog, "configuring memory" );
+        /*LDEBUG( mtlog, "configuring memory" );
         ViInt32 t_number_segments = 1;
         ViInt32 t_number_banks = 2;
         t_result = AcqrsD1_configMemoryEx( f_handle, 0, f_buffer->block_size(), t_number_segments, t_number_banks, 0);
         PrintU1084AError( f_handle, t_result, "Config memory:" );
 */
         //config vertical settings, do we want to expose a user interface?
-        DEBUG( mtlog, "configuring vertical" );
+        LDEBUG( mtlog, "configuring vertical" );
         ViReal64 t_full_scale = 1.0; // volts
         ViReal64 t_offset = 0.0; // volts
         ViInt32 t_coupling = 3; // 3 is DC coupling
@@ -271,7 +271,7 @@ namespace mantis
         PrintU1084AError( f_handle, t_result, "Config Vert. Scale:" );
 
         //config trigger
-        DEBUG( mtlog, "configuring trigger" );
+        LDEBUG( mtlog, "configuring trigger" );
         t_result = AcqrsD1_configTrigClass( f_handle, 0, 0x00000001, 0, 0, 0.0, 0.0);
         PrintU1084AError( f_handle, t_result, "trig type:");
 
@@ -281,7 +281,7 @@ namespace mantis
         t_result = AcqrsD1_configTrigSource( f_handle, 1, t_trigger_coupling, t_trigger_slope, t_trigger_level, 0.0 );
         PrintU1084AError( f_handle, t_result, "trig conditions:");
 
-        //INFO( mtlog, "resetting counters..." );
+        //LINFO( mtlog, "resetting counters..." );
 
         f_record_last = (record_id_type) (ceil( (double) (a_request->rate() * a_request->duration() * 1.e3) / (double) (f_buffer->block_size()) ));
         f_record_count = 0;
@@ -290,7 +290,7 @@ namespace mantis
         f_dead_time = 0;
 
         /*
-        //INFO( mtlog, "setting run mode..." );
+        //LINFO( mtlog, "setting run mode..." );
 
         if( a_request->mode() == request_mode_t_single )
         {
@@ -312,7 +312,7 @@ namespace mantis
             }
         }
 
-        //INFO( mtlog, "setting clock rate..." );
+        //LINFO( mtlog, "setting clock rate..." );
 
         t_result = SetInternalAdcClockRatePX4( f_handle, a_request->rate() );
         if( t_result != VI_SUCCESS )
@@ -334,15 +334,15 @@ namespace mantis
         timespec t_dead_stop_time;
         timespec t_stamp_time;
 
-        //INFO( mtlog, "waiting" );
+        //LINFO( mtlog, "waiting" );
         f_condition->wait();
 
-        INFO( mtlog, "loose at <" << t_it.index() << ">" );
+        LINFO( mtlog, "loose at <" << t_it.index() << ">" );
 
         //start acquisition
         if( start() == false )
         {
-            ERROR( mtlog, "unable to start acquisition" );
+            LERROR( mtlog, "unable to start acquisition" );
             return;
         }
 
@@ -353,8 +353,8 @@ namespace mantis
         //go go go go
         while( true )
         {   
-            DEBUG( mtlog, "got into loop" );
-            DEBUG( mtlog, "this:last("<<f_record_count<<":"<<f_record_last<<")" );
+            LDEBUG( mtlog, "got into loop" );
+            LDEBUG( mtlog, "this:last("<<f_record_count<<":"<<f_record_last<<")" );
             //check if we've written enough
             if( f_record_count == f_record_last || f_canceled.load() )
             {
@@ -372,19 +372,19 @@ namespace mantis
                 //GET OUT
                 if( f_canceled.load() )
                 {
-                    INFO( mtlog, "was canceled mid-run" );
+                    LINFO( mtlog, "was canceled mid-run" );
                     f_cancel_condition.release();
                 }
                 else
                 {
-                    INFO( mtlog, "finished normally" );
+                    LINFO( mtlog, "finished normally" );
                 }
                 return;
             }
 
             t_it->set_acquiring();
 
-            DEBUG( mtlog, "about to acquire" );
+            LDEBUG( mtlog, "about to acquire" );
             if( acquire( t_it.object(), t_stamp_time ) == false )
             {
                 //mark the block as written
@@ -397,7 +397,7 @@ namespace mantis
                 stop();
 
                 //GET OUT
-                INFO( mtlog, "finished abnormally because acquisition failed" );
+                LINFO( mtlog, "finished abnormally because acquisition failed" );
                 return;
             }
 
@@ -405,7 +405,7 @@ namespace mantis
 
             if( +t_it == false )
             {
-                INFO( mtlog, "blocked at <" << t_it.index() << ">" );
+                LINFO( mtlog, "blocked at <" << t_it.index() << ">" );
 
                 //stop live timer
                 get_time_monotonic( &t_live_stop_time );
@@ -417,7 +417,7 @@ namespace mantis
                 if( stop() == false )
                 {
                     //GET OUT
-                    INFO( mtlog, "finished abnormally because halting streaming failed" );
+                    LINFO( mtlog, "finished abnormally because halting streaming failed" );
                     return;
                 }
 
@@ -437,7 +437,7 @@ namespace mantis
                 if( start() == false )
                 {
                     //GET OUT
-                    INFO( mtlog, "finished abnormally because starting streaming failed" );
+                    LINFO( mtlog, "finished abnormally because starting streaming failed" );
                     return;
                 }
 
@@ -447,7 +447,7 @@ namespace mantis
                 //start live timer
                 get_time_monotonic( &t_live_start_time );;
 
-                INFO( mtlog, "loose at <" << t_it.index() << ">" );
+                LINFO( mtlog, "loose at <" << t_it.index() << ">" );
             }
         }
         return;
@@ -467,7 +467,7 @@ namespace mantis
         t_result = AcqrsD1_stopAcquisition( f_handle );
         PrintU1084AError( f_handle, t_result, "stop acquisition" );
 
-        //INFO( mtlog, "calculating statistics..." );
+        //LINFO( mtlog, "calculating statistics..." );
         double t_livetime = (double) (f_live_time) * SEC_PER_NSEC;
         double t_deadtime = (double) f_dead_time * SEC_PER_NSEC;
         double t_mb_recorded = (double) (4 * f_record_count);
@@ -504,16 +504,16 @@ namespace mantis
         a_block->set_record_id( f_record_count );
         a_block->set_acquisition_id( f_acquisition_count );
 
-        DEBUG( mtlog, "acquire" );
+        LDEBUG( mtlog, "acquire" );
         t_result = AcqrsD1_acquire( f_handle );
         PrintU1084AError( f_handle, t_result, "acquisition failure:" );
 
-        DEBUG( mtlog, "wait for acquisition" );
+        LDEBUG( mtlog, "wait for acquisition" );
         ViInt32 t_timeout = 10000; // ms
         t_result = AcqrsD1_waitForEndOfAcquisition( f_handle, t_timeout );
         if (t_result != VI_SUCCESS) // failed to acquire, probably didn't trigger
         {
-            WARN( mtlog, "acquisition may not have auto-triggered, forcing" );
+            LWARN( mtlog, "acquisition may not have auto-triggered, forcing" );
             t_result = AcqrsD1_forceTrigEx( f_handle, 1, 0, 0 ); // SAR requires type 1
             PrintU1084AError( f_handle, t_result, "force trig:");
             t_result = AcqrsD1_waitForEndOfAcquisition( f_handle, t_timeout );
@@ -538,12 +538,12 @@ namespace mantis
         AqSegmentDescriptor segDesc;
         //ViInt8 *adcArrayP = new ViInt8[readPar.dataArraySize];
 
-        DEBUG( mtlog, "then read data; for now just read the first block" );
+        LDEBUG( mtlog, "then read data; for now just read the first block" );
         //t_result = AcqrsD1_readData( f_handle, 1, &readPar, adcArrayP, &dataDesc, &segDesc);
         t_result = AcqrsD1_readData( f_handle, 1, &readPar, reinterpret_cast< ViInt8* > (a_block->memblock_bytes()), &dataDesc, &segDesc);
         PrintU1084AError( f_handle, t_result, "read data:");
 
-        DEBUG( mtlog, "free bank" );
+        LDEBUG( mtlog, "free bank" );
         t_result = AcqrsD1_freeBank( f_handle, 0 );
         PrintU1084AError( f_handle, t_result, "free bank:");
 
@@ -620,7 +620,7 @@ namespace mantis
             PrintU1084AError( f_handle, t_result, "failed to initialize the digitizer card: " );
             return false;
         }
-        INFO( mtlog, "Driver initialized" );
+        LINFO( mtlog, "Driver initialized" );
 */
 
         ViInt32 numInstr; // Number of instruments
@@ -628,13 +628,13 @@ namespace mantis
         PrintU1084AError( f_handle, t_result, "autDefine failure:" );
         if (numInstr < 1)
         {
-            ERROR( mtlog, "found no instruments!");
+            LERROR( mtlog, "found no instruments!");
             return false;
         }
         ViChar rscStr[16] = "PCI::INSTR0"; // resource string
         ViChar options[32] = ""; //no options needed
 
-        DEBUG( mtlog, "found " << numInstr << " devices" );
+        LDEBUG( mtlog, "found " << numInstr << " devices" );
 
         // prog guide, pg 24: should be multiple of 32 (16) for single (dual) channel acquisition
         unsigned t_rec_size = 8024;
@@ -643,7 +643,7 @@ namespace mantis
         unsigned t_dig_pts = t_rec_size + 32;
 
 
-        INFO( mtlog, "beginning initialization phase" );
+        LINFO( mtlog, "beginning initialization phase" );
         t_result = Acqrs_InitWithOptions(rscStr, VI_FALSE, VI_FALSE, options, &f_handle);
         PrintU1084AError( f_handle, t_result, "InitWithOptions" );
 /*
@@ -652,29 +652,29 @@ namespace mantis
         ViChar t_str_buff[128];
         ViBoolean t_simulate;
         t_result = AgMD1_GetAttributeViString(f_handle, "", AGMD1_ATTR_SPECIFIC_DRIVER_PREFIX, 127, t_str_buff );
-        INFO( mtlog, "DRIVER_PREFIX: " << t_str_buff);
+        LINFO( mtlog, "DRIVER_PREFIX: " << t_str_buff);
         t_result = AgMD1_GetAttributeViString(f_handle, "", AGMD1_ATTR_SPECIFIC_DRIVER_REVISION, 127, t_str_buff );
-        INFO( mtlog, "DRIVER_REVISION: " <<  t_str_buff);
+        LINFO( mtlog, "DRIVER_REVISION: " <<  t_str_buff);
         t_result = AgMD1_GetAttributeViString(f_handle, "", AGMD1_ATTR_SPECIFIC_DRIVER_VENDOR, 127, t_str_buff );
-        INFO( mtlog, "DRIVER_VENDOR: " <<  t_str_buff);
+        LINFO( mtlog, "DRIVER_VENDOR: " <<  t_str_buff);
         t_result = AgMD1_GetAttributeViString(f_handle, "", AGMD1_ATTR_SPECIFIC_DRIVER_DESCRIPTION, 127, t_str_buff );
-        INFO( mtlog, "DRIVER_DESCRIPTION: " <<  t_str_buff);
+        LINFO( mtlog, "DRIVER_DESCRIPTION: " <<  t_str_buff);
         t_result = AgMD1_GetAttributeViString(f_handle, "", AGMD1_ATTR_INSTRUMENT_MODEL, 127, t_str_buff );
-        INFO( mtlog, "INSTRUMENT_MODEL: " <<  t_str_buff);
+        LINFO( mtlog, "INSTRUMENT_MODEL: " <<  t_str_buff);
         t_result = AgMD1_GetAttributeViString(f_handle, "", AGMD1_ATTR_INSTRUMENT_FIRMWARE_REVISION, 127, t_str_buff );
-        INFO( mtlog, "FIRMWARE_REVISION: " <<  t_str_buff);
+        LINFO( mtlog, "FIRMWARE_REVISION: " <<  t_str_buff);
         t_result = AgMD1_GetAttributeViBoolean(f_handle, "", AGMD1_ATTR_SIMULATE, &t_simulate );
         if( t_simulate == VI_TRUE )
         {
-            INFO( mtlog, "SIMULATE:           True\n\n");
+            LINFO( mtlog, "SIMULATE:           True\n\n");
         }
         else
         {
-            INFO( mtlog, "SIMULATE:           False\n\n");
+            LINFO( mtlog, "SIMULATE:           False\n\n");
         }
 */
 
-        DEBUG( mtlog, "setting run configuration..." );
+        LDEBUG( mtlog, "setting run configuration..." );
 
         // Setup acquisition - Records must be 1 for Channel.Measurement methods.
         // For multiple records use Channel.MutiRecordMeasurement methods.
@@ -687,7 +687,7 @@ namespace mantis
         {
             ViChar errMsg[512] = "";
             Acqrs_errorMessage(VI_NULL, t_result, errMsg, 512);
-            ERROR( mtlog, "horizontal conf error: " << errMsg << "\n" );
+            LERROR( mtlog, "horizontal conf error: " << errMsg << "\n" );
             return false;
         }
 
@@ -697,7 +697,7 @@ namespace mantis
         {
             ViChar errMsg[512] = "";
             Acqrs_errorMessage(VI_NULL, t_result, errMsg, 512);
-            ERROR( mtlog, "problem setting SAR: " << errMsg << "\n" );
+            LERROR( mtlog, "problem setting SAR: " << errMsg << "\n" );
             return false;
         }
 
@@ -710,7 +710,7 @@ namespace mantis
         {
             ViChar errMsg[512] = "";
             Acqrs_errorMessage(VI_NULL, t_result, errMsg, 512);
-            ERROR( mtlog, "problem config memory: " << errMsg << "\n" );
+            LERROR( mtlog, "problem config memory: " << errMsg << "\n" );
             return false;
         }
 
@@ -724,7 +724,7 @@ namespace mantis
         {
             ViChar errMsg[512] = "";
             Acqrs_errorMessage(VI_NULL, t_result, errMsg, 512);
-            ERROR( mtlog, "vertical conf error: " << errMsg << "\n" );
+            LERROR( mtlog, "vertical conf error: " << errMsg << "\n" );
             return false;
         }
 
@@ -734,7 +734,7 @@ namespace mantis
         {
             ViChar errMsg[512] = "";
             Acqrs_errorMessage(VI_NULL, t_result, errMsg, 512);
-            ERROR( mtlog, "trig class conf error: " << errMsg << "\n" );
+            LERROR( mtlog, "trig class conf error: " << errMsg << "\n" );
             return false;
         }
         // Config trigger conditions
@@ -746,7 +746,7 @@ namespace mantis
         {
             ViChar errMsg[512] = "";
             Acqrs_errorMessage(VI_NULL, t_result, errMsg, 512);
-            ERROR( mtlog, "trig source conf error: " << errMsg << "\n" );
+            LERROR( mtlog, "trig source conf error: " << errMsg << "\n" );
             return false;
         }
 
@@ -757,10 +757,10 @@ namespace mantis
             / *
             if( t_result == ACQIRIS_WARN_SETUP_ADAPTED )
             {
-                WARN( mtlog, "tried to set: " << sample_interval << ", 0" );
+                LWARN( mtlog, "tried to set: " << sample_interval << ", 0" );
                 ViReal64 set_si, set_delay;
                 AcqrsD1_getHorizontal( f_handle, &set_si, &set_delay );
-                WARN( mtlog, "setting applied: " << set_si << ", " << set_delay );
+                LWARN( mtlog, "setting applied: " << set_si << ", " << set_delay );
             }* /
             return false;
         }
@@ -788,9 +788,9 @@ namespace mantis
         }
 
 */
-        INFO( mtlog, "initialization complete!\n" );
+        LINFO( mtlog, "initialization complete!\n" );
 
-        DEBUG( mtlog, "allocating memory buffer..." );
+        LDEBUG( mtlog, "allocating memory buffer..." );
         block* t_block = NULL;
 
         try
@@ -801,23 +801,23 @@ namespace mantis
         }
         catch( exception& e )
         {
-            ERROR( mtlog, "unable to allocate buffer: " << e.what() );
+            LERROR( mtlog, "unable to allocate buffer: " << e.what() );
             return false;
         }
 
-        INFO( mtlog, "allocation complete!\n" );
+        LINFO( mtlog, "allocation complete!\n" );
 
-        INFO( mtlog, "initialization complete!\n" );
+        LINFO( mtlog, "initialization complete!\n" );
 
 
-        INFO( mtlog, "beginning run phase" );
+        LINFO( mtlog, "beginning run phase" );
 
-        DEBUG( mtlog, "beginning acquisition" );
+        LDEBUG( mtlog, "beginning acquisition" );
 
 
         // Calibrate, initiate measurement, and read the waveform data
         /*
-        INFO( mtlog, "Calibrating...");
+        LINFO( mtlog, "Calibrating...");
         t_result = AgMD1_SelfCalibrate(f_handle);
         if( t_result != AGMD1_SUCCESS )
         {
@@ -841,31 +841,31 @@ namespace mantis
         {
             ViChar errMsg[512] = "";
             Acqrs_errorMessage(VI_NULL, t_result, errMsg, 512);
-            ERROR( mtlog, "start acquisition error: " << errMsg << "\n" );
+            LERROR( mtlog, "start acquisition error: " << errMsg << "\n" );
             return false;
         }
 
-        INFO( mtlog, "Measuring Waveform on Channel1...");
+        LINFO( mtlog, "Measuring Waveform on Channel1...");
         ViInt32 t_timeout = 1000; // ms
 
         // ensure there was a trigger and that acquisition is complete
-        DEBUG( mtlog, "first wait for acquisition to complete");
+        LDEBUG( mtlog, "first wait for acquisition to complete");
         t_result = AcqrsD1_waitForEndOfAcquisition( f_handle, t_timeout );
         if (t_result != VI_SUCCESS)
         {
-            WARN( mtlog, "acquisition never triggered, forcing" );
+            LWARN( mtlog, "acquisition never triggered, forcing" );
             t_result = AcqrsD1_forceTrigEx( f_handle, 1, 0, 0 ); //SAR requires type 1
             if (t_result)
             {
                 ViChar errMsg[512] = "";
                 Acqrs_errorMessage(VI_NULL, t_result, errMsg, 512);
-                ERROR( mtlog, "force trig error: " << errMsg << "\n" );
+                LERROR( mtlog, "force trig error: " << errMsg << "\n" );
                 return false;
             }
             t_result = AcqrsD1_waitForEndOfAcquisition( f_handle, t_timeout );
             if (t_result)
             {
-                WARN( mtlog, "acquisition still times out after forced trigger");
+                LWARN( mtlog, "acquisition still times out after forced trigger");
             }
         }
 
@@ -895,7 +895,7 @@ namespace mantis
         {
             ViChar errMsg[512] = "";
             Acqrs_errorMessage(VI_NULL, t_result, errMsg, 512);
-            ERROR( mtlog, "read data error: " << errMsg << "\n" );
+            LERROR( mtlog, "read data error: " << errMsg << "\n" );
             return false;
         }
 /*        t_result = AgMD1_ReadWaveformInt8( f_handle, "Channel1", t_timeout, t_dig_pts, (char*)(t_block->data_bytes()), &ActualPoints, &FirstValidPoint,
@@ -907,23 +907,23 @@ namespace mantis
             return false;
         }
 */
-        DEBUG( mtlog, "and free the bank");
+        LDEBUG( mtlog, "and free the bank");
         t_result = AcqrsD1_freeBank( f_handle, 0 );
         if (t_result)
         {
             ViChar errMsg[512] = "";
             Acqrs_errorMessage(VI_NULL, t_result, errMsg, 512);
-            ERROR( mtlog, "free bank error: " << errMsg << "\n" );
+            LERROR( mtlog, "free bank error: " << errMsg << "\n" );
             return false;
         }
         
-        DEBUG( mtlog, "ending acquisition..." );
+        LDEBUG( mtlog, "ending acquisition..." );
         t_result = AcqrsD1_stopAcquisition( f_handle);
         if (t_result)
         {
             ViChar errMsg[512] = "";
             Acqrs_errorMessage(VI_NULL, t_result, errMsg, 512);
-            ERROR( mtlog, "problem ending acquisition: " << errMsg << "\n" );
+            LERROR( mtlog, "problem ending acquisition: " << errMsg << "\n" );
             return false;
         }
 
@@ -948,19 +948,19 @@ namespace mantis
         }
         t_block_str << t_block->data_bytes()[ 99 ];
         //adc_str << int(adcArrayP[ 99 ]);
-        DEBUG( mtlog, "the first 100 samples taken (in t_block):\n" << t_block_str.str() );
-        //DEBUG( mtlog, "the first 100 samples taken (in ViInt8):\n" << adc_str.str() );
+        LDEBUG( mtlog, "the first 100 samples taken (in t_block):\n" << t_block_str.str() );
+        //LDEBUG( mtlog, "the first 100 samples taken (in ViInt8):\n" << adc_str.str() );
 
-        INFO( mtlog, "run complete!\n" );
+        LINFO( mtlog, "run complete!\n" );
 
 
-        INFO( mtlog, "beginning finalization phase" );
+        LINFO( mtlog, "beginning finalization phase" );
 
-        DEBUG( mtlog, "deallocating memory buffer" );
+        LDEBUG( mtlog, "deallocating memory buffer" );
 
         delete t_block;
 
-        INFO( mtlog, "finalization complete!\n" );
+        LINFO( mtlog, "finalization complete!\n" );
 
 
         return true;

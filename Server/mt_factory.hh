@@ -99,7 +99,7 @@ namespace mantis
         FactoryCIt it = fMap->find(a_class_name);
         if (it == fMap->end())
         {
-            ERROR( mtlog_fact, "Did not find factory for <" << a_class_name << ">." );
+            LERROR( mtlog_fact, "Did not find factory for <" << a_class_name << ">." );
             return NULL;
         }
 
@@ -112,7 +112,7 @@ namespace mantis
         FactoryCIt it = fMap->find(a_class_name);
         if (it != fMap->end())
         {
-            ERROR( mtlog_fact, "Already have factory registered for <" << a_class_name << ">." );
+            LERROR( mtlog_fact, "Already have factory registered for <" << a_class_name << ">." );
             return;
         }
         fMap->insert(std::pair< std::string, const base_registrar< XBaseType >* >(a_class_name, a_registrar));

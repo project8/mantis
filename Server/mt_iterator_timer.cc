@@ -51,7 +51,7 @@ namespace mantis
                 // then the current event type must be incr_locked, after possibly blocking the thread for some time
                 if( t_list_it == f_events.end() )
                 {
-                    WARN( mtlog, "event list ended after increment-begin" );
+                    LWARN( mtlog, "event list ended after increment-begin" );
                 }
                 else if( ( *t_list_it ).f_type == iterator_event::k_incr_locked )
                 {
@@ -64,7 +64,7 @@ namespace mantis
                 }
                 else
                 {
-                    ERROR( mtlog, "event type <" << (*t_list_it).f_type << "> following increment-begin!" );
+                    LERROR( mtlog, "event type <" << (*t_list_it).f_type << "> following increment-begin!" );
                 }
             }
             else if( t_prev_event.f_type == iterator_event::k_incr_try_begin )
@@ -72,7 +72,7 @@ namespace mantis
                 // then the current event type must be incr_locked or incr_try_fail
                 if( t_list_it == f_events.end() )
                 {
-                    WARN( mtlog, "event list ended after increment-try-begin" );
+                    LWARN( mtlog, "event list ended after increment-try-begin" );
                 }
                 else if( ( *t_list_it ).f_type==iterator_event::k_incr_locked||( *t_list_it ).f_type == iterator_event::k_incr_try_fail )
                 {
@@ -85,7 +85,7 @@ namespace mantis
                 }
                 else
                 {
-                    ERROR( mtlog, "event type <" << (*t_list_it).f_type << "> following increment-try-begin!" );
+                    LERROR( mtlog, "event type <" << (*t_list_it).f_type << "> following increment-try-begin!" );
                 }
             }
             else if( t_prev_event.f_type == iterator_event::k_incr_locked )
@@ -93,7 +93,7 @@ namespace mantis
                 // then the current event should be incr_begin, incr_try_begin or incr_other
                 if( t_list_it == f_events.end() )
                 {
-                    DEBUG( mtlog, "event list ended after increment-locked" );
+                    LDEBUG( mtlog, "event list ended after increment-locked" );
                 }
                 else if( ( *t_list_it ).f_type == iterator_event::k_incr_begin || ( *t_list_it ).f_type == iterator_event::k_incr_try_begin || ( *t_list_it ).f_type == iterator_event::k_other )
                 {
@@ -106,7 +106,7 @@ namespace mantis
                 }
                 else
                 {
-                    WARN( mtlog, "event type <" << (*t_list_it).f_type << "> following increment-locked!");
+                    LWARN( mtlog, "event type <" << (*t_list_it).f_type << "> following increment-locked!");
                 }
             }
             else if( t_prev_event.f_type == iterator_event::k_incr_try_fail )
@@ -115,7 +115,7 @@ namespace mantis
                 // incr_other would also be acceptable
                 if( t_list_it == f_events.end() )
                 {
-                    DEBUG( mtlog, "event list ended after increment-try-fail" );
+                    LDEBUG( mtlog, "event list ended after increment-try-fail" );
                 }
                 else if( ( *t_list_it ).f_type == iterator_event::k_incr_begin || ( *t_list_it ).f_type == iterator_event::k_incr_try_begin || ( *t_list_it ).f_type == iterator_event::k_other )
                 {
@@ -128,7 +128,7 @@ namespace mantis
                 }
                 else
                 {
-                    WARN( mtlog, "event type <" << (*t_list_it).f_type << "> following increment-fail!");
+                    LWARN( mtlog, "event type <" << (*t_list_it).f_type << "> following increment-fail!");
                 }
             }
             else
@@ -144,7 +144,7 @@ namespace mantis
         t_timer_report << " * time waiting for block mutexes: " << t_time_thread_blocked_by_block << " s\n";
         t_timer_report << " * time waiting after increment fail: " << t_time_waiting_after_fail << " s\n";
         t_timer_report << " * other time: " << t_time_misc << " s\n";
-        INFO( mtlog, t_timer_report.str() );
+        LINFO( mtlog, t_timer_report.str() );
     }
 
     void iterator_timer::set_name( const std::string& a_name )

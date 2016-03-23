@@ -72,7 +72,7 @@ namespace mantis
             return false;
         }
 
-        DEBUG( mtlog, "Applying a setting" );
+        LDEBUG( mtlog, "Applying a setting" );
         // apply a configuration setting
         // the destination node should specify the configuration to set
         try
@@ -80,7 +80,7 @@ namespace mantis
             f_msc_mutex.lock();
             t_routing_key += string( "=" ) + a_request->get_payload().array_at( "values" )->get_value( 0 );
             scarab::parsable t_routing_key_node_with_value( t_routing_key );
-            DEBUG( mtlog, "Parsed routing key and added value:\n" << t_routing_key_node_with_value );
+            LDEBUG( mtlog, "Parsed routing key and added value:\n" << t_routing_key_node_with_value );
             if( ! f_master_server_config.node_at( "acq" )->has_subset( t_routing_key_node_with_value ) )
             {
                 f_msc_mutex.unlock();
@@ -118,7 +118,7 @@ namespace mantis
         }
         if( t_dest_node.node_at( "add" )->has( "device" ) )
         {
-            DEBUG( mtlog, "Attempting to add a device" );
+            LDEBUG( mtlog, "Attempting to add a device" );
             // it's expected that any values in the payload are digitizers to be added
             try
             {
@@ -129,7 +129,7 @@ namespace mantis
                     string t_device_type = t_dev_it->first;
                     if( ! t_dev_it->second->is_value() )
                     {
-                        DEBUG( mtlog, "Skipping <" << t_device_type << "> because it's not a value" );
+                        LDEBUG( mtlog, "Skipping <" << t_device_type << "> because it's not a value" );
                         continue;
                     }
                     string t_device_name = t_dev_it->second->as_value().as_string();
@@ -187,7 +187,7 @@ namespace mantis
         }
         if( t_dest_node.node_at( "remove" )->has( "device" ) )
         {
-            DEBUG( mtlog, "Attempting to remove a device" );
+            LDEBUG( mtlog, "Attempting to remove a device" );
             try
              {
                  string t_device_name = t_dest_node.node_at( "remove" )->node_at( "device" )->begin()->first;
@@ -225,7 +225,7 @@ namespace mantis
     bool config_manager::handle_replace_acq_config( const request_ptr_t a_request, hub::reply_package& a_reply_pkg )
     {
         // payload contents should replace the acquisition config
-        DEBUG( mtlog, "Loading a full configuration" );
+        LDEBUG( mtlog, "Loading a full configuration" );
         f_msc_mutex.lock();
         (*f_master_server_config.node_at( "acq" )) = a_request->get_payload();
 

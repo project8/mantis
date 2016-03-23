@@ -36,46 +36,46 @@ namespace mantis
 
     bool digitizer::run_insitu_test()
     {
-        DEBUG( mtlog, "calling allocate" );
+        LDEBUG( mtlog, "calling allocate" );
         if( ! this->allocate() )
         {
-            ERROR( mtlog, "failure during allocation" );
+            LERROR( mtlog, "failure during allocation" );
             return false;
         }
 
-        DEBUG( mtlog, "calling initialize" );
+        LDEBUG( mtlog, "calling initialize" );
         param_node t_global_config, t_dev_config;
         t_dev_config.add( "rate", param_value( 250.0 ) ); // MHz
         t_dev_config.add( "record-size", param_value( 8192 ) );
         t_global_config.add( "duration", param_value( 100.0 ) ); // ms
         if( !initialize( &t_global_config, &t_dev_config ) )
         {
-            ERROR( mtlog, "failure during initialize" );
+            LERROR( mtlog, "failure during initialize" );
             return false;
         }
 
         thread t_digitizer_thread( this );
 
-        DEBUG( mtlog, "calling execute");
+        LDEBUG( mtlog, "calling execute");
         t_digitizer_thread.start();
 
-        DEBUG( mtlog, "releasing" );
+        LDEBUG( mtlog, "releasing" );
         f_buffer_condition->release();
 
-        DEBUG( mtlog, "waiting" );
+        LDEBUG( mtlog, "waiting" );
 #ifndef _WIN32
         sleep(1);
 #else
         Sleep(1000);
 #endif
 
-        DEBUG( mtlog, "canceling" );
+        LDEBUG( mtlog, "canceling" );
         t_digitizer_thread.cancel();
 
-        DEBUG( mtlog, "calling finalize");
+        LDEBUG( mtlog, "calling finalize");
         param_node t_response;
         finalize( &t_response );
-        INFO( mtlog, "In-situ digitizer test result:\n" << t_response );
+        LINFO( mtlog, "In-situ digitizer test result:\n" << t_response );
 
         return true;
     }

@@ -34,10 +34,10 @@ namespace mantis
             digitizer_config_template* t_dev_ct = t_dev_ct_factory->create( it );
             if( t_dev_ct == NULL )
             {
-                WARN( mtlog, "Unable to add device config template for device type <" << it->first << ">" );
+                LWARN( mtlog, "Unable to add device config template for device type <" << it->first << ">" );
                 continue;
             }
-            DEBUG( mtlog, "Adding device config template for <" << it->first << ">" );
+            LDEBUG( mtlog, "Adding device config template for <" << it->first << ">" );
             t_dev_ct->add( &f_device_config_templates, it->first );
             delete t_dev_ct;
         }
@@ -55,14 +55,14 @@ namespace mantis
             param_node* t_acq_config = a_acq_request.node_at( "acquisition" );
             if( t_acq_config == NULL )
             {
-                ERROR( mtlog, "Acquisition configuration is missing" );
+                LERROR( mtlog, "Acquisition configuration is missing" );
                 return false;
             }
 
             param_node* t_device_config = t_acq_config->node_at( "devices" );
             if( t_device_config == NULL )
             {
-                ERROR( mtlog, "Device configuration is missing" );
+                LERROR( mtlog, "Device configuration is missing" );
                 return false;
             }
 
@@ -82,30 +82,30 @@ namespace mantis
                 }
                 catch( exception& e )
                 {
-                    WARN( mtlog, "Found non-node param object in \"devices\"" );
+                    LWARN( mtlog, "Found non-node param object in \"devices\"" );
                 }
             }
             if( t_enabled_dev_config == NULL )
             {
-                ERROR( mtlog, "Did not find an enabled device" );
+                LERROR( mtlog, "Did not find an enabled device" );
                 return false;
             }
 
             if( ! set_device( t_node_it->second->as_node().get_value( "type" ) ) )
             {
-                ERROR( mtlog, "Unable to set device" );
+                LERROR( mtlog, "Unable to set device" );
                 return false;
             }
 
             if( ! f_device->initialize( t_acq_config, t_enabled_dev_config ) )
             {
-                ERROR( mtlog, "Unable to configure device" );
+                LERROR( mtlog, "Unable to configure device" );
                 return false;
             }
         }
         catch( exception& e )
         {
-            ERROR( mtlog, "An exception was thrown while configuring the device manager:\n\t" << e.what() );
+            LERROR( mtlog, "An exception was thrown while configuring the device manager:\n\t" << e.what() );
         }
 
         return true;
@@ -124,13 +124,13 @@ namespace mantis
                 f_device = t_dig_factory->create( a_dev );
                 if( f_device == NULL )
                 {
-                    ERROR( mtlog, "Could not create digitizer <" << a_dev << ">; aborting" );
+                    LERROR( mtlog, "Could not create digitizer <" << a_dev << ">; aborting" );
                     return false;
                 }
             }
             catch( exception& e )
             {
-                ERROR( mtlog, "Exception caught while creating device <" << a_dev << ">: " << e.what() );
+                LERROR( mtlog, "Exception caught while creating device <" << a_dev << ">: " << e.what() );
                 return false;
             }
 

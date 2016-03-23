@@ -71,9 +71,9 @@ namespace mantis
         if( readlink( "/proc/self/exe", t_exe_buf, t_bufsize ) < 0 )
 #endif
         {
-            WARN( mtlog, "Could not retrieve executable file name" );
+            LWARN( mtlog, "Could not retrieve executable file name" );
 #ifdef __APPLE__
-            WARN( mtlog, "Executable name buffer is too small; needs size %u\n" << t_bufsize );
+            LWARN( mtlog, "Executable name buffer is too small; needs size %u\n" << t_bufsize );
 #endif
         }
         f_exe_name = string( t_exe_buf );
@@ -121,11 +121,11 @@ namespace mantis
 
         //std::cout << "removed config and json from parsed options" << std::endl;
         //cout << t_parser );
-        //DEBUG( mtlog, "adding command-line parser:\n" << t_parser << *f_master_config );
+        //LDEBUG( mtlog, "adding command-line parser:\n" << t_parser << *f_master_config );
         f_master_config->merge( t_parser );
 
         //std::cout << "fourth configuration complete" << std::endl;
-        INFO( mtlog, "final configuration:\n" << *f_master_config );
+        LINFO( mtlog, "final configuration:\n" << *f_master_config );
     }
 
     configurator::~configurator()

@@ -21,39 +21,39 @@ int analyze_status( run_context_dist* t_run_context )
     switch( t_state )
     {
         case status_state_t_created :
-            INFO( mtlog, "created..." << '\r');
+            LINFO( mtlog, "created..." << '\r');
             return 0;
 
         case status_state_t_acknowledged :
-            INFO( mtlog, "acknowledged..." << '\r' );
+            LINFO( mtlog, "acknowledged..." << '\r' );
             return 0;
 
         case status_state_t_waiting :
-            INFO( mtlog, "waiting..." << '\r' );
+            LINFO( mtlog, "waiting..." << '\r' );
             return 0;
 
         case status_state_t_started :
-            INFO( mtlog, "started..." << '\r' );
+            LINFO( mtlog, "started..." << '\r' );
             return 0;
 
         case status_state_t_running :
-            INFO( mtlog, "running..." << '\r' );
+            LINFO( mtlog, "running..." << '\r' );
             return 0;
 
         case status_state_t_stopped :
-            INFO( mtlog, "stopped..." << '\r' );
+            LINFO( mtlog, "stopped..." << '\r' );
             return 1;
 
         case status_state_t_error :
-            INFO( mtlog, "error..." << '\r' );
+            LINFO( mtlog, "error..." << '\r' );
             return -1;
 
         case status_state_t_canceled :
-            INFO( mtlog, "canceled..." << '\r' );
+            LINFO( mtlog, "canceled..." << '\r' );
             return -1;
 
         case status_state_t_revoked :
-            INFO( mtlog, "revoked..." << '\r' );
+            LINFO( mtlog, "revoked..." << '\r' );
             return -1;
     }
 }
@@ -66,9 +66,9 @@ int main( int argc, char** argv )
         configurator t_configurator( argc, argv, &t_cc );
 
         string t_host = t_configurator.get< string >( "host" );
-        INFO( mtlog, "attempting to reach host at: " << t_host );
+        LINFO( mtlog, "attempting to reach host at: " << t_host );
         int t_port = t_configurator.get< int >( "port" );
-        INFO( mtlog, "host port: " << t_port );
+        LINFO( mtlog, "host port: " << t_port );
         client_tcp* t_client = new client_tcp( t_host, t_port );
         run_context_dist* t_run_context = new run_context_dist();
         t_run_context->set_connection( t_client );
@@ -84,7 +84,7 @@ int main( int argc, char** argv )
         t_request->set_duration( 2000.0 );
         t_request->set_file_write_mode( request_file_write_mode_t_local );
 
-        INFO( mtlog, "sending request...\n" << t_request->DebugString() );
+        LINFO( mtlog, "sending request...\n" << t_request->DebugString() );
 
         t_run_context->push_request_no_mutex();
 
@@ -99,7 +99,7 @@ int main( int argc, char** argv )
     //    }
     //    while( analyze_status( t_run_context ) == 0 );
 
-        INFO( mtlog, "done" );
+        LINFO( mtlog, "done" );
 
         delete t_run_context;
         delete t_client;
@@ -108,7 +108,7 @@ int main( int argc, char** argv )
     }
     catch( exception& e )
     {
-        ERROR( "exception caught: " << e.what() );
+        LERROR( "exception caught: " << e.what() );
     }
     return -1;
 }
