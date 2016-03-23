@@ -65,7 +65,7 @@ namespace mantis
 
     bool config_manager::handle_set_request( const request_ptr_t a_request, hub::reply_package& a_reply_pkg )
     {
-        string t_routing_key = a_request->routing_key_specifier();
+        string t_routing_key = a_request->parsed_rks().to_string();
         if( t_routing_key.empty() )
         {
             a_reply_pkg.send_reply( retcode_t::amqp_error_routingkey_notfound, "No routing key was provided" );
@@ -109,14 +109,10 @@ namespace mantis
     {
         // add something to the master config
 
-        param_node t_dest_node( *a_request->get_parsed_rks() );
+        std::string t_add_type = a_request->parsed_rks().front();
+        a_request->parsed_rks().pop_front();
 
-        if( ! t_dest_node[ "add" ].is_node() )
-        {
-            a_reply_pkg.send_reply( retcode_t::device_error, "<add> instruction was not properly formatted" );
-            return false;
-        }
-        if( t_dest_node.node_at( "add" )->has( "device" ) )
+        if( t_add_type == "device" )
         {
             LDEBUG( mtlog, "Attempting to add a device" );
             // it's expected that any values in the payload are digitizers to be added
@@ -163,7 +159,7 @@ namespace mantis
         }
         else
         {
-            a_reply_pkg.send_reply( retcode_t::amqp_error_routingkey_notfound, "Invalid add instruction" );
+            a_reply_pkg.send_reply( retcode_t::amqp_error_routingkey_notfound, "Invalid add instruction: " + t_add_type );
             return false;
         }
 
@@ -178,19 +174,16 @@ namespace mantis
     {
         // remove something from the master config
 
-        param_node t_dest_node( *a_request->get_parsed_rks() );
+        std::string t_remove_type = a_request->parsed_rks().front();
+        a_request->parsed_rks().pop_front();
 
-        if( ! t_dest_node[ "remove" ].is_node() )
-        {
-            a_reply_pkg.send_reply( retcode_t::device_error, "<remove> instruction was not properly formatted" );
-            return false;
-        }
-        if( t_dest_node.node_at( "remove" )->has( "device" ) )
+        if( t_remove_type == "device" )
         {
             LDEBUG( mtlog, "Attempting to remove a device" );
             try
              {
-                 string t_device_name = t_dest_node.node_at( "remove" )->node_at( "device" )->begin()->first;
+                 string t_device_name = a_request->parsed_rks().front();
+                 a_request->parsed_rks().pop_front();
 
                  // check if we have a device of this name
                  if( ! f_master_server_config.node_at( "acq" )->node_at( "devices" )->has( t_device_name ) )
@@ -210,7 +203,7 @@ namespace mantis
         }
         else
         {
-            a_reply_pkg.send_reply( retcode_t::success, "Invalid remove instruction" );
+            a_reply_pkg.send_reply( retcode_t::success, "Invalid remove instruction: " + t_remove_type );
             return false;
         }
 

@@ -113,7 +113,8 @@ namespace mantis
 
     bool request_receiver::do_get_request( const request_ptr_t a_request, reply_package& a_reply_pkg )
     {
-        std::string t_query_type = a_request->get_parsed_rks()->begin()->first;
+        std::string t_query_type = a_request->parsed_rks().front();
+        a_request->parsed_rks().pop_front();
 
         param_node t_reply;
         if( t_query_type == "acq-config" )
@@ -157,7 +158,8 @@ namespace mantis
 
         // get the instruction before checking the lockout key authentication because we need to have the exception for
         // the unlock instruction that allows us to force the unlock.
-        std::string t_instruction = a_request->get_parsed_rks()->begin()->first;
+        std::string t_instruction = a_request->parsed_rks().front();
+        a_request->parsed_rks().pop_front();
 
         if( t_instruction == "replace-config" )
         {

@@ -33,6 +33,8 @@
 #include "mt_server_config.hh"
 #include "mt_version.hh"
 
+#include "dripline_version.hh"
+
 using namespace mantis;
 
 using std::string;

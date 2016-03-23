@@ -10,13 +10,13 @@
 #ifndef MT_VERSION_HH_
 #define MT_VERSION_HH_
 
-#include "dripline_version.hh"
+#include "scarab_version.hh"
 
 #include "mt_api.hh"
 
 namespace mantis
 {
-    class MANTIS_API version : public scarab::version_semver
+    class MANTIS_API version : public scarab::version_semantic
     {
         public:
             version();

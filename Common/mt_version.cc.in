@@ -16,7 +16,7 @@
 namespace mantis
 {
     version::version() :
-            scarab::version_semver()
+            scarab::version_semantic()
     {
         f_major_ver = @Mantis_VERSION_MAJOR@;
         f_minor_ver = @Mantis_VERSION_MINOR@;
