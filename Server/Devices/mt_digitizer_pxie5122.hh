@@ -16,8 +16,6 @@
 
 namespace mantis
 {
-    using std::atomic_bool;
-
     class block_cleanup_pxie5122;
 
     /* Available configuration values
@@ -92,7 +90,7 @@ namespace mantis
             time_nsec_type f_live_time;
             time_nsec_type f_dead_time;
 
-            atomic_bool f_canceled;
+            std::atomic< bool > f_canceled;
             condition f_cancel_condition;
 
             bool start();

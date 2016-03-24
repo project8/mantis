@@ -82,7 +82,7 @@ namespace mantis
             path t_filename( scarab::expand_path( t_file_config->as_string() ) );
             try
             {
-                f_monarch = monarch3::Monarch3::OpenForWriting( t_filename.native() );
+                f_monarch = monarch3::Monarch3::OpenForWriting( t_filename.string() );
             }
             catch( monarch3::M3Exception& e )
             {
@@ -97,7 +97,7 @@ namespace mantis
             f_header = f_monarch->GetHeader();
 
             // run header information
-            f_header->SetFilename( t_filename.native() );
+            f_header->SetFilename( t_filename.string() );
             if( t_desc_config != NULL ) f_header->SetDescription( t_desc_config->as_string() );
             f_header->SetRunDuration( t_acq_config->get_value< double >( "duration" ) );
             char t_timestamp[64];

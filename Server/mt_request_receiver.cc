@@ -1,4 +1,5 @@
 #define MANTIS_API_EXPORTS
+#define DRIPLINE_API_EXPORTS
 
 #include "mt_request_receiver.hh"
 

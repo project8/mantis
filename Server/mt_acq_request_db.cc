@@ -1,5 +1,6 @@
 #define MANTIS_API_EXPORTS
 #define M3_API_EXPORTS
+#define DRIPLINE_API_EXPORTS
 
 #include "mt_acq_request_db.hh"
 
@@ -13,6 +14,11 @@
 
 #include "logger.hh"
 #include "param.hh"
+
+// In Windows there's a preprocessor macro called uuid_t that conflicts with this typdef
+#ifdef uuid_t
+#undef uuid_t
+#endif
 
 namespace mantis
 {

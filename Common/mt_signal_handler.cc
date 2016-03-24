@@ -15,6 +15,8 @@
 #include <signal.h>
 #ifndef _WIN32
 #include <unistd.h> //usleep
+#else
+#include <Windows.h>
 #endif
 
 namespace mantis

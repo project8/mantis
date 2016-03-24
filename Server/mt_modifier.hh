@@ -12,8 +12,6 @@ namespace mantis
 {
     class param_node;
 
-    using std::atomic_bool;
-
     /*!
      @class modifier
      @author N. Oblath
@@ -61,7 +59,7 @@ namespace mantis
             buffer* f_buffer;
             condition* f_condition;
 
-            atomic_bool f_canceled;
+            std::atomic< bool > f_canceled;
             condition f_cancel_condition;
 
             record_id_type f_record_count;

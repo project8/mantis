@@ -22,8 +22,6 @@ namespace mantis
     using dripline::hub;
     using dripline::request_ptr_t;
 
-    using std::atomic_bool;
-
     class amqp_relayer;
     class buffer;
     class condition;
@@ -65,7 +63,7 @@ namespace mantis
             amqp_relayer* f_amqp_relayer;
             std::string f_completed_file_key;
 
-            atomic_bool f_canceled;
+            std::atomic< bool > f_canceled;
 
         public:
             enum thread_state

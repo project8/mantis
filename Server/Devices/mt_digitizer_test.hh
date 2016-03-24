@@ -14,8 +14,6 @@
 
 namespace mantis
 {
-    using std::atomic_bool;
-
     class block_cleanup_test;
 
     struct MANTIS_API digitizer_test_config_template : digitizer_config_template
@@ -77,7 +75,7 @@ namespace mantis
             time_nsec_type f_live_time;
             time_nsec_type f_dead_time;
 
-            atomic_bool f_canceled;
+            std::atomic< bool > f_canceled;
             condition f_cancel_condition;
 
             bool start();

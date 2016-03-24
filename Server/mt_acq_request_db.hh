@@ -23,8 +23,6 @@ namespace mantis
     class config_manager;
     class msg_request;
 
-    using std::atomic_bool;
-
     using dripline::hub;
     using dripline::request_ptr_t;
 
@@ -89,7 +87,7 @@ namespace mantis
 
             condition f_request_in_queue_condition;
 
-            atomic_bool f_queue_is_active;
+            std::atomic< bool > f_queue_is_active;
             condition f_queue_active_condition;
 
 

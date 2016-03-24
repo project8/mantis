@@ -6,6 +6,7 @@
  */
 
 #define MANTIS_API_EXPORTS
+#define DRIPLINE_API_EXPORTS
 
 #include "mt_run_client.hh"
 
@@ -14,6 +15,7 @@
 #include "mt_version.hh"
 
 #include "service.hh"
+#include "uuid.hh"
 
 #include "logger.hh"
 #include "param_json.hh"
@@ -21,6 +23,11 @@
 
 #include <algorithm> // for min
 #include <string>
+
+// In Windows there's a preprocessor macro called uuid_t that conflicts with this typdef
+#ifdef uuid_t
+#undef uuid_t
+#endif
 
 using std::string;
 
@@ -164,7 +171,7 @@ namespace mantis
                         }
                         else
                         {
-                            param_output_json::write_file( *t_master_config_node, t_save_filename.native(), param_output_json::k_pretty );
+                            param_output_json::write_file( *t_master_config_node, t_save_filename.string(), param_output_json::k_pretty );
                         }
                     }
                     else

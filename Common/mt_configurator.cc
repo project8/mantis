@@ -84,7 +84,7 @@ namespace mantis
             path t_config_filename = scarab::expand_path( t_parser.get_value( t_name_config ) );
             if( ! t_config_filename.empty() )
             {
-                param_node* t_config_from_file = param_input_json::read_file( t_config_filename.native() );
+                param_node* t_config_from_file = param_input_json::read_file( t_config_filename.string() );
                 if( t_config_from_file == NULL )
                 {
                     throw exception() << "[configurator] error parsing config file";

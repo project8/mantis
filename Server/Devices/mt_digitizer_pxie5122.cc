@@ -459,7 +459,7 @@ namespace mantis
 
         //start timing
         get_time_monotonic( &t_live_start_time );
-        f_start_time = time_to_nsec( t_live_start_time );
+        f_start_time = scarab::time_to_nsec( t_live_start_time );
 
         //go go go go
         while( true )
@@ -473,7 +473,7 @@ namespace mantis
                 //get the time and update the number of live nanoseconds
                 get_time_monotonic( &t_live_stop_time );		
 
-                f_live_time += time_to_nsec( t_live_stop_time ) - time_to_nsec( t_live_start_time );
+                f_live_time += scarab::time_to_nsec( t_live_stop_time ) - scarab::time_to_nsec( t_live_start_time );
 
                 //halt the pci acquisition
                 stop();
@@ -503,7 +503,7 @@ namespace mantis
                 //get the time and update the number of live microseconds
                 get_time_monotonic( &t_live_stop_time );
                 
-                f_live_time += time_to_nsec( t_live_stop_time ) - time_to_nsec( t_live_start_time );
+                f_live_time += scarab::time_to_nsec( t_live_stop_time ) - scarab::time_to_nsec( t_live_start_time );
 
                 //halt the pci acquisition
                 stop();
@@ -534,7 +534,7 @@ namespace mantis
                 get_time_monotonic( &t_live_stop_time );
 
                 //accumulate live time
-                f_live_time += time_to_nsec( t_live_stop_time ) - time_to_nsec( t_live_start_time );
+                f_live_time += scarab::time_to_nsec( t_live_stop_time ) - scarab::time_to_nsec( t_live_start_time );
 
                 //halt the pci acquisition
                 if( stop() == false )
@@ -555,7 +555,7 @@ namespace mantis
                 get_time_monotonic( &t_dead_stop_time );
 
                 //accumulate dead time
-                f_dead_time += time_to_nsec( t_dead_stop_time ) - time_to_nsec( t_dead_start_time );
+                f_dead_time += scarab::time_to_nsec( t_dead_stop_time ) - scarab::time_to_nsec( t_dead_start_time );
 
                 //start acquisition
                 if( start() == false )
@@ -645,7 +645,7 @@ namespace mantis
         // the first record can take unusually long to be acquired.
         // it's done here too for consistency
         get_time_monotonic( &a_stamp_time );
-        a_block->set_timestamp( time_to_nsec( a_stamp_time ) - f_start_time );
+        a_block->set_timestamp( scarab::time_to_nsec( a_stamp_time ) - f_start_time );
 
         ++f_record_count;
 
