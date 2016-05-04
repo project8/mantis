@@ -11,12 +11,8 @@
 
 #include <atomic>
 
-using scarab::param_node;
-
 namespace mantis
 {
-    using dripline::request_ptr_t;
-
     class acq_request_db;
     class buffer;
     class condition;
@@ -25,8 +21,6 @@ namespace mantis
     class msg_request;
     class run_server;
     class server_worker;
-
-    using std::atomic_bool;
 
 
     class MANTIS_API request_receiver : public callable, public dripline::hub
@@ -39,10 +33,10 @@ namespace mantis
             void cancel();
 
         private:
-            virtual bool do_run_request( const request_ptr_t a_request, reply_package& a_reply_pkg );
-            virtual bool do_get_request( const request_ptr_t a_request, reply_package& a_reply_pkg );
-            virtual bool do_set_request( const request_ptr_t a_request, reply_package& a_reply_pkg );
-            virtual bool do_cmd_request( const request_ptr_t a_request, reply_package& a_reply_pkg );
+            virtual bool do_run_request( const dripline::request_ptr_t a_request, dripline::reply_package& a_reply_pkg );
+            virtual bool do_get_request( const dripline::request_ptr_t a_request, dripline::reply_package& a_reply_pkg );
+            virtual bool do_set_request( const dripline::request_ptr_t a_request, dripline::reply_package& a_reply_pkg );
+            virtual bool do_cmd_request( const dripline::request_ptr_t a_request, dripline::reply_package& a_reply_pkg );
 
             int f_listen_timeout_ms;
 

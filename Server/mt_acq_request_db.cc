@@ -20,17 +20,18 @@
 #undef uuid_t
 #endif
 
+using std::string;
+
+using scarab::param;
+using scarab::param_array;
+using scarab::param_node;
+using scarab::param_value;
+
+using dripline::request_ptr_t;
+using dripline::retcode_t;
+
 namespace mantis
 {
-    using std::string;
-
-    using scarab::param;
-    using scarab::param_array;
-    using scarab::param_node;
-    using scarab::param_value;
-
-    using dripline::retcode_t;
-
     LOGGER( mtlog, "acq_request_db" );
 
     acq_request_db::acq_request_db( config_manager* a_conf_mgr, const std::string& a_exe_name ) :
@@ -305,7 +306,7 @@ namespace mantis
     // Request handlers
     //********************
 
-    bool acq_request_db::handle_new_acq_request( const request_ptr_t a_request, hub::reply_package& a_reply_pkg )
+    bool acq_request_db::handle_new_acq_request( const request_ptr_t a_request, dripline::reply_package& a_reply_pkg )
     {
         // required
         const param_value* t_file_node = a_request->get_payload().value_at( "file" );
@@ -373,7 +374,7 @@ namespace mantis
         return true;
     }
 
-    bool acq_request_db::handle_get_acq_status_request( const request_ptr_t a_request, hub::reply_package& a_reply_pkg )
+    bool acq_request_db::handle_get_acq_status_request( const request_ptr_t a_request, dripline::reply_package& a_reply_pkg )
     {
         if( ! a_request->get_payload().has( "values" ) || ! a_request->get_payload()[ "values" ].is_array() )
         {
@@ -406,7 +407,7 @@ namespace mantis
         return a_reply_pkg.send_reply( retcode_t::success, "Acquisition status request succeeded" );
     }
 
-    bool acq_request_db::handle_queue_request( const request_ptr_t, hub::reply_package& a_reply_pkg )
+    bool acq_request_db::handle_queue_request( const request_ptr_t, dripline::reply_package& a_reply_pkg )
     {
         param_array* t_queue_array = new param_array();
         f_queue_mutex.lock();
@@ -422,13 +423,13 @@ namespace mantis
         return a_reply_pkg.send_reply( retcode_t::success, "Queue request succeeded" );
     }
 
-    bool acq_request_db::handle_queue_size_request( const request_ptr_t, hub::reply_package& a_reply_pkg )
+    bool acq_request_db::handle_queue_size_request( const request_ptr_t, dripline::reply_package& a_reply_pkg )
     {
         a_reply_pkg.f_payload.add( "queue-size", new param_value( (uint32_t)queue_size() ) );
         return a_reply_pkg.send_reply( retcode_t::success, "Queue size request succeeded" );
     }
 
-    bool acq_request_db::handle_cancel_acq_request( const request_ptr_t a_request, hub::reply_package& a_reply_pkg )
+    bool acq_request_db::handle_cancel_acq_request( const request_ptr_t a_request, dripline::reply_package& a_reply_pkg )
     {
         if( ! a_request->get_payload().has( "values" ) || ! a_request->get_payload()[ "values" ].is_array() )
         {
@@ -460,19 +461,19 @@ namespace mantis
         return a_reply_pkg.send_reply( retcode_t::success, "Cancellation succeeded" );
     }
 
-    bool acq_request_db::handle_clear_queue_request( const request_ptr_t, hub::reply_package& a_reply_pkg )
+    bool acq_request_db::handle_clear_queue_request( const request_ptr_t, dripline::reply_package& a_reply_pkg )
     {
         clear_queue();
         return a_reply_pkg.send_reply( retcode_t::success, "Queue is clear (aside for runs in progress" );
     }
 
-    bool acq_request_db::handle_start_queue_request( const request_ptr_t, hub::reply_package& a_reply_pkg )
+    bool acq_request_db::handle_start_queue_request( const request_ptr_t, dripline::reply_package& a_reply_pkg )
     {
         start_queue();
         return a_reply_pkg.send_reply( retcode_t::success, "Queue started" );
     }
 
-    bool acq_request_db::handle_stop_queue_request( const request_ptr_t, hub::reply_package& a_reply_pkg )
+    bool acq_request_db::handle_stop_queue_request( const request_ptr_t, dripline::reply_package& a_reply_pkg )
     {
         stop_queue();
         return a_reply_pkg.send_reply( retcode_t::success, "Queue stopped" );

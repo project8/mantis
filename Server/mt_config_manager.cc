@@ -21,8 +21,11 @@
 using std::string;
 
 using dripline::retcode_t;
+using dripline::reply_package;
+using dripline::request_ptr_t;
 
 using scarab::param_value;
+using scarab::param_node;
 
 namespace mantis
 {
@@ -48,7 +51,7 @@ namespace mantis
         return t_copy;
     }
 
-    bool config_manager::handle_get_acq_config_request( const request_ptr_t, hub::reply_package& a_reply_pkg )
+    bool config_manager::handle_get_acq_config_request( const request_ptr_t, reply_package& a_reply_pkg )
     {
         f_msc_mutex.lock();
         a_reply_pkg.f_payload.merge( *f_master_server_config.node_at( "acq" ) );
@@ -56,7 +59,7 @@ namespace mantis
         return a_reply_pkg.send_reply( retcode_t::success, "Get request succeeded" );
     }
 
-    bool config_manager::handle_get_server_config_request( const request_ptr_t, hub::reply_package& a_reply_pkg )
+    bool config_manager::handle_get_server_config_request( const request_ptr_t, reply_package& a_reply_pkg )
     {
         f_msc_mutex.lock();
         a_reply_pkg.f_payload.merge( f_master_server_config );
@@ -64,7 +67,7 @@ namespace mantis
         return a_reply_pkg.send_reply( retcode_t::success, "Get request succeeded" );
     }
 
-    bool config_manager::handle_set_request( const request_ptr_t a_request, hub::reply_package& a_reply_pkg )
+    bool config_manager::handle_set_request( const request_ptr_t a_request, reply_package& a_reply_pkg )
     {
         string t_routing_key = a_request->parsed_rks().to_string();
         if( t_routing_key.empty() )
@@ -106,7 +109,7 @@ namespace mantis
     }
 
 
-    bool config_manager::handle_add_request( const request_ptr_t a_request, hub::reply_package& a_reply_pkg )
+    bool config_manager::handle_add_request( const request_ptr_t a_request, reply_package& a_reply_pkg )
     {
         // add something to the master config
 
@@ -171,7 +174,7 @@ namespace mantis
         return a_reply_pkg.send_reply( retcode_t::success, "Add request succeeded" );
     }
 
-    bool config_manager::handle_remove_request( const request_ptr_t a_request, hub::reply_package& a_reply_pkg )
+    bool config_manager::handle_remove_request( const request_ptr_t a_request, reply_package& a_reply_pkg )
     {
         // remove something from the master config
 
@@ -216,7 +219,7 @@ namespace mantis
     }
 
 
-    bool config_manager::handle_replace_acq_config( const request_ptr_t a_request, hub::reply_package& a_reply_pkg )
+    bool config_manager::handle_replace_acq_config( const request_ptr_t a_request, reply_package& a_reply_pkg )
     {
         // payload contents should replace the acquisition config
         LDEBUG( mtlog, "Loading a full configuration" );

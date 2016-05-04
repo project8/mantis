@@ -19,11 +19,6 @@
 
 namespace mantis
 {
-    using scarab::param_node;
-
-    using dripline::hub;
-    using dripline::request_ptr_t;
-
     class acq_request_db;
     class msg_request;
     class request_receiver;
@@ -31,12 +26,10 @@ namespace mantis
 
     struct request_reply_package;
 
-    using std::atomic_bool;
-
     class MANTIS_API run_server
     {
         public:
-            run_server( const param_node& a_node, const version* a_version );
+            run_server( const scarab::param_node& a_node, const version* a_version );
             virtual ~run_server();
 
             void execute();
@@ -45,13 +38,13 @@ namespace mantis
 
             int get_return() const;
 
-            bool handle_get_server_status_request( const request_ptr_t a_request, hub::reply_package& a_reply_pkg );
+            bool handle_get_server_status_request( const dripline::request_ptr_t a_request, dripline::reply_package& a_reply_pkg );
 
-            bool handle_stop_all_request( const request_ptr_t a_request, hub::reply_package& a_reply_pkg );
-            bool handle_quit_server_request( const request_ptr_t a_request, hub::reply_package& a_reply_pkg );
+            bool handle_stop_all_request( const dripline::request_ptr_t a_request, dripline::reply_package& a_reply_pkg );
+            bool handle_quit_server_request( const dripline::request_ptr_t a_request, dripline::reply_package& a_reply_pkg );
 
         private:
-            param_node f_config;
+            scarab::param_node f_config;
             const version* f_version;
 
             int f_return;

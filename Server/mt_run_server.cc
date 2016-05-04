@@ -27,6 +27,11 @@
 #include <signal.h> // for raise()
 
 using dripline::retcode_t;
+using dripline::hub;
+using dripline::request_ptr_t;
+
+using scarab::param_node;
+
 
 
 namespace mantis
@@ -141,7 +146,7 @@ namespace mantis
     }
 
 
-    bool run_server::handle_get_server_status_request( const request_ptr_t, hub::reply_package& a_reply_pkg )
+    bool run_server::handle_get_server_status_request( const request_ptr_t, dripline::reply_package& a_reply_pkg )
     {
         param_node* t_server_node = new param_node();
         t_server_node->add( "status", new param_value( run_server::interpret_status( get_status() ) ) );
@@ -175,7 +180,7 @@ namespace mantis
         return a_reply_pkg.send_reply( retcode_t::success, "Server status request succeeded" );
     }
 
-    bool run_server::handle_stop_all_request( const request_ptr_t, hub::reply_package& a_reply_pkg )
+    bool run_server::handle_stop_all_request( const request_ptr_t, dripline::reply_package& a_reply_pkg )
     {
         param_node* t_server_node = new param_node();
         t_server_node->add( "status", new param_value( run_server::interpret_status( get_status() ) ) );
@@ -209,7 +214,7 @@ namespace mantis
         return a_reply_pkg.send_reply( retcode_t::success, "Server status request succeeded" );
     }
 
-    bool run_server::handle_quit_server_request( const request_ptr_t, hub::reply_package& a_reply_pkg )
+    bool run_server::handle_quit_server_request( const request_ptr_t, dripline::reply_package& a_reply_pkg )
     {
         bool t_return = a_reply_pkg.send_reply( retcode_t::success, "Server-quit command processed" );
         quit_server();

@@ -17,11 +17,6 @@ namespace scarab
 
 namespace mantis
 {
-    using scarab::param_node;
-
-    using dripline::hub;
-    using dripline::request_ptr_t;
-
     class amqp_relayer;
     class buffer;
     class condition;
@@ -39,7 +34,7 @@ namespace mantis
     class MANTIS_API server_worker : public callable
     {
         public:
-            server_worker( device_manager* a_dev_mgr, acq_request_db* a_run_queue, amqp_relayer* a_amqp_relayer, const param_node* a_amqp_node );
+            server_worker( device_manager* a_dev_mgr, acq_request_db* a_run_queue, amqp_relayer* a_amqp_relayer, const scarab::param_node* a_amqp_node );
             virtual ~server_worker();
 
             void execute();
@@ -48,7 +43,7 @@ namespace mantis
 
             void cancel(); /// cancels the server worker entirely
 
-            bool handle_stop_acq_request( const request_ptr_t a_request, hub::reply_package& a_reply_pkg );
+            bool handle_stop_acq_request( const dripline::request_ptr_t a_request, dripline::reply_package& a_reply_pkg );
 
         private:
             device_manager* f_dev_mgr;

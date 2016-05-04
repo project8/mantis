@@ -19,17 +19,17 @@
 #include <cstddef>
 #include <sstream>
 
+using std::string;
+
+using scarab::parsable;
+
+using dripline::retcode_t;
+using dripline::request_ptr_t;
 
 
 
 namespace mantis
 {
-    using std::string;
-
-    using scarab::parsable;
-
-    using dripline::retcode_t;
-
     LOGGER( mtlog, "request_receiver" );
 
     request_receiver::request_receiver( run_server* a_run_server, config_manager* a_conf_mgr, acq_request_db* a_acq_request_db, server_worker* a_server_worker ) :
@@ -107,12 +107,12 @@ namespace mantis
         return;
     }
 
-    bool request_receiver::do_run_request( const request_ptr_t a_request, reply_package& a_reply_pkg )
+    bool request_receiver::do_run_request( const request_ptr_t a_request, dripline::reply_package& a_reply_pkg )
     {
         return f_acq_request_db->handle_new_acq_request( a_request, a_reply_pkg );
     }
 
-    bool request_receiver::do_get_request( const request_ptr_t a_request, reply_package& a_reply_pkg )
+    bool request_receiver::do_get_request( const request_ptr_t a_request, dripline::reply_package& a_reply_pkg )
     {
         std::string t_query_type = a_request->parsed_rks().front();
         a_request->parsed_rks().pop_front();
@@ -148,12 +148,12 @@ namespace mantis
         }
     }
 
-    bool request_receiver::do_set_request( const request_ptr_t a_request, reply_package& a_reply_pkg )
+    bool request_receiver::do_set_request( const request_ptr_t a_request, dripline::reply_package& a_reply_pkg )
     {
         return f_conf_mgr->handle_set_request( a_request, a_reply_pkg );
     }
 
-    bool request_receiver::do_cmd_request( const request_ptr_t a_request, reply_package& a_reply_pkg )
+    bool request_receiver::do_cmd_request( const request_ptr_t a_request, dripline::reply_package& a_reply_pkg )
     {
         LDEBUG( mtlog, "Cmd request received" );
 

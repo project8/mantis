@@ -23,9 +23,6 @@ namespace mantis
     class config_manager;
     class msg_request;
 
-    using dripline::hub;
-    using dripline::request_ptr_t;
-
     class MANTIS_API acq_request_db
     {
         public:
@@ -96,17 +93,17 @@ namespace mantis
             //********************
         public:
 
-            bool handle_new_acq_request( const request_ptr_t a_request, hub::reply_package& a_reply_pkg );
+            bool handle_new_acq_request( const dripline::request_ptr_t a_request, dripline::reply_package& a_reply_pkg );
 
-            bool handle_get_acq_status_request( const request_ptr_t a_request, hub::reply_package& a_reply_pkg );
-            bool handle_queue_request( const request_ptr_t a_request, hub::reply_package& a_reply_pkg );
-            bool handle_queue_size_request( const request_ptr_t a_request, hub::reply_package& a_reply_pkg );
+            bool handle_get_acq_status_request( const dripline::request_ptr_t a_request, dripline::reply_package& a_reply_pkg );
+            bool handle_queue_request( const dripline::request_ptr_t a_request, dripline::reply_package& a_reply_pkg );
+            bool handle_queue_size_request( const dripline::request_ptr_t a_request, dripline::reply_package& a_reply_pkg );
 
-            bool handle_cancel_acq_request( const request_ptr_t a_request, hub::reply_package& a_reply_pkg );
-            bool handle_clear_queue_request( const request_ptr_t a_request, hub::reply_package& a_reply_pkg );
+            bool handle_cancel_acq_request( const dripline::request_ptr_t a_request, dripline::reply_package& a_reply_pkg );
+            bool handle_clear_queue_request( const dripline::request_ptr_t a_request, dripline::reply_package& a_reply_pkg );
 
-            bool handle_start_queue_request( const request_ptr_t a_request, hub::reply_package& a_reply_pkg );
-            bool handle_stop_queue_request( const request_ptr_t a_request, hub::reply_package& a_reply_pkg );
+            bool handle_start_queue_request( const dripline::request_ptr_t a_request, dripline::reply_package& a_reply_pkg );
+            bool handle_stop_queue_request( const dripline::request_ptr_t a_request, dripline::reply_package& a_reply_pkg );
 
         private:
             config_manager* f_config_mgr;
