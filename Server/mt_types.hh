@@ -10,7 +10,7 @@
 
 #include "time.hh"
 
-#include "M3types.hh"
+#include "M3Types.hh"
 
 namespace mantis
 {
