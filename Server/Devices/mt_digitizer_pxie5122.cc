@@ -359,6 +359,7 @@ namespace mantis
                 return false;
             }
 
+#ifdef HAS_GET_SCALING_COEFFS
             // get the scaling coefficients
             ViInt32 t_n_coeff_sets; // first determine the size of the array used to store the scaling coefficients
             if( ! HANDLE_ERROR( niScope_GetScalingCoefficients( f_handle, t_this_chan_string.c_str(), 0, NULL, &t_n_coeff_sets ) ) )
@@ -371,6 +372,10 @@ namespace mantis
                 return false;
             }
             get_calib_params2( s_bit_depth, s_data_type_size, t_voltage_offset, t_voltage_range, t_coeff_info_array[0].gain, t_bits_right_aligned, &( f_params[i_chan] ) );
+#else
+
+            get_calib_params( s_bit_depth, s_data_type_size, t_voltage_offset, t_voltage_range, t_bits_right_aligned, &( f_params[i_chan] ) );
+#endif
             t_chan_config[ i_chan ]->replace( "voltage-offset", param_value( f_params[ i_chan ].v_offset ) );
             t_chan_config[ i_chan ]->replace( "voltage-range", param_value( f_params[ i_chan ].v_range ) );
             t_chan_config[ i_chan ]->replace( "dac-gain", param_value( f_params[ i_chan ].dac_gain ) );
@@ -752,7 +757,7 @@ namespace mantis
 
         // check buffer allocation
         // this section assumes 1 channel, in not multiplying t_actual_rec_size by the number of channels when converting to block size
-        bool t_must_allocate = false; // will be done later, assuming the initialization succeeds
+        //bool t_must_allocate = false; // will be done later, assuming the initialization succeeds
         unsigned t_buffer_size = 1;
         if( f_buffer != NULL && ( f_buffer->size() != t_buffer_size || f_buffer->block_size() != t_actual_rec_size ) )
         {
@@ -763,7 +768,7 @@ namespace mantis
         }
         if( f_buffer == NULL )
         {
-            t_must_allocate = true;
+            //t_must_allocate = true;
             f_buffer = new buffer( t_buffer_size, t_actual_rec_size );
         }
 
@@ -788,6 +793,7 @@ namespace mantis
             return false;
         }
 
+#ifdef HAS_GET_SCALING_COEFFS
         // get the scaling coefficients
         ViInt32 t_n_coeff_sets;
         if( ! HANDLE_ERROR( niScope_GetScalingCoefficients( f_handle, f_chan_string.c_str(), 0, NULL, &t_n_coeff_sets ) ) )
@@ -800,6 +806,10 @@ namespace mantis
             return false;
         }
         get_calib_params2( 14 /*bit depth*/, s_data_type_size, t_voltage_offset, t_voltage_range, t_coeff_info_array[ 0 ].gain, false, &(f_params[t_chan]) );
+#else
+
+        get_calib_params( 14 /*bit depth*/, s_data_type_size, t_voltage_offset, t_voltage_range, false, &(f_params[t_chan]) );
+#endif
 
         // configure the clock to use the PXIe crate's timing, which is syncronized to the lab atomic clock
         if( ! HANDLE_ERROR( niScope_ConfigureClock( f_handle, NISCOPE_VAL_NO_SOURCE, NISCOPE_VAL_NO_SOURCE, NISCOPE_VAL_NO_SOURCE, VI_FALSE ) ) )
@@ -892,7 +902,11 @@ namespace mantis
         if( a_status == VI_SUCCESS ) return true;
         const unsigned t_buffer_size = 512;
         ViChar t_msg_buffer[ t_buffer_size ];
+#if defined NISCOPEWIN32
         niScope_GetErrorMessage( f_handle, a_status, t_buffer_size, t_msg_buffer );
+#elif defined NISCOPELINUX
+        niScope_GetError( f_handle, &a_status, t_buffer_size, t_msg_buffer );
+#endif 
         if( a_status > 0 )
         {
             LWARN( mtlog, std::string( "NIScope warning (" ) << a_status << "): " << t_msg_buffer <<
